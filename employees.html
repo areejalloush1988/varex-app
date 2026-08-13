@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>الموظفون - VAREX</title>
+
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,sans-serif;background:#f4f6fb;color:#172554}
+header{background:#172554;color:white;padding:18px 5%;display:flex;justify-content:space-between;align-items:center}
+.logo{font-size:25px;font-weight:bold;letter-spacing:2px}
+.back{color:white;text-decoration:none}
+.container{width:94%;max-width:1300px;margin:30px auto}
+h1{margin-bottom:5px}
+.subtitle{color:#64748b;margin-top:0}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:15px;margin:25px 0}
+.card,.panel{background:white;border-radius:15px;padding:20px;box-shadow:0 4px 18px rgba(0,0,0,.06)}
+.card span{color:#64748b;font-size:14px}
+.card strong{display:block;font-size:24px;margin-top:9px}
+.toolbar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:18px}
+input,select{padding:12px;border:1px solid #dbe1ea;border-radius:9px;font-size:14px}
+.search{flex:1;min-width:220px}
+button{border:0;border-radius:9px;padding:11px 16px;cursor:pointer}
+.primary{background:#172554;color:white}
+.secondary{background:#e5e7eb;color:#111827}
+.edit{background:#e0e7ff;color:#172554;padding:7px 10px}
+.delete{background:#fee2e2;color:#991b1b;padding:7px 10px}
+table{width:100%;border-collapse:collapse;min-width:900px}
+th,td{padding:12px 9px;text-align:right;border-bottom:1px solid #edf0f5}
+th{background:#f8fafc;color:#475569}
+.table-wrap{overflow-x:auto}
+.active{color:#15803d;font-weight:bold}
+.inactive{color:#dc2626;font-weight:bold}
+.modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);align-items:center;justify-content:center;padding:15px}
+.modal-box{background:white;width:100%;max-width:650px;border-radius:16px;padding:25px}
+.close{float:left;font-size:25px;cursor:pointer}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.form-grid input,.form-grid select{width:100%}
+.form-actions{display:flex;gap:10px;margin-top:18px}
+.empty{text-align:center;color:#64748b;padding:25px}
+@media(max-width:750px){
+.stats{grid-template-columns:1fr 1fr}
+.form-grid{grid-template-columns:1fr}
+}
+</style>
+</head>
+
+<body>
+
+<header>
+<div class="logo">VAREX</div>
+<a class="back" href="index.html">← لوحة التحكم</a>
+</header>
+
+<div class="container">
+
+<h1>👨‍💼 الموظفون</h1>
+<p class="subtitle">إدارة الموظفين والوظائف والرواتب والصلاحيات</p>
+
+<div class="stats">
+<div class="card">
+<span>إجمالي الموظفين</span>
+<strong id="totalEmployees">0</strong>
+</div>
+
+<div class="card">
+<span>الموظفون النشطون</span>
+<strong id="activeEmployees">0</strong>
+</div>
+
+<div class="card">
+<span>إجمالي الرواتب الشهرية</span>
+<strong id="totalSalaries">0.00 د.إ</strong>
+</div>
+
+<div class="card">
+<span>مديرو النظام</span>
+<strong id="adminCount">0</strong>
+</div>
+</div>
+
+<div class="panel">
+
+<div class="toolbar">
+
+<input
+id="search"
+class="search"
+placeholder="🔍 ابحث باسم الموظف أو الهاتف أو الوظيفة"
+oninput="renderEmployees()">
+
+<select id="statusFilter" onchange="renderEmployees()">
+<option value="">كل الحالات</option>
+<option value="نشط">نشط</option>
+<option value="غير نشط">غير نشط</option>
+</select>
+
+<button class="primary" onclick="openEmployeeModal()">
++ إضافة موظف
+</button>
+
+</div>
+
+<div class="table-wrap">
+
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>اسم الموظف</th>
+<th>الهاتف</th>
+<th>الوظيفة</th>
+<th>الراتب</th>
+<th>الصلاحية</th>
+<th>الحالة</th>
+<th>تاريخ التعيين</th>
+<th>الإجراءات</th>
+</tr>
+</thead>
+
+<tbody id="employeeTable"></tbody>
+</table>
+
+<div id="emptyMessage" class="empty">
+لا يوجد موظفون حتى الآن
+</div>
+
+</div>
+</div>
+
+</div>
+
+<div class="modal" id="employeeModal">
+
+<div class="modal-box">
+
+<span class="close" onclick="closeEmployeeModal()">×</span>
+
+<h2 id="modalTitle">إضافة موظف جديد</h2>
+
+<div class="form-grid">
+
+<input id="employeeName" placeholder="اسم الموظف">
+
+<input id="phone" placeholder="رقم الهاتف">
+
+<input id="email" type="email" placeholder="البريد الإلكتروني">
+
+<input id="job" placeholder="المسمى الوظيفي">
+
+<input id="salary" type="number" min="0" step="0.01" placeholder="الراتب الشهري">
+
+<select id="role">
+<option value="موظف">موظف</option>
+<option value="كاشير">كاشير</option>
+<option value="مشرف">مشرف</option>
+<option value="مدير">مدير</option>
+<option value="مدير النظام">مدير النظام</option>
+</select>
+
+<select id="status">
+<option value="نشط">نشط</option>
+<option value="غير نشط">غير نشط</option>
+</select>
+
+<input id="hireDate" type="date">
+
+</div>
+
+<div class="form-actions">
+
+<button class="primary" onclick="saveEmployee()">
+حفظ الموظف
+</button>
+
+<button class="secondary" onclick="closeEmployeeModal()">
+إلغاء
+</button>
+
+</div>
+
+</div>
+</div>
+
+<script>
+
+let employees =
+JSON.parse(localStorage.getItem("varexEmployees")) || [];
+
+let editingIndex = -1;
+
+function money(value){
+return (Number(value)||0).toFixed(2)+" د.إ";
+}
+
+function saveData(){
+localStorage.setItem("varexEmployees",JSON.stringify(employees));
+}
+
+function openEmployeeModal(index=-1){
+
+editingIndex=index;
+
+if(index===-1){
+
+document.getElementById("modalTitle").innerText="إضافة موظف جديد";
+
+document.getElementById("employeeName").value="";
+document.getElementById("phone").value="";
+document.getElementById("email").value="";
+document.getElementById("job").value="";
+document.getElementById("salary").value="";
+document.getElementById("role").value="موظف";
+document.getElementById("status").value="نشط";
+document.getElementById("hireDate").value="";
+
+}else{
+
+const e=employees[index];
+
+document.getElementById("modalTitle").innerText="تعديل بيانات الموظف";
+
+document.getElementById("employeeName").value=e.name;
+document.getElementById("phone").value=e.phone;
+document.getElementById("email").value=e.email;
+document.getElementById("job").value=e.job;
+document.getElementById("salary").value=e.salary;
+document.getElementById("role").value=e.role;
+document.getElementById("status").value=e.status;
+document.getElementById("hireDate").value=e.hireDate;
+
+}
+
+document.getElementById("employeeModal").style.display="flex";
+}
+
+function closeEmployeeModal(){
+document.getElementById("employeeModal").style.display="none";
+editingIndex=-1;
+}
+
+function saveEmployee(){
+
+const name=document.getElementById("employeeName").value.trim();
+
+if(!name){
+alert("يرجى إدخال اسم الموظف");
+return;
+}
+
+const employee={
+name:name,
+phone:document.getElementById("phone").value.trim(),
+email:document.getElementById("email").value.trim(),
+job:document.getElementById("job").value.trim(),
+salary:Number(document.getElementById("salary").value)||0,
+role:document.getElementById("role").value,
+status:document.getElementById("status").value,
+hireDate:document.getElementById("hireDate").value
+};
+
+if(editingIndex===-1){
+employees.push(employee);
+}else{
+employees[editingIndex]=employee;
+}
+
+saveData();
+renderEmployees();
+closeEmployeeModal();
+}
+
+function deleteEmployee(index){
+
+if(confirm("هل تريد حذف الموظف "+employees[index].name+"؟")){
+
+employees.splice(index,1);
+
+saveData();
+renderEmployees();
+
+}
+}
+
+function escapeHTML(value){
+const div=document.createElement("div");
+div.textContent=value||"";
+return div.innerHTML;
+}
+
+function renderEmployees(){
+
+const table=document.getElementById("employeeTable");
+
+const search=document.getElementById("search").value.toLowerCase();
+
+const statusFilter=document.getElementById("statusFilter").value;
+
+table.innerHTML="";
+
+let visible=0;
+
+employees.forEach((e,index)=>{
+
+const searchable=(e.name+" "+e.phone+" "+e.job).toLowerCase();
+
+if(!searchable.includes(search)) return;
+
+if(statusFilter && e.status!==statusFilter) return;
+
+visible++;
+
+const statusClass=e.status==="نشط"?"active":"inactive";
+
+const row=document.createElement("tr");
+
+row.innerHTML=`
+<td>${index+1}</td>
+<td>${escapeHTML(e.name)}</td>
+<td>${escapeHTML(e.phone||"-")}</td>
+<td>${escapeHTML(e.job||"-")}</td>
+<td>${money(e.salary)}</td>
+<td>${escapeHTML(e.role)}</td>
+<td class="${statusClass}">${escapeHTML(e.status)}</td>
+<td>${escapeHTML(e.hireDate||"-")}</td>
+<td>
+<button class="edit" onclick="openEmployeeModal(${index})">تعديل</button>
+<button class="delete" onclick="deleteEmployee(${index})">حذف</button>
+</td>
+`;
+
+table.appendChild(row);
+
+});
+
+document.getElementById("emptyMessage").style.display=
+visible===0?"block":"none";
+
+updateStats();
+}
+
+function updateStats(){
+
+let active=0;
+let salaries=0;
+let admins=0;
+
+employees.forEach(e=>{
+
+if(e.status==="نشط") active++;
+
+salaries+=Number(e.salary)||0;
+
+if(e.role==="مدير النظام") admins++;
+
+});
+
+document.getElementById("totalEmployees").innerText=employees.length;
+
+document.getElementById("activeEmployees").innerText=active;
+
+document.getElementById("totalSalaries").innerText=money(salaries);
+
+document.getElementById("adminCount").innerText=admins;
+}
+
+window.onclick=function(event){
+
+if(event.target===document.getElementById("employeeModal")){
+closeEmployeeModal();
+}
+
+};
+
+renderEmployees();
+
+</script>
+
+</body>
+</html>

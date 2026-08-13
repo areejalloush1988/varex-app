@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VAREX - المنتجات والمخزون</title>
+
+<style>
+*{box-sizing:border-box}
+body{
+    margin:0;
+    font-family:Arial,sans-serif;
+    background:#f4f6fb;
+    color:#172554;
+}
+header{
+    background:#172554;
+    color:white;
+    padding:18px 5%;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+}
+.logo{
+    font-size:25px;
+    font-weight:bold;
+    letter-spacing:2px;
+}
+.back{
+    color:white;
+    text-decoration:none;
+}
+.container{
+    width:92%;
+    max-width:1200px;
+    margin:35px auto;
+}
+.title{
+    margin-bottom:25px;
+}
+.title h1{
+    margin:0 0 8px;
+}
+.title p{
+    color:#64748b;
+}
+.stats{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:15px;
+    margin-bottom:25px;
+}
+.card{
+    background:white;
+    padding:20px;
+    border-radius:14px;
+    box-shadow:0 5px 18px rgba(0,0,0,.06);
+}
+.card span{
+    color:#64748b;
+    font-size:14px;
+}
+.card strong{
+    display:block;
+    font-size:25px;
+    margin-top:10px;
+}
+.panel{
+    background:white;
+    border-radius:16px;
+    padding:22px;
+    box-shadow:0 5px 18px rgba(0,0,0,.06);
+}
+.toolbar{
+    display:flex;
+    gap:10px;
+    margin-bottom:20px;
+    flex-wrap:wrap;
+}
+input,select{
+    padding:12px;
+    border:1px solid #dbe1ea;
+    border-radius:9px;
+    font-size:14px;
+}
+.search{
+    flex:1;
+    min-width:220px;
+}
+button{
+    border:0;
+    border-radius:9px;
+    padding:12px 18px;
+    cursor:pointer;
+}
+.add{
+    background:#172554;
+    color:white;
+}
+table{
+    width:100%;
+    border-collapse:collapse;
+}
+th,td{
+    padding:14px 10px;
+    text-align:right;
+    border-bottom:1px solid #edf0f5;
+}
+th{
+    background:#f8fafc;
+}
+.stock-ok{
+    color:#15803d;
+    font-weight:bold;
+}
+.stock-low{
+    color:#dc2626;
+    font-weight:bold;
+}
+.action{
+    background:#eef2ff;
+    color:#172554;
+    padding:7px 10px;
+}
+.modal{
+    display:none;
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,.45);
+    align-items:center;
+    justify-content:center;
+}
+.modal-box{
+    background:white;
+    width:90%;
+    max-width:500px;
+    border-radius:16px;
+    padding:25px;
+}
+.form-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:12px;
+}
+.form-grid input{
+    width:100%;
+}
+.save{
+    background:#172554;
+    color:white;
+    width:100%;
+    margin-top:15px;
+}
+.close{
+    float:left;
+    cursor:pointer;
+    font-size:22px;
+}
+@media(max-width:750px){
+    .stats{grid-template-columns:1fr 1fr}
+    .form-grid{grid-template-columns:1fr}
+    table{font-size:12px}
+}
+</style>
+</head>
+
+<body>
+
+<header>
+    <div class="logo">VAREX</div>
+    <a class="back" href="index.html">← لوحة التحكم</a>
+</header>
+
+<div class="container">
+
+    <div class="title">
+        <h1>📦 المنتجات والمخزون</h1>
+        <p>إدارة المنتجات والأسعار والكميات وحركة المخزون</p>
+    </div>
+
+    <div class="stats">
+        <div class="card">
+            <span>إجمالي المنتجات</span>
+            <strong id="totalProducts">2</strong>
+        </div>
+
+        <div class="card">
+            <span>إجمالي الوحدات</span>
+            <strong id="totalStock">18</strong>
+        </div>
+
+        <div class="card">
+            <span>قيمة المخزون</span>
+            <strong id="stockValue">475 د.إ</strong>
+        </div>
+
+        <div class="card">
+            <span>مخزون منخفض</span>
+            <strong id="lowStock">1</strong>
+        </div>
+    </div>
+
+    <div class="panel">
+
+        <div class="toolbar">
+            <input class="search" id="search" type="text"
+                   placeholder="🔍 ابحث باسم المنتج أو الباركود"
+                   onkeyup="searchProducts()">
+
+            <select id="categoryFilter" onchange="searchProducts()">
+                <option value="">كل التصنيفات</option>
+                <option>عام</option>
+                <option>إلكترونيات</option>
+                <option>مواد غذائية</option>
+                <option>مشروبات</option>
+            </select>
+
+            <button class="add" onclick="openModal()">+ إضافة منتج</button>
+        </div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>المنتج</th>
+                    <th>الباركود</th>
+                    <th>التصنيف</th>
+                    <th>سعر البيع</th>
+                    <th>التكلفة</th>
+                    <th>الكمية</th>
+                    <th>الحالة</th>
+                    <th>إجراء</th>
+                </tr>
+            </thead>
+
+            <tbody id="productTable">
+                <tr>
+                    <td>منتج تجريبي 1</td>
+                    <td>100001</td>
+                    <td>عام</td>
+                    <td>25.00 د.إ</td>
+                    <td>15.00 د.إ</td>
+                    <td>10</td>
+                    <td class="stock-ok">متوفر</td>
+                    <td><button class="action">تعديل</button></td>
+                </tr>
+
+                <tr>
+                    <td>منتج تجريبي 2</td>
+                    <td>100002</td>
+                    <td>عام</td>
+                    <td>40.00 د.إ</td>
+                    <td>25.00 د.إ</td>
+                    <td>8</td>
+                    <td class="stock-low">منخفض</td>
+                    <td><button class="action">تعديل</button></td>
+                </tr>
+            </tbody>
+        </table>
+
+    </div>
+</div>
+
+<div class="modal" id="productModal">
+    <div class="modal-box">
+
+        <span class="close" onclick="closeModal()">×</span>
+        <h2>إضافة منتج جديد</h2>
+
+        <div class="form-grid">
+            <input id="name" placeholder="اسم المنتج">
+            <input id="barcode" placeholder="الباركود">
+            <input id="category" placeholder="التصنيف">
+            <input id="price" type="number" placeholder="سعر البيع">
+            <input id="cost" type="number" placeholder="سعر التكلفة">
+            <input id="quantity" type="number" placeholder="الكمية">
+        </div>
+
+        <button class="save" onclick="addProduct()">حفظ المنتج</button>
+
+    </div>
+</div>
+
+<script>
+
+function openModal(){
+    document.getElementById("productModal").style.display="flex";
+}
+
+function closeModal(){
+    document.getElementById("productModal").style.display="none";
+}
+
+function addProduct(){
+
+    const name=document.getElementById("name").value;
+    const barcode=document.getElementById("barcode").value;
+    const category=document.getElementById("category").value || "عام";
+    const price=document.getElementById("price").value || 0;
+    const cost=document.getElementById("cost").value || 0;
+    const quantity=parseInt(document.getElementById("quantity").value || 0);
+
+    if(!name){
+        alert("يرجى إدخال اسم المنتج");
+        return;
+    }
+
+    const status=quantity<=8 ? "منخفض" : "متوفر";
+    const statusClass=quantity<=8 ? "stock-low" : "stock-ok";
+
+    const row=document.createElement("tr");
+
+    row.innerHTML=`
+        <td>${name}</td>
+        <td>${barcode}</td>
+        <td>${category}</td>
+        <td>${Number(price).toFixed(2)} د.إ</td>
+        <td>${Number(cost).toFixed(2)} د.إ</td>
+        <td>${quantity}</td>
+        <td class="${statusClass}">${status}</td>
+        <td><button class="action">تعديل</button></td>
+    `;
+
+    document.getElementById("productTable").appendChild(row);
+
+    updateStats();
+    closeModal();
+}
+
+function searchProducts(){
+
+    const search=document.getElementById("search").value.toLowerCase();
+    const category=document.getElementById("categoryFilter").value;
+
+    const rows=document.querySelectorAll("#productTable tr");
+
+    rows.forEach(row=>{
+
+        const text=row.innerText.toLowerCase();
+        const rowCategory=row.children[2].innerText;
+
+        const matchSearch=text.includes(search);
+        const matchCategory=!category || rowCategory===category;
+
+        row.style.display=(matchSearch && matchCategory) ? "" : "none";
+    });
+}
+
+function updateStats(){
+
+    const rows=document.querySelectorAll("#productTable tr");
+
+    let stock=0;
+    let value=0;
+    let low=0;
+
+    rows.forEach(row=>{
+
+        const price=parseFloat(row.children[3].innerText);
+        const quantity=parseInt(row.children[5].innerText);
+
+        stock+=quantity;
+        value+=price*quantity;
+
+        if(quantity<=8) low++;
+    });
+
+    document.getElementById("totalProducts").innerText=rows.length;
+    document.getElementById("totalStock").innerText=stock;
+    document.getElementById("stockValue").innerText=value.toFixed(2)+" د.إ";
+    document.getElementById("lowStock").innerText=low;
+}
+
+</script>
+
+</body>
+</html>

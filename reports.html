@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>التقارير - VAREX</title>
+
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,sans-serif;background:#f4f6fb;color:#172554}
+header{background:#172554;color:white;padding:18px 5%;display:flex;justify-content:space-between;align-items:center}
+.logo{font-size:25px;font-weight:bold;letter-spacing:2px}
+.back{color:white;text-decoration:none}
+.container{width:94%;max-width:1300px;margin:30px auto}
+h1{margin-bottom:5px}
+.subtitle{color:#64748b;margin-top:0}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:15px;margin:25px 0}
+.card,.panel{background:white;border-radius:15px;padding:20px;box-shadow:0 4px 18px rgba(0,0,0,.06)}
+.card span{color:#64748b;font-size:14px}
+.card strong{display:block;font-size:23px;margin-top:9px}
+.positive{color:#15803d}
+.negative{color:#dc2626}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.panel h3{margin-top:0}
+.row{display:flex;justify-content:space-between;gap:15px;padding:13px 0;border-bottom:1px solid #edf0f5}
+.row:last-child{border-bottom:0}
+.value{font-weight:bold}
+.toolbar{display:flex;gap:10px;flex-wrap:wrap;margin:20px 0}
+button{border:0;border-radius:9px;padding:11px 17px;cursor:pointer;font-family:inherit}
+.primary{background:#172554;color:white}
+.secondary{background:white;color:#172554;border:1px solid #dbe1ea}
+.notice{margin-top:20px;background:#e8f5e9;color:#166534;padding:15px;border-radius:10px}
+@media(max-width:800px){
+.stats{grid-template-columns:1fr 1fr}
+.grid{grid-template-columns:1fr}
+}
+@media(max-width:450px){
+.stats{grid-template-columns:1fr}
+}
+</style>
+</head>
+
+<body>
+
+<header>
+<div class="logo">VAREX</div>
+<a class="back" href="index.html">← لوحة التحكم</a>
+</header>
+
+<div class="container">
+
+<h1>📊 التقارير</h1>
+<p class="subtitle">نظرة شاملة على أداء النشاط والبيانات المسجلة في النظام</p>
+
+<div class="toolbar">
+<button class="primary" onclick="refreshReports()">تحديث التقارير</button>
+<button class="secondary" onclick="window.print()">طباعة التقرير</button>
+</div>
+
+<div class="stats">
+
+<div class="card">
+<span>إجمالي الإيرادات</span>
+<strong class="positive" id="income">0.00 د.إ</strong>
+</div>
+
+<div class="card">
+<span>إجمالي المصروفات</span>
+<strong class="negative" id="expenses">0.00 د.إ</strong>
+</div>
+
+<div class="card">
+<span>صافي الرصيد</span>
+<strong id="net">0.00 د.إ</strong>
+</div>
+
+<div class="card">
+<span>عدد الحركات المالية</span>
+<strong id="transactions">0</strong>
+</div>
+
+</div>
+
+<div class="grid">
+
+<div class="panel">
+<h3>👥 تقرير العملاء</h3>
+
+<div class="row">
+<span>إجمالي العملاء</span>
+<span class="value" id="customers">0</span>
+</div>
+
+<div class="row">
+<span>إجمالي مشتريات العملاء</span>
+<span class="value" id="customerPurchases">0.00 د.إ</span>
+</div>
+
+<div class="row">
+<span>مديونيات العملاء</span>
+<span class="value negative" id="customerDebt">0.00 د.إ</span>
+</div>
+</div>
+
+<div class="panel">
+<h3>🚚 تقرير الموردين</h3>
+
+<div class="row">
+<span>عدد الموردين</span>
+<span class="value" id="suppliers">0</span>
+</div>
+
+<div class="row">
+<span>إجمالي مشتريات الموردين</span>
+<span class="value" id="supplierPurchases">0.00 د.إ</span>
+</div>
+
+<div class="row">
+<span>المبالغ المستحقة للموردين</span>
+<span class="value negative" id="supplierDue">0.00 د.إ</span>
+</div>
+</div>
+
+<div class="panel">
+<h3>👨‍💼 تقرير الموظفين</h3>
+
+<div class="row">
+<span>إجمالي الموظفين</span>
+<span class="value" id="employees">0</span>
+</div>
+
+<div class="row">
+<span>الموظفون النشطون</span>
+<span class="value" id="activeEmployees">0</span>
+</div>
+
+<div class="row">
+<span>إجمالي الرواتب الشهرية</span>
+<span class="value" id="salaries">0.00 د.إ</span>
+</div>
+</div>
+
+<div class="panel">
+<h3>💰 الملخص المالي</h3>
+
+<div class="row">
+<span>الإيرادات</span>
+<span class="value positive" id="financialIncome">0.00 د.إ</span>
+</div>
+
+<div class="row">
+<span>المصروفات</span>
+<span class="value negative" id="financialExpense">0.00 د.إ</span>
+</div>
+
+<div class="row">
+<span>صافي الرصيد</span>
+<span class="value" id="financialNet">0.00 د.إ</span>
+</div>
+</div>
+
+</div>
+
+<div class="notice">
+✓ يتم تحديث هذه التقارير اعتمادًا على البيانات المحفوظة في أقسام VAREX.
+</div>
+
+</div>
+
+<script>
+function money(value){
+return (Number(value)||0).toFixed(2)+" د.إ";
+}
+
+function getData(key){
+try{
+return JSON.parse(localStorage.getItem(key)) || [];
+}catch{
+return [];
+}
+}
+
+function refreshReports(){
+
+const transactions=getData("varexTransactions");
+const suppliers=getData("varexSuppliers");
+const employees=getData("varexEmployees");
+
+/* الحسابات */
+
+let income=0;
+let expenses=0;
+
+transactions.forEach(t=>{
+if(t.type==="إيراد"){
+income+=Number(t.amount)||0;
+}else if(t.type==="مصروف"){
+expenses+=Number(t.amount)||0;
+}
+});
+
+const net=income-expenses;
+
+document.getElementById("income").innerText=money(income);
+document.getElementById("expenses").innerText=money(expenses);
+document.getElementById("net").innerText=money(net);
+document.getElementById("transactions").innerText=transactions.length;
+
+document.getElementById("financialIncome").innerText=money(income);
+document.getElementById("financialExpense").innerText=money(expenses);
+document.getElementById("financialNet").innerText=money(net);
+
+document.getElementById("net").className=
+net>=0?"positive":"negative";
+
+document.getElementById("financialNet").className=
+"value "+(net>=0?"positive":"negative");
+
+/* العملاء */
+
+const customerRows =
+JSON.parse(localStorage.getItem("varexCustomers") || "[]");
+
+let customerPurchases=0;
+let customerDebt=0;
+
+customerRows.forEach(c=>{
+customerPurchases+=Number(c.purchaseValue)||0;
+customerDebt+=Number(c.debt)||0;
+});
+
+document.getElementById("customers").innerText=customerRows.length;
+document.getElementById("customerPurchases").innerText=money(customerPurchases);
+document.getElementById("customerDebt").innerText=money(customerDebt);
+
+/* الموردون */
+
+let supplierPurchases=0;
+let supplierPaid=0;
+
+suppliers.forEach(s=>{
+supplierPurchases+=Number(s.purchases)||0;
+supplierPaid+=Number(s.paid)||0;
+});
+
+document.getElementById("suppliers").innerText=suppliers.length;
+document.getElementById("supplierPurchases").innerText=money(supplierPurchases);
+document.getElementById("supplierDue").innerText=
+money(Math.max(0,supplierPurchases-supplierPaid));
+
+/* الموظفون */
+
+let activeEmployees=0;
+let salaries=0;
+
+employees.forEach(e=>{
+if(e.status==="نشط") activeEmployees++;
+salaries+=Number(e.salary)||0;
+});
+
+document.getElementById("employees").innerText=employees.length;
+document.getElementById("activeEmployees").innerText=activeEmployees;
+document.getElementById("salaries").innerText=money(salaries);
+}
+
+refreshReports();
+</script>
+
+</body>
+</html>

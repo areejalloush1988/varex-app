@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>VAREX - العملاء</title>
+
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,sans-serif;background:#f4f6fb;color:#172554}
+header{background:#172554;color:#fff;padding:18px 5%;display:flex;justify-content:space-between;align-items:center}
+.logo{font-size:25px;font-weight:bold;letter-spacing:2px}
+.back{color:#fff;text-decoration:none}
+.container{width:92%;max-width:1200px;margin:35px auto}
+.title h1{margin-bottom:6px}
+.title p{color:#64748b;margin-top:0}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:15px;margin:25px 0}
+.card,.panel{background:#fff;border-radius:15px;padding:20px;box-shadow:0 5px 18px rgba(0,0,0,.06)}
+.card span{color:#64748b;font-size:14px}
+.card strong{display:block;font-size:25px;margin-top:10px}
+.toolbar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px}
+input,select{padding:12px;border:1px solid #dbe1ea;border-radius:9px;font-size:14px}
+.search{flex:1;min-width:220px}
+button{border:0;border-radius:9px;padding:11px 16px;cursor:pointer}
+.add,.save{background:#172554;color:#fff}
+table{width:100%;border-collapse:collapse}
+th,td{padding:13px 9px;text-align:right;border-bottom:1px solid #edf0f5}
+th{background:#f8fafc}
+.debt{color:#dc2626;font-weight:bold}
+.clear{color:#15803d;font-weight:bold}
+.action{background:#eef2ff;color:#172554;padding:7px 10px}
+.delete{background:#fee2e2;color:#b91c1c;padding:7px 10px;margin-right:4px}
+.modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);align-items:center;justify-content:center}
+.modal-box{background:#fff;width:90%;max-width:550px;border-radius:16px;padding:25px}
+.close{float:left;font-size:24px;cursor:pointer}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.form-grid input{width:100%}
+.save{width:100%;margin-top:15px}
+@media(max-width:750px){
+.stats{grid-template-columns:1fr 1fr}
+.form-grid{grid-template-columns:1fr}
+table{font-size:12px}
+}
+</style>
+</head>
+
+<body>
+
+<header>
+<div class="logo">VAREX</div>
+<a href="index.html" class="back">← لوحة التحكم</a>
+</header>
+
+<div class="container">
+
+<div class="title">
+<h1>👥 العملاء</h1>
+<p>إدارة بيانات العملاء وسجل المشتريات والمديونيات</p>
+</div>
+
+<div class="stats">
+<div class="card"><span>إجمالي العملاء</span><strong id="totalCustomers">2</strong></div>
+<div class="card"><span>إجمالي المشتريات</span><strong id="totalPurchases">1,750.00 د.إ</strong></div>
+<div class="card"><span>إجمالي المديونيات</span><strong id="totalDebt">250.00 د.إ</strong></div>
+<div class="card"><span>عملاء لديهم مديونية</span><strong id="debtCustomers">1</strong></div>
+</div>
+
+<div class="panel">
+
+<div class="toolbar">
+<input id="search" class="search" placeholder="🔍 ابحث بالاسم أو رقم الهاتف" onkeyup="searchCustomers()">
+
+<select id="filter" onchange="searchCustomers()">
+<option value="">جميع العملاء</option>
+<option value="مديونية">لديهم مديونية</option>
+<option value="مسدد">بدون مديونية</option>
+</select>
+
+<button class="add" onclick="openModal()">+ إضافة عميل</button>
+</div>
+
+<table>
+<thead>
+<tr>
+<th>اسم العميل</th>
+<th>رقم الهاتف</th>
+<th>البريد الإلكتروني</th>
+<th>عدد المشتريات</th>
+<th>إجمالي المشتريات</th>
+<th>المديونية</th>
+<th>الحالة</th>
+<th>الإجراءات</th>
+</tr>
+</thead>
+
+<tbody id="customerTable">
+
+<tr>
+<td>أحمد محمد</td>
+<td>0501234567</td>
+<td>ahmed@example.com</td>
+<td>5</td>
+<td>1250.00</td>
+<td>250.00</td>
+<td class="debt">مديونية</td>
+<td>
+<button class="action" onclick="editCustomer(this)">تعديل</button>
+<button class="delete" onclick="deleteCustomer(this)">حذف</button>
+</td>
+</tr>
+
+<tr>
+<td>محمد علي</td>
+<td>0557654321</td>
+<td>mohammed@example.com</td>
+<td>2</td>
+<td>500.00</td>
+<td>0.00</td>
+<td class="clear">مسدد</td>
+<td>
+<button class="action" onclick="editCustomer(this)">تعديل</button>
+<button class="delete" onclick="deleteCustomer(this)">حذف</button>
+</td>
+</tr>
+
+</tbody>
+</table>
+</div>
+</div>
+
+<div class="modal" id="customerModal">
+<div class="modal-box">
+
+<span class="close" onclick="closeModal()">×</span>
+<h2 id="modalTitle">إضافة عميل جديد</h2>
+
+<div class="form-grid">
+<input id="name" placeholder="اسم العميل">
+<input id="phone" placeholder="رقم الهاتف">
+<input id="email" type="email" placeholder="البريد الإلكتروني">
+<input id="purchases" type="number" min="0" placeholder="عدد المشتريات">
+<input id="purchaseValue" type="number" min="0" step="0.01" placeholder="إجمالي المشتريات">
+<input id="debt" type="number" min="0" step="0.01" placeholder="المديونية">
+</div>
+
+<button class="save" onclick="saveCustomer()">حفظ بيانات العميل</button>
+</div>
+</div>
+
+<script>
+let editingRow=null;
+
+function openModal(){
+editingRow=null;
+document.getElementById("modalTitle").innerText="إضافة عميل جديد";
+clearForm();
+document.getElementById("customerModal").style.display="flex";
+}
+
+function closeModal(){
+document.getElementById("customerModal").style.display="none";
+}
+
+function clearForm(){
+["name","phone","email","purchases","purchaseValue","debt"].forEach(id=>{
+document.getElementById(id).value="";
+});
+}
+
+function saveCustomer(){
+const name=document.getElementById("name").value.trim();
+const phone=document.getElementById("phone").value.trim();
+const email=document.getElementById("email").value.trim();
+const purchases=parseInt(document.getElementById("purchases").value||0);
+const purchaseValue=parseFloat(document.getElementById("purchaseValue").value||0);
+const debt=parseFloat(document.getElementById("debt").value||0);
+
+if(!name){
+alert("يرجى إدخال اسم العميل");
+return;
+}
+
+const status=debt>0?"مديونية":"مسدد";
+const statusClass=debt>0?"debt":"clear";
+
+const html=`
+<td>${name}</td>
+<td>${phone}</td>
+<td>${email}</td>
+<td>${purchases}</td>
+<td>${purchaseValue.toFixed(2)}</td>
+<td>${debt.toFixed(2)}</td>
+<td class="${statusClass}">${status}</td>
+<td>
+<button class="action" onclick="editCustomer(this)">تعديل</button>
+<button class="delete" onclick="deleteCustomer(this)">حذف</button>
+</td>`;
+
+if(editingRow){
+editingRow.innerHTML=html;
+}else{
+const row=document.createElement("tr");
+row.innerHTML=html;
+document.getElementById("customerTable").appendChild(row);
+}
+
+updateStats();
+closeModal();
+}
+
+function editCustomer(button){
+editingRow=button.closest("tr");
+const c=editingRow.children;
+
+document.getElementById("name").value=c[0].innerText;
+document.getElementById("phone").value=c[1].innerText;
+document.getElementById("email").value=c[2].innerText;
+document.getElementById("purchases").value=c[3].innerText;
+document.getElementById("purchaseValue").value=c[4].innerText;
+document.getElementById("debt").value=c[5].innerText;
+
+document.getElementById("modalTitle").innerText="تعديل بيانات العميل";
+document.getElementById("customerModal").style.display="flex";
+}
+
+function deleteCustomer(button){
+if(confirm("هل تريد حذف هذا العميل؟")){
+button.closest("tr").remove();
+updateStats();
+}
+}
+
+function searchCustomers(){
+const search=document.getElementById("search").value.toLowerCase();
+const filter=document.getElementById("filter").value;
+
+document.querySelectorAll("#customerTable tr").forEach(row=>{
+const text=row.innerText.toLowerCase();
+const status=row.children[6].innerText;
+
+row.style.display=
+(text.includes(search)&&(!filter||status===filter))?"":"none";
+});
+}
+
+function updateStats(){
+const rows=document.querySelectorAll("#customerTable tr");
+
+let purchases=0;
+let debt=0;
+let debtCount=0;
+
+rows.forEach(row=>{
+purchases+=parseFloat(row.children[4].innerText)||0;
+const d=parseFloat(row.children[5].innerText)||0;
+debt+=d;
+if(d>0) debtCount++;
+});
+
+document.getElementById("totalCustomers").innerText=rows.length;
+document.getElementById("totalPurchases").innerText=purchases.toFixed(2)+" د.إ";
+document.getElementById("totalDebt").innerText=debt.toFixed(2)+" د.إ";
+document.getElementById("debtCustomers").innerText=debtCount;
+}
+
+window.onclick=function(e){
+if(e.target===document.getElementById("customerModal")) closeModal();
+};
+</script>
+
+</body>
+</html>
