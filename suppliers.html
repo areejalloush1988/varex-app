@@ -1,224 +1,1837 @@
-<!DOCTYPE html><html lang="ar" dir="rtl"><head>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+
 <title>الموردون - VAREX</title>
+
 <style>
-*{box-sizing:border-box;margin:0;padding:0}
-:root{--navy:#172554;--navy-dark:#0f1d43;--blue:#2563eb;--bg:#f4f6fb;--white:#fff;--border:#e5eaf2;--text:#172554;--muted:#64748b;--green:#16a34a;--red:#dc2626;--orange:#d97706}
-body{font-family:Arial,sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
 
-/* SIDEBAR - موحد وثابت */
-.sidebar{position:fixed;right:0;top:0;bottom:0;width:230px;background:linear-gradient(180deg,#172554,#0f1d43);color:#fff;z-index:100;display:flex;flex-direction:column}
-.brand{padding:26px 22px 18px;border-bottom:1px solid rgba(255,255,255,.10)}
-.logo{font-size:29px;font-weight:800;letter-spacing:4px}
-.brand-small{font-size:11px;color:#cbd5e1;margin-top:6px}
-.system-status{margin-top:13px;display:flex;align-items:center;gap:7px;font-size:11px;color:#d1fae5}
-.status-dot{width:8px;height:8px;border-radius:50%;background:#22c55e;box-shadow:0 0 8px rgba(34,197,94,.8);flex-shrink:0}
-.nav{padding:18px 12px;flex:1;overflow-y:auto}
-.nav a{display:flex;align-items:center;gap:12px;color:#dbeafe;text-decoration:none;padding:12px 14px;border-radius:10px;margin-bottom:5px;font-size:14px;transition:.2s}
-.nav a:hover{background:rgba(255,255,255,.08);color:#fff}
-.nav a.active{background:#fff;color:var(--navy);font-weight:bold;box-shadow:0 5px 15px rgba(0,0,0,.15)}
-.nav-icon{width:24px;text-align:center}
-.sidebar-footer{padding:17px;border-top:1px solid rgba(255,255,255,.10);color:#94a3b8;font-size:11px;text-align:center}
+*{
+    box-sizing:border-box;
+    margin:0;
+    padding:0;
+}
 
-/* MAIN */
-.main{margin-right:230px;min-height:100vh}
-.topbar{height:76px;background:#fff;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 28px;position:sticky;top:0;z-index:50}
-.page-name{display:flex;align-items:center;gap:12px}
-.page-icon{width:43px;height:43px;border-radius:12px;background:#ecfeff;display:flex;align-items:center;justify-content:center;font-size:21px}
-.page-name h2{font-size:18px}.page-name small{display:block;color:var(--muted);margin-top:4px}
-.top-info{display:flex;align-items:center;gap:12px}
-.info-chip{background:#f8fafc;border:1px solid var(--border);border-radius:10px;padding:9px 13px;font-size:12px;color:var(--muted)}
-.info-chip strong{color:var(--navy)}
-.content{width:94%;max-width:1400px;margin:26px auto 45px}
-.hero{margin-bottom:22px}.hero h1{font-size:25px;margin-bottom:6px}.hero p{color:var(--muted);font-size:13px;line-height:1.7}
+:root{
+    --navy:#172554;
+    --navy-dark:#0f1d43;
+    --navy-light:#1e3a6d;
+    --blue:#2563eb;
+    --bg:#f4f6fb;
+    --white:#ffffff;
+    --border:#e5eaf2;
+    --text:#172554;
+    --muted:#64748b;
+    --green:#16a34a;
+    --red:#dc2626;
+    --orange:#d97706;
 
-/* STATS */
-.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:15px;margin-bottom:20px}
-.stat{background:#fff;border:1px solid var(--border);border-radius:15px;padding:20px;box-shadow:0 4px 18px rgba(15,23,42,.05)}
-.stat span{display:block;color:var(--muted);font-size:14px;margin-bottom:9px}.stat strong{display:block;font-size:23px}
-.supplier-card{border-top:4px solid #2563eb}.purchase-card{border-top:4px solid #7c3aed}.paid-card{border-top:4px solid #16a34a}.due-card{border-top:4px solid #f59e0b}
+    /* نفس لوحة التحكم */
+    --sidebar-width:240px;
+    --brand-height:170px;
+}
 
-/* PANEL + FORM */
-.panel{background:#fff;border:1px solid var(--border);border-radius:15px;padding:21px;margin-bottom:20px;box-shadow:0 4px 18px rgba(15,23,42,.05)}
-.panel h3{margin:0 0 18px;padding-bottom:13px;border-bottom:1px solid #edf0f5;font-size:17px}
-.form-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
-input,select,textarea{width:100%;padding:12px;border:1px solid #dbe1ea;border-radius:9px;font-size:14px;font-family:inherit;background:#fff;outline:none}
-input:focus,select:focus,textarea:focus{border-color:#94a3b8;box-shadow:0 0 0 3px rgba(37,99,235,.05)}
-textarea{min-height:80px;resize:vertical}.full{grid-column:1/-1}.actions-form{margin-top:15px;display:flex;gap:8px}
-button{border:0;border-radius:9px;padding:11px 18px;cursor:pointer;font-family:inherit;font-weight:bold}
-.save{background:linear-gradient(135deg,#172554,#1e3a8a);color:#fff}.cancel{background:#e5e7eb;color:#111827;display:none}
-.toolbar{display:flex;gap:10px;margin-bottom:15px}.search{flex:1}
+html{
+    scroll-behavior:smooth;
+}
 
-/* TABLE */
-.table-wrap{overflow-x:auto}table{width:100%;border-collapse:collapse;min-width:1000px}
-th,td{padding:12px 9px;border-bottom:1px solid #e5e7eb;text-align:right;font-size:14px}
-th{background:#f8fafc;color:#475569;font-weight:bold}tbody tr:hover{background:#fafcff}
-.edit{background:#e0e7ff;color:#172554;padding:7px 10px}.delete{background:#fee2e2;color:#991b1b;padding:7px 10px}
-.status-paid{display:inline-block;background:#dcfce7;color:#15803d;font-weight:bold;padding:5px 9px;border-radius:20px;font-size:12px}
-.status-due{display:inline-block;background:#fef3c7;color:#b45309;font-weight:bold;padding:5px 9px;border-radius:20px;font-size:12px}
-.empty{text-align:center;padding:30px;color:var(--muted)}
+body{
+    font-family:Arial,Tahoma,sans-serif;
+    background:var(--bg);
+    color:var(--text);
+    min-height:100vh;
+    line-height:1.5;
+}
 
-@media(max-width:1100px){.sidebar{width:200px}.main{margin-right:200px}.form-grid{grid-template-columns:1fr 1fr}}
-@media(max-width:850px){.sidebar{position:relative;width:100%;height:auto}.brand{padding:17px 20px}.nav{display:flex;overflow-x:auto;padding:8px 10px 12px}.nav a{white-space:nowrap;margin:0 3px}.sidebar-footer{display:none}.main{margin-right:0}.topbar{position:relative;padding:0 16px}.stats{grid-template-columns:repeat(2,1fr)}}
-@media(max-width:650px){.form-grid{grid-template-columns:1fr}.full{grid-column:auto}.top-info{display:none}}
-@media(max-width:500px){.stats{grid-template-columns:1fr}}
-</style></head><body>
+/* =====================================================
+   FIXED SIDEBAR
+   مطابق للوحة التحكم
+===================================================== */
+
+.sidebar{
+    position:fixed;
+    right:0;
+    top:0;
+
+    width:var(--sidebar-width);
+    height:100vh;
+    min-height:100vh;
+
+    background:linear-gradient(
+        180deg,
+        #172554 0%,
+        #13234f 48%,
+        #0f1d43 100%
+    );
+
+    color:#ffffff;
+
+    z-index:1000;
+
+    display:flex;
+    flex-direction:column;
+
+    overflow:hidden;
+
+    box-shadow:-4px 0 18px rgba(15,29,67,.08);
+}
+
+/* =====================================================
+   BRAND
+   مطابق للوحة التحكم
+===================================================== */
+
+.brand{
+    width:100%;
+
+    height:var(--brand-height);
+    min-height:var(--brand-height);
+    max-height:var(--brand-height);
+
+    padding:24px 14px 20px;
+
+    border-bottom:1px solid rgba(255,255,255,.10);
+
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+
+    text-align:center;
+
+    flex:0 0 var(--brand-height);
+
+    overflow:hidden;
+}
+
+.logo{
+    width:100%;
+
+    font-size:30px;
+    line-height:30px;
+
+    font-weight:800;
+    letter-spacing:4px;
+
+    color:#ffffff;
+
+    text-align:center;
+    direction:ltr;
+
+    white-space:nowrap;
+}
+
+.brand-small{
+    width:100%;
+
+    margin-top:11px;
+
+    font-size:10px;
+    line-height:14px;
+
+    font-weight:600;
+    letter-spacing:.8px;
+
+    color:#e2e8f0;
+
+    text-align:center;
+    direction:ltr;
+
+    white-space:nowrap;
+}
+
+.system-status{
+    width:100%;
+
+    margin-top:16px;
+
+    display:flex;
+    align-items:center;
+    justify-content:center;
+
+    gap:7px;
+
+    font-size:10px;
+    line-height:14px;
+
+    color:#d1fae5;
+
+    white-space:nowrap;
+}
+
+.status-dot{
+    width:7px;
+    height:7px;
+
+    min-width:7px;
+    min-height:7px;
+
+    background:#22c55e;
+
+    border-radius:50%;
+
+    box-shadow:0 0 8px rgba(34,197,94,.75);
+}
+
+/* =====================================================
+   NAVIGATION
+   مطابق للوحة التحكم
+===================================================== */
+
+.nav{
+    width:100%;
+
+    padding:16px 12px;
+
+    flex:1 1 auto;
+
+    overflow-y:auto;
+    overflow-x:hidden;
+
+    scrollbar-width:thin;
+}
+
+.nav a{
+    width:100%;
+
+    height:48px;
+    min-height:48px;
+    max-height:48px;
+
+    display:flex;
+    align-items:center;
+    justify-content:flex-start;
+
+    gap:11px;
+
+    color:#dbeafe;
+    text-decoration:none;
+
+    padding:0 14px;
+
+    border:0;
+    border-radius:10px;
+
+    margin:0 0 5px;
+
+    background:transparent;
+
+    font-family:inherit;
+    font-size:13px;
+    font-weight:600;
+
+    text-align:right;
+
+    cursor:pointer;
+
+    transition:
+        background .2s,
+        color .2s,
+        box-shadow .2s;
+}
+
+.nav a:hover{
+    background:rgba(255,255,255,.08);
+    color:#ffffff;
+}
+
+.nav a.active{
+    background:#ffffff;
+    color:var(--navy);
+
+    box-shadow:0 5px 15px rgba(0,0,0,.14);
+}
+
+.nav a.active .nav-icon{
+    color:var(--navy);
+}
+
+.nav-icon{
+    width:25px;
+    min-width:25px;
+
+    height:25px;
+    min-height:25px;
+
+    display:flex;
+    align-items:center;
+    justify-content:center;
+
+    font-size:16px;
+
+    flex-shrink:0;
+}
+
+.sidebar-footer{
+    width:100%;
+
+    height:54px;
+    min-height:54px;
+    max-height:54px;
+
+    padding:0 10px;
+
+    border-top:1px solid rgba(255,255,255,.10);
+
+    color:#94a3b8;
+
+    font-size:9px;
+    letter-spacing:.5px;
+
+    text-align:center;
+
+    display:flex;
+    align-items:center;
+    justify-content:center;
+
+    direction:ltr;
+
+    flex:0 0 54px;
+}
+
+/* =====================================================
+   MAIN
+===================================================== */
+
+.main{
+    margin-right:var(--sidebar-width);
+    min-height:100vh;
+}
+
+/* =====================================================
+   TOPBAR
+   نفس قياسات لوحة التحكم
+===================================================== */
+
+.topbar{
+    min-height:78px;
+
+    background:#ffffff;
+
+    border-bottom:1px solid var(--border);
+
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+
+    gap:20px;
+
+    padding:0 28px;
+
+    position:sticky;
+    top:0;
+
+    z-index:50;
+}
+
+.page-name{
+    display:flex;
+    align-items:center;
+    gap:12px;
+}
+
+.page-icon{
+    width:44px;
+    min-width:44px;
+    height:44px;
+
+    border-radius:11px;
+
+    background:#eef2ff;
+
+    display:flex;
+    align-items:center;
+    justify-content:center;
+
+    font-size:20px;
+}
+
+.page-name h2{
+    font-size:19px;
+    font-weight:700;
+    color:var(--navy);
+}
+
+.page-name small{
+    display:block;
+
+    color:var(--muted);
+
+    margin-top:4px;
+
+    font-size:11px;
+
+    direction:ltr;
+    text-align:right;
+}
+
+.top-info{
+    display:flex;
+    align-items:center;
+    justify-content:flex-end;
+    gap:9px;
+}
+
+.info-chip{
+    min-height:38px;
+
+    background:#f8fafc;
+
+    border:1px solid var(--border);
+    border-radius:9px;
+
+    padding:8px 12px;
+
+    font-size:11px;
+    color:var(--muted);
+
+    display:flex;
+    align-items:center;
+    justify-content:center;
+
+    white-space:nowrap;
+}
+
+.info-chip strong{
+    color:var(--navy);
+    margin-right:4px;
+}
+
+/* =====================================================
+   CONTENT
+===================================================== */
+
+.content{
+    width:calc(100% - 48px);
+    max-width:1450px;
+
+    margin:24px auto 40px;
+}
+
+.hero{
+    margin-bottom:22px;
+}
+
+.hero h1{
+    font-size:25px;
+    margin-bottom:6px;
+}
+
+.hero p{
+    color:var(--muted);
+    font-size:13px;
+    line-height:1.7;
+}
+
+/* =====================================================
+   STATS
+===================================================== */
+
+.stats{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:15px;
+    margin-bottom:20px;
+}
+
+.stat{
+    background:#ffffff;
+
+    border:1px solid var(--border);
+    border-radius:15px;
+
+    padding:20px;
+
+    box-shadow:0 4px 18px rgba(15,23,42,.05);
+}
+
+.stat span{
+    display:block;
+
+    color:var(--muted);
+
+    font-size:14px;
+
+    margin-bottom:9px;
+}
+
+.stat strong{
+    display:block;
+    font-size:23px;
+}
+
+.supplier-card{
+    border-top:4px solid #2563eb;
+}
+
+.purchase-card{
+    border-top:4px solid #7c3aed;
+}
+
+.paid-card{
+    border-top:4px solid #16a34a;
+}
+
+.due-card{
+    border-top:4px solid #f59e0b;
+}
+
+/* =====================================================
+   PANEL + FORM
+===================================================== */
+
+.panel{
+    background:#ffffff;
+
+    border:1px solid var(--border);
+    border-radius:15px;
+
+    padding:21px;
+
+    margin-bottom:20px;
+
+    box-shadow:0 4px 18px rgba(15,23,42,.05);
+}
+
+.panel h3{
+    margin:0 0 18px;
+
+    padding-bottom:13px;
+
+    border-bottom:1px solid #edf0f5;
+
+    font-size:17px;
+}
+
+.form-grid{
+    display:grid;
+
+    grid-template-columns:repeat(3,1fr);
+
+    gap:12px;
+}
+
+input,
+select,
+textarea{
+    width:100%;
+
+    padding:12px;
+
+    border:1px solid #dbe1ea;
+    border-radius:9px;
+
+    font-size:14px;
+
+    font-family:inherit;
+
+    background:#ffffff;
+
+    outline:none;
+}
+
+input:focus,
+select:focus,
+textarea:focus{
+    border-color:#94a3b8;
+
+    box-shadow:0 0 0 3px rgba(37,99,235,.05);
+}
+
+textarea{
+    min-height:80px;
+    resize:vertical;
+}
+
+.full{
+    grid-column:1/-1;
+}
+
+.actions-form{
+    margin-top:15px;
+
+    display:flex;
+    gap:8px;
+}
+
+button{
+    border:0;
+
+    border-radius:9px;
+
+    padding:11px 18px;
+
+    cursor:pointer;
+
+    font-family:inherit;
+    font-weight:bold;
+}
+
+.save{
+    background:linear-gradient(
+        135deg,
+        #172554,
+        #1e3a8a
+    );
+
+    color:#ffffff;
+}
+
+.cancel{
+    background:#e5e7eb;
+    color:#111827;
+
+    display:none;
+}
+
+.toolbar{
+    display:flex;
+    gap:10px;
+
+    margin-bottom:15px;
+}
+
+.search{
+    flex:1;
+}
+
+/* =====================================================
+   TABLE
+===================================================== */
+
+.table-wrap{
+    overflow-x:auto;
+}
+
+table{
+    width:100%;
+
+    border-collapse:collapse;
+
+    min-width:1000px;
+}
+
+th,
+td{
+    padding:12px 9px;
+
+    border-bottom:1px solid #e5e7eb;
+
+    text-align:right;
+
+    font-size:14px;
+}
+
+th{
+    background:#f8fafc;
+
+    color:#475569;
+
+    font-weight:bold;
+}
+
+tbody tr:hover{
+    background:#fafcff;
+}
+
+.edit{
+    background:#e0e7ff;
+    color:#172554;
+
+    padding:7px 10px;
+}
+
+.delete{
+    background:#fee2e2;
+    color:#991b1b;
+
+    padding:7px 10px;
+}
+
+.status-paid{
+    display:inline-block;
+
+    background:#dcfce7;
+    color:#15803d;
+
+    font-weight:bold;
+
+    padding:5px 9px;
+
+    border-radius:20px;
+
+    font-size:12px;
+}
+
+.status-due{
+    display:inline-block;
+
+    background:#fef3c7;
+    color:#b45309;
+
+    font-weight:bold;
+
+    padding:5px 9px;
+
+    border-radius:20px;
+
+    font-size:12px;
+}
+
+.empty{
+    text-align:center;
+
+    padding:30px;
+
+    color:var(--muted);
+}
+
+/* =====================================================
+   RESPONSIVE
+   القائمة تبقى بنفس حجم لوحة التحكم
+===================================================== */
+
+@media(max-width:1200px){
+
+    .stats{
+        grid-template-columns:repeat(2,1fr);
+    }
+
+    .form-grid{
+        grid-template-columns:1fr 1fr;
+    }
+}
+
+@media(max-width:1000px){
+
+    .topbar{
+        padding:0 18px;
+    }
+}
+
+@media(max-width:850px){
+
+    /*
+       لا نصغر القائمة.
+       لا نحولها إلى قائمة أفقية.
+       تبقى 240px مثل لوحة التحكم.
+    */
+
+    .content{
+        width:94%;
+    }
+
+    .topbar{
+        padding:0 14px;
+    }
+}
+
+@media(max-width:650px){
+
+    .form-grid{
+        grid-template-columns:1fr;
+    }
+
+    .full{
+        grid-column:auto;
+    }
+
+    .top-info .info-chip{
+        display:none;
+    }
+}
+
+@media(max-width:500px){
+
+    .stats{
+        grid-template-columns:1fr;
+    }
+
+    .page-name small{
+        display:none;
+    }
+}
+
+</style>
+</head>
+
+<body>
+
+<!-- =====================================================
+     SIDEBAR
+===================================================== -->
 
 <aside class="sidebar">
+
 <div class="brand">
-<div class="logo">VAREX</div>
-<div class="brand-small">BUSINESS MANAGEMENT SYSTEM</div>
-<div class="system-status"><span class="status-dot"></span><span>النظام متصل وجاهز للعمل</span></div>
+
+<div class="logo">
+VAREX
 </div>
+
+<div class="brand-small">
+BUSINESS MANAGEMENT SYSTEM
+</div>
+
+<div class="system-status">
+<span class="status-dot"></span>
+<span>النظام متصل وجاهز للعمل</span>
+</div>
+
+</div>
+
+
 <nav class="nav">
-<a href="index.html"><span class="nav-icon">▦</span>لوحة التحكم</a>
-<a href="pos.html"><span class="nav-icon">🛒</span>نقطة البيع</a>
-<a href="products.html"><span class="nav-icon">📦</span>المنتجات والمخزون</a>
-<a href="customers.html"><span class="nav-icon">👥</span>العملاء</a>
-<a href="suppliers.html" class="active"><span class="nav-icon">🚚</span>الموردون</a>
-<a href="accounts.html"><span class="nav-icon">💰</span>الحسابات</a>
-<a href="employees.html"><span class="nav-icon">👤</span>الموظفون</a>
-<a href="reports.html"><span class="nav-icon">📊</span>التقارير</a>
-<a href="setting.html"><span class="nav-icon">⚙️</span>الإعدادات</a>
+
+<a href="./index.html">
+<span class="nav-icon">▦</span>
+<span>لوحة التحكم</span>
+</a>
+
+<a href="./pos.html">
+<span class="nav-icon">🛒</span>
+<span>شاشة المبيعات</span>
+</a>
+
+<a href="./products.html">
+<span class="nav-icon">📦</span>
+<span>المنتجات والمخزون</span>
+</a>
+
+<a href="./customers.html">
+<span class="nav-icon">👥</span>
+<span>العملاء</span>
+</a>
+
+<a href="./suppliers.html" class="active">
+<span class="nav-icon">🚚</span>
+<span>الموردون</span>
+</a>
+
+<a href="./accounts.html">
+<span class="nav-icon">💰</span>
+<span>الحسابات</span>
+</a>
+
+<a href="./employees.html">
+<span class="nav-icon">👤</span>
+<span>الموظفون</span>
+</a>
+
+<a href="./reports.html">
+<span class="nav-icon">📊</span>
+<span>التقارير</span>
+</a>
+
+<a href="./setting.html">
+<span class="nav-icon">⚙️</span>
+<span>الإعدادات</span>
+</a>
+
 </nav>
-<div class="sidebar-footer">VAREX BUSINESS SYSTEM</div>
+
+
+<div class="sidebar-footer">
+VAREX MANAGEMENT SYSTEM
+</div>
+
 </aside>
 
+
+<!-- =====================================================
+     MAIN
+===================================================== -->
+
 <div class="main">
+
 <header class="topbar">
-<div class="page-name"><div class="page-icon">🚚</div><div><h2>الموردون</h2><small>SUPPLIERS MANAGEMENT</small></div></div>
-<div class="top-info"><div class="info-chip">المستخدم: <strong>المستخدم الحالي</strong></div><div class="info-chip" id="currentDate">—</div><div class="info-chip" id="currentTime">—</div></div>
+
+<div class="page-name">
+
+<div class="page-icon">
+🚚
+</div>
+
+<div>
+<h2>الموردون</h2>
+<small>SUPPLIERS MANAGEMENT</small>
+</div>
+
+</div>
+
+
+<div class="top-info">
+
+<div class="info-chip">
+المستخدم:
+<strong>المستخدم الحالي</strong>
+</div>
+
+<div
+class="info-chip"
+id="currentDate"
+>
+—
+</div>
+
+<div
+class="info-chip"
+id="currentTime"
+>
+—
+</div>
+
+</div>
+
 </header>
 
+
 <main class="content">
-<section class="hero"><h1>🚚 إدارة الموردين</h1><p>إضافة الموردين وإدارة بياناتهم ومتابعة المشتريات والمدفوعات والمبالغ المستحقة.</p></section>
+
+
+<section class="hero">
+
+<h1>
+🚚 إدارة الموردين
+</h1>
+
+<p>
+إضافة الموردين وإدارة بياناتهم ومتابعة المشتريات والمدفوعات والمبالغ المستحقة.
+</p>
+
+</section>
+
+
+<!-- =====================================================
+     STATS
+===================================================== -->
 
 <div class="stats">
-<div class="stat supplier-card"><span>عدد الموردين</span><strong id="supplierCount">0</strong></div>
-<div class="stat purchase-card"><span>إجمالي المشتريات</span><strong id="totalPurchases">0.00 د.إ</strong></div>
-<div class="stat paid-card"><span>إجمالي المدفوع</span><strong id="totalPaid">0.00 د.إ</strong></div>
-<div class="stat due-card"><span>إجمالي المستحق</span><strong id="totalDue">0.00 د.إ</strong></div>
+
+<div class="stat supplier-card">
+
+<span>
+عدد الموردين
+</span>
+
+<strong id="supplierCount">
+0
+</strong>
+
 </div>
 
+
+<div class="stat purchase-card">
+
+<span>
+إجمالي المشتريات
+</span>
+
+<strong id="totalPurchases">
+0.00 د.إ
+</strong>
+
+</div>
+
+
+<div class="stat paid-card">
+
+<span>
+إجمالي المدفوع
+</span>
+
+<strong id="totalPaid">
+0.00 د.إ
+</strong>
+
+</div>
+
+
+<div class="stat due-card">
+
+<span>
+إجمالي المستحق
+</span>
+
+<strong id="totalDue">
+0.00 د.إ
+</strong>
+
+</div>
+
+</div>
+
+
+<!-- =====================================================
+     ADD / EDIT SUPPLIER
+===================================================== -->
+
 <div class="panel">
-<h3 id="formTitle">إضافة مورد جديد</h3>
+
+<h3 id="formTitle">
+إضافة مورد جديد
+</h3>
+
+
 <div class="form-grid">
-<input id="supplierName" placeholder="اسم المورد">
-<input id="companyName" placeholder="اسم الشركة">
-<input id="phone" placeholder="رقم الهاتف">
-<input id="email" type="email" placeholder="البريد الإلكتروني">
-<input id="taxNumber" placeholder="الرقم الضريبي">
-<select id="supplierType"><option value="">نوع المورد</option><option value="مورد منتجات">مورد منتجات</option><option value="مورد خدمات">مورد خدمات</option><option value="مورد منتجات وخدمات">مورد منتجات وخدمات</option></select>
-<input id="purchases" type="number" min="0" step="0.01" placeholder="إجمالي المشتريات">
-<input id="paid" type="number" min="0" step="0.01" placeholder="المبلغ المدفوع">
-<input id="address" placeholder="العنوان">
-<textarea id="notes" class="full" placeholder="ملاحظات عن المورد"></textarea>
+
+<input
+id="supplierName"
+placeholder="اسم المورد"
+>
+
+<input
+id="companyName"
+placeholder="اسم الشركة"
+>
+
+<input
+id="phone"
+placeholder="رقم الهاتف"
+>
+
+<input
+id="email"
+type="email"
+placeholder="البريد الإلكتروني"
+>
+
+<input
+id="taxNumber"
+placeholder="الرقم الضريبي"
+>
+
+
+<select id="supplierType">
+
+<option value="">
+نوع المورد
+</option>
+
+<option value="مورد منتجات">
+مورد منتجات
+</option>
+
+<option value="مورد خدمات">
+مورد خدمات
+</option>
+
+<option value="مورد منتجات وخدمات">
+مورد منتجات وخدمات
+</option>
+
+</select>
+
+
+<input
+id="purchases"
+type="number"
+min="0"
+step="0.01"
+placeholder="إجمالي المشتريات"
+>
+
+<input
+id="paid"
+type="number"
+min="0"
+step="0.01"
+placeholder="المبلغ المدفوع"
+>
+
+<input
+id="address"
+placeholder="العنوان"
+>
+
+
+<textarea
+id="notes"
+class="full"
+placeholder="ملاحظات عن المورد"
+></textarea>
+
 </div>
-<div class="actions-form"><button class="save" onclick="saveSupplier()">حفظ المورد</button><button class="cancel" id="cancelBtn" onclick="cancelEdit()">إلغاء التعديل</button></div>
+
+
+<div class="actions-form">
+
+<button
+class="save"
+onclick="saveSupplier()"
+>
+حفظ المورد
+</button>
+
+<button
+class="cancel"
+id="cancelBtn"
+onclick="cancelEdit()"
+>
+إلغاء التعديل
+</button>
+
 </div>
+
+</div>
+
+
+<!-- =====================================================
+     SUPPLIERS LIST
+===================================================== -->
 
 <div class="panel">
-<h3>قائمة الموردين</h3>
-<div class="toolbar"><input class="search" id="search" placeholder="🔍 ابحث باسم المورد أو الشركة أو الهاتف..." oninput="renderSuppliers()"></div>
-<div class="table-wrap"><table><thead><tr><th>#</th><th>اسم المورد</th><th>الشركة</th><th>الهاتف</th><th>نوع المورد</th><th>المشتريات</th><th>المدفوع</th><th>المتبقي</th><th>الحالة</th><th>الإجراءات</th></tr></thead><tbody id="supplierTable"></tbody></table><div id="emptyMessage" class="empty">لا يوجد موردون حتى الآن</div></div>
-</div>
-</main></div>
 
-<script src="varex.js"></script>
+<h3>
+قائمة الموردين
+</h3>
+
+
+<div class="toolbar">
+
+<input
+class="search"
+id="search"
+placeholder="🔍 ابحث باسم المورد أو الشركة أو الهاتف..."
+oninput="renderSuppliers()"
+>
+
+</div>
+
+
+<div class="table-wrap">
+
+<table>
+
+<thead>
+
+<tr>
+
+<th>#</th>
+<th>اسم المورد</th>
+<th>الشركة</th>
+<th>الهاتف</th>
+<th>نوع المورد</th>
+<th>المشتريات</th>
+<th>المدفوع</th>
+<th>المتبقي</th>
+<th>الحالة</th>
+<th>الإجراءات</th>
+
+</tr>
+
+</thead>
+
+
+<tbody id="supplierTable">
+</tbody>
+
+</table>
+
+
+<div
+id="emptyMessage"
+class="empty"
+>
+لا يوجد موردون حتى الآن
+</div>
+
+</div>
+
+</div>
+
+</main>
+
+</div>
+
+
+<script src="./varex.js"></script>
+
 <script>
+
 let editingSupplierId=null;
 
+
+/* =====================================================
+   CLOCK
+===================================================== */
+
 function updateClock(){
- const now=new Date();
- document.getElementById("currentDate").innerText=now.toLocaleDateString("ar-AE",{year:"numeric",month:"2-digit",day:"2-digit"});
- document.getElementById("currentTime").innerText=now.toLocaleTimeString("ar-AE",{hour:"2-digit",minute:"2-digit",second:"2-digit"});
+
+    const now=new Date();
+
+    document.getElementById(
+        "currentDate"
+    ).innerText=
+        now.toLocaleDateString(
+            "ar-AE",
+            {
+                year:"numeric",
+                month:"2-digit",
+                day:"2-digit"
+            }
+        );
+
+    document.getElementById(
+        "currentTime"
+    ).innerText=
+        now.toLocaleTimeString(
+            "ar-AE",
+            {
+                hour:"2-digit",
+                minute:"2-digit",
+                second:"2-digit"
+            }
+        );
 }
-updateClock();setInterval(updateClock,1000);
-function number(value){return Number(value)||0}
+
+updateClock();
+
+setInterval(
+    updateClock,
+    1000
+);
+
+
+function number(value){
+
+    return Number(value)||0;
+}
+
+
+/* =====================================================
+   SAVE SUPPLIER
+===================================================== */
 
 function saveSupplier(){
- const name=document.getElementById("supplierName").value.trim();
- if(!name){alert("يرجى إدخال اسم المورد");return}
- const purchases=number(document.getElementById("purchases").value),paid=number(document.getElementById("paid").value);
- if(paid>purchases){alert("المبلغ المدفوع لا يمكن أن يكون أكبر من إجمالي المشتريات");return}
- const supplierData={
-  name,
-  company:document.getElementById("companyName").value.trim(),
-  phone:document.getElementById("phone").value.trim(),
-  email:document.getElementById("email").value.trim(),
-  taxNumber:document.getElementById("taxNumber").value.trim(),
-  type:document.getElementById("supplierType").value,
-  purchases,paid,
-  address:document.getElementById("address").value.trim(),
-  notes:document.getElementById("notes").value.trim()
- };
- if(editingSupplierId===null)VAREX.addSupplier(supplierData);
- else{
-  const suppliers=VAREX.getSuppliers(),index=suppliers.findIndex(s=>String(s.id)===String(editingSupplierId));
-  if(index!==-1){suppliers[index]={...suppliers[index],...supplierData};VAREX.saveData(VAREX.keys.suppliers,suppliers)}
- }
- editingSupplierId=null;clearForm();renderSuppliers();
+
+    const name=
+        document
+            .getElementById(
+                "supplierName"
+            )
+            .value
+            .trim();
+
+    if(!name){
+
+        alert(
+            "يرجى إدخال اسم المورد"
+        );
+
+        return;
+    }
+
+
+    const purchases=
+        number(
+            document.getElementById(
+                "purchases"
+            ).value
+        );
+
+
+    const paid=
+        number(
+            document.getElementById(
+                "paid"
+            ).value
+        );
+
+
+    if(paid>purchases){
+
+        alert(
+            "المبلغ المدفوع لا يمكن أن يكون أكبر من إجمالي المشتريات"
+        );
+
+        return;
+    }
+
+
+    const supplierData={
+
+        name,
+
+        company:
+            document
+                .getElementById(
+                    "companyName"
+                )
+                .value
+                .trim(),
+
+        phone:
+            document
+                .getElementById(
+                    "phone"
+                )
+                .value
+                .trim(),
+
+        email:
+            document
+                .getElementById(
+                    "email"
+                )
+                .value
+                .trim(),
+
+        taxNumber:
+            document
+                .getElementById(
+                    "taxNumber"
+                )
+                .value
+                .trim(),
+
+        type:
+            document.getElementById(
+                "supplierType"
+            ).value,
+
+        purchases,
+
+        paid,
+
+        address:
+            document
+                .getElementById(
+                    "address"
+                )
+                .value
+                .trim(),
+
+        notes:
+            document
+                .getElementById(
+                    "notes"
+                )
+                .value
+                .trim()
+    };
+
+
+    if(
+        editingSupplierId===null
+    ){
+
+        VAREX.addSupplier(
+            supplierData
+        );
+
+    }else{
+
+        const suppliers=
+            VAREX.getSuppliers();
+
+        const index=
+            suppliers.findIndex(
+                s=>
+                    String(s.id)===
+                    String(
+                        editingSupplierId
+                    )
+            );
+
+        if(index!==-1){
+
+            suppliers[index]={
+                ...suppliers[index],
+                ...supplierData
+            };
+
+            VAREX.saveData(
+                VAREX.keys.suppliers,
+                suppliers
+            );
+        }
+    }
+
+
+    editingSupplierId=null;
+
+    clearForm();
+
+    renderSuppliers();
 }
+
+
+/* =====================================================
+   RENDER SUPPLIERS
+===================================================== */
 
 function renderSuppliers(){
- const suppliers=VAREX.getSuppliers(),table=document.getElementById("supplierTable"),search=document.getElementById("search").value.trim().toLowerCase();
- table.innerHTML="";let visible=0;
- suppliers.forEach(supplier=>{
-  const searchable=((supplier.name||"")+" "+(supplier.company||"")+" "+(supplier.phone||"")+" "+(supplier.email||"")+" "+(supplier.type||"")).toLowerCase();
-  if(!searchable.includes(search))return;
-  visible++;
-  const due=Math.max(0,number(supplier.purchases)-number(supplier.paid));
-  const status=due<=0?'<span class="status-paid">مسدد</span>':'<span class="status-due">مستحق</span>';
-  const row=document.createElement("tr");
-  row.innerHTML=`<td>${visible}</td><td>${escapeHTML(supplier.name||"-")}</td><td>${escapeHTML(supplier.company||"-")}</td><td>${escapeHTML(supplier.phone||"-")}</td><td>${escapeHTML(supplier.type||"-")}</td><td>${VAREX.money(supplier.purchases)}</td><td>${VAREX.money(supplier.paid)}</td><td>${VAREX.money(due)}</td><td>${status}</td><td><button class="edit" onclick="editSupplier('${supplier.id}')">تعديل</button> <button class="delete" onclick="deleteSupplier('${supplier.id}')">حذف</button></td>`;
-  table.appendChild(row);
- });
- document.getElementById("emptyMessage").style.display=visible===0?"block":"none";updateStats();
+
+    const suppliers=
+        VAREX.getSuppliers();
+
+    const table=
+        document.getElementById(
+            "supplierTable"
+        );
+
+    const search=
+        document
+            .getElementById(
+                "search"
+            )
+            .value
+            .trim()
+            .toLowerCase();
+
+
+    table.innerHTML="";
+
+    let visible=0;
+
+
+    suppliers.forEach(
+        supplier=>{
+
+            const searchable=(
+                (supplier.name||"")+
+                " "+
+                (supplier.company||"")+
+                " "+
+                (supplier.phone||"")+
+                " "+
+                (supplier.email||"")+
+                " "+
+                (supplier.type||"")
+            ).toLowerCase();
+
+
+            if(
+                !searchable.includes(
+                    search
+                )
+            ){
+                return;
+            }
+
+
+            visible++;
+
+
+            const due=
+                Math.max(
+                    0,
+                    number(
+                        supplier.purchases
+                    )-
+                    number(
+                        supplier.paid
+                    )
+                );
+
+
+            const status=
+                due<=0
+                ?
+                '<span class="status-paid">مسدد</span>'
+                :
+                '<span class="status-due">مستحق</span>';
+
+
+            const row=
+                document.createElement(
+                    "tr"
+                );
+
+
+            row.innerHTML=`
+
+                <td>
+                    ${visible}
+                </td>
+
+                <td>
+                    ${escapeHTML(supplier.name||"-")}
+                </td>
+
+                <td>
+                    ${escapeHTML(supplier.company||"-")}
+                </td>
+
+                <td>
+                    ${escapeHTML(supplier.phone||"-")}
+                </td>
+
+                <td>
+                    ${escapeHTML(supplier.type||"-")}
+                </td>
+
+                <td>
+                    ${VAREX.money(supplier.purchases)}
+                </td>
+
+                <td>
+                    ${VAREX.money(supplier.paid)}
+                </td>
+
+                <td>
+                    ${VAREX.money(due)}
+                </td>
+
+                <td>
+                    ${status}
+                </td>
+
+                <td>
+
+                    <button
+                        class="edit"
+                        onclick="editSupplier('${supplier.id}')"
+                    >
+                        تعديل
+                    </button>
+
+                    <button
+                        class="delete"
+                        onclick="deleteSupplier('${supplier.id}')"
+                    >
+                        حذف
+                    </button>
+
+                </td>
+
+            `;
+
+
+            table.appendChild(
+                row
+            );
+        }
+    );
+
+
+    document.getElementById(
+        "emptyMessage"
+    ).style.display=
+        visible===0
+            ? "block"
+            : "none";
+
+
+    updateStats();
 }
+
+
+/* =====================================================
+   STATS
+===================================================== */
 
 function updateStats(){
- const suppliers=VAREX.getSuppliers();let purchases=0,paid=0;
- suppliers.forEach(s=>{purchases+=number(s.purchases);paid+=number(s.paid)});
- const due=Math.max(0,purchases-paid);
- document.getElementById("supplierCount").innerText=suppliers.length;
- document.getElementById("totalPurchases").innerText=VAREX.money(purchases);
- document.getElementById("totalPaid").innerText=VAREX.money(paid);
- document.getElementById("totalDue").innerText=VAREX.money(due);
+
+    const suppliers=
+        VAREX.getSuppliers();
+
+    let purchases=0;
+    let paid=0;
+
+
+    suppliers.forEach(
+        s=>{
+
+            purchases+=
+                number(
+                    s.purchases
+                );
+
+            paid+=
+                number(
+                    s.paid
+                );
+        }
+    );
+
+
+    const due=
+        Math.max(
+            0,
+            purchases-paid
+        );
+
+
+    document.getElementById(
+        "supplierCount"
+    ).innerText=
+        suppliers.length;
+
+
+    document.getElementById(
+        "totalPurchases"
+    ).innerText=
+        VAREX.money(
+            purchases
+        );
+
+
+    document.getElementById(
+        "totalPaid"
+    ).innerText=
+        VAREX.money(
+            paid
+        );
+
+
+    document.getElementById(
+        "totalDue"
+    ).innerText=
+        VAREX.money(
+            due
+        );
 }
+
+
+/* =====================================================
+   EDIT
+===================================================== */
 
 function editSupplier(id){
- const supplier=VAREX.getSuppliers().find(s=>String(s.id)===String(id));if(!supplier)return;
- editingSupplierId=supplier.id;
- document.getElementById("supplierName").value=supplier.name||"";
- document.getElementById("companyName").value=supplier.company||"";
- document.getElementById("phone").value=supplier.phone||"";
- document.getElementById("email").value=supplier.email||"";
- document.getElementById("taxNumber").value=supplier.taxNumber||"";
- document.getElementById("supplierType").value=supplier.type||"";
- document.getElementById("purchases").value=supplier.purchases??"";
- document.getElementById("paid").value=supplier.paid??"";
- document.getElementById("address").value=supplier.address||"";
- document.getElementById("notes").value=supplier.notes||"";
- document.getElementById("formTitle").innerText="تعديل بيانات المورد";
- document.getElementById("cancelBtn").style.display="inline-block";
- window.scrollTo({top:0,behavior:"smooth"});
+
+    const supplier=
+        VAREX
+            .getSuppliers()
+            .find(
+                s=>
+                    String(s.id)===
+                    String(id)
+            );
+
+
+    if(!supplier){
+        return;
+    }
+
+
+    editingSupplierId=
+        supplier.id;
+
+
+    document.getElementById(
+        "supplierName"
+    ).value=
+        supplier.name||"";
+
+
+    document.getElementById(
+        "companyName"
+    ).value=
+        supplier.company||"";
+
+
+    document.getElementById(
+        "phone"
+    ).value=
+        supplier.phone||"";
+
+
+    document.getElementById(
+        "email"
+    ).value=
+        supplier.email||"";
+
+
+    document.getElementById(
+        "taxNumber"
+    ).value=
+        supplier.taxNumber||"";
+
+
+    document.getElementById(
+        "supplierType"
+    ).value=
+        supplier.type||"";
+
+
+    document.getElementById(
+        "purchases"
+    ).value=
+        supplier.purchases??"";
+
+
+    document.getElementById(
+        "paid"
+    ).value=
+        supplier.paid??"";
+
+
+    document.getElementById(
+        "address"
+    ).value=
+        supplier.address||"";
+
+
+    document.getElementById(
+        "notes"
+    ).value=
+        supplier.notes||"";
+
+
+    document.getElementById(
+        "formTitle"
+    ).innerText=
+        "تعديل بيانات المورد";
+
+
+    document.getElementById(
+        "cancelBtn"
+    ).style.display=
+        "inline-block";
+
+
+    window.scrollTo({
+        top:0,
+        behavior:"smooth"
+    });
 }
 
+
+/* =====================================================
+   DELETE
+===================================================== */
+
 function deleteSupplier(id){
- const suppliers=VAREX.getSuppliers(),supplier=suppliers.find(s=>String(s.id)===String(id));if(!supplier)return;
- if(!confirm("هل تريد حذف المورد: "+supplier.name+"؟"))return;
- VAREX.saveData(VAREX.keys.suppliers,suppliers.filter(s=>String(s.id)!==String(id)));
- if(String(editingSupplierId)===String(id)){editingSupplierId=null;clearForm()}
- renderSuppliers();
+
+    const suppliers=
+        VAREX.getSuppliers();
+
+
+    const supplier=
+        suppliers.find(
+            s=>
+                String(s.id)===
+                String(id)
+        );
+
+
+    if(!supplier){
+        return;
+    }
+
+
+    if(
+        !confirm(
+            "هل تريد حذف المورد: "+
+            supplier.name+
+            "؟"
+        )
+    ){
+        return;
+    }
+
+
+    VAREX.saveData(
+        VAREX.keys.suppliers,
+
+        suppliers.filter(
+            s=>
+                String(s.id)!==
+                String(id)
+        )
+    );
+
+
+    if(
+        String(editingSupplierId)===
+        String(id)
+    ){
+
+        editingSupplierId=null;
+
+        clearForm();
+    }
+
+
+    renderSuppliers();
 }
-function cancelEdit(){editingSupplierId=null;clearForm()}
+
+
+/* =====================================================
+   CANCEL EDIT
+===================================================== */
+
+function cancelEdit(){
+
+    editingSupplierId=null;
+
+    clearForm();
+}
+
+
+/* =====================================================
+   CLEAR FORM
+===================================================== */
+
 function clearForm(){
- ["supplierName","companyName","phone","email","taxNumber","purchases","paid","address","notes"].forEach(id=>document.getElementById(id).value="");
- document.getElementById("supplierType").value="";
- document.getElementById("formTitle").innerText="إضافة مورد جديد";
- document.getElementById("cancelBtn").style.display="none";
+
+    [
+        "supplierName",
+        "companyName",
+        "phone",
+        "email",
+        "taxNumber",
+        "purchases",
+        "paid",
+        "address",
+        "notes"
+    ].forEach(
+        id=>
+            document.getElementById(
+                id
+            ).value=""
+    );
+
+
+    document.getElementById(
+        "supplierType"
+    ).value="";
+
+
+    document.getElementById(
+        "formTitle"
+    ).innerText=
+        "إضافة مورد جديد";
+
+
+    document.getElementById(
+        "cancelBtn"
+    ).style.display=
+        "none";
 }
-function escapeHTML(value){const div=document.createElement("div");div.textContent=value==null?"":String(value);return div.innerHTML}
+
+
+/* =====================================================
+   ESCAPE HTML
+===================================================== */
+
+function escapeHTML(value){
+
+    const div=
+        document.createElement(
+            "div"
+        );
+
+    div.textContent=
+        value==null
+            ? ""
+            : String(value);
+
+    return div.innerHTML;
+}
+
+
+/* =====================================================
+   START
+===================================================== */
+
 renderSuppliers();
+
 </script>
-</body></html>
+
+</body>
+</html>
