@@ -75,7 +75,7 @@ body{
 .register-page{
     width:100%;
     max-width:1050px;
-    min-height:680px;
+    min-height:720px;
 
     background:#ffffff;
 
@@ -271,7 +271,7 @@ body{
 
 .register-side{
 
-    padding:38px 52px;
+    padding:34px 52px;
 
     display:flex;
     flex-direction:column;
@@ -289,7 +289,7 @@ body{
 
     gap:15px;
 
-    margin-bottom:25px;
+    margin-bottom:22px;
 }
 
 .back-login{
@@ -323,7 +323,7 @@ body{
 }
 
 .register-header{
-    margin-bottom:24px;
+    margin-bottom:21px;
 }
 
 .register-header h2{
@@ -350,7 +350,7 @@ body{
 ========================================= */
 
 .form-group{
-    margin-bottom:15px;
+    margin-bottom:13px;
 }
 
 .form-group label{
@@ -374,7 +374,7 @@ body{
 
     width:100%;
 
-    height:48px;
+    height:47px;
 
     border:
         1px solid var(--border);
@@ -458,7 +458,7 @@ body{
 
     line-height:1.6;
 
-    margin-top:6px;
+    margin-top:5px;
 }
 
 
@@ -498,7 +498,7 @@ body{
     box-shadow:
         0 7px 18px rgba(23,37,84,.18);
 
-    margin-top:4px;
+    margin-top:5px;
 }
 
 .register-button:hover{
@@ -507,6 +507,12 @@ body{
 
     box-shadow:
         0 10px 23px rgba(23,37,84,.23);
+}
+
+.register-button:disabled{
+    opacity:.65;
+    cursor:not-allowed;
+    transform:none;
 }
 
 
@@ -558,9 +564,9 @@ body{
 
 .login-link{
 
-    margin-top:20px;
+    margin-top:18px;
 
-    padding-top:18px;
+    padding-top:17px;
 
     border-top:
         1px solid #edf0f5;
@@ -690,10 +696,6 @@ body{
 <div class="register-page">
 
 
-<!-- =========================================
-     BRAND
-========================================= -->
-
 <section class="brand-side">
 
 <div class="brand-content">
@@ -721,39 +723,18 @@ BUSINESS MANAGEMENT SYSTEM
 <div class="brand-features">
 
 <div class="brand-feature">
-
-<span class="feature-icon">
-✓
-</span>
-
-<span>
-إدارة متكاملة لأعمالك
-</span>
-
+<span class="feature-icon">✓</span>
+<span>إدارة متكاملة لأعمالك</span>
 </div>
 
 <div class="brand-feature">
-
-<span class="feature-icon">
-✓
-</span>
-
-<span>
-حساب خاص لإدارة بيانات منشأتك
-</span>
-
+<span class="feature-icon">✓</span>
+<span>حساب خاص لإدارة بيانات منشأتك</span>
 </div>
 
 <div class="brand-feature">
-
-<span class="feature-icon">
-✓
-</span>
-
-<span>
-وصول سريع إلى جميع أقسام النظام
-</span>
-
+<span class="feature-icon">✓</span>
+<span>وصول سريع إلى جميع أقسام النظام</span>
 </div>
 
 </div>
@@ -768,10 +749,6 @@ VAREX MANAGEMENT SYSTEM
 
 </section>
 
-
-<!-- =========================================
-     REGISTER
-========================================= -->
 
 <section class="register-side">
 
@@ -808,8 +785,6 @@ class="back-login"
 <form id="registerForm">
 
 
-<!-- FULL NAME -->
-
 <div class="form-group">
 
 <label for="fullName">
@@ -836,7 +811,36 @@ required
 </div>
 
 
-<!-- EMAIL -->
+<div class="form-group">
+
+<label for="username">
+اسم المستخدم
+</label>
+
+<div class="input-wrapper">
+
+<span class="input-icon">
+👤
+</span>
+
+<input
+id="username"
+class="form-control"
+type="text"
+autocomplete="username"
+placeholder="اختر اسم المستخدم"
+dir="ltr"
+required
+>
+
+</div>
+
+<div class="password-info">
+اسم المستخدم يجب أن يحتوي على 3 أحرف على الأقل.
+</div>
+
+</div>
+
 
 <div class="form-group">
 
@@ -864,8 +868,6 @@ required
 
 </div>
 
-
-<!-- PASSWORD -->
 
 <div class="form-group">
 
@@ -905,8 +907,6 @@ aria-label="إظهار أو إخفاء كلمة المرور"
 
 </div>
 
-
-<!-- CONFIRM PASSWORD -->
 
 <div class="form-group">
 
@@ -955,8 +955,7 @@ id="registerButton"
 <div
 id="registerMessage"
 class="register-message"
->
-</div>
+></div>
 
 
 </form>
@@ -978,7 +977,43 @@ class="register-message"
 </div>
 
 
+<!-- VAREX CORE -->
+<script src="./varex.js"></script>
+
+
 <script>
+
+/* =========================================
+   REDIRECT LOGGED USER
+========================================= */
+
+(function(){
+
+    try{
+
+        if(
+            typeof VAREX !== "undefined" &&
+            typeof VAREX.isLoggedIn === "function" &&
+            VAREX.isLoggedIn()
+        ){
+
+            window.location.replace(
+                "./index.html"
+            );
+
+        }
+
+    }catch(error){
+
+        console.error(
+            "VAREX session check error:",
+            error
+        );
+
+    }
+
+})();
+
 
 /* =========================================
    PASSWORD VISIBILITY
@@ -1001,7 +1036,7 @@ function togglePassword(id){
 
 
 /* =========================================
-   HELPERS
+   MESSAGE
 ========================================= */
 
 function showMessage(type,text){
@@ -1011,6 +1046,10 @@ function showMessage(type,text){
             "registerMessage"
         );
 
+    if(!message){
+        return;
+    }
+
     message.className =
         "register-message " + type;
 
@@ -1019,56 +1058,14 @@ function showMessage(type,text){
 }
 
 
-function normalizeEmail(email){
-
-    return email
-        .trim()
-        .toLowerCase();
-}
-
-
-/* =========================================
-   GET USERS
-========================================= */
-
-function getUsers(){
-
-    try{
-
-        const saved =
-            localStorage.getItem(
-                "varex_users"
-            );
-
-        if(!saved){
-            return [];
-        }
-
-        const users =
-            JSON.parse(saved);
-
-        return Array.isArray(users)
-            ? users
-            : [];
-
-    }catch(error){
-
-        console.error(
-            "Unable to read VAREX users:",
-            error
-        );
-
-        return [];
-    }
-}
-
-
 /* =========================================
    REGISTER
 ========================================= */
 
 document
-    .getElementById("registerForm")
+    .getElementById(
+        "registerForm"
+    )
     .addEventListener(
         "submit",
         function(event){
@@ -1085,14 +1082,22 @@ document
                     .trim();
 
 
+            const username =
+                document
+                    .getElementById(
+                        "username"
+                    )
+                    .value
+                    .trim();
+
+
             const email =
-                normalizeEmail(
-                    document
-                        .getElementById(
-                            "email"
-                        )
-                        .value
-                );
+                document
+                    .getElementById(
+                        "email"
+                    )
+                    .value
+                    .trim();
 
 
             const password =
@@ -1111,12 +1116,15 @@ document
                     .value;
 
 
-            /* --------------------------
-               VALIDATION
-            -------------------------- */
+            const registerButton =
+                document.getElementById(
+                    "registerButton"
+                );
+
 
             if(
                 !fullName ||
+                !username ||
                 !email ||
                 !password ||
                 !confirmPassword
@@ -1136,6 +1144,17 @@ document
                 showMessage(
                     "error",
                     "يرجى إدخال اسم صحيح."
+                );
+
+                return;
+            }
+
+
+            if(username.length < 3){
+
+                showMessage(
+                    "error",
+                    "اسم المستخدم يجب أن يحتوي على 3 أحرف على الأقل."
                 );
 
                 return;
@@ -1167,169 +1186,217 @@ document
             }
 
 
-            /* --------------------------
-               CHECK EXISTING ACCOUNT
-            -------------------------- */
-
-            const users =
-                getUsers();
-
-
-            const accountExists =
-                users.some(
-                    function(user){
-
-                        return (
-                            normalizeEmail(
-                                user.email || ""
-                            ) === email
-                        );
-
-                    }
-                );
-
-
-            if(accountExists){
+            if(
+                typeof VAREX ===
+                "undefined"
+            ){
 
                 showMessage(
                     "error",
-                    "يوجد حساب مسجل بهذا البريد الإلكتروني بالفعل."
+                    "تعذر تحميل نظام VAREX. تأكد من وجود ملف varex.js."
                 );
 
                 return;
             }
 
 
-            /* --------------------------
-               CREATE USER
-            -------------------------- */
+            if(
+                typeof VAREX.createUser !==
+                "function"
+            ){
 
-            const user = {
+                showMessage(
+                    "error",
+                    "وظيفة إنشاء الحساب غير متوفرة في varex.js."
+                );
 
-                id:
-                    "USR-" +
-                    Date.now(),
-
-                fullName:
-                    fullName,
-
-                email:
-                    email,
-
-                password:
-                    password,
-
-                role:
-                    "admin",
-
-                status:
-                    "active",
-
-                createdAt:
-                    new Date()
-                        .toISOString()
-
-            };
+                return;
+            }
 
 
-            users.push(user);
+            registerButton.disabled =
+                true;
+
+            registerButton.textContent =
+                "جاري إنشاء الحساب...";
 
 
             try{
 
-                localStorage.setItem(
-                    "varex_users",
-                    JSON.stringify(users)
+                const result =
+                    VAREX.createUser({
+
+                        name:
+                            fullName,
+
+                        username:
+                            username,
+
+                        email:
+                            email,
+
+                        password:
+                            password
+
+                    });
+
+
+                if(
+                    !result ||
+                    result.success !== true
+                ){
+
+                    showMessage(
+                        "error",
+                        result &&
+                        result.message
+                            ? result.message
+                            : "تعذر إنشاء الحساب."
+                    );
+
+
+                    registerButton.disabled =
+                        false;
+
+                    registerButton.textContent =
+                        "إنشاء الحساب";
+
+                    return;
+                }
+
+
+                if(
+                    typeof VAREX.login !==
+                    "function"
+                ){
+
+                    showMessage(
+                        "success",
+                        "تم إنشاء الحساب بنجاح. يمكنك تسجيل الدخول الآن."
+                    );
+
+
+                    setTimeout(
+                        function(){
+
+                            window.location.replace(
+                                "./login.html"
+                            );
+
+                        },
+                        700
+                    );
+
+                    return;
+                }
+
+
+                const loginResult =
+                    VAREX.login(
+                        username,
+                        password,
+                        false
+                    );
+
+
+                if(
+                    !loginResult ||
+                    loginResult.success !== true
+                ){
+
+                    showMessage(
+                        "success",
+                        "تم إنشاء الحساب بنجاح. سيتم نقلك إلى صفحة تسجيل الدخول."
+                    );
+
+
+                    setTimeout(
+                        function(){
+
+                            window.location.replace(
+                                "./login.html"
+                            );
+
+                        },
+                        700
+                    );
+
+                    return;
+                }
+
+
+                const session =
+                    typeof VAREX.getSession ===
+                    "function"
+                        ? VAREX.getSession()
+                        : null;
+
+
+                if(
+                    !session ||
+                    !session.userId
+                ){
+
+                    showMessage(
+                        "success",
+                        "تم إنشاء الحساب بنجاح. يرجى تسجيل الدخول."
+                    );
+
+
+                    setTimeout(
+                        function(){
+
+                            window.location.replace(
+                                "./login.html"
+                            );
+
+                        },
+                        700
+                    );
+
+                    return;
+                }
+
+
+                showMessage(
+                    "success",
+                    "تم إنشاء الحساب بنجاح. جارٍ الدخول إلى النظام..."
                 );
+
+
+                setTimeout(
+                    function(){
+
+                        window.location.replace(
+                            "./index.html"
+                        );
+
+                    },
+                    500
+                );
+
 
             }catch(error){
 
                 console.error(
-                    "Unable to save VAREX user:",
+                    "VAREX register error:",
                     error
                 );
 
+
                 showMessage(
                     "error",
-                    "تعذر إنشاء الحساب. يرجى المحاولة مرة أخرى."
+                    "حدث خطأ أثناء إنشاء الحساب."
                 );
 
-                return;
+
+                registerButton.disabled =
+                    false;
+
+                registerButton.textContent =
+                    "إنشاء الحساب";
+
             }
-
-
-            /* --------------------------
-               CREATE LOGIN SESSION
-            -------------------------- */
-
-            const sessionData = {
-
-                authenticated:
-                    true,
-
-                userId:
-                    user.id,
-
-                fullName:
-                    user.fullName,
-
-                email:
-                    user.email,
-
-                role:
-                    user.role,
-
-                loginTime:
-                    new Date()
-                        .toISOString()
-
-            };
-
-
-            sessionStorage.setItem(
-                "varex_authenticated",
-                "true"
-            );
-
-
-            sessionStorage.setItem(
-                "varex_session",
-                JSON.stringify(
-                    sessionData
-                )
-            );
-
-
-            localStorage.removeItem(
-                "varex_authenticated"
-            );
-
-
-            localStorage.removeItem(
-                "varex_session"
-            );
-
-
-            /* --------------------------
-               SUCCESS
-            -------------------------- */
-
-            showMessage(
-                "success",
-                "تم إنشاء الحساب بنجاح. جارٍ الدخول إلى النظام..."
-            );
-
-
-            setTimeout(
-                function(){
-
-                    window.location.replace(
-                        "./index.html"
-                    );
-
-                },
-                700
-            );
 
         }
     );
