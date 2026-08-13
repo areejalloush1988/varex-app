@@ -40,7 +40,10 @@
     --green:#15803d;
     --red:#b91c1c;
     --orange:#d97706;
+
+    /* القائمة الجانبية ثابتة */
     --sidebar-width:240px;
+    --brand-height:170px;
 }
 
 html{
@@ -55,14 +58,18 @@ body{
     line-height:1.5;
 }
 
-/* SIDEBAR */
+/* =====================================================
+   FIXED SIDEBAR
+===================================================== */
 
 .sidebar{
     position:fixed;
     right:0;
     top:0;
-    bottom:0;
+
     width:var(--sidebar-width);
+    height:100vh;
+    min-height:100vh;
 
     background:linear-gradient(
         180deg,
@@ -72,17 +79,26 @@ body{
     );
 
     color:#ffffff;
-    z-index:100;
+
+    z-index:1000;
 
     display:flex;
     flex-direction:column;
 
+    overflow:hidden;
+
     box-shadow:-4px 0 18px rgba(15,29,67,.08);
 }
 
+/* =====================================================
+   FIXED VAREX BRAND AREA
+===================================================== */
+
 .brand{
-    height:170px;
-    min-height:170px;
+    width:100%;
+    height:var(--brand-height);
+    min-height:var(--brand-height);
+    max-height:var(--brand-height);
 
     padding:24px 14px 20px;
 
@@ -94,35 +110,51 @@ body{
     justify-content:center;
 
     text-align:center;
-    flex-shrink:0;
+
+    flex:0 0 var(--brand-height);
+
+    overflow:hidden;
 }
 
 .logo{
     width:100%;
+
     font-size:30px;
-    line-height:1;
+    line-height:30px;
+
     font-weight:800;
     letter-spacing:4px;
+
     color:#ffffff;
+
     text-align:center;
     direction:ltr;
+
+    white-space:nowrap;
 }
 
 .brand-small{
     width:100%;
+
     margin-top:11px;
+
     font-size:10px;
-    line-height:1.4;
+    line-height:14px;
+
     font-weight:600;
     letter-spacing:.8px;
+
     color:#e2e8f0;
+
     text-align:center;
     direction:ltr;
+
     white-space:nowrap;
 }
 
 .brand-status{
     width:100%;
+
     margin-top:16px;
 
     display:flex;
@@ -132,27 +164,44 @@ body{
     gap:7px;
 
     font-size:10px;
+    line-height:14px;
+
     color:#d1fae5;
+
     white-space:nowrap;
 }
 
 .brand-status-dot{
     width:7px;
     height:7px;
+
     min-width:7px;
+    min-height:7px;
 
     background:#22c55e;
+
     border-radius:50%;
 
-    box-shadow:0 0 8px rgba(34,197,94,.75);
+    box-shadow:
+        0 0 8px
+        rgba(34,197,94,.75);
 }
 
-/* NAVIGATION */
+/* =====================================================
+   NAVIGATION
+===================================================== */
 
 .nav{
+    width:100%;
+
     padding:16px 12px;
-    flex:1;
+
+    flex:1 1 auto;
+
     overflow-y:auto;
+    overflow-x:hidden;
+
+    scrollbar-width:thin;
 }
 
 .nav a,
@@ -161,6 +210,7 @@ body{
 
     height:48px;
     min-height:48px;
+    max-height:48px;
 
     display:flex;
     align-items:center;
@@ -185,55 +235,85 @@ body{
     font-weight:600;
 
     text-align:right;
+
     cursor:pointer;
 
-    transition:.2s;
+    transition:
+        background .2s,
+        color .2s,
+        box-shadow .2s;
 }
 
+/* المرور فقط */
 .nav a:hover,
 .nav button:hover{
     background:rgba(255,255,255,.08);
     color:#ffffff;
 }
 
+/* العنصر النشط فقط يصبح أبيض */
 .nav a.active{
     background:#ffffff;
     color:var(--navy);
-    box-shadow:0 5px 15px rgba(0,0,0,.14);
+
+    box-shadow:
+        0 5px 15px
+        rgba(0,0,0,.14);
+}
+
+.nav a.active .nav-icon{
+    color:var(--navy);
 }
 
 .nav-icon{
     width:25px;
     min-width:25px;
     height:25px;
+    min-height:25px;
 
     display:flex;
     align-items:center;
     justify-content:center;
 
     font-size:16px;
+
+    flex-shrink:0;
 }
 
 .logout-item{
     margin-top:9px !important;
+
     color:#fecaca !important;
 
-    border-top:1px solid rgba(255,255,255,.10) !important;
+    border-top:
+        1px solid
+        rgba(255,255,255,.10) !important;
+
     border-radius:8px !important;
 }
 
 .logout-item:hover{
-    background:rgba(239,68,68,.13) !important;
+    background:
+        rgba(239,68,68,.13) !important;
+
     color:#ffffff !important;
 }
 
 .sidebar-footer{
-    min-height:54px;
-    padding:16px 10px;
+    width:100%;
 
-    border-top:1px solid rgba(255,255,255,.10);
+    height:54px;
+    min-height:54px;
+    max-height:54px;
+
+    padding:0 10px;
+
+    border-top:
+        1px solid
+        rgba(255,255,255,.10);
 
     color:#94a3b8;
+
     font-size:9px;
     letter-spacing:.5px;
 
@@ -244,16 +324,22 @@ body{
     justify-content:center;
 
     direction:ltr;
+
+    flex:0 0 54px;
 }
 
-/* MAIN */
+/* =====================================================
+   MAIN
+===================================================== */
 
 .main{
     margin-right:var(--sidebar-width);
     min-height:100vh;
 }
 
-/* TOPBAR */
+/* =====================================================
+   TOPBAR
+===================================================== */
 
 .topbar{
     min-height:78px;
@@ -267,10 +353,12 @@ body{
     justify-content:space-between;
 
     gap:20px;
+
     padding:0 28px;
 
     position:sticky;
     top:0;
+
     z-index:50;
 }
 
@@ -286,6 +374,7 @@ body{
     height:44px;
 
     border-radius:11px;
+
     background:#eef2ff;
 
     display:flex;
@@ -303,9 +392,13 @@ body{
 
 .page-name small{
     display:block;
+
     color:var(--muted);
+
     margin-top:4px;
+
     font-size:11px;
+
     direction:ltr;
     text-align:right;
 }
@@ -342,7 +435,9 @@ body{
     margin-right:4px;
 }
 
-/* LANGUAGE */
+/* =====================================================
+   LANGUAGE
+===================================================== */
 
 .language-selector{
     position:relative;
@@ -359,10 +454,12 @@ body{
     gap:7px;
 
     border:1px solid #dbe3ef;
+
     background:#ffffff;
     color:var(--navy);
 
     border-radius:9px;
+
     padding:0 11px;
 
     font-size:11px;
@@ -389,6 +486,7 @@ body{
     display:none;
 
     position:absolute;
+
     top:45px;
     left:0;
 
@@ -401,7 +499,9 @@ body{
 
     padding:7px;
 
-    box-shadow:0 14px 35px rgba(15,23,42,.14);
+    box-shadow:
+        0 14px 35px
+        rgba(15,23,42,.14);
 
     z-index:500;
 }
@@ -448,15 +548,20 @@ body{
     direction:ltr;
 }
 
-/* CONTENT */
+/* =====================================================
+   CONTENT
+===================================================== */
 
 .content{
     width:calc(100% - 48px);
     max-width:1450px;
+
     margin:24px auto 40px;
 }
 
-/* HERO */
+/* =====================================================
+   HERO
+===================================================== */
 
 .hero{
     min-height:145px;
@@ -481,7 +586,9 @@ body{
 
     margin-bottom:18px;
 
-    box-shadow:0 8px 25px rgba(23,37,84,.14);
+    box-shadow:
+        0 8px 25px
+        rgba(23,37,84,.14);
 }
 
 .hero > div:first-child{
@@ -495,8 +602,10 @@ body{
 
 .hero p{
     color:#dbeafe;
+
     font-size:13px;
     line-height:1.8;
+
     max-width:760px;
 }
 
@@ -510,9 +619,12 @@ body{
 
     gap:8px;
 
-    background:rgba(255,255,255,.10);
+    background:
+        rgba(255,255,255,.10);
 
-    border:1px solid rgba(255,255,255,.15);
+    border:
+        1px solid
+        rgba(255,255,255,.15);
 
     padding:10px 14px;
 
@@ -527,17 +639,26 @@ body{
     min-width:9px;
 
     background:#4ade80;
+
     border-radius:50%;
 
-    box-shadow:0 0 0 4px rgba(74,222,128,.15);
+    box-shadow:
+        0 0 0 4px
+        rgba(74,222,128,.15);
 }
 
-/* STATS */
+/* =====================================================
+   STATS
+===================================================== */
 
 .quick-stats{
     display:grid;
-    grid-template-columns:repeat(4,minmax(0,1fr));
+
+    grid-template-columns:
+        repeat(4,minmax(0,1fr));
+
     gap:14px;
+
     margin-bottom:22px;
 }
 
@@ -551,7 +672,9 @@ body{
 
     padding:17px 18px;
 
-    box-shadow:0 3px 12px rgba(15,23,42,.04);
+    box-shadow:
+        0 3px 12px
+        rgba(15,23,42,.04);
 
     display:flex;
     flex-direction:column;
@@ -598,19 +721,26 @@ body{
 
 .stat-value{
     width:100%;
+
     font-size:21px;
     font-weight:700;
+
     color:var(--navy);
 }
 
 .stat-small{
     width:100%;
+
     margin-top:6px;
+
     color:#94a3b8;
+
     font-size:10px;
 }
 
-/* SECTION HEADER */
+/* =====================================================
+   SECTION HEADER
+===================================================== */
 
 .section-header{
     display:flex;
@@ -632,12 +762,18 @@ body{
     color:var(--muted);
 }
 
-/* MODULES */
+/* =====================================================
+   MODULES
+===================================================== */
 
 .modules{
     display:grid;
-    grid-template-columns:repeat(4,minmax(0,1fr));
+
+    grid-template-columns:
+        repeat(4,minmax(0,1fr));
+
     gap:14px;
+
     margin-bottom:22px;
 }
 
@@ -654,7 +790,9 @@ body{
 
     min-height:165px;
 
-    box-shadow:0 3px 12px rgba(15,23,42,.04);
+    box-shadow:
+        0 3px 12px
+        rgba(15,23,42,.04);
 
     transition:.2s;
 
@@ -669,8 +807,12 @@ body{
 
 .module:hover{
     transform:translateY(-3px);
+
     border-color:#c7d2fe;
-    box-shadow:0 8px 22px rgba(15,23,42,.08);
+
+    box-shadow:
+        0 8px 22px
+        rgba(15,23,42,.08);
 }
 
 .module-icon{
@@ -678,6 +820,7 @@ body{
     height:43px;
 
     background:#eef2ff;
+
     border-radius:11px;
 
     display:flex;
@@ -691,12 +834,15 @@ body{
 
 .module h3{
     color:var(--navy);
+
     font-size:14px;
+
     margin-bottom:6px;
 }
 
 .module p{
     color:var(--muted);
+
     font-size:11px;
     line-height:1.65;
 }
@@ -705,7 +851,9 @@ body{
     position:absolute;
 
     left:50%;
-    transform:translateX(-50%);
+
+    transform:
+        translateX(-50%);
 
     bottom:11px;
 
@@ -723,7 +871,9 @@ body{
     color:var(--navy);
 }
 
-/* LOWER */
+/* =====================================================
+   LOWER
+===================================================== */
 
 .lower-grid{
     display:grid;
@@ -743,7 +893,9 @@ body{
 
     padding:19px;
 
-    box-shadow:0 3px 12px rgba(15,23,42,.04);
+    box-shadow:
+        0 3px 12px
+        rgba(15,23,42,.04);
 }
 
 .activity-list{
@@ -760,7 +912,8 @@ body{
 
     padding:12px 0;
 
-    border-bottom:1px solid #edf0f5;
+    border-bottom:
+        1px solid #edf0f5;
 }
 
 .activity:last-child{
@@ -773,6 +926,7 @@ body{
     height:36px;
 
     border-radius:9px;
+
     background:#f1f5f9;
 
     display:flex;
@@ -786,8 +940,11 @@ body{
 
 .activity-text strong{
     display:block;
+
     font-size:12px;
+
     margin-bottom:3px;
+
     color:var(--navy);
 }
 
@@ -798,14 +955,22 @@ body{
 
 .activity-time{
     min-width:45px;
+
     color:#94a3b8;
+
     font-size:9px;
+
     direction:ltr;
     text-align:center;
 }
 
 .system-box{
-    background:linear-gradient(145deg,#f8fafc,#ffffff);
+    background:
+        linear-gradient(
+            145deg,
+            #f8fafc,
+            #ffffff
+        );
 
     border:1px solid var(--border);
     border-radius:12px;
@@ -826,7 +991,8 @@ body{
 
     padding:9px 0;
 
-    border-bottom:1px solid #edf0f5;
+    border-bottom:
+        1px solid #edf0f5;
 
     font-size:11px;
 }
@@ -873,27 +1039,29 @@ body{
     direction:ltr;
 }
 
-/* RESPONSIVE */
+/* =====================================================
+   RESPONSIVE CONTENT
+   القائمة الكحلية لا يتغير حجمها
+===================================================== */
 
 @media(max-width:1200px){
 
     .quick-stats{
-        grid-template-columns:repeat(2,1fr);
+        grid-template-columns:
+            repeat(2,1fr);
     }
 
     .modules{
-        grid-template-columns:repeat(3,1fr);
+        grid-template-columns:
+            repeat(3,1fr);
     }
 }
 
 @media(max-width:1000px){
 
-    :root{
-        --sidebar-width:210px;
-    }
-
     .modules{
-        grid-template-columns:repeat(2,1fr);
+        grid-template-columns:
+            repeat(2,1fr);
     }
 
     .topbar{
@@ -903,53 +1071,11 @@ body{
 
 @media(max-width:850px){
 
-    :root{
-        --sidebar-width:100%;
-    }
-
-    .sidebar{
-        position:relative;
-        width:100%;
-        height:auto;
-    }
-
-    .brand{
-        height:auto;
-        min-height:145px;
-        padding:22px 20px;
-    }
-
-    .nav{
-        display:flex;
-        overflow-x:auto;
-        overflow-y:hidden;
-        padding:8px 10px 12px;
-    }
-
-    .nav a,
-    .nav button{
-        width:auto;
-        min-width:max-content;
-        white-space:nowrap;
-        margin:0 3px;
-    }
-
-    .logout-item{
-        margin-top:0 !important;
-        border-top:0 !important;
-    }
-
-    .sidebar-footer{
-        display:none;
-    }
-
-    .main{
-        margin-right:0;
-    }
-
-    .topbar{
-        position:relative;
-    }
+    /*
+       مهم:
+       لا نغير عرض القائمة الجانبية.
+       تبقى 240px وثابتة على اليمين.
+    */
 
     .lower-grid{
         grid-template-columns:1fr;
@@ -957,6 +1083,10 @@ body{
 
     .content{
         width:94%;
+    }
+
+    .topbar{
+        padding:0 14px;
     }
 }
 
@@ -968,11 +1098,13 @@ body{
     }
 
     .quick-stats{
-        grid-template-columns:1fr 1fr;
+        grid-template-columns:
+            1fr 1fr;
     }
 
     .modules{
-        grid-template-columns:1fr 1fr;
+        grid-template-columns:
+            1fr 1fr;
     }
 
     .top-info .info-chip{
@@ -1005,7 +1137,9 @@ body{
 
 <div class="brand">
 
-<div class="logo">VAREX</div>
+<div class="logo">
+VAREX
+</div>
 
 <div class="brand-small">
 BUSINESS MANAGEMENT SYSTEM
@@ -1479,7 +1613,6 @@ BUSINESS MANAGEMENT SYSTEM
 </div>
 
 
-<!-- مهم: varex.js يجب أن يُحمّل أولاً -->
 <script src="./varex.js"></script>
 
 <script>
@@ -1795,18 +1928,6 @@ function getDashboardSettings(){
             return VAREX.getSettings() || {};
         }
 
-        if(
-            typeof VAREX !== "undefined" &&
-            VAREX.keys &&
-            VAREX.keys.settings &&
-            typeof VAREX.getObject === "function"
-        ){
-            return VAREX.getObject(
-                VAREX.keys.settings,
-                {}
-            );
-        }
-
     }catch(error){
 
         console.error(
@@ -1834,17 +1955,6 @@ function getDashboardProducts(){
             return VAREX.getProducts() || [];
         }
 
-        if(
-            typeof VAREX !== "undefined" &&
-            VAREX.keys &&
-            VAREX.keys.products &&
-            typeof VAREX.getData === "function"
-        ){
-            return VAREX.getData(
-                VAREX.keys.products
-            );
-        }
-
     }catch(error){
 
         console.error(
@@ -1870,17 +1980,6 @@ function getDashboardSales(){
             typeof VAREX.getSales === "function"
         ){
             return VAREX.getSales() || [];
-        }
-
-        if(
-            typeof VAREX !== "undefined" &&
-            VAREX.keys &&
-            VAREX.keys.sales &&
-            typeof VAREX.getData === "function"
-        ){
-            return VAREX.getData(
-                VAREX.keys.sales
-            );
         }
 
     }catch(error){
@@ -2034,8 +2133,6 @@ function updateDashboard(){
         getDashboardSales();
 
 
-    /* PRODUCTS */
-
     const totalProducts =
         document.getElementById(
             "totalProducts"
@@ -2046,8 +2143,6 @@ function updateDashboard(){
             products.length;
     }
 
-
-    /* STOCK ALERTS */
 
     const configuredLimit =
         Number(
@@ -2107,8 +2202,6 @@ function updateDashboard(){
     }
 
 
-    /* TODAY SALES */
-
     const todayKey =
         getLocalDateKey(
             new Date()
@@ -2167,8 +2260,6 @@ function updateDashboard(){
     }
 
 
-    /* CURRENCY */
-
     const currency =
         document.getElementById(
             "systemCurrency"
@@ -2177,12 +2268,11 @@ function updateDashboard(){
     if(currency){
 
         currency.textContent =
+            settings.currencyCode ||
             settings.currency ||
             "AED";
     }
 
-
-    /* TAX */
 
     const tax =
         document.getElementById(
