@@ -6,7 +6,11 @@
 <title>VAREX | شاشة المبيعات</title>
 
 <style>
-*{box-sizing:border-box;margin:0;padding:0}
+*{
+    box-sizing:border-box;
+    margin:0;
+    padding:0;
+}
 
 :root{
     --navy:#172554;
@@ -14,7 +18,7 @@
     --navy-light:#1e3a6d;
     --blue:#2563eb;
     --bg:#f4f6fb;
-    --white:#fff;
+    --white:#ffffff;
     --border:#e5eaf2;
     --text:#172554;
     --muted:#64748b;
@@ -31,9 +35,9 @@ body{
     min-height:100vh;
 }
 
-/* =====================================================
+/* =========================================================
    SIDEBAR
-   ===================================================== */
+   ========================================================= */
 
 .sidebar{
     position:fixed;
@@ -41,8 +45,13 @@ body{
     top:0;
     bottom:0;
     width:240px;
-    background:linear-gradient(180deg,#172554 0%,#111f48 55%,#0b1532 100%);
-    color:white;
+    background:linear-gradient(
+        180deg,
+        #172554 0%,
+        #111f48 55%,
+        #0b1532 100%
+    );
+    color:#fff;
     z-index:100;
     display:flex;
     flex-direction:column;
@@ -69,7 +78,7 @@ body{
 }
 
 .store-status{
-    margin-top:15px;
+    margin-top:14px;
     display:flex;
     align-items:center;
     justify-content:center;
@@ -81,97 +90,106 @@ body{
 .status-dot{
     width:8px;
     height:8px;
-    min-width:8px;
     border-radius:50%;
     background:#22c55e;
+    flex-shrink:0;
     box-shadow:0 0 0 4px rgba(34,197,94,.12);
 }
 
+/* =========================================================
+   NAVIGATION
+   ========================================================= */
+
 .nav{
-    padding:17px 12px 10px;
+    padding:16px 12px 10px;
     flex:1;
     overflow-y:auto;
 }
 
 .nav-title{
     font-size:10px;
-    color:#8292b5;
+    color:#7183a8;
     padding:0 12px;
     margin:3px 0 10px;
 }
 
-.nav a,
-.logout-button{
+.nav a{
     width:100%;
-    min-height:43px;
+    min-height:44px;
     display:flex;
     align-items:center;
     justify-content:flex-start;
     gap:11px;
+
     color:#dbeafe;
     text-decoration:none;
-    padding:10px 12px;
-    border-radius:9px;
+
+    padding:9px 12px;
+    border-radius:10px;
     margin-bottom:5px;
+
     font-size:12px;
     font-weight:500;
+    line-height:1;
+
     transition:.2s;
-    border:0;
-    font-family:inherit;
-    background:transparent;
-    cursor:pointer;
-    text-align:right;
 }
 
-.nav a:hover,
-.logout-button:hover{
+.nav a:hover{
     background:rgba(255,255,255,.08);
-    color:white;
+    color:#fff;
 }
 
 .nav a.active{
-    background:white;
+    background:#fff;
     color:var(--navy);
-    font-weight:bold;
+    font-weight:700;
     box-shadow:0 6px 18px rgba(0,0,0,.16);
 }
 
 .nav-icon{
-    width:29px;
-    height:29px;
-    min-width:29px;
+    width:27px;
+    height:27px;
+    min-width:27px;
+
     display:flex;
     align-items:center;
     justify-content:center;
-    border-radius:8px;
+
+    border-radius:7px;
     background:rgba(255,255,255,.08);
+
     font-size:14px;
     line-height:1;
 }
 
 .nav a.active .nav-icon{
     background:#eef2ff;
-    color:var(--navy);
 }
 
-.nav-text{
-    flex:1;
+.nav-label{
     display:flex;
     align-items:center;
-    min-height:29px;
-    line-height:1;
+    height:27px;
+    line-height:27px;
+    white-space:nowrap;
 }
 
-.sidebar-bottom{
-    padding:0 12px 12px;
+/* =========================================================
+   SIDEBAR USER
+   ========================================================= */
+
+.sidebar-user-area{
+    padding:10px 12px 13px;
+    border-top:1px solid rgba(255,255,255,.08);
 }
 
 .cashier-card{
     padding:12px;
     background:rgba(255,255,255,.06);
     border:1px solid rgba(255,255,255,.08);
-    border-radius:10px;
-    margin-bottom:7px;
+    border-radius:11px;
+    margin-bottom:8px;
 }
 
 .cashier-label{
@@ -180,65 +198,89 @@ body{
     margin-bottom:7px;
 }
 
-.cashier-user{
+.cashier-main{
     display:flex;
     align-items:center;
     gap:9px;
 }
 
-.cashier-avatar{
-    width:31px;
-    height:31px;
-    min-width:31px;
-    border-radius:8px;
-    background:rgba(255,255,255,.10);
+.user-avatar{
+    width:32px;
+    height:32px;
+    min-width:32px;
+    border-radius:9px;
+
     display:flex;
     align-items:center;
     justify-content:center;
-    font-size:14px;
+
+    background:rgba(255,255,255,.10);
+    font-size:15px;
 }
 
 .cashier-name{
     font-size:11px;
     font-weight:bold;
     color:#fff;
-    white-space:nowrap;
-    overflow:hidden;
-    text-overflow:ellipsis;
+    line-height:1.4;
 }
 
 .cashier-role{
     font-size:9px;
     color:#94a3b8;
-    margin-top:3px;
+    margin-top:2px;
 }
 
+/* LOGOUT */
+
 .logout-button{
-    margin:0;
+    width:100%;
+    height:40px;
+
+    border:1px solid rgba(248,113,113,.22);
+    border-radius:9px;
+
+    background:rgba(185,28,28,.12);
     color:#fecaca;
+
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:8px;
+
+    font-family:inherit;
+    font-size:11px;
+    font-weight:bold;
+
+    cursor:pointer;
+    transition:.2s;
 }
 
 .logout-button:hover{
-    background:rgba(239,68,68,.12);
+    background:#b91c1c;
+    border-color:#b91c1c;
     color:#fff;
 }
 
-.logout-button .nav-icon{
-    background:rgba(239,68,68,.12);
-    color:#fecaca;
+.logout-icon{
+    width:22px;
+    height:22px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:14px;
 }
 
 .sidebar-footer{
-    padding:11px;
-    border-top:1px solid rgba(255,255,255,.08);
+    margin-top:8px;
     color:#64748b;
     font-size:8px;
     text-align:center;
 }
 
-/* =====================================================
+/* =========================================================
    MAIN
-   ===================================================== */
+   ========================================================= */
 
 .main{
     margin-right:240px;
@@ -247,15 +289,19 @@ body{
 
 .topbar{
     min-height:76px;
-    background:white;
+    background:#fff;
     border-bottom:1px solid var(--border);
+
     display:flex;
     align-items:center;
     justify-content:space-between;
+
     padding:0 27px;
+
     position:sticky;
     top:0;
     z-index:50;
+
     box-shadow:0 2px 10px rgba(15,23,42,.03);
 }
 
@@ -270,10 +316,12 @@ body{
     height:43px;
     border-radius:12px;
     background:#eef2ff;
+
     display:flex;
     align-items:center;
     justify-content:center;
-    font-size:19px;
+
+    font-size:20px;
 }
 
 .page-name h2{
@@ -284,7 +332,7 @@ body{
     display:block;
     color:var(--muted);
     margin-top:3px;
-    font-size:10px;
+    font-size:9px;
 }
 
 .top-info{
@@ -298,7 +346,7 @@ body{
     border:1px solid var(--border);
     border-radius:9px;
     padding:8px 11px;
-    font-size:11px;
+    font-size:10px;
     color:var(--muted);
 }
 
@@ -321,9 +369,9 @@ body{
     margin:23px auto 40px;
 }
 
-/* =====================================================
+/* =========================================================
    HERO
-   ===================================================== */
+   ========================================================= */
 
 .hero{
     display:flex;
@@ -340,7 +388,7 @@ body{
 
 .hero p{
     color:var(--muted);
-    font-size:12px;
+    font-size:11px;
 }
 
 .hero-actions{
@@ -356,19 +404,19 @@ body{
     padding:10px 15px;
     cursor:pointer;
     font-weight:bold;
-    font-size:12px;
+    font-size:11px;
     font-family:inherit;
 }
 
 .new-sale{
     border:0;
     background:var(--navy);
-    color:white;
+    color:#fff;
 }
 
 .hold-button{
     border:1px solid #dbe3ef;
-    background:white;
+    background:#fff;
     color:#475569;
 }
 
@@ -379,9 +427,9 @@ body{
     display:none;
 }
 
-/* =====================================================
-   STATS
-   ===================================================== */
+/* =========================================================
+   QUICK STATS
+   ========================================================= */
 
 .quick-stats{
     display:grid;
@@ -391,7 +439,7 @@ body{
 }
 
 .stat{
-    background:white;
+    background:#fff;
     border:1px solid var(--border);
     border-radius:13px;
     padding:15px 17px;
@@ -406,7 +454,7 @@ body{
 }
 
 .stat-label{
-    font-size:11px;
+    font-size:10px;
     color:var(--muted);
 }
 
@@ -415,9 +463,11 @@ body{
     height:28px;
     border-radius:8px;
     background:#f1f5f9;
+
     display:flex;
     align-items:center;
     justify-content:center;
+
     font-size:13px;
 }
 
@@ -433,20 +483,22 @@ body{
     font-size:9px;
 }
 
-/* =====================================================
+/* =========================================================
    BARCODE
-   ===================================================== */
+   ========================================================= */
 
 .scanner-box{
     background:linear-gradient(135deg,#172554,#1e3a6d);
     border-radius:14px;
     padding:15px 18px;
     margin-bottom:17px;
+
     display:grid;
     grid-template-columns:auto 1fr auto;
     align-items:center;
     gap:14px;
-    color:white;
+
+    color:#fff;
     box-shadow:0 7px 20px rgba(23,37,84,.14);
 }
 
@@ -455,34 +507,40 @@ body{
     height:43px;
     border-radius:11px;
     background:rgba(255,255,255,.10);
+
     display:flex;
     align-items:center;
     justify-content:center;
+
     font-size:21px;
 }
 
 .scanner-text strong{
     display:block;
-    font-size:13px;
+    font-size:12px;
     margin-bottom:3px;
 }
 
 .scanner-text small{
     color:#cbd5e1;
-    font-size:10px;
+    font-size:9px;
 }
 
 .barcode-input{
     width:100%;
     min-width:260px;
     padding:12px 14px;
+
     border:1px solid rgba(255,255,255,.22);
     border-radius:9px;
+
     outline:none;
-    font-size:14px;
+    font-size:13px;
+
     direction:ltr;
     text-align:left;
-    background:white;
+
+    background:#fff;
     color:#172554;
 }
 
@@ -495,12 +553,12 @@ body{
     border-radius:11px;
     margin-bottom:17px;
     font-weight:bold;
-    font-size:12px;
+    font-size:11px;
 }
 
-/* =====================================================
+/* =========================================================
    POS
-   ===================================================== */
+   ========================================================= */
 
 .pos{
     display:grid;
@@ -510,7 +568,7 @@ body{
 }
 
 .panel{
-    background:white;
+    background:#fff;
     border:1px solid var(--border);
     border-radius:15px;
     box-shadow:var(--shadow);
@@ -528,12 +586,12 @@ body{
 }
 
 .panel-header h3{
-    font-size:16px;
+    font-size:15px;
 }
 
 .panel-header span{
     color:var(--muted);
-    font-size:10px;
+    font-size:9px;
 }
 
 .search-box{
@@ -546,7 +604,7 @@ body{
     padding:13px 43px 13px 13px;
     border:1px solid #dbe2ea;
     border-radius:10px;
-    font-size:13px;
+    font-size:12px;
     outline:none;
     background:#fbfdff;
 }
@@ -570,19 +628,18 @@ body{
 .category{
     white-space:nowrap;
     border:1px solid #e2e8f0;
-    background:white;
+    background:#fff;
     color:#475569;
     border-radius:18px;
     padding:7px 13px;
     cursor:pointer;
-    font-size:11px;
-    font-family:inherit;
+    font-size:10px;
 }
 
 .category.active{
     background:var(--navy);
     border-color:var(--navy);
-    color:white;
+    color:#fff;
 }
 
 .products{
@@ -597,7 +654,7 @@ body{
     border-radius:12px;
     padding:14px;
     cursor:pointer;
-    background:white;
+    background:#fff;
     transition:.18s;
     min-height:137px;
 }
@@ -610,14 +667,14 @@ body{
 
 .product-name{
     font-weight:bold;
-    font-size:13px;
+    font-size:12px;
     margin-bottom:9px;
     padding-left:50px;
     line-height:1.5;
 }
 
 .product-info{
-    font-size:10px;
+    font-size:9px;
     color:var(--muted);
     margin-top:4px;
 }
@@ -630,7 +687,7 @@ body{
     color:#15803d;
     border-radius:14px;
     padding:4px 7px;
-    font-size:9px;
+    font-size:8px;
 }
 
 .stock-badge.low{
@@ -642,7 +699,7 @@ body{
     color:var(--blue);
     font-weight:bold;
     margin-top:11px;
-    font-size:14px;
+    font-size:13px;
 }
 
 .out{
@@ -663,9 +720,9 @@ body{
     padding:45px;
 }
 
-/* =====================================================
+/* =========================================================
    INVOICE
-   ===================================================== */
+   ========================================================= */
 
 .invoice-panel{
     overflow:hidden;
@@ -677,19 +734,20 @@ body{
     background:#f8fafc;
     border-bottom:1px solid var(--border);
     padding:16px 18px;
+
     display:flex;
     justify-content:space-between;
     align-items:center;
 }
 
 .invoice-head h3{
-    font-size:15px;
+    font-size:14px;
 }
 
 .invoice-number{
-    font-size:9px;
+    font-size:8px;
     color:var(--muted);
-    background:white;
+    background:#fff;
     border:1px solid var(--border);
     border-radius:7px;
     padding:5px 8px;
@@ -699,7 +757,7 @@ body{
     display:grid;
     grid-template-columns:repeat(3,1fr);
     border-bottom:1px solid var(--border);
-    background:white;
+    background:#fff;
 }
 
 .invoice-mini-stat{
@@ -715,12 +773,12 @@ body{
 .invoice-mini-stat small{
     display:block;
     color:var(--muted);
-    font-size:9px;
+    font-size:8px;
     margin-bottom:3px;
 }
 
 .invoice-mini-stat strong{
-    font-size:12px;
+    font-size:11px;
 }
 
 .invoice-body{
@@ -751,13 +809,13 @@ body{
 
 .cart-name{
     font-weight:bold;
-    font-size:12px;
+    font-size:11px;
 }
 
 .cart-price{
     font-weight:bold;
     color:var(--navy);
-    font-size:12px;
+    font-size:11px;
 }
 
 .quantity-controls{
@@ -772,7 +830,7 @@ body{
     border:1px solid #e2e8f0;
     border-radius:6px;
     cursor:pointer;
-    background:white;
+    background:#fff;
     color:var(--navy);
     font-size:15px;
 }
@@ -780,7 +838,7 @@ body{
 .quantity-number{
     min-width:23px;
     text-align:center;
-    font-size:12px;
+    font-size:11px;
 }
 
 .remove{
@@ -789,7 +847,7 @@ body{
     color:#b91c1c!important;
     width:auto!important;
     padding:0 8px;
-    font-size:10px!important;
+    font-size:9px!important;
 }
 
 .empty{
@@ -808,16 +866,16 @@ body{
     display:block;
     color:#64748b;
     margin-bottom:4px;
-    font-size:12px;
+    font-size:11px;
 }
 
 .empty small{
-    font-size:10px;
+    font-size:9px;
 }
 
-/* =====================================================
-   OPTIONS
-   ===================================================== */
+/* =========================================================
+   SALE OPTIONS
+   ========================================================= */
 
 .sale-options{
     border-top:1px solid var(--border);
@@ -837,7 +895,7 @@ body{
 
 .field label{
     display:block;
-    font-size:10px;
+    font-size:9px;
     margin-bottom:5px;
     color:var(--muted);
 }
@@ -849,8 +907,8 @@ body{
     border:1px solid #dbe2ea;
     border-radius:7px;
     outline:none;
-    background:white;
-    font-size:12px;
+    background:#fff;
+    font-size:11px;
     font-family:inherit;
 }
 
@@ -871,7 +929,7 @@ body{
     display:flex;
     justify-content:space-between;
     gap:10px;
-    font-size:10px;
+    font-size:9px;
     padding:3px 0;
 }
 
@@ -887,10 +945,13 @@ body{
     display:flex;
     align-items:center;
     justify-content:space-between;
+
     padding:9px 11px;
     margin-bottom:10px;
     border-radius:8px;
-    font-size:10px;
+
+    font-size:9px;
+
     background:#f8fafc;
     border:1px solid #e2e8f0;
 }
@@ -914,10 +975,12 @@ body{
     display:flex;
     justify-content:space-between;
     align-items:center;
+
     margin-top:7px;
     padding-top:8px;
+
     border-top:1px dashed #cbd5e1;
-    font-size:11px;
+    font-size:10px;
 }
 
 .change-value{
@@ -941,18 +1004,21 @@ body{
     display:flex;
     justify-content:space-between;
     padding:4px 0;
-    font-size:11px;
+    font-size:10px;
     color:#475569;
 }
 
 .total{
     display:flex;
     justify-content:space-between;
-    font-size:19px;
+
+    font-size:18px;
     font-weight:bold;
+
     margin-top:8px;
     border-top:1px dashed #cbd5e1;
     padding-top:11px;
+
     color:var(--navy);
 }
 
@@ -964,12 +1030,13 @@ body{
     width:100%;
     border:0;
     background:linear-gradient(135deg,#172554,#1e3a8a);
-    color:white;
+    color:#fff;
     padding:14px;
     border-radius:9px;
-    font-size:14px;
+    font-size:13px;
     cursor:pointer;
     font-weight:bold;
+    font-family:inherit;
 }
 
 .pay:disabled{
@@ -986,12 +1053,13 @@ body{
 
 .secondary{
     border:1px solid #e2e8f0;
-    background:white;
+    background:#fff;
     color:#475569;
     border-radius:7px;
     padding:8px 4px;
     cursor:pointer;
     font-size:9px;
+    font-family:inherit;
 }
 
 .secondary.danger{
@@ -1004,17 +1072,21 @@ body{
     background:#eff6ff;
 }
 
+/* =========================================================
+   TOAST
+   ========================================================= */
+
 .toast{
     position:fixed;
     left:22px;
     bottom:22px;
     background:#172554;
-    color:white;
+    color:#fff;
     padding:12px 17px;
     border-radius:9px;
     box-shadow:0 10px 30px rgba(0,0,0,.18);
     z-index:9999;
-    font-size:11px;
+    font-size:10px;
     display:none;
 }
 
@@ -1022,9 +1094,9 @@ body{
     display:none;
 }
 
-/* =====================================================
+/* =========================================================
    HELD SALES MODAL
-   ===================================================== */
+   ========================================================= */
 
 .modal-overlay{
     display:none;
@@ -1032,8 +1104,10 @@ body{
     inset:0;
     background:rgba(15,23,42,.45);
     z-index:5000;
+
     align-items:center;
     justify-content:center;
+
     padding:20px;
 }
 
@@ -1042,7 +1116,7 @@ body{
 }
 
 .modal{
-    background:white;
+    background:#fff;
     width:100%;
     max-width:650px;
     max-height:80vh;
@@ -1054,13 +1128,14 @@ body{
 .modal-head{
     padding:17px 20px;
     border-bottom:1px solid var(--border);
+
     display:flex;
     align-items:center;
     justify-content:space-between;
 }
 
 .modal-head h3{
-    font-size:16px;
+    font-size:15px;
 }
 
 .modal-close{
@@ -1091,17 +1166,17 @@ body{
 }
 
 .held-title{
-    font-size:12px;
+    font-size:11px;
     font-weight:bold;
 }
 
 .held-date{
-    font-size:9px;
+    font-size:8px;
     color:var(--muted);
 }
 
 .held-details{
-    font-size:10px;
+    font-size:9px;
     color:#64748b;
     margin-bottom:9px;
 }
@@ -1113,11 +1188,12 @@ body{
 
 .held-actions button{
     border:1px solid var(--border);
-    background:white;
+    background:#fff;
     border-radius:7px;
     padding:7px 10px;
-    font-size:10px;
+    font-size:9px;
     cursor:pointer;
+    font-family:inherit;
 }
 
 .held-actions .restore{
@@ -1132,12 +1208,15 @@ body{
     border-color:#fecdd3;
 }
 
-/* =====================================================
+/* =========================================================
    PRINT
-   ===================================================== */
+   ========================================================= */
 
 @media print{
-    body *{visibility:hidden}
+
+    body *{
+        visibility:hidden;
+    }
 
     .print-receipt,
     .print-receipt *{
@@ -1179,11 +1258,12 @@ body{
     }
 }
 
-/* =====================================================
+/* =========================================================
    RESPONSIVE
-   ===================================================== */
+   ========================================================= */
 
 @media(max-width:1150px){
+
     .products{
         grid-template-columns:repeat(2,1fr);
     }
@@ -1202,6 +1282,7 @@ body{
 }
 
 @media(max-width:850px){
+
     .sidebar{
         position:relative;
         width:100%;
@@ -1213,8 +1294,7 @@ body{
     }
 
     .store-status,
-    .cashier-card,
-    .sidebar-footer,
+    .sidebar-user-area,
     .nav-title{
         display:none;
     }
@@ -1226,18 +1306,9 @@ body{
     }
 
     .nav a{
+        width:auto;
         white-space:nowrap;
         margin:0 3px;
-        width:auto;
-    }
-
-    .sidebar-bottom{
-        padding:0 9px 10px;
-    }
-
-    .logout-button{
-        width:auto;
-        padding:9px 12px;
     }
 
     .main{
@@ -1268,6 +1339,7 @@ body{
 }
 
 @media(max-width:600px){
+
     .content{
         width:94%;
     }
@@ -1303,6 +1375,7 @@ body{
 }
 
 @media(max-width:430px){
+
     .products{
         grid-template-columns:1fr;
     }
@@ -1320,140 +1393,180 @@ body{
 
 <body>
 
-<!-- =====================================================
+<!-- =========================================================
      SIDEBAR
-     ===================================================== -->
+     ========================================================= -->
 
 <aside class="sidebar">
 
-<div class="brand">
-    <div class="logo">VAREX</div>
-    <div class="brand-small">BUSINESS MANAGEMENT SYSTEM</div>
+    <div class="brand">
 
-    <div class="store-status">
-        <span class="status-dot"></span>
-        <span>النظام متصل وجاهز للبيع</span>
-    </div>
-</div>
+        <div class="logo">
+            VAREX
+        </div>
 
-<nav class="nav">
+        <div class="brand-small">
+            BUSINESS MANAGEMENT SYSTEM
+        </div>
 
-    <div class="nav-title">القائمة الرئيسية</div>
-
-    <a href="index.html">
-        <span class="nav-icon">▦</span>
-        <span class="nav-text">لوحة التحكم</span>
-    </a>
-
-    <a href="pos.html" class="active">
-        <span class="nav-icon">▣</span>
-        <span class="nav-text">شاشة المبيعات</span>
-    </a>
-
-    <a href="products.html">
-        <span class="nav-icon">□</span>
-        <span class="nav-text">المنتجات والمخزون</span>
-    </a>
-
-    <a href="customers.html">
-        <span class="nav-icon">♙</span>
-        <span class="nav-text">العملاء</span>
-    </a>
-
-    <a href="suppliers.html">
-        <span class="nav-icon">◇</span>
-        <span class="nav-text">الموردون</span>
-    </a>
-
-    <a href="accounts.html">
-        <span class="nav-icon">◈</span>
-        <span class="nav-text">الحسابات</span>
-    </a>
-
-    <a href="employees.html">
-        <span class="nav-icon">♙</span>
-        <span class="nav-text">الموظفون</span>
-    </a>
-
-    <a href="reports.html">
-        <span class="nav-icon">▥</span>
-        <span class="nav-text">التقارير</span>
-    </a>
-
-    <a href="setting.html">
-        <span class="nav-icon">⚙</span>
-        <span class="nav-text">الإعدادات</span>
-    </a>
-
-</nav>
-
-<div class="sidebar-bottom">
-
-    <div class="cashier-card">
-
-        <div class="cashier-label">المستخدم الحالي</div>
-
-        <div class="cashier-user">
-
-            <div class="cashier-avatar">♙</div>
-
-            <div style="min-width:0">
-                <div class="cashier-name" id="sidebarUserName">المستخدم</div>
-                <div class="cashier-role" id="sidebarUserRole">USER</div>
-            </div>
-
+        <div class="store-status">
+            <span class="status-dot"></span>
+            <span>النظام متصل وجاهز للبيع</span>
         </div>
 
     </div>
 
-    <button class="logout-button" type="button" onclick="logoutUser()">
-        <span class="nav-icon">↪</span>
-        <span class="nav-text">تسجيل الخروج</span>
-    </button>
+    <nav class="nav">
 
-</div>
+        <div class="nav-title">
+            القائمة الرئيسية
+        </div>
 
-<div class="sidebar-footer">
-    VAREX SALES SYSTEM
-</div>
+        <a href="index.html">
+            <span class="nav-icon">▦</span>
+            <span class="nav-label">لوحة التحكم</span>
+        </a>
+
+        <a href="pos.html" class="active">
+            <span class="nav-icon">🛒</span>
+            <span class="nav-label">شاشة المبيعات</span>
+        </a>
+
+        <a href="products.html">
+            <span class="nav-icon">📦</span>
+            <span class="nav-label">المنتجات والمخزون</span>
+        </a>
+
+        <a href="customers.html">
+            <span class="nav-icon">👥</span>
+            <span class="nav-label">العملاء</span>
+        </a>
+
+        <a href="suppliers.html">
+            <span class="nav-icon">🚚</span>
+            <span class="nav-label">الموردون</span>
+        </a>
+
+        <a href="accounts.html">
+            <span class="nav-icon">💰</span>
+            <span class="nav-label">الحسابات</span>
+        </a>
+
+        <a href="employees.html">
+            <span class="nav-icon">👤</span>
+            <span class="nav-label">الموظفون</span>
+        </a>
+
+        <a href="reports.html">
+            <span class="nav-icon">📊</span>
+            <span class="nav-label">التقارير</span>
+        </a>
+
+        <a href="setting.html">
+            <span class="nav-icon">⚙</span>
+            <span class="nav-label">الإعدادات</span>
+        </a>
+
+    </nav>
+
+    <div class="sidebar-user-area">
+
+        <div class="cashier-card">
+
+            <div class="cashier-label">
+                المستخدم الحالي
+            </div>
+
+            <div class="cashier-main">
+
+                <div class="user-avatar">
+                    👤
+                </div>
+
+                <div>
+                    <div
+                        class="cashier-name"
+                        id="sidebarUserName">
+                        المستخدم
+                    </div>
+
+                    <div
+                        class="cashier-role"
+                        id="sidebarUserRole">
+                        USER
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+        <button
+            type="button"
+            class="logout-button"
+            onclick="logoutUser()">
+
+            <span class="logout-icon">↪</span>
+            <span>تسجيل الخروج</span>
+
+        </button>
+
+        <div class="sidebar-footer">
+            VAREX SALES SYSTEM
+        </div>
+
+    </div>
 
 </aside>
 
-<!-- =====================================================
+<!-- =========================================================
      MAIN
-     ===================================================== -->
+     ========================================================= -->
 
 <div class="main">
 
 <header class="topbar">
 
-<div class="page-name">
+    <div class="page-name">
 
-    <div class="page-icon">▣</div>
+        <div class="page-icon">
+            🛒
+        </div>
 
-    <div>
-        <h2>شاشة المبيعات</h2>
-        <small>VAREX SALES MANAGEMENT</small>
+        <div>
+            <h2>شاشة المبيعات</h2>
+            <small>VAREX SALES MANAGEMENT</small>
+        </div>
+
     </div>
 
-</div>
+    <div class="top-info">
 
-<div class="top-info">
+        <div class="info-chip online-chip">
+            <span class="status-dot"></span>
+            متصل
+        </div>
 
-    <div class="info-chip online-chip">
-        <span class="status-dot"></span>
-        متصل
+        <div class="info-chip">
+            المستخدم:
+            <strong id="topUserName">
+                —
+            </strong>
+        </div>
+
+        <div
+            class="info-chip"
+            id="currentDate">
+            —
+        </div>
+
+        <div
+            class="info-chip"
+            id="currentTime">
+            —
+        </div>
+
     </div>
-
-    <div class="info-chip">
-        المستخدم:
-        <strong id="topUserName">—</strong>
-    </div>
-
-    <div class="info-chip" id="currentDate">—</div>
-    <div class="info-chip" id="currentTime">—</div>
-
-</div>
 
 </header>
 
@@ -1463,33 +1576,40 @@ body{
 
 <section class="hero">
 
-<div>
-    <h1>شاشة المبيعات</h1>
-    <p>إدارة المبيعات والفواتير والعملاء والمخزون وعمليات الدفع من شاشة واحدة</p>
-</div>
+    <div>
 
-<div class="hero-actions">
+        <h1>
+            شاشة المبيعات
+        </h1>
 
-    <button
-        id="restoreButton"
-        class="restore-button"
-        onclick="openHeldSales()">
-        ▶ الفواتير المعلقة
-    </button>
+        <p>
+            إدارة المبيعات والفواتير والعملاء والمخزون وعمليات الدفع من شاشة واحدة
+        </p>
 
-    <button
-        class="hold-button"
-        onclick="holdCurrentSale()">
-        ⏸ تعليق الفاتورة
-    </button>
+    </div>
 
-    <button
-        class="new-sale"
-        onclick="newSale()">
-        ＋ فاتورة جديدة
-    </button>
+    <div class="hero-actions">
 
-</div>
+        <button
+            id="restoreButton"
+            class="restore-button"
+            onclick="openHeldSales()">
+            ▶ الفواتير المعلقة
+        </button>
+
+        <button
+            class="hold-button"
+            onclick="holdCurrentSale()">
+            ⏸ تعليق الفاتورة
+        </button>
+
+        <button
+            class="new-sale"
+            onclick="newSale()">
+            ＋ فاتورة جديدة
+        </button>
+
+    </div>
 
 </section>
 
@@ -1497,50 +1617,109 @@ body{
 
 <section class="quick-stats">
 
-<div class="stat">
-    <div class="stat-top">
-        <div class="stat-label">مبيعات اليوم</div>
-        <div class="stat-icon">◈</div>
+    <div class="stat">
+
+        <div class="stat-top">
+
+            <div class="stat-label">
+                مبيعات اليوم
+            </div>
+
+            <div class="stat-icon">
+                💰
+            </div>
+
+        </div>
+
+        <div
+            class="stat-value"
+            id="todaySales">
+            0.00 د.إ
+        </div>
+
+        <div class="stat-small">
+            إجمالي قيمة المبيعات اليوم
+        </div>
+
     </div>
 
-    <div class="stat-value" id="todaySales">0.00 د.إ</div>
-    <div class="stat-small">إجمالي قيمة المبيعات اليوم</div>
-</div>
+    <div class="stat">
 
-<div class="stat">
-    <div class="stat-top">
-        <div class="stat-label">فواتير اليوم</div>
-        <div class="stat-icon">▤</div>
+        <div class="stat-top">
+
+            <div class="stat-label">
+                فواتير اليوم
+            </div>
+
+            <div class="stat-icon">
+                🧾
+            </div>
+
+        </div>
+
+        <div
+            class="stat-value"
+            id="todayInvoices">
+            0
+        </div>
+
+        <div class="stat-small">
+            عدد عمليات البيع اليوم
+        </div>
+
     </div>
 
-    <div class="stat-value" id="todayInvoices">0</div>
-    <div class="stat-small">عدد عمليات البيع اليوم</div>
-</div>
+    <div class="stat">
 
-<div class="stat">
-    <div class="stat-top">
-        <div class="stat-label">آخر فاتورة</div>
-        <div class="stat-icon">✓</div>
+        <div class="stat-top">
+
+            <div class="stat-label">
+                آخر فاتورة
+            </div>
+
+            <div class="stat-icon">
+                ✓
+            </div>
+
+        </div>
+
+        <div
+            class="stat-value"
+            id="lastInvoice">
+            —
+        </div>
+
+        <div class="stat-small">
+            آخر عملية بيع مسجلة
+        </div>
+
     </div>
 
-    <div class="stat-value" id="lastInvoice">—</div>
-    <div class="stat-small">آخر عملية بيع مسجلة</div>
-</div>
+    <div class="stat">
 
-<div class="stat">
-    <div class="stat-top">
-        <div class="stat-label">حالة النظام</div>
-        <div class="stat-icon">●</div>
-    </div>
+        <div class="stat-top">
 
-    <div class="stat-value" style="color:#15803d;font-size:16px">
-        جاهز للبيع
-    </div>
+            <div class="stat-label">
+                حالة النظام
+            </div>
 
-    <div class="stat-small">
-        شاشة المبيعات تعمل بشكل طبيعي
+            <div class="stat-icon">
+                ●
+            </div>
+
+        </div>
+
+        <div
+            class="stat-value"
+            style="color:#15803d;font-size:16px">
+            جاهز للبيع
+        </div>
+
+        <div class="stat-small">
+            شاشة المبيعات تعمل بشكل طبيعي
+        </div>
+
     </div>
-</div>
 
 </section>
 
@@ -1548,25 +1727,37 @@ body{
 
 <section class="scanner-box">
 
-<div class="scanner-icon">▥</div>
+    <div class="scanner-icon">
+        ▥
+    </div>
 
-<div class="scanner-text">
-    <strong>قارئ الباركود السريع</strong>
-    <small>امسح باركود المنتج ليتم إضافته مباشرة إلى الفاتورة</small>
-</div>
+    <div class="scanner-text">
 
-<input
-    id="barcodeScanner"
-    class="barcode-input"
-    type="text"
-    autocomplete="off"
-    placeholder="امسح الباركود هنا..."
-    onkeydown="handleBarcode(event)"
->
+        <strong>
+            قارئ الباركود السريع
+        </strong>
+
+        <small>
+            امسح باركود المنتج ليتم إضافته مباشرة إلى الفاتورة
+        </small>
+
+    </div>
+
+    <input
+        id="barcodeScanner"
+        class="barcode-input"
+        type="text"
+        autocomplete="off"
+        placeholder="امسح الباركود هنا..."
+        onkeydown="handleBarcode(event)"
+    >
 
 </section>
 
-<div id="successMessage" class="success"></div>
+<div
+    id="successMessage"
+    class="success">
+</div>
 
 <!-- POS -->
 
@@ -1576,27 +1767,43 @@ body{
 
 <div class="panel products-panel">
 
-<div class="panel-header">
-    <h3>المنتجات</h3>
-    <span>اضغط على المنتج لإضافته إلى الفاتورة</span>
-</div>
+    <div class="panel-header">
 
-<div class="search-box">
+        <h3>
+            المنتجات
+        </h3>
 
-    <span class="search-icon">⌕</span>
+        <span>
+            اضغط على المنتج لإضافته إلى الفاتورة
+        </span>
 
-    <input
-        id="search"
-        class="search"
-        type="text"
-        placeholder="ابحث باسم المنتج أو الباركود"
-        oninput="renderProducts()"
-    >
+    </div>
 
-</div>
+    <div class="search-box">
 
-<div id="categoryTabs" class="category-tabs"></div>
-<div id="products" class="products"></div>
+        <span class="search-icon">
+            🔍
+        </span>
+
+        <input
+            id="search"
+            class="search"
+            type="text"
+            placeholder="ابحث باسم المنتج أو الباركود"
+            oninput="renderProducts()"
+        >
+
+    </div>
+
+    <div
+        id="categoryTabs"
+        class="category-tabs">
+    </div>
+
+    <div
+        id="products"
+        class="products">
+    </div>
 
 </div>
 
@@ -1604,300 +1811,345 @@ body{
 
 <div class="panel invoice-panel">
 
-<div class="invoice-head">
+    <div class="invoice-head">
 
-    <h3>▤ الفاتورة الحالية</h3>
+        <h3>
+            🧾 الفاتورة الحالية
+        </h3>
 
-    <span
-        class="invoice-number"
-        id="draftInvoiceNumber">
-        فاتورة جديدة
-    </span>
+        <span
+            class="invoice-number"
+            id="draftInvoiceNumber">
+            فاتورة جديدة
+        </span>
 
-</div>
-
-<div class="invoice-mini-stats">
-
-    <div class="invoice-mini-stat">
-        <small>الأصناف</small>
-        <strong id="invoiceItemsCount">0</strong>
     </div>
 
-    <div class="invoice-mini-stat">
-        <small>عدد القطع</small>
-        <strong id="invoiceQuantityCount">0</strong>
+    <div class="invoice-mini-stats">
+
+        <div class="invoice-mini-stat">
+            <small>الأصناف</small>
+            <strong id="invoiceItemsCount">0</strong>
+        </div>
+
+        <div class="invoice-mini-stat">
+            <small>عدد القطع</small>
+            <strong id="invoiceQuantityCount">0</strong>
+        </div>
+
+        <div class="invoice-mini-stat">
+            <small>الإجمالي</small>
+            <strong id="invoiceMiniTotal">0.00 د.إ</strong>
+        </div>
+
     </div>
 
-    <div class="invoice-mini-stat">
-        <small>الإجمالي</small>
-        <strong id="invoiceMiniTotal">0.00 د.إ</strong>
+    <div class="invoice-body">
+
+        <div
+            id="cartItems"
+            class="cart-items">
+        </div>
+
+        <div
+            id="emptyCart"
+            class="empty">
+
+            <div class="empty-icon">
+                🛒
+            </div>
+
+            <strong>
+                الفاتورة فارغة
+            </strong>
+
+            <small>
+                اختر منتجاً أو امسح الباركود للبدء
+            </small>
+
+        </div>
+
+        <div class="sale-options">
+
+            <div class="field">
+
+                <label>
+                    العميل
+                </label>
+
+                <select
+                    id="customerSelect"
+                    onchange="customerChanged()">
+
+                    <option value="">
+                        عميل نقدي / غير مسجل
+                    </option>
+
+                </select>
+
+            </div>
+
+            <div
+                id="customerPreview"
+                class="customer-preview">
+            </div>
+
+            <div class="field">
+
+                <label>
+                    طريقة الدفع
+                </label>
+
+                <select
+                    id="paymentMethod"
+                    onchange="paymentMethodChanged()">
+
+                    <option value="نقدي">
+                        💵 نقدي
+                    </option>
+
+                    <option value="بطاقة">
+                        💳 بطاقة
+                    </option>
+
+                    <option value="تحويل بنكي">
+                        🏦 تحويل بنكي
+                    </option>
+
+                    <option value="آجل">
+                        🧾 آجل
+                    </option>
+
+                </select>
+
+            </div>
+
+            <div class="two-fields">
+
+                <div class="field">
+
+                    <label>
+                        الخصم
+                    </label>
+
+                    <input
+                        id="discount"
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        value="0"
+                        oninput="renderCart()"
+                    >
+
+                </div>
+
+                <div class="field">
+
+                    <label>
+                        الضريبة
+                    </label>
+
+                    <input
+                        id="tax"
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        value="0"
+                        oninput="renderCart()"
+                    >
+
+                </div>
+
+            </div>
+
+            <div
+                id="cashPayment"
+                class="cash-payment active">
+
+                <div class="field">
+
+                    <label>
+                        المبلغ المستلم من العميل
+                    </label>
+
+                    <input
+                        id="amountReceived"
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        placeholder="0.00"
+                        oninput="calculateChange()"
+                    >
+
+                </div>
+
+                <div class="change-row">
+
+                    <span>
+                        الباقي للعميل
+                    </span>
+
+                    <span
+                        id="changeAmount"
+                        class="change-value">
+                        0.00 د.إ
+                    </span>
+
+                </div>
+
+            </div>
+
+            <div
+                id="creditPayment"
+                class="credit-payment">
+
+                <div class="field">
+
+                    <label>
+                        المبلغ المدفوع الآن
+                    </label>
+
+                    <input
+                        id="creditPaid"
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        value="0"
+                        oninput="calculateCreditDue()"
+                    >
+
+                </div>
+
+                <div class="change-row">
+
+                    <span>
+                        المبلغ المستحق
+                    </span>
+
+                    <span
+                        id="creditDue"
+                        class="due-value">
+                        0.00 د.إ
+                    </span>
+
+                </div>
+
+            </div>
+
+            <div class="payment-status">
+
+                <span>
+                    حالة الدفع
+                </span>
+
+                <strong id="paymentStatus">
+                    —
+                </strong>
+
+            </div>
+
+        </div>
+
+        <div class="invoice-summary">
+
+            <div class="summary-row">
+                <span>المجموع الفرعي</span>
+                <strong id="subtotal">0.00 د.إ</strong>
+            </div>
+
+            <div class="summary-row">
+                <span>الخصم</span>
+                <strong id="discountView">0.00 د.إ</strong>
+            </div>
+
+            <div class="summary-row">
+                <span>الضريبة</span>
+                <strong id="taxView">0.00 د.إ</strong>
+            </div>
+
+            <div class="total">
+                <span>الإجمالي</span>
+                <span id="total">0.00 د.إ</span>
+            </div>
+
+        </div>
+
+        <div class="invoice-actions">
+
+            <button
+                id="payButton"
+                class="pay"
+                onclick="completeCurrentSale()"
+                disabled>
+                ✓ إتمام عملية البيع
+            </button>
+
+            <div class="secondary-actions">
+
+                <button
+                    class="secondary"
+                    onclick="newSale()">
+                    ＋ جديدة
+                </button>
+
+                <button
+                    class="secondary print"
+                    onclick="printLastSale()">
+                    🖨 طباعة
+                </button>
+
+                <button
+                    class="secondary danger"
+                    onclick="clearCart()">
+                    إلغاء
+                </button>
+
+            </div>
+
+        </div>
+
     </div>
 
-</div>
-
-<div class="invoice-body">
-
-<div id="cartItems" class="cart-items"></div>
-
-<div id="emptyCart" class="empty">
-
-    <div class="empty-icon">▣</div>
-
-    <strong>الفاتورة فارغة</strong>
-
-    <small>
-        اختر منتجاً أو امسح الباركود للبدء
-    </small>
-
-</div>
-
-<div class="sale-options">
-
-<div class="field">
-
-<label>العميل</label>
-
-<select
-    id="customerSelect"
-    onchange="customerChanged()">
-
-    <option value="">
-        عميل نقدي / غير مسجل
-    </option>
-
-</select>
-
-</div>
-
-<div
-    id="customerPreview"
-    class="customer-preview">
-</div>
-
-<div class="field">
-
-<label>طريقة الدفع</label>
-
-<select
-    id="paymentMethod"
-    onchange="paymentMethodChanged()">
-
-    <option value="نقدي">نقدي</option>
-    <option value="بطاقة">بطاقة</option>
-    <option value="تحويل بنكي">تحويل بنكي</option>
-    <option value="آجل">آجل</option>
-
-</select>
-
-</div>
-
-<div class="two-fields">
-
-<div class="field">
-    <label>الخصم</label>
-
-    <input
-        id="discount"
-        type="number"
-        min="0"
-        step="0.01"
-        value="0"
-        oninput="renderCart()">
-</div>
-
-<div class="field">
-    <label>الضريبة</label>
-
-    <input
-        id="tax"
-        type="number"
-        min="0"
-        step="0.01"
-        value="0"
-        oninput="renderCart()">
-</div>
-
-</div>
-
-<!-- CASH -->
-
-<div
-    id="cashPayment"
-    class="cash-payment active">
-
-<div class="field">
-
-<label>
-    المبلغ المستلم من العميل
-</label>
-
-<input
-    id="amountReceived"
-    type="number"
-    min="0"
-    step="0.01"
-    placeholder="0.00"
-    oninput="calculateChange()">
-
-</div>
-
-<div class="change-row">
-
-<span>الباقي للعميل</span>
-
-<span
-    id="changeAmount"
-    class="change-value">
-    0.00 د.إ
-</span>
-
-</div>
-
-</div>
-
-<!-- CREDIT -->
-
-<div
-    id="creditPayment"
-    class="credit-payment">
-
-<div class="field">
-
-<label>
-    المبلغ المدفوع الآن
-</label>
-
-<input
-    id="creditPaid"
-    type="number"
-    min="0"
-    step="0.01"
-    value="0"
-    oninput="calculateCreditDue()">
-
-</div>
-
-<div class="change-row">
-
-<span>المبلغ المستحق</span>
-
-<span
-    id="creditDue"
-    class="due-value">
-    0.00 د.إ
-</span>
-
-</div>
-
-</div>
-
-<div class="payment-status">
-
-<span>حالة الدفع</span>
-
-<strong id="paymentStatus">—</strong>
-
-</div>
-
-</div>
-
-<!-- SUMMARY -->
-
-<div class="invoice-summary">
-
-<div class="summary-row">
-    <span>المجموع الفرعي</span>
-    <strong id="subtotal">0.00 د.إ</strong>
-</div>
-
-<div class="summary-row">
-    <span>الخصم</span>
-    <strong id="discountView">0.00 د.إ</strong>
-</div>
-
-<div class="summary-row">
-    <span>الضريبة</span>
-    <strong id="taxView">0.00 د.إ</strong>
-</div>
-
-<div class="total">
-    <span>الإجمالي</span>
-    <span id="total">0.00 د.إ</span>
-</div>
-
-</div>
-
-<!-- ACTIONS -->
-
-<div class="invoice-actions">
-
-<button
-    id="payButton"
-    class="pay"
-    onclick="completeCurrentSale()"
-    disabled>
-    ✓ إتمام عملية البيع
-</button>
-
-<div class="secondary-actions">
-
-<button
-    class="secondary"
-    onclick="newSale()">
-    ＋ جديدة
-</button>
-
-<button
-    class="secondary print"
-    onclick="printLastSale()">
-    طباعة
-</button>
-
-<button
-    class="secondary danger"
-    onclick="clearCart()">
-    إلغاء
-</button>
-
-</div>
-
-</div>
-
-</div>
 </div>
 
 </section>
 
 </main>
+
 </div>
 
-<!-- HELD SALES MODAL -->
+<!-- =========================================================
+     HELD SALES MODAL
+     ========================================================= -->
 
 <div
     id="heldModal"
     class="modal-overlay"
     onclick="modalBackgroundClose(event)">
 
-<div class="modal">
+    <div class="modal">
 
-<div class="modal-head">
+        <div class="modal-head">
 
-<h3>الفواتير المعلقة</h3>
+            <h3>
+                الفواتير المعلقة
+            </h3>
 
-<button
-    class="modal-close"
-    onclick="closeHeldSales()">
-    ✕
-</button>
+            <button
+                class="modal-close"
+                onclick="closeHeldSales()">
+                ✕
+            </button>
 
-</div>
+        </div>
 
-<div
-    id="heldSalesList"
-    class="modal-body">
-</div>
+        <div
+            id="heldSalesList"
+            class="modal-body">
+        </div>
 
-</div>
+    </div>
+
 </div>
 
 <div
@@ -1910,48 +2162,88 @@ body{
     class="toast">
 </div>
 
-<!-- =====================================================
+<!-- =========================================================
      VAREX CORE
-     ===================================================== -->
+     ========================================================= -->
 
 <script src="varex.js"></script>
 
 <script>
 
-/* =====================================================
+/* =========================================================
    AUTHENTICATION
-   ===================================================== */
+   ========================================================= */
 
-if (!window.VAREX) {
+if(
+    typeof VAREX === "undefined"
+){
     alert("تعذر تحميل نظام VAREX.");
-    throw new Error("VAREX Core not loaded");
+}else{
+
+    if(
+        !VAREX.isLoggedIn()
+    ){
+        window.location.replace("./login.html");
+    }
 }
 
-if (!VAREX.requireLogin()) {
-    throw new Error("Authentication required");
+
+/* =========================================================
+   STATE
+   ========================================================= */
+
+let cart = [];
+
+let activeCategory = "";
+
+let lastCompletedSale = null;
+
+let currentTotal = 0;
+
+
+/* =========================================================
+   USER
+   ========================================================= */
+
+function loadCurrentUser(){
+
+    const user =
+        VAREX.getCurrentUser();
+
+    if(!user){
+        return;
+    }
+
+    document
+        .getElementById("sidebarUserName")
+        .textContent =
+        user.name ||
+        user.username ||
+        "المستخدم";
+
+    document
+        .getElementById("sidebarUserRole")
+        .textContent =
+        user.role ||
+        "مستخدم";
+
+    document
+        .getElementById("topUserName")
+        .textContent =
+        user.name ||
+        user.username ||
+        "المستخدم";
 }
 
-const currentUser = VAREX.getCurrentUser();
-
-if (currentUser) {
-
-    document.getElementById("sidebarUserName").textContent =
-        currentUser.name || currentUser.username || "المستخدم";
-
-    document.getElementById("sidebarUserRole").textContent =
-        currentUser.role || "مستخدم";
-
-    document.getElementById("topUserName").textContent =
-        currentUser.name || currentUser.username || "المستخدم";
-}
 
 function logoutUser(){
 
-    if(
-        !confirm(
+    const confirmLogout =
+        confirm(
             "هل تريد تسجيل الخروج من نظام VAREX؟"
-        )
-    ){
+        );
+
+    if(!confirmLogout){
         return;
     }
 
@@ -1959,40 +2251,24 @@ function logoutUser(){
 }
 
 
-/* =====================================================
-   GLOBAL VARIABLES
-   ===================================================== */
-
-let cart = [];
-let activeCategory = "";
-let lastCompletedSale = null;
-let currentTotal = 0;
-
-
-/* =====================================================
-   CORE HELPERS
-   ===================================================== */
+/* =========================================================
+   DATA
+   ========================================================= */
 
 function getProducts(){
 
     try{
-        return VAREX.getProducts() || [];
-    }
-    catch(error){
+
+        return (
+            VAREX.getProducts() ||
+            []
+        );
+
+    }catch(error){
+
         console.error(error);
+
         return [];
-    }
-}
-
-
-function getProduct(id){
-
-    try{
-        return VAREX.getProductById(id);
-    }
-    catch(error){
-        console.error(error);
-        return null;
     }
 }
 
@@ -2000,10 +2276,16 @@ function getProduct(id){
 function getCustomers(){
 
     try{
-        return VAREX.getCustomers() || [];
-    }
-    catch(error){
+
+        return (
+            VAREX.getCustomers() ||
+            []
+        );
+
+    }catch(error){
+
         console.error(error);
+
         return [];
     }
 }
@@ -2012,10 +2294,16 @@ function getCustomers(){
 function getSales(){
 
     try{
-        return VAREX.getSales() || [];
-    }
-    catch(error){
+
+        return (
+            VAREX.getSales() ||
+            []
+        );
+
+    }catch(error){
+
         console.error(error);
+
         return [];
     }
 }
@@ -2024,26 +2312,33 @@ function getSales(){
 function getHeldSales(){
 
     try{
-        return VAREX.getHeldSales() || [];
-    }
-    catch(error){
+
+        return (
+            VAREX.getHeldSales() ||
+            []
+        );
+
+    }catch(error){
+
         console.error(error);
+
         return [];
     }
 }
 
 
-/* =====================================================
+/* =========================================================
    CLOCK
-   ===================================================== */
+   ========================================================= */
 
 function updateClock(){
 
-    const now = new Date();
+    const now =
+        new Date();
 
-    document.getElementById(
-        "currentDate"
-    ).innerText =
+    document
+        .getElementById("currentDate")
+        .innerText =
         now.toLocaleDateString(
             "ar-AE",
             {
@@ -2053,9 +2348,9 @@ function updateClock(){
             }
         );
 
-    document.getElementById(
-        "currentTime"
-    ).innerText =
+    document
+        .getElementById("currentTime")
+        .innerText =
         now.toLocaleTimeString(
             "ar-AE",
             {
@@ -2066,6 +2361,7 @@ function updateClock(){
         );
 }
 
+
 updateClock();
 
 setInterval(
@@ -2074,9 +2370,9 @@ setInterval(
 );
 
 
-/* =====================================================
+/* =========================================================
    CUSTOMERS
-   ===================================================== */
+   ========================================================= */
 
 function renderCustomers(){
 
@@ -2106,10 +2402,14 @@ function renderCustomers(){
                 customer.id;
 
             option.textContent =
-                (customer.name || "عميل") +
+                (
+                    customer.name ||
+                    "عميل"
+                ) +
                 (
                     customer.phone
-                        ? " — " + customer.phone
+                        ? " — " +
+                          customer.phone
                         : ""
                 );
 
@@ -2127,7 +2427,8 @@ function renderCustomers(){
                 String(old)
         )
     ){
-        select.value = old;
+        select.value =
+            old;
     }
 
     customerChanged();
@@ -2137,9 +2438,11 @@ function renderCustomers(){
 function getSelectedCustomer(){
 
     const id =
-        document.getElementById(
-            "customerSelect"
-        ).value;
+        document
+            .getElementById(
+                "customerSelect"
+            )
+            .value;
 
     if(!id){
         return null;
@@ -2150,7 +2453,8 @@ function getSelectedCustomer(){
             customer =>
                 String(customer.id) ===
                 String(id)
-        ) || null
+        ) ||
+        null
     );
 }
 
@@ -2167,7 +2471,8 @@ function getCustomerOutstanding(
         .filter(
             sale =>
                 String(
-                    sale.customerId || ""
+                    sale.customerId ||
+                    ""
                 ) ===
                 String(customerId)
         )
@@ -2212,7 +2517,8 @@ function customerChanged(){
             "active"
         );
 
-        preview.innerHTML = "";
+        preview.innerHTML =
+            "";
 
         return;
     }
@@ -2223,24 +2529,38 @@ function customerChanged(){
         );
 
     preview.innerHTML = `
+
         <div class="customer-preview-row">
             <span>العميل</span>
-            <strong>${escapeHTML(customer.name || "-")}</strong>
+            <strong>
+                ${escapeHTML(customer.name || "-")}
+            </strong>
         </div>
 
         <div class="customer-preview-row">
             <span>الهاتف</span>
-            <strong>${escapeHTML(customer.phone || "-")}</strong>
+            <strong>
+                ${escapeHTML(customer.phone || "-")}
+            </strong>
         </div>
 
         <div class="customer-preview-row">
             <span>الرصيد المستحق</span>
-            <strong>${VAREX.money(outstanding)}</strong>
+            <strong>
+                ${VAREX.money(outstanding)}
+            </strong>
         </div>
 
         <div class="customer-preview-row">
             <span>الحد الائتماني</span>
-            <strong>${VAREX.money(Number(customer.creditLimit || 0))}</strong>
+            <strong>
+                ${VAREX.money(
+                    Number(
+                        customer.creditLimit ||
+                        0
+                    )
+                )}
+            </strong>
         </div>
     `;
 
@@ -2250,9 +2570,9 @@ function customerChanged(){
 }
 
 
-/* =====================================================
+/* =========================================================
    CATEGORIES
-   ===================================================== */
+   ========================================================= */
 
 function renderCategories(){
 
@@ -2264,7 +2584,8 @@ function renderCategories(){
                         (
                             product.category ||
                             "عام"
-                        ).trim()
+                        )
+                        .trim()
                 )
                 .filter(Boolean)
         )
@@ -2275,7 +2596,8 @@ function renderCategories(){
             "categoryTabs"
         );
 
-    container.innerHTML = "";
+    container.innerHTML =
+        "";
 
     const all =
         document.createElement(
@@ -2293,13 +2615,16 @@ function renderCategories(){
     all.textContent =
         "كل المنتجات";
 
-    all.onclick = () => {
+    all.onclick =
+        () => {
 
-        activeCategory = "";
+            activeCategory =
+                "";
 
-        renderCategories();
-        renderProducts();
-    };
+            renderCategories();
+
+            renderProducts();
+        };
 
     container.appendChild(
         all
@@ -2324,14 +2649,16 @@ function renderCategories(){
             button.textContent =
                 name;
 
-            button.onclick = () => {
+            button.onclick =
+                () => {
 
-                activeCategory =
-                    name;
+                    activeCategory =
+                        name;
 
-                renderCategories();
-                renderProducts();
-            };
+                    renderCategories();
+
+                    renderProducts();
+                };
 
             container.appendChild(
                 button
@@ -2341,38 +2668,52 @@ function renderCategories(){
 }
 
 
-/* =====================================================
+/* =========================================================
    PRODUCTS
-   ===================================================== */
+   ========================================================= */
 
 function renderProducts(){
 
     const search =
-        document.getElementById(
-            "search"
-        ).value
-        .trim()
-        .toLowerCase();
+        document
+            .getElementById(
+                "search"
+            )
+            .value
+            .trim()
+            .toLowerCase();
 
     const container =
         document.getElementById(
             "products"
         );
 
-    container.innerHTML = "";
+    container.innerHTML =
+        "";
 
     const filtered =
-        getProducts().filter(
+        getProducts()
+        .filter(
             product => {
 
                 const text =
                     (
-                        (product.name || "") +
+                        (
+                            product.name ||
+                            ""
+                        ) +
                         " " +
-                        (product.barcode || "") +
+                        (
+                            product.barcode ||
+                            ""
+                        ) +
                         " " +
-                        (product.sku || "")
-                    ).toLowerCase();
+                        (
+                            product.sku ||
+                            ""
+                        )
+                    )
+                    .toLowerCase();
 
                 return (
                     text.includes(search) &&
@@ -2381,7 +2722,8 @@ function renderProducts(){
                         (
                             product.category ||
                             "عام"
-                        ) === activeCategory
+                        ) ===
+                        activeCategory
                     )
                 );
             }
@@ -2400,12 +2742,14 @@ function renderProducts(){
 
             const quantity =
                 Number(
-                    product.quantity || 0
+                    product.quantity ||
+                    0
                 );
 
             const minimum =
                 Number(
-                    product.minimumStock || 0
+                    product.minimumStock ||
+                    0
                 );
 
             const div =
@@ -2421,17 +2765,21 @@ function renderProducts(){
                         : ""
                 );
 
-            let stockClass = "";
-            let stockText =
-                "متوفر " + quantity;
+            let stockClass =
+                "";
 
-            if(quantity <= 0){
+            let stockText =
+                "متوفر " +
+                quantity;
+
+            if(
+                quantity <= 0
+            ){
 
                 stockText =
                     "نفد";
 
-            }
-            else if(
+            }else if(
                 minimum > 0 &&
                 quantity <= minimum
             ){
@@ -2440,10 +2788,12 @@ function renderProducts(){
                     " low";
 
                 stockText =
-                    "منخفض " + quantity;
+                    "منخفض " +
+                    quantity;
             }
 
             div.innerHTML = `
+
                 <span class="stock-badge${stockClass}">
                     ${stockText}
                 </span>
@@ -2466,12 +2816,15 @@ function renderProducts(){
                 </div>
             `;
 
-            if(quantity > 0){
+            if(
+                quantity > 0
+            ){
 
-                div.onclick = () =>
-                    addToCart(
-                        product.id
-                    );
+                div.onclick =
+                    () =>
+                        addToCart(
+                            product.id
+                        );
             }
 
             container.appendChild(
@@ -2482,13 +2835,16 @@ function renderProducts(){
 }
 
 
-/* =====================================================
+/* =========================================================
    BARCODE
-   ===================================================== */
+   ========================================================= */
 
 function handleBarcode(event){
 
-    if(event.key !== "Enter"){
+    if(
+        event.key !==
+        "Enter"
+    ){
         return;
     }
 
@@ -2524,7 +2880,8 @@ function handleBarcode(event){
 
     if(
         Number(
-            product.quantity || 0
+            product.quantity ||
+            0
         ) <= 0
     ){
 
@@ -2532,7 +2889,9 @@ function handleBarcode(event){
             "هذا المنتج غير متوفر في المخزون"
         );
 
-        input.value = "";
+        input.value =
+            "";
+
         input.focus();
 
         return;
@@ -2542,19 +2901,21 @@ function handleBarcode(event){
         product.id
     );
 
-    input.value = "";
+    input.value =
+        "";
+
     input.focus();
 }
 
 
-/* =====================================================
+/* =========================================================
    CART
-   ===================================================== */
+   ========================================================= */
 
 function addToCart(productId){
 
     const product =
-        getProduct(
+        VAREX.getProductById(
             productId
         );
 
@@ -2564,10 +2925,13 @@ function addToCart(productId){
 
     const available =
         Number(
-            product.quantity || 0
+            product.quantity ||
+            0
         );
 
-    if(available <= 0){
+    if(
+        available <= 0
+    ){
 
         showToast(
             "هذا المنتج غير متوفر في المخزون"
@@ -2579,8 +2943,12 @@ function addToCart(productId){
     const existing =
         cart.find(
             item =>
-                String(item.productId) ===
-                String(productId)
+                String(
+                    item.productId
+                ) ===
+                String(
+                    productId
+                )
         );
 
     if(existing){
@@ -2599,8 +2967,7 @@ function addToCart(productId){
 
         existing.quantity++;
 
-    }
-    else{
+    }else{
 
         cart.push({
 
@@ -2612,7 +2979,8 @@ function addToCart(productId){
 
             price:
                 Number(
-                    product.price || 0
+                    product.price ||
+                    0
                 ),
 
             quantity:
@@ -2632,8 +3000,12 @@ function changeQuantity(
     const item =
         cart.find(
             item =>
-                String(item.productId) ===
-                String(productId)
+                String(
+                    item.productId
+                ) ===
+                String(
+                    productId
+                )
         );
 
     if(!item){
@@ -2641,7 +3013,7 @@ function changeQuantity(
     }
 
     const product =
-        getProduct(
+        VAREX.getProductById(
             productId
         );
 
@@ -2658,7 +3030,9 @@ function changeQuantity(
         item.quantity +
         amount;
 
-    if(newQuantity <= 0){
+    if(
+        newQuantity <= 0
+    ){
 
         removeFromCart(
             productId
@@ -2670,7 +3044,8 @@ function changeQuantity(
     if(
         newQuantity >
         Number(
-            product.quantity || 0
+            product.quantity ||
+            0
         )
     ){
 
@@ -2695,8 +3070,12 @@ function removeFromCart(
     cart =
         cart.filter(
             item =>
-                String(item.productId) !==
-                String(productId)
+                String(
+                    item.productId
+                ) !==
+                String(
+                    productId
+                )
         );
 
     renderCart();
@@ -2718,41 +3097,63 @@ function clearCart(){
     }
 
     resetCurrentSale();
+
     renderCart();
 }
 
 
 function resetCurrentSale(){
 
-    cart = [];
+    cart =
+        [];
 
-    document.getElementById(
-        "discount"
-    ).value = "0";
+    document
+        .getElementById(
+            "discount"
+        )
+        .value =
+        "0";
 
-    document.getElementById(
-        "tax"
-    ).value = "0";
+    document
+        .getElementById(
+            "tax"
+        )
+        .value =
+        "0";
 
-    document.getElementById(
-        "customerSelect"
-    ).value = "";
+    document
+        .getElementById(
+            "customerSelect"
+        )
+        .value =
+        "";
 
-    document.getElementById(
-        "paymentMethod"
-    ).value = "نقدي";
+    document
+        .getElementById(
+            "paymentMethod"
+        )
+        .value =
+        "نقدي";
 
-    document.getElementById(
-        "amountReceived"
-    ).value = "";
+    document
+        .getElementById(
+            "amountReceived"
+        )
+        .value =
+        "";
 
-    document.getElementById(
-        "creditPaid"
-    ).value = "0";
+    document
+        .getElementById(
+            "creditPaid"
+        )
+        .value =
+        "0";
 
-    currentTotal = 0;
+    currentTotal =
+        0;
 
     customerChanged();
+
     paymentMethodChanged();
 }
 
@@ -2770,33 +3171,47 @@ function newSale(){
 
     resetCurrentSale();
 
-    document.getElementById(
-        "search"
-    ).value = "";
+    document
+        .getElementById(
+            "search"
+        )
+        .value =
+        "";
 
-    document.getElementById(
-        "barcodeScanner"
-    ).value = "";
+    document
+        .getElementById(
+            "barcodeScanner"
+        )
+        .value =
+        "";
 
-    document.getElementById(
-        "successMessage"
-    ).style.display = "none";
+    document
+        .getElementById(
+            "successMessage"
+        )
+        .style.display =
+        "none";
 
-    activeCategory = "";
+    activeCategory =
+        "";
 
     renderCategories();
+
     renderProducts();
+
     renderCart();
 
-    document.getElementById(
-        "barcodeScanner"
-    ).focus();
+    document
+        .getElementById(
+            "barcodeScanner"
+        )
+        .focus();
 }
 
 
-/* =====================================================
+/* =========================================================
    HELD SALES
-   ===================================================== */
+   ========================================================= */
 
 function holdCurrentSale(){
 
@@ -2832,51 +3247,52 @@ function holdCurrentSale(){
                 : "عميل نقدي",
 
         discount:
-            document.getElementById(
-                "discount"
-            ).value,
+            document
+                .getElementById(
+                    "discount"
+                )
+                .value,
 
         tax:
-            document.getElementById(
-                "tax"
-            ).value,
+            document
+                .getElementById(
+                    "tax"
+                )
+                .value,
 
         paymentMethod:
-            document.getElementById(
-                "paymentMethod"
-            ).value,
+            document
+                .getElementById(
+                    "paymentMethod"
+                )
+                .value,
 
         amountReceived:
-            document.getElementById(
-                "amountReceived"
-            ).value,
+            document
+                .getElementById(
+                    "amountReceived"
+                )
+                .value,
 
         creditPaid:
-            document.getElementById(
-                "creditPaid"
-            ).value,
+            document
+                .getElementById(
+                    "creditPaid"
+                )
+                .value,
 
         total:
             currentTotal
     };
 
-    const result =
-        VAREX.holdSale(
-            data
-        );
-
-    if(!result){
-
-        showToast(
-            "تعذر حفظ الفاتورة المعلقة"
-        );
-
-        return;
-    }
+    VAREX.holdSale(
+        data
+    );
 
     resetCurrentSale();
 
     renderCart();
+
     updateHoldButton();
 
     showToast(
@@ -2905,8 +3321,7 @@ function updateHoldButton(){
             count +
             ")";
 
-    }
-    else{
+    }else{
 
         button.style.display =
             "none";
@@ -2918,30 +3333,37 @@ function openHeldSales(){
 
     renderHeldSales();
 
-    document.getElementById(
-        "heldModal"
-    ).classList.add(
-        "active"
-    );
+    document
+        .getElementById(
+            "heldModal"
+        )
+        .classList.add(
+            "active"
+        );
 }
 
 
 function closeHeldSales(){
 
-    document.getElementById(
-        "heldModal"
-    ).classList.remove(
-        "active"
-    );
+    document
+        .getElementById(
+            "heldModal"
+        )
+        .classList.remove(
+            "active"
+        );
 }
 
 
-function modalBackgroundClose(event){
+function modalBackgroundClose(
+    event
+){
 
     if(
         event.target.id ===
         "heldModal"
     ){
+
         closeHeldSales();
     }
 }
@@ -2965,7 +3387,8 @@ function renderHeldSales(){
         return;
     }
 
-    list.innerHTML = "";
+    list.innerHTML =
+        "";
 
     sales.forEach(
         sale => {
@@ -2979,25 +3402,35 @@ function renderHeldSales(){
                 "held-item";
 
             const qty =
-                (sale.cart || [])
+                (
+                    sale.cart ||
+                    []
+                )
                 .reduce(
                     (sum,item) =>
                         sum +
                         Number(
-                            item.quantity || 0
+                            item.quantity ||
+                            0
                         ),
                     0
                 );
 
             div.innerHTML = `
+
                 <div class="held-top">
 
                     <div class="held-title">
-                        ${escapeHTML(sale.customerName || "عميل نقدي")}
+                        ${escapeHTML(
+                            sale.customerName ||
+                            "عميل نقدي"
+                        )}
                     </div>
 
                     <div class="held-date">
-                        ${formatDateTime(sale.createdAt)}
+                        ${formatDateTime(
+                            sale.createdAt
+                        )}
                     </div>
 
                 </div>
@@ -3005,7 +3438,10 @@ function renderHeldSales(){
                 <div class="held-details">
                     ${qty} قطعة
                     &nbsp; | &nbsp;
-                    ${VAREX.money(sale.total || 0)}
+                    ${VAREX.money(
+                        sale.total ||
+                        0
+                    )}
                 </div>
 
                 <div class="held-actions">
@@ -3058,14 +3494,18 @@ function restoreHeldSale(id){
         return;
     }
 
-    const validCart = [];
+    const validCart =
+        [];
 
-    (held.cart || [])
+    (
+        held.cart ||
+        []
+    )
     .forEach(
         item => {
 
             const product =
-                getProduct(
+                VAREX.getProductById(
                     item.productId
                 );
 
@@ -3075,10 +3515,13 @@ function restoreHeldSale(id){
 
             const available =
                 Number(
-                    product.quantity || 0
+                    product.quantity ||
+                    0
                 );
 
-            if(available <= 0){
+            if(
+                available <= 0
+            ){
                 return;
             }
 
@@ -3100,7 +3543,8 @@ function restoreHeldSale(id){
                 quantity:
                     Math.min(
                         Number(
-                            item.quantity || 1
+                            item.quantity ||
+                            1
                         ),
                         available
                     )
@@ -3111,35 +3555,53 @@ function restoreHeldSale(id){
     cart =
         validCart;
 
-    document.getElementById(
-        "customerSelect"
-    ).value =
-        held.customerId || "";
+    document
+        .getElementById(
+            "customerSelect"
+        )
+        .value =
+        held.customerId ||
+        "";
 
-    document.getElementById(
-        "discount"
-    ).value =
-        held.discount || "0";
+    document
+        .getElementById(
+            "discount"
+        )
+        .value =
+        held.discount ||
+        "0";
 
-    document.getElementById(
-        "tax"
-    ).value =
-        held.tax || "0";
+    document
+        .getElementById(
+            "tax"
+        )
+        .value =
+        held.tax ||
+        "0";
 
-    document.getElementById(
-        "paymentMethod"
-    ).value =
-        held.paymentMethod || "نقدي";
+    document
+        .getElementById(
+            "paymentMethod"
+        )
+        .value =
+        held.paymentMethod ||
+        "نقدي";
 
-    document.getElementById(
-        "amountReceived"
-    ).value =
-        held.amountReceived || "";
+    document
+        .getElementById(
+            "amountReceived"
+        )
+        .value =
+        held.amountReceived ||
+        "";
 
-    document.getElementById(
-        "creditPaid"
-    ).value =
-        held.creditPaid || "0";
+    document
+        .getElementById(
+            "creditPaid"
+        )
+        .value =
+        held.creditPaid ||
+        "0";
 
     VAREX.removeHeldSale(
         id
@@ -3148,8 +3610,11 @@ function restoreHeldSale(id){
     closeHeldSales();
 
     customerChanged();
+
     paymentMethodChanged();
+
     renderCart();
+
     updateHoldButton();
 
     showToast(
@@ -3175,6 +3640,7 @@ function deleteHeldSale(id){
     );
 
     renderHeldSales();
+
     updateHoldButton();
 
     showToast(
@@ -3183,9 +3649,9 @@ function deleteHeldSale(id){
 }
 
 
-/* =====================================================
+/* =========================================================
    RENDER CART
-   ===================================================== */
+   ========================================================= */
 
 function renderCart(){
 
@@ -3199,17 +3665,25 @@ function renderCart(){
             "emptyCart"
         );
 
-    container.innerHTML = "";
+    container.innerHTML =
+        "";
 
-    let subtotal = 0;
-    let quantityCount = 0;
+    let subtotal =
+        0;
+
+    let quantityCount =
+        0;
 
     cart.forEach(
         item => {
 
             const itemTotal =
-                Number(item.price) *
-                Number(item.quantity);
+                Number(
+                    item.price
+                ) *
+                Number(
+                    item.quantity
+                );
 
             subtotal +=
                 itemTotal;
@@ -3228,6 +3702,7 @@ function renderCart(){
                 "cart-item";
 
             row.innerHTML = `
+
                 <div class="cart-top">
 
                     <span class="cart-name">
@@ -3275,9 +3750,12 @@ function renderCart(){
         Math.max(
             0,
             Number(
-                document.getElementById(
-                    "discount"
-                ).value || 0
+                document
+                    .getElementById(
+                        "discount"
+                    )
+                    .value ||
+                0
             )
         );
 
@@ -3285,20 +3763,28 @@ function renderCart(){
         Math.max(
             0,
             Number(
-                document.getElementById(
-                    "tax"
-                ).value || 0
+                document
+                    .getElementById(
+                        "tax"
+                    )
+                    .value ||
+                0
             )
         );
 
-    if(discount > subtotal){
+    if(
+        discount >
+        subtotal
+    ){
 
         discount =
             subtotal;
 
-        document.getElementById(
-            "discount"
-        ).value =
+        document
+            .getElementById(
+                "discount"
+            )
+            .value =
             discount;
     }
 
@@ -3310,47 +3796,61 @@ function renderCart(){
             tax
         );
 
-    document.getElementById(
-        "subtotal"
-    ).innerText =
+    document
+        .getElementById(
+            "subtotal"
+        )
+        .innerText =
         VAREX.money(
             subtotal
         );
 
-    document.getElementById(
-        "discountView"
-    ).innerText =
+    document
+        .getElementById(
+            "discountView"
+        )
+        .innerText =
         VAREX.money(
             discount
         );
 
-    document.getElementById(
-        "taxView"
-    ).innerText =
+    document
+        .getElementById(
+            "taxView"
+        )
+        .innerText =
         VAREX.money(
             tax
         );
 
-    document.getElementById(
-        "total"
-    ).innerText =
+    document
+        .getElementById(
+            "total"
+        )
+        .innerText =
         VAREX.money(
             currentTotal
         );
 
-    document.getElementById(
-        "invoiceItemsCount"
-    ).innerText =
+    document
+        .getElementById(
+            "invoiceItemsCount"
+        )
+        .innerText =
         cart.length;
 
-    document.getElementById(
-        "invoiceQuantityCount"
-    ).innerText =
+    document
+        .getElementById(
+            "invoiceQuantityCount"
+        )
+        .innerText =
         quantityCount;
 
-    document.getElementById(
-        "invoiceMiniTotal"
-    ).innerText =
+    document
+        .getElementById(
+            "invoiceMiniTotal"
+        )
+        .innerText =
         VAREX.money(
             currentTotal
         );
@@ -3360,27 +3860,33 @@ function renderCart(){
             ? "none"
             : "block";
 
-    document.getElementById(
-        "payButton"
-    ).disabled =
+    document
+        .getElementById(
+            "payButton"
+        )
+        .disabled =
         !cart.length;
 
     calculateChange();
+
     calculateCreditDue();
+
     updatePaymentStatus();
 }
 
 
-/* =====================================================
+/* =========================================================
    PAYMENT
-   ===================================================== */
+   ========================================================= */
 
 function paymentMethodChanged(){
 
     const method =
-        document.getElementById(
-            "paymentMethod"
-        ).value;
+        document
+            .getElementById(
+                "paymentMethod"
+            )
+            .value;
 
     const cash =
         document.getElementById(
@@ -3400,22 +3906,28 @@ function paymentMethodChanged(){
         "active"
     );
 
-    if(method === "نقدي"){
-
+    if(
+        method ===
+        "نقدي"
+    ){
         cash.classList.add(
             "active"
         );
     }
 
-    if(method === "آجل"){
-
+    if(
+        method ===
+        "آجل"
+    ){
         credit.classList.add(
             "active"
         );
     }
 
     calculateChange();
+
     calculateCreditDue();
+
     updatePaymentStatus();
 }
 
@@ -3423,15 +3935,22 @@ function paymentMethodChanged(){
 function calculateChange(){
 
     const method =
-        document.getElementById(
-            "paymentMethod"
-        ).value;
+        document
+            .getElementById(
+                "paymentMethod"
+            )
+            .value;
 
-    if(method !== "نقدي"){
+    if(
+        method !==
+        "نقدي"
+    ){
 
-        document.getElementById(
-            "changeAmount"
-        ).innerText =
+        document
+            .getElementById(
+                "changeAmount"
+            )
+            .innerText =
             VAREX.money(0);
 
         return;
@@ -3441,15 +3960,20 @@ function calculateChange(){
         Math.max(
             0,
             Number(
-                document.getElementById(
-                    "amountReceived"
-                ).value || 0
+                document
+                    .getElementById(
+                        "amountReceived"
+                    )
+                    .value ||
+                0
             )
         );
 
-    document.getElementById(
-        "changeAmount"
-    ).innerText =
+    document
+        .getElementById(
+            "changeAmount"
+        )
+        .innerText =
         VAREX.money(
             Math.max(
                 0,
@@ -3463,15 +3987,22 @@ function calculateChange(){
 function calculateCreditDue(){
 
     const method =
-        document.getElementById(
-            "paymentMethod"
-        ).value;
+        document
+            .getElementById(
+                "paymentMethod"
+            )
+            .value;
 
-    if(method !== "آجل"){
+    if(
+        method !==
+        "آجل"
+    ){
 
-        document.getElementById(
-            "creditDue"
-        ).innerText =
+        document
+            .getElementById(
+                "creditDue"
+            )
+            .innerText =
             VAREX.money(0);
 
         return;
@@ -3481,26 +4012,36 @@ function calculateCreditDue(){
         Math.max(
             0,
             Number(
-                document.getElementById(
-                    "creditPaid"
-                ).value || 0
+                document
+                    .getElementById(
+                        "creditPaid"
+                    )
+                    .value ||
+                0
             )
         );
 
-    if(paid > currentTotal){
+    if(
+        paid >
+        currentTotal
+    ){
 
         paid =
             currentTotal;
 
-        document.getElementById(
-            "creditPaid"
-        ).value =
+        document
+            .getElementById(
+                "creditPaid"
+            )
+            .value =
             paid;
     }
 
-    document.getElementById(
-        "creditDue"
-    ).innerText =
+    document
+        .getElementById(
+            "creditDue"
+        )
+        .innerText =
         VAREX.money(
             Math.max(
                 0,
@@ -3516,56 +4057,67 @@ function calculateCreditDue(){
 function updatePaymentStatus(){
 
     const method =
-        document.getElementById(
-            "paymentMethod"
-        ).value;
+        document
+            .getElementById(
+                "paymentMethod"
+            )
+            .value;
 
     let status =
         "مدفوع";
 
-    if(method === "آجل"){
+    if(
+        method ===
+        "آجل"
+    ){
 
         const paid =
             Math.max(
                 0,
                 Number(
-                    document.getElementById(
-                        "creditPaid"
-                    ).value || 0
+                    document
+                        .getElementById(
+                            "creditPaid"
+                        )
+                        .value ||
+                    0
                 )
             );
 
-        if(paid <= 0){
+        if(
+            paid <= 0
+        ){
 
             status =
                 "غير مدفوع";
 
-        }
-        else if(
-            paid < currentTotal
+        }else if(
+            paid <
+            currentTotal
         ){
 
             status =
                 "مدفوع جزئياً";
 
-        }
-        else{
+        }else{
 
             status =
                 "مدفوع";
         }
     }
 
-    document.getElementById(
-        "paymentStatus"
-    ).innerText =
+    document
+        .getElementById(
+            "paymentStatus"
+        )
+        .innerText =
         status;
 }
 
 
-/* =====================================================
+/* =========================================================
    STATS
-   ===================================================== */
+   ========================================================= */
 
 function updateTodayStats(){
 
@@ -3575,7 +4127,7 @@ function updateTodayStats(){
             ? VAREX.getTodaySales()
             : [];
 
-    const total =
+    const todayTotal =
         typeof VAREX.getTodaySalesTotal ===
         "function"
             ? VAREX.getTodaySalesTotal()
@@ -3583,63 +4135,74 @@ function updateTodayStats(){
                 (sum,sale) =>
                     sum +
                     Number(
-                        sale.total || 0
+                        sale.total ||
+                        0
                     ),
                 0
             );
 
-    document.getElementById(
-        "todaySales"
-    ).innerText =
+    document
+        .getElementById(
+            "todaySales"
+        )
+        .innerText =
         VAREX.money(
-            total
+            todayTotal
         );
 
-    document.getElementById(
-        "todayInvoices"
-    ).innerText =
+    document
+        .getElementById(
+            "todayInvoices"
+        )
+        .innerText =
         todaySales.length;
 
     const sales =
         getSales();
 
-    if(sales.length){
+    if(
+        sales.length
+    ){
 
-        const sorted =
-            [...sales].sort(
-                (a,b) =>
-                    new Date(
-                        b.createdAt ||
-                        b.date ||
-                        0
-                    ) -
-                    new Date(
-                        a.createdAt ||
-                        a.date ||
-                        0
-                    )
-            );
+        const sorted = [
+            ...sales
+        ].sort(
+            (a,b) =>
+                new Date(
+                    b.createdAt ||
+                    b.date ||
+                    0
+                ) -
+                new Date(
+                    a.createdAt ||
+                    a.date ||
+                    0
+                )
+        );
 
-        document.getElementById(
-            "lastInvoice"
-        ).innerText =
+        document
+            .getElementById(
+                "lastInvoice"
+            )
+            .innerText =
             sorted[0].invoiceNumber ||
             "—";
 
-    }
-    else{
+    }else{
 
-        document.getElementById(
-            "lastInvoice"
-        ).innerText =
+        document
+            .getElementById(
+                "lastInvoice"
+            )
+            .innerText =
             "—";
     }
 }
 
 
-/* =====================================================
+/* =========================================================
    COMPLETE SALE
-   ===================================================== */
+   ========================================================= */
 
 function completeCurrentSale(){
 
@@ -3653,15 +4216,18 @@ function completeCurrentSale(){
     }
 
     const paymentMethod =
-        document.getElementById(
-            "paymentMethod"
-        ).value;
+        document
+            .getElementById(
+                "paymentMethod"
+            )
+            .value;
 
     const customer =
         getSelectedCustomer();
 
     if(
-        paymentMethod === "آجل" &&
+        paymentMethod ===
+        "آجل" &&
         !customer
     ){
 
@@ -3672,70 +4238,40 @@ function completeCurrentSale(){
         return;
     }
 
-    const subtotal =
-        cart.reduce(
-            (sum,item) =>
-                sum +
-                (
-                    Number(item.price) *
-                    Number(item.quantity)
-                ),
-            0
-        );
+    let paid =
+        0;
 
-    const discount =
-        Math.min(
-            subtotal,
-            Math.max(
-                0,
-                Number(
-                    document.getElementById(
-                        "discount"
-                    ).value || 0
-                )
-            )
-        );
+    let due =
+        0;
 
-    const tax =
-        Math.max(
-            0,
-            Number(
-                document.getElementById(
-                    "tax"
-                ).value || 0
-            )
-        );
+    let received =
+        0;
 
-    const total =
-        Math.max(
-            0,
-            subtotal -
-            discount +
-            tax
-        );
-
-    let paid = 0;
-    let due = 0;
-    let received = 0;
-    let change = 0;
+    let change =
+        0;
 
     if(
-        paymentMethod === "نقدي"
+        paymentMethod ===
+        "نقدي"
     ){
 
         received =
             Math.max(
                 0,
                 Number(
-                    document.getElementById(
-                        "amountReceived"
-                    ).value || 0
+                    document
+                        .getElementById(
+                            "amountReceived"
+                        )
+                        .value ||
+                    0
                 )
             );
 
         if(
             received > 0 &&
-            received < total
+            received <
+            currentTotal
         ){
 
             alert(
@@ -3746,33 +4282,39 @@ function completeCurrentSale(){
         }
 
         paid =
-            total;
+            currentTotal;
 
         change =
             received > 0
                 ? Math.max(
                     0,
                     received -
-                    total
+                    currentTotal
                 )
                 : 0;
 
-    }
-    else if(
-        paymentMethod === "آجل"
+    }else if(
+        paymentMethod ===
+        "آجل"
     ){
 
         paid =
             Math.max(
                 0,
                 Number(
-                    document.getElementById(
-                        "creditPaid"
-                    ).value || 0
+                    document
+                        .getElementById(
+                            "creditPaid"
+                        )
+                        .value ||
+                    0
                 )
             );
 
-        if(paid > total){
+        if(
+            paid >
+            currentTotal
+        ){
 
             alert(
                 "المبلغ المدفوع لا يمكن أن يتجاوز إجمالي الفاتورة"
@@ -3784,25 +4326,26 @@ function completeCurrentSale(){
         due =
             Math.max(
                 0,
-                total -
+                currentTotal -
                 paid
             );
 
-    }
-    else{
+    }else{
 
         paid =
-            total;
+            currentTotal;
     }
 
     if(
-        paymentMethod === "آجل" &&
+        paymentMethod ===
+        "آجل" &&
         customer
     ){
 
         const limit =
             Number(
-                customer.creditLimit || 0
+                customer.creditLimit ||
+                0
             );
 
         const previousDue =
@@ -3816,15 +4359,20 @@ function completeCurrentSale(){
 
         if(
             limit > 0 &&
-            newBalance > limit
+            newBalance >
+            limit
         ){
 
             if(
                 !confirm(
                     "الرصيد المستحق بعد هذه الفاتورة (" +
-                    VAREX.money(newBalance) +
+                    VAREX.money(
+                        newBalance
+                    ) +
                     ") سيتجاوز الحد الائتماني للعميل (" +
-                    VAREX.money(limit) +
+                    VAREX.money(
+                        limit
+                    ) +
                     "). هل تريد المتابعة؟"
                 )
             ){
@@ -3832,6 +4380,41 @@ function completeCurrentSale(){
             }
         }
     }
+
+    const subtotal =
+        cart.reduce(
+            (sum,item) =>
+                sum +
+                Number(item.price) *
+                Number(item.quantity),
+            0
+        );
+
+    const discount =
+        Math.max(
+            0,
+            Number(
+                document
+                    .getElementById(
+                        "discount"
+                    )
+                    .value ||
+                0
+            )
+        );
+
+    const tax =
+        Math.max(
+            0,
+            Number(
+                document
+                    .getElementById(
+                        "tax"
+                    )
+                    .value ||
+                0
+            )
+        );
 
     const items =
         cart.map(
@@ -3844,28 +4427,27 @@ function completeCurrentSale(){
                     item.name,
 
                 quantity:
-                    Number(
-                        item.quantity
-                    ),
+                    item.quantity,
 
                 price:
+                    item.price,
+
+                total:
                     Number(
                         item.price
+                    ) *
+                    Number(
+                        item.quantity
                     )
             })
         );
 
+    const currentUser =
+        VAREX.getCurrentUser();
+
     const saleData = {
 
         items,
-
-        subtotal,
-
-        discount,
-
-        tax,
-
-        total,
 
         customerId:
             customer
@@ -3887,6 +4469,15 @@ function completeCurrentSale(){
 
         paymentMethod,
 
+        subtotal,
+
+        discount,
+
+        tax,
+
+        total:
+            currentTotal,
+
         paid,
 
         due,
@@ -3906,12 +4497,12 @@ function completeCurrentSale(){
                     ? "مدفوع جزئياً"
                     : "غير مدفوع",
 
-        cashierId:
+        userId:
             currentUser
                 ? currentUser.id
                 : "",
 
-        cashierName:
+        userName:
             currentUser
                 ? currentUser.name
                 : ""
@@ -3937,13 +4528,8 @@ function completeCurrentSale(){
         return;
     }
 
-    const sale =
-        result.sale;
-
     /*
-       تسجيل المبلغ المقبوض في الحسابات.
-       سواء كانت الفاتورة نقدية أو بطاقة
-       أو تحويل أو دفعة أولى من بيع آجل.
+       تسجيل المقبوض في الحسابات.
     */
 
     if(
@@ -3959,7 +4545,7 @@ function completeCurrentSale(){
 
             description:
                 "مبيعات فاتورة " +
-                sale.invoiceNumber,
+                result.sale.invoiceNumber,
 
             category:
                 "المبيعات",
@@ -3974,18 +4560,19 @@ function completeCurrentSale(){
                 paymentMethod,
 
             referenceId:
-                sale.id,
+                result.sale.id,
 
             invoiceNumber:
-                sale.invoiceNumber,
-
-            customerId:
-                sale.customerId || "",
-
-            customerName:
-                sale.customerName || ""
+                result.sale.invoiceNumber
         });
     }
+
+    const sale = {
+
+        ...result.sale,
+
+        ...saleData
+    };
 
     lastCompletedSale =
         sale;
@@ -4000,14 +4587,14 @@ function completeCurrentSale(){
         );
 
     success.innerHTML =
-        "✓ تمت عملية البيع بنجاح" +
-        " &nbsp; | &nbsp; رقم الفاتورة: " +
+        "✓ تمت عملية البيع بنجاح &nbsp; | &nbsp; رقم الفاتورة: " +
         escapeHTML(
-            sale.invoiceNumber || "-"
+            sale.invoiceNumber ||
+            "-"
         ) +
         " &nbsp; | &nbsp; الإجمالي: " +
         VAREX.money(
-            sale.total || 0
+            sale.total
         );
 
     success.style.display =
@@ -4016,13 +4603,18 @@ function completeCurrentSale(){
     resetCurrentSale();
 
     renderCart();
+
     renderProducts();
+
     renderCustomers();
+
     updateTodayStats();
 
-    document.getElementById(
-        "barcodeScanner"
-    ).focus();
+    document
+        .getElementById(
+            "barcodeScanner"
+        )
+        .focus();
 
     window.scrollTo({
         top:0,
@@ -4031,9 +4623,9 @@ function completeCurrentSale(){
 }
 
 
-/* =====================================================
+/* =========================================================
    RECEIPT
-   ===================================================== */
+   ========================================================= */
 
 function prepareReceipt(sale){
 
@@ -4045,35 +4637,40 @@ function prepareReceipt(sale){
     const settings =
         VAREX.getSettings();
 
-    let itemsHTML = "";
+    let itemsHTML =
+        "";
 
-    (sale.items || [])
+    (
+        sale.items ||
+        []
+    )
     .forEach(
         item => {
-
-            const product =
-                getProduct(
-                    item.productId
-                );
 
             const name =
                 item.name ||
                 (
-                    product
-                        ? product.name
-                        : "منتج"
-                );
+                    VAREX.getProductById(
+                        item.productId
+                    ) ||
+                    {}
+                ).name ||
+                "منتج";
 
             const itemTotal =
                 Number(
-                    item.price || 0
+                    item.price ||
+                    0
                 ) *
                 Number(
-                    item.quantity || 0
+                    item.quantity ||
+                    0
                 );
 
             itemsHTML += `
+
                 <div class="receipt-row">
+
                     <span>
                         ${escapeHTML(name)}
                         ×
@@ -4083,6 +4680,7 @@ function prepareReceipt(sale){
                     <span>
                         ${VAREX.money(itemTotal)}
                     </span>
+
                 </div>
             `;
         }
@@ -4101,7 +4699,9 @@ function prepareReceipt(sale){
                 ${escapeHTML(businessName)}
             </h2>
 
-            <p>فاتورة مبيعات</p>
+            <p>
+                فاتورة مبيعات
+            </p>
 
             ${
                 settings.phone
@@ -4126,38 +4726,64 @@ function prepareReceipt(sale){
         <div class="receipt-line"></div>
 
         <div class="receipt-row">
-            <span>رقم الفاتورة</span>
+
+            <span>
+                رقم الفاتورة
+            </span>
+
             <strong>
-                ${escapeHTML(sale.invoiceNumber || "-")}
+                ${escapeHTML(
+                    sale.invoiceNumber ||
+                    "-"
+                )}
             </strong>
+
         </div>
 
         <div class="receipt-row">
-            <span>التاريخ</span>
+
             <span>
-                ${formatDateTime(sale.createdAt || sale.date)}
+                التاريخ
             </span>
+
+            <span>
+                ${formatDateTime(
+                    sale.createdAt ||
+                    sale.date ||
+                    new Date()
+                )}
+            </span>
+
         </div>
 
         <div class="receipt-row">
-            <span>العميل</span>
+
             <span>
-                ${escapeHTML(sale.customerName || "عميل نقدي")}
+                العميل
             </span>
+
+            <span>
+                ${escapeHTML(
+                    sale.customerName ||
+                    "عميل نقدي"
+                )}
+            </span>
+
         </div>
 
         <div class="receipt-row">
-            <span>طريقة الدفع</span>
-            <span>
-                ${escapeHTML(sale.paymentMethod || "-")}
-            </span>
-        </div>
 
-        <div class="receipt-row">
-            <span>الكاشير</span>
             <span>
-                ${escapeHTML(sale.cashierName || "-")}
+                طريقة الدفع
             </span>
+
+            <span>
+                ${escapeHTML(
+                    sale.paymentMethod ||
+                    "-"
+                )}
+            </span>
+
         </div>
 
         <div class="receipt-line"></div>
@@ -4167,64 +4793,130 @@ function prepareReceipt(sale){
         <div class="receipt-line"></div>
 
         <div class="receipt-row">
-            <span>المجموع الفرعي</span>
+
             <span>
-                ${VAREX.money(sale.subtotal || 0)}
+                المجموع الفرعي
             </span>
+
+            <span>
+                ${VAREX.money(
+                    sale.subtotal ||
+                    0
+                )}
+            </span>
+
         </div>
 
         <div class="receipt-row">
-            <span>الخصم</span>
+
             <span>
-                ${VAREX.money(sale.discount || 0)}
+                الخصم
             </span>
+
+            <span>
+                ${VAREX.money(
+                    sale.discount ||
+                    0
+                )}
+            </span>
+
         </div>
 
         <div class="receipt-row">
-            <span>الضريبة</span>
+
             <span>
-                ${VAREX.money(sale.tax || 0)}
+                الضريبة
             </span>
+
+            <span>
+                ${VAREX.money(
+                    sale.tax ||
+                    0
+                )}
+            </span>
+
         </div>
 
         <div class="receipt-row">
-            <strong>الإجمالي</strong>
+
             <strong>
-                ${VAREX.money(sale.total || 0)}
+                الإجمالي
             </strong>
+
+            <strong>
+                ${VAREX.money(
+                    sale.total ||
+                    0
+                )}
+            </strong>
+
         </div>
 
         <div class="receipt-row">
-            <span>المدفوع</span>
+
             <span>
-                ${VAREX.money(sale.paid || 0)}
+                المدفوع
             </span>
+
+            <span>
+                ${VAREX.money(
+                    sale.paid ||
+                    0
+                )}
+            </span>
+
         </div>
 
         ${
-            Number(sale.due || 0) > 0
-                ? `
-                    <div class="receipt-row">
-                        <strong>المبلغ المستحق</strong>
-                        <strong>
-                            ${VAREX.money(sale.due)}
-                        </strong>
-                    </div>
-                `
-                : ""
+            Number(
+                sale.due ||
+                0
+            ) > 0
+
+            ? `
+
+                <div class="receipt-row">
+
+                    <strong>
+                        المبلغ المستحق
+                    </strong>
+
+                    <strong>
+                        ${VAREX.money(
+                            sale.due
+                        )}
+                    </strong>
+
+                </div>
+            `
+
+            : ""
         }
 
         ${
-            Number(sale.change || 0) > 0
-                ? `
-                    <div class="receipt-row">
-                        <span>الباقي للعميل</span>
-                        <span>
-                            ${VAREX.money(sale.change)}
-                        </span>
-                    </div>
-                `
-                : ""
+            Number(
+                sale.change ||
+                0
+            ) > 0
+
+            ? `
+
+                <div class="receipt-row">
+
+                    <span>
+                        الباقي للعميل
+                    </span>
+
+                    <span>
+                        ${VAREX.money(
+                            sale.change
+                        )}
+                    </span>
+
+                </div>
+            `
+
+            : ""
         }
 
         <div class="receipt-line"></div>
@@ -4243,7 +4935,9 @@ function prepareReceipt(sale){
 
 function printLastSale(){
 
-    if(!lastCompletedSale){
+    if(
+        !lastCompletedSale
+    ){
 
         showToast(
             "لا توجد فاتورة مكتملة للطباعة"
@@ -4256,9 +4950,9 @@ function printLastSale(){
 }
 
 
-/* =====================================================
+/* =========================================================
    HELPERS
-   ===================================================== */
+   ========================================================= */
 
 function formatDateTime(value){
 
@@ -4267,7 +4961,9 @@ function formatDateTime(value){
     }
 
     const date =
-        new Date(value);
+        new Date(
+            value
+        );
 
     if(
         isNaN(
@@ -4329,9 +5025,11 @@ function escapeHTML(value){
 }
 
 
-/* =====================================================
-   START POS
-   ===================================================== */
+/* =========================================================
+   START
+   ========================================================= */
+
+loadCurrentUser();
 
 renderCustomers();
 
