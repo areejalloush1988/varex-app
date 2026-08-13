@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>الحسابات | VAREX</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f6fb;
+      color: #1f2937;
+      min-height: 100vh;
+    }
+
+    .header {
+      background: #172554;
+      color: white;
+      padding: 20px 30px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .logo {
+      font-size: 28px;
+      font-weight: bold;
+      letter-spacing: 3px;
+    }
+
+    .back {
+      color: white;
+      text-decoration: none;
+      font-size: 14px;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: auto;
+      padding: 30px;
+    }
+
+    h1 {
+      color: #172554;
+      margin-bottom: 8px;
+    }
+
+    .subtitle {
+      color: #6b7280;
+      margin-bottom: 25px;
+    }
+
+    .summary {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 15px;
+      margin-bottom: 25px;
+    }
+
+    .summary-card {
+      background: white;
+      padding: 20px;
+      border-radius: 14px;
+      box-shadow: 0 4px 15px rgba(0,0,0,.06);
+    }
+
+    .summary-card p {
+      color: #6b7280;
+      font-size: 14px;
+      margin-bottom: 10px;
+    }
+
+    .summary-card h2 {
+      color: #172554;
+    }
+
+    .panel {
+      background: white;
+      padding: 22px;
+      border-radius: 16px;
+      box-shadow: 0 4px 18px rgba(0,0,0,.06);
+      margin-bottom: 25px;
+    }
+
+    .panel h2 {
+      color: #172554;
+      margin-bottom: 18px;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 12px;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid #d1d5db;
+      border-radius: 9px;
+      font-size: 14px;
+    }
+
+    button {
+      background: #172554;
+      color: white;
+      border: none;
+      border-radius: 9px;
+      padding: 12px 20px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    button:hover {
+      opacity: .9;
+    }
+
+    .table-wrap {
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 750px;
+    }
+
+    th, td {
+      padding: 13px;
+      border-bottom: 1px solid #e5e7eb;
+      text-align: right;
+    }
+
+    th {
+      background: #f8fafc;
+      color: #172554;
+    }
+
+    .income {
+      color: #15803d;
+      font-weight: bold;
+    }
+
+    .expense {
+      color: #b91c1c;
+      font-weight: bold;
+    }
+
+    .delete {
+      background: #fee2e2;
+      color: #b91c1c;
+      padding: 7px 12px;
+    }
+
+    .empty {
+      text-align: center;
+      color: #6b7280;
+      padding: 25px;
+    }
+
+    @media (max-width: 600px) {
+      .container {
+        padding: 18px;
+      }
+
+      .header {
+        padding: 18px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+<header class="header">
+  <div class="logo">VAREX</div>
+  <a href="index.html" class="back">← لوحة التحكم</a>
+</header>
+
+<main class="container">
+
+  <h1>💰 الحسابات</h1>
+  <p class="subtitle">إدارة الإيرادات والمصروفات ومتابعة الوضع المالي.</p>
+
+  <section class="summary">
+
+    <div class="summary-card">
+      <p>إجمالي الإيرادات</p>
+      <h2 id="incomeTotal">0.00 د.إ</h2>
+    </div>
+
+    <div class="summary-card">
+      <p>إجمالي المصروفات</p>
+      <h2 id="expenseTotal">0.00 د.إ</h2>
+    </div>
+
+    <div class="summary-card">
+      <p>صافي الرصيد</p>
+      <h2 id="balanceTotal">0.00 د.إ</h2>
+    </div>
+
+    <div class="summary-card">
+      <p>عدد العمليات</p>
+      <h2 id="transactionCount">0</h2>
+    </div>
+
+  </section>
+
+  <section class="panel">
+
+    <h2>إضافة حركة مالية</h2>
+
+    <form id="accountForm" class="form-grid">
+
+      <select id="type" required>
+        <option value="">نوع الحركة</option>
+        <option value="income">إيراد</option>
+        <option value="expense">مصروف</option>
+      </select>
+
+      <input
+        id="description"
+        type="text"
+        placeholder="البيان / الوصف"
+        required
+      >
+
+      <input
+        id="category"
+        type="text"
+        placeholder="التصنيف"
+      >
+
+      <input
+        id="amount"
+        type="number"
+        min="0"
+        step="0.01"
+        placeholder="المبلغ"
+        required
+      >
+
+      <input
+        id="date"
+        type="date"
+        required
+      >
+
+      <input
+        id="payment"
+        type="text"
+        placeholder="طريقة الدفع"
+      >
+
+      <button type="submit">إضافة العملية</button>
+
+    </form>
+
+  </section>
+
+  <section class="panel">
+
+    <h2>سجل الحركات المالية</h2>
+
+    <div class="table-wrap">
+
+      <table>
+
+        <thead>
+          <tr>
+            <th>التاريخ</th>
+            <th>النوع</th>
+            <th>البيان</th>
+            <th>التصنيف</th>
+            <th>طريقة الدفع</th>
+            <th>المبلغ</th>
+            <th>إجراء</th>
+          </tr>
+        </thead>
+
+        <tbody id="accountTable"></tbody>
+
+      </table>
+
+      <div id="emptyMessage" class="empty">
+        لا توجد حركات مالية بعد.
+      </div>
+
+    </div>
+
+  </section>
+
+</main>
+
+<script>
+
+  let transactions =
+    JSON.parse(localStorage.getItem("varexTransactions")) || [];
+
+  const form = document.getElementById("accountForm");
+
+  document.getElementById("date").value =
+    new Date().toISOString().split("T")[0];
+
+
+  form.addEventListener("submit", function(e) {
+
+    e.preventDefault();
+
+    const transaction = {
+
+      id: Date.now(),
+
+      type:
+        document.getElementById("type").value,
+
+      description:
+        document.getElementById("description").value,
+
+      category:
+        document.getElementById("category").value,
+
+      amount:
+        Number(document.getElementById("amount").value),
+
+      date:
+        document.getElementById("date").value,
+
+      payment:
+        document.getElementById("payment").value
+
+    };
+
+    transactions.unshift(transaction);
+
+    saveTransactions();
+
+    form.reset();
+
+    document.getElementById("date").value =
+      new Date().toISOString().split("T")[0];
+
+  });
+
+
+  function saveTransactions() {
+
+    localStorage.setItem(
+      "varexTransactions",
+      JSON.stringify(transactions)
+    );
+
+    renderTransactions();
+
+  }
+
+
+  function deleteTransaction(id) {
+
+    transactions =
+      transactions.filter(item => item.id !== id);
+
+    saveTransactions();
+
+  }
+
+
+  function renderTransactions() {
+
+    const table =
+      document.getElementById("accountTable");
+
+    const empty =
+      document.getElementById("emptyMessage");
+
+    table.innerHTML = "";
+
+    let income = 0;
+    let expense = 0;
+
+
+    transactions.forEach(item => {
+
+      if(item.type === "income") {
+        income += item.amount;
+      } else {
+        expense += item.amount;
+      }
+
+
+      const row =
+        document.createElement("tr");
+
+
+      row.innerHTML = `
+
+        <td>${escapeHTML(item.date)}</td>
+
+        <td class="${item.type}">
+          ${item.type === "income" ? "إيراد" : "مصروف"}
+        </td>
+
+        <td>${escapeHTML(item.description)}</td>
+
+        <td>${escapeHTML(item.category || "-")}</td>
+
+        <td>${escapeHTML(item.payment || "-")}</td>
+
+        <td class="${item.type}">
+          ${item.amount.toFixed(2)} د.إ
+        </td>
+
+        <td>
+          <button
+            class="delete"
+            onclick="deleteTransaction(${item.id})">
+            حذف
+          </button>
+        </td>
+
+      `;
+
+      table.appendChild(row);
+
+    });
+
+
+    empty.style.display =
+      transactions.length ? "none" : "block";
+
+
+    document.getElementById("incomeTotal").innerText =
+      income.toFixed(2) + " د.إ";
+
+
+    document.getElementById("expenseTotal").innerText =
+      expense.toFixed(2) + " د.إ";
+
+
+    document.getElementById("balanceTotal").innerText =
+      (income - expense).toFixed(2) + " د.إ";
+
+
+    document.getElementById("transactionCount").innerText =
+      transactions.length;
+
+  }
+
+
+  function escapeHTML(value) {
+
+    return String(value)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
+
+  }
+
+
+  renderTransactions();
+
+</script>
+
+</body>
+</html>
