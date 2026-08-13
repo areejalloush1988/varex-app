@@ -1,6 +1,6 @@
 /* =========================================================
    VAREX CORE
-   Shared data layer for VAREX Business Management System
+   Shared Data Layer
    ========================================================= */
 
 const VAREX = {
@@ -14,52 +14,82 @@ const VAREX = {
     transactions: "varexTransactions"
   },
 
-  /* =========================
+  /* =====================================================
      GENERAL
-     ========================= */
+     ===================================================== */
 
   getData(key) {
     try {
-      return (
-        JSON.parse(
-          localStorage.getItem(key)
-        ) || []
+      const data = JSON.parse(
+        localStorage.getItem(key)
       );
+
+      return Array.isArray(data)
+        ? data
+        : [];
+
     } catch (error) {
+
       console.error(
         "VAREX data error:",
         error
       );
+
       return [];
     }
   },
 
   saveData(key, data) {
+
     localStorage.setItem(
       key,
       JSON.stringify(data)
     );
+
+    return true;
   },
 
   generateId(prefix = "VRX") {
+
     return (
       prefix +
       "-" +
       Date.now() +
       "-" +
       Math.floor(
-        Math.random() * 10000
+        Math.random() * 100000
       )
     );
   },
 
   today() {
-    return new Date()
-      .toISOString()
-      .split("T")[0];
+
+    const date = new Date();
+
+    const year =
+      date.getFullYear();
+
+    const month =
+      String(
+        date.getMonth() + 1
+      ).padStart(2, "0");
+
+    const day =
+      String(
+        date.getDate()
+      ).padStart(2, "0");
+
+    return (
+      year +
+      "-" +
+      month +
+      "-" +
+      day
+    );
   },
 
   money(value) {
+
     return (
       Number(value || 0)
         .toFixed(2) +
@@ -67,9 +97,50 @@ const VAREX = {
     );
   },
 
-  /* =========================
+  normalizeDate(value) {
+
+    if (!value) {
+      return "";
+    }
+
+    const date =
+      new Date(value);
+
+    if (
+      Number.isNaN(
+        date.getTime()
+      )
+    ) {
+
+      return String(value)
+        .slice(0, 10);
+    }
+
+    const year =
+      date.getFullYear();
+
+    const month =
+      String(
+        date.getMonth() + 1
+      ).padStart(2, "0");
+
+    const day =
+      String(
+        date.getDate()
+      ).padStart(2, "0");
+
+    return (
+      year +
+      "-" +
+      month +
+      "-" +
+      day
+    );
+  },
+
+  /* =====================================================
      DATE HELPERS
-     ========================= */
+     ===================================================== */
 
   getDaysUntil(dateValue) {
 
@@ -89,7 +160,8 @@ const VAREX = {
 
     const target =
       new Date(
-        dateValue + "T00:00:00"
+        dateValue +
+        "T00:00:00"
       );
 
     if (
@@ -97,6 +169,7 @@ const VAREX = {
         target.getTime()
       )
     ) {
+
       return null;
     }
 
@@ -123,15 +196,18 @@ const VAREX = {
       );
 
     if (days === null) {
+
       return {
         status: "none",
         level: "none",
-        text: "لم يحدد تاريخ الانتهاء",
+        text:
+          "لم يحدد تاريخ الانتهاء",
         days: null
       };
     }
 
     if (days < 0) {
+
       return {
         status: "expired",
         level: "danger",
@@ -141,6 +217,7 @@ const VAREX = {
     }
 
     if (days === 0) {
+
       return {
         status: "today",
         level: "danger",
@@ -150,6 +227,7 @@ const VAREX = {
     }
 
     if (days <= 7) {
+
       return {
         status: "urgent",
         level: "danger",
@@ -162,6 +240,7 @@ const VAREX = {
     }
 
     if (days <= 30) {
+
       return {
         status: "warning",
         level: "warning",
@@ -174,6 +253,7 @@ const VAREX = {
     }
 
     if (days <= 60) {
+
       return {
         status: "notice",
         level: "notice",
@@ -193,24 +273,27 @@ const VAREX = {
     };
   },
 
-  /* =========================
+  /* =====================================================
      PRODUCTS
-     ========================= */
+     ===================================================== */
 
   getProducts() {
+
     return this.getData(
       this.keys.products
     );
   },
 
   saveProducts(products) {
-    this.saveData(
+
+    return this.saveData(
       this.keys.products,
       products
     );
   },
 
   findProduct(id) {
+
     return this
       .getProducts()
       .find(
@@ -220,7 +303,94 @@ const VAREX = {
       );
   },
 
+  findProductByBarcode(barcode) {
+
+    const value =
+      String(
+        barcode || ""
+      ).trim();
+
+    if (!value) {
+      return null;
+    }
+
+    return this
+      .getProducts()
+      .find(
+        product =>
+          String(
+            product.barcode || ""
+          ).trim() === value
+      ) || null;
+  },
+
+  barcodeExists(
+    barcode,
+    excludeId = null
+  ) {
+
+    const value =
+      String(
+        barcode || ""
+      ).trim();
+
+    if (!value) {
+      return false;
+    }
+
+    return this
+      .getProducts()
+      .some(product => {
+
+        const sameBarcode =
+          String(
+            product.barcode || ""
+          ).trim() === value;
+
+        const differentProduct =
+          excludeId === null ||
+          String(product.id) !==
+          String(excludeId);
+
+        return (
+          sameBarcode &&
+          differentProduct
+        );
+      });
+  },
+
   addProduct(product) {
+
+    const name =
+      String(
+        product.name || ""
+      ).trim();
+
+    const barcode =
+      String(
+        product.barcode || ""
+      ).trim();
+
+    if (!name) {
+
+      return {
+        success: false,
+        message:
+          "اسم المنتج مطلوب."
+      };
+    }
+
+    if (
+      barcode &&
+      this.barcodeExists(barcode)
+    ) {
+
+      return {
+        success: false,
+        message:
+          "هذا الباركود مستخدم لمنتج آخر."
+      };
+    }
 
     const products =
       this.getProducts();
@@ -229,41 +399,63 @@ const VAREX = {
 
       id:
         product.id ||
-        this.generateId("PRD"),
+        this.generateId(
+          "PRD"
+        ),
 
-      name:
-        product.name || "",
+      name,
 
-      barcode:
-        product.barcode || "",
+      barcode,
 
       category:
-        product.category || "",
+        String(
+          product.category ||
+          "عام"
+        ).trim() ||
+        "عام",
 
       cost:
-        Number(
-          product.cost || 0
+        Math.max(
+          0,
+          Number(
+            product.cost || 0
+          )
         ),
 
       price:
-        Number(
-          product.price || 0
+        Math.max(
+          0,
+          Number(
+            product.price || 0
+          )
         ),
 
       quantity:
-        Number(
-          product.quantity || 0
+        Math.max(
+          0,
+          Number(
+            product.quantity || 0
+          )
         ),
 
       minimumStock:
-        Number(
-          product.minimumStock || 0
+        Math.max(
+          0,
+          Number(
+            product.minimumStock || 0
+          )
         ),
 
       supplier:
-        product.supplier || "",
+        String(
+          product.supplier || ""
+        ).trim(),
 
       createdAt:
+        new Date()
+          .toISOString(),
+
+      updatedAt:
         new Date()
           .toISOString()
     };
@@ -279,7 +471,10 @@ const VAREX = {
     return newProduct;
   },
 
-  updateProduct(id, changes) {
+  updateProduct(
+    id,
+    changes
+  ) {
 
     const products =
       this.getProducts();
@@ -295,9 +490,123 @@ const VAREX = {
       return false;
     }
 
+    if (
+      changes.barcode !==
+      undefined
+    ) {
+
+      const barcode =
+        String(
+          changes.barcode || ""
+        ).trim();
+
+      if (
+        barcode &&
+        this.barcodeExists(
+          barcode,
+          id
+        )
+      ) {
+
+        return {
+          success: false,
+          message:
+            "هذا الباركود مستخدم لمنتج آخر."
+        };
+      }
+
+      changes.barcode =
+        barcode;
+    }
+
+    if (
+      changes.name !==
+      undefined
+    ) {
+
+      changes.name =
+        String(
+          changes.name || ""
+        ).trim();
+    }
+
+    if (
+      changes.category !==
+      undefined
+    ) {
+
+      changes.category =
+        String(
+          changes.category ||
+          "عام"
+        ).trim() ||
+        "عام";
+    }
+
+    if (
+      changes.price !==
+      undefined
+    ) {
+
+      changes.price =
+        Math.max(
+          0,
+          Number(
+            changes.price || 0
+          )
+        );
+    }
+
+    if (
+      changes.cost !==
+      undefined
+    ) {
+
+      changes.cost =
+        Math.max(
+          0,
+          Number(
+            changes.cost || 0
+          )
+        );
+    }
+
+    if (
+      changes.quantity !==
+      undefined
+    ) {
+
+      changes.quantity =
+        Math.max(
+          0,
+          Number(
+            changes.quantity || 0
+          )
+        );
+    }
+
+    if (
+      changes.minimumStock !==
+      undefined
+    ) {
+
+      changes.minimumStock =
+        Math.max(
+          0,
+          Number(
+            changes.minimumStock || 0
+          )
+        );
+    }
+
     products[index] = {
+
       ...products[index],
-      ...changes
+      ...changes,
+
+      updatedAt:
+        new Date()
+          .toISOString()
     };
 
     this.saveProducts(
@@ -305,6 +614,43 @@ const VAREX = {
     );
 
     return products[index];
+  },
+
+  deleteProduct(id) {
+
+    const products =
+      this.getProducts();
+
+    const exists =
+      products.some(
+        product =>
+          String(product.id) ===
+          String(id)
+      );
+
+    if (!exists) {
+
+      return {
+        success: false,
+        message:
+          "المنتج غير موجود."
+      };
+    }
+
+    const updated =
+      products.filter(
+        product =>
+          String(product.id) !==
+          String(id)
+      );
+
+    this.saveProducts(
+      updated
+    );
+
+    return {
+      success: true
+    };
   },
 
   changeStock(
@@ -343,11 +689,73 @@ const VAREX = {
     products[index].quantity =
       newQuantity;
 
+    products[index].updatedAt =
+      new Date()
+        .toISOString();
+
     this.saveProducts(
       products
     );
 
     return products[index];
+  },
+
+  getProductStockStatus(
+    product
+  ) {
+
+    const quantity =
+      Number(
+        product.quantity || 0
+      );
+
+    const minimum =
+      Number(
+        product.minimumStock || 0
+      );
+
+    if (quantity <= 0) {
+
+      return {
+        key: "out",
+        text:
+          "نفد المخزون"
+      };
+    }
+
+    if (
+      quantity <= minimum
+    ) {
+
+      return {
+        key: "low",
+        text:
+          "مخزون منخفض"
+      };
+    }
+
+    return {
+      key: "available",
+      text: "متوفر"
+    };
+  },
+
+  getAvailableProducts() {
+
+    return this
+      .getProducts()
+      .filter(product => {
+
+        const status =
+          this.getProductStockStatus(
+            product
+          );
+
+        return (
+          status.key ===
+          "available"
+        );
+      });
   },
 
   getLowStockProducts() {
@@ -356,30 +764,208 @@ const VAREX = {
       .getProducts()
       .filter(product => {
 
-        return (
-          Number(
-            product.quantity || 0
-          ) <=
-          Number(
-            product.minimumStock || 0
-          )
-        );
+        const status =
+          this.getProductStockStatus(
+            product
+          );
 
+        return (
+          status.key ===
+          "low"
+        );
       });
   },
 
-  /* =========================
+  getOutOfStockProducts() {
+
+    return this
+      .getProducts()
+      .filter(product => {
+
+        const status =
+          this.getProductStockStatus(
+            product
+          );
+
+        return (
+          status.key ===
+          "out"
+        );
+      });
+  },
+
+  getProductTodaySales(
+    productId
+  ) {
+
+    const sales =
+      this.getSales();
+
+    const today =
+      this.today();
+
+    let quantity = 0;
+
+    sales.forEach(sale => {
+
+      if (
+        this.normalizeDate(
+          sale.date ||
+          sale.createdAt
+        ) !== today
+      ) {
+        return;
+      }
+
+      const items =
+        Array.isArray(
+          sale.items
+        )
+          ? sale.items
+          : [];
+
+      items.forEach(item => {
+
+        if (
+          String(
+            item.productId
+          ) ===
+          String(
+            productId
+          )
+        ) {
+
+          quantity +=
+            Number(
+              item.quantity || 0
+            );
+        }
+      });
+    });
+
+    return quantity;
+  },
+
+  getProductTotalSales(
+    productId
+  ) {
+
+    let quantity = 0;
+
+    this.getSales()
+      .forEach(sale => {
+
+        const items =
+          Array.isArray(
+            sale.items
+          )
+            ? sale.items
+            : [];
+
+        items.forEach(item => {
+
+          if (
+            String(
+              item.productId
+            ) ===
+            String(
+              productId
+            )
+          ) {
+
+            quantity +=
+              Number(
+                item.quantity || 0
+              );
+          }
+        });
+      });
+
+    return quantity;
+  },
+
+  getInventorySummary() {
+
+    const products =
+      this.getProducts();
+
+    let stockQuantity = 0;
+    let inventoryCost = 0;
+    let inventorySaleValue = 0;
+
+    products.forEach(product => {
+
+      const quantity =
+        Number(
+          product.quantity || 0
+        );
+
+      const cost =
+        Number(
+          product.cost || 0
+        );
+
+      const price =
+        Number(
+          product.price || 0
+        );
+
+      stockQuantity +=
+        quantity;
+
+      inventoryCost +=
+        quantity * cost;
+
+      inventorySaleValue +=
+        quantity * price;
+    });
+
+    return {
+
+      totalProducts:
+        products.length,
+
+      stockQuantity,
+
+      availableProducts:
+        this
+          .getAvailableProducts()
+          .length,
+
+      lowStock:
+        this
+          .getLowStockProducts()
+          .length,
+
+      outOfStock:
+        this
+          .getOutOfStockProducts()
+          .length,
+
+      inventoryCost,
+
+      inventorySaleValue,
+
+      potentialProfit:
+        inventorySaleValue -
+        inventoryCost
+    };
+  },
+
+  /* =====================================================
      SALES
-     ========================= */
+     ===================================================== */
 
   getSales() {
+
     return this.getData(
       this.keys.sales
     );
   },
 
   saveSales(sales) {
-    this.saveData(
+
+    return this.saveData(
       this.keys.sales,
       sales
     );
@@ -400,7 +986,6 @@ const VAREX = {
         message:
           "الفاتورة فارغة."
       };
-
     }
 
     const products =
@@ -430,7 +1015,6 @@ const VAREX = {
           message:
             "أحد المنتجات غير موجود."
         };
-
       }
 
       const product =
@@ -458,7 +1042,6 @@ const VAREX = {
             "الكمية غير كافية للمنتج: " +
             product.name
         };
-
       }
 
       const price =
@@ -495,8 +1078,6 @@ const VAREX = {
       });
     }
 
-    /* خصم الكميات من المخزون */
-
     normalizedItems
       .forEach(item => {
 
@@ -521,6 +1102,11 @@ const VAREX = {
           ) -
           item.quantity;
 
+        products[
+          productIndex
+        ].updatedAt =
+          new Date()
+            .toISOString();
       });
 
     this.saveProducts(
@@ -563,8 +1149,10 @@ const VAREX = {
       normalizedItems.reduce(
         (sum, item) =>
           sum +
-          item.cost *
-          item.quantity,
+          (
+            item.cost *
+            item.quantity
+          ),
         0
       );
 
@@ -580,6 +1168,10 @@ const VAREX = {
         Date.now(),
 
       date:
+        new Date()
+          .toISOString(),
+
+      createdAt:
         new Date()
           .toISOString(),
 
@@ -624,8 +1216,6 @@ const VAREX = {
       sales
     );
 
-    /* تسجيل الإيراد تلقائياً */
-
     this.addTransaction({
 
       type:
@@ -657,9 +1247,85 @@ const VAREX = {
     };
   },
 
-  /* =========================
+  getTodaySales() {
+
+    const today =
+      this.today();
+
+    return this
+      .getSales()
+      .filter(
+        sale =>
+          this.normalizeDate(
+            sale.date ||
+            sale.createdAt
+          ) === today
+      );
+  },
+
+  getTodaySalesSummary() {
+
+    const sales =
+      this.getTodaySales();
+
+    const total =
+      sales.reduce(
+        (sum, sale) =>
+          sum +
+          Number(
+            sale.total || 0
+          ),
+        0
+      );
+
+    const profit =
+      sales.reduce(
+        (sum, sale) =>
+          sum +
+          Number(
+            sale.profit || 0
+          ),
+        0
+      );
+
+    const items =
+      sales.reduce(
+        (sum, sale) => {
+
+          const saleItems =
+            Array.isArray(
+              sale.items
+            )
+              ? sale.items
+              : [];
+
+          return (
+            sum +
+            saleItems.reduce(
+              (itemSum, item) =>
+                itemSum +
+                Number(
+                  item.quantity || 0
+                ),
+              0
+            )
+          );
+        },
+        0
+      );
+
+    return {
+      invoices:
+        sales.length,
+      total,
+      profit,
+      items
+    };
+  },
+
+  /* =====================================================
      ACCOUNTS
-     ========================= */
+     ===================================================== */
 
   getTransactions() {
 
@@ -672,7 +1338,7 @@ const VAREX = {
     transactions
   ) {
 
-    this.saveData(
+    return this.saveData(
       this.keys.transactions,
       transactions
     );
@@ -689,10 +1355,8 @@ const VAREX = {
 
       id:
         transaction.id ||
-        Date.now() +
-        Math.floor(
-          Math.random() *
-          1000
+        this.generateId(
+          "TRX"
         ),
 
       type:
@@ -708,8 +1372,11 @@ const VAREX = {
         "",
 
       amount:
-        Number(
-          transaction.amount || 0
+        Math.max(
+          0,
+          Number(
+            transaction.amount || 0
+          )
         ),
 
       date:
@@ -754,6 +1421,8 @@ const VAREX = {
     this.saveTransactions(
       transactions
     );
+
+    return true;
   },
 
   getFinancialSummary() {
@@ -776,7 +1445,6 @@ const VAREX = {
             Number(
               item.amount || 0
             );
-
         }
 
         if (
@@ -788,35 +1456,37 @@ const VAREX = {
             Number(
               item.amount || 0
             );
-
         }
-
       }
     );
 
     return {
-
       income,
-
       expenses,
-
       balance:
         income -
         expenses,
-
       transactions:
         transactions.length
     };
   },
 
-  /* =========================
+  /* =====================================================
      CUSTOMERS
-     ========================= */
+     ===================================================== */
 
   getCustomers() {
 
     return this.getData(
       this.keys.customers
+    );
+  },
+
+  saveCustomers(customers) {
+
+    return this.saveData(
+      this.keys.customers,
+      customers
     );
   },
 
@@ -857,22 +1527,89 @@ const VAREX = {
       newCustomer
     );
 
-    this.saveData(
-      this.keys.customers,
+    this.saveCustomers(
       customers
     );
 
     return newCustomer;
   },
 
-  /* =========================
+  findCustomer(id) {
+
+    return this
+      .getCustomers()
+      .find(
+        customer =>
+          String(customer.id) ===
+          String(id)
+      );
+  },
+
+  updateCustomer(
+    id,
+    changes
+  ) {
+
+    const customers =
+      this.getCustomers();
+
+    const index =
+      customers.findIndex(
+        customer =>
+          String(customer.id) ===
+          String(id)
+      );
+
+    if (index === -1) {
+      return false;
+    }
+
+    customers[index] = {
+      ...customers[index],
+      ...changes
+    };
+
+    this.saveCustomers(
+      customers
+    );
+
+    return customers[index];
+  },
+
+  deleteCustomer(id) {
+
+    const customers =
+      this
+        .getCustomers()
+        .filter(
+          customer =>
+            String(customer.id) !==
+            String(id)
+        );
+
+    this.saveCustomers(
+      customers
+    );
+
+    return true;
+  },
+
+  /* =====================================================
      SUPPLIERS
-     ========================= */
+     ===================================================== */
 
   getSuppliers() {
 
     return this.getData(
       this.keys.suppliers
+    );
+  },
+
+  saveSuppliers(suppliers) {
+
+    return this.saveData(
+      this.keys.suppliers,
+      suppliers
     );
   },
 
@@ -916,17 +1653,76 @@ const VAREX = {
       newSupplier
     );
 
-    this.saveData(
-      this.keys.suppliers,
+    this.saveSuppliers(
       suppliers
     );
 
     return newSupplier;
   },
 
-  /* =========================
+  findSupplier(id) {
+
+    return this
+      .getSuppliers()
+      .find(
+        supplier =>
+          String(supplier.id) ===
+          String(id)
+      );
+  },
+
+  updateSupplier(
+    id,
+    changes
+  ) {
+
+    const suppliers =
+      this.getSuppliers();
+
+    const index =
+      suppliers.findIndex(
+        supplier =>
+          String(supplier.id) ===
+          String(id)
+      );
+
+    if (index === -1) {
+      return false;
+    }
+
+    suppliers[index] = {
+      ...suppliers[index],
+      ...changes
+    };
+
+    this.saveSuppliers(
+      suppliers
+    );
+
+    return suppliers[index];
+  },
+
+  deleteSupplier(id) {
+
+    const suppliers =
+      this
+        .getSuppliers()
+        .filter(
+          supplier =>
+            String(supplier.id) !==
+            String(id)
+        );
+
+    this.saveSuppliers(
+      suppliers
+    );
+
+    return true;
+  },
+
+  /* =====================================================
      EMPLOYEES
-     ========================= */
+     ===================================================== */
 
   getEmployees() {
 
@@ -939,7 +1735,7 @@ const VAREX = {
     employees
   ) {
 
-    this.saveData(
+    return this.saveData(
       this.keys.employees,
       employees
     );
@@ -997,10 +1793,6 @@ const VAREX = {
       hireDate:
         employee.hireDate ||
         "",
-
-      /* =====================
-         EMPLOYEE DOCUMENTS
-         ===================== */
 
       profilePhoto:
         employee.profilePhoto ||
@@ -1069,9 +1861,7 @@ const VAREX = {
           String(id)
       );
 
-    if (
-      index === -1
-    ) {
+    if (index === -1) {
       return false;
     }
 
@@ -1094,9 +1884,7 @@ const VAREX = {
         .getEmployees()
         .filter(
           employee =>
-            String(
-              employee.id
-            ) !==
+            String(employee.id) !==
             String(id)
         );
 
@@ -1107,9 +1895,9 @@ const VAREX = {
     return true;
   },
 
-  /* =========================
+  /* =====================================================
      EMPLOYEE DOCUMENT ALERTS
-     ========================= */
+     ===================================================== */
 
   getEmployeeDocumentAlerts(
     employee
@@ -1120,8 +1908,7 @@ const VAREX = {
     const documents = [
 
       {
-        key:
-          "passport",
+        key: "passport",
         name:
           "جواز السفر",
         expiry:
@@ -1129,8 +1916,7 @@ const VAREX = {
       },
 
       {
-        key:
-          "residence",
+        key: "residence",
         name:
           "الإقامة",
         expiry:
@@ -1138,8 +1924,7 @@ const VAREX = {
       },
 
       {
-        key:
-          "emiratesId",
+        key: "emiratesId",
         name:
           "الهوية الإماراتية",
         expiry:
@@ -1147,14 +1932,12 @@ const VAREX = {
       },
 
       {
-        key:
-          "workPermit",
+        key: "workPermit",
         name:
           "بطاقة العمل",
         expiry:
           employee.workPermitExpiry
       }
-
     ];
 
     documents.forEach(
@@ -1170,13 +1953,6 @@ const VAREX = {
           this.getDocumentStatus(
             documentItem.expiry
           );
-
-        /*
-           لا نضيف الوثيقة إلى
-           التنبيهات إلا إذا بقي
-           60 يوماً أو أقل
-           أو كانت منتهية.
-        */
 
         if (
           status.days !== null &&
@@ -1212,9 +1988,7 @@ const VAREX = {
             text:
               status.text
           });
-
         }
-
       }
     );
 
@@ -1231,23 +2005,14 @@ const VAREX = {
     employees.forEach(
       employee => {
 
-        const employeeAlerts =
-          this
+        alerts.push(
+          ...this
             .getEmployeeDocumentAlerts(
               employee
-            );
-
-        alerts.push(
-          ...employeeAlerts
+            )
         );
-
       }
     );
-
-    /*
-       ترتيب التنبيهات:
-       المنتهي والأقرب أولاً
-    */
 
     alerts.sort(
       (a, b) =>
@@ -1286,9 +2051,9 @@ const VAREX = {
       );
   },
 
-  /* =========================
+  /* =====================================================
      REPORTS
-     ========================= */
+     ===================================================== */
 
   getReports() {
 
@@ -1300,6 +2065,9 @@ const VAREX = {
 
     const financial =
       this.getFinancialSummary();
+
+    const inventory =
+      this.getInventorySummary();
 
     const customers =
       this.getCustomers();
@@ -1313,19 +2081,6 @@ const VAREX = {
     const employeeAlerts =
       this
         .getAllEmployeeDocumentAlerts();
-
-    const inventoryValue =
-      products.reduce(
-        (sum, product) =>
-          sum +
-          Number(
-            product.cost || 0
-          ) *
-          Number(
-            product.quantity || 0
-          ),
-        0
-      );
 
     const salesTotal =
       sales.reduce(
@@ -1377,21 +2132,25 @@ const VAREX = {
         products.length,
 
       stockQuantity:
-        products.reduce(
-          (sum, product) =>
-            sum +
-            Number(
-              product.quantity || 0
-            ),
-          0
-        ),
+        inventory.stockQuantity,
 
-      inventoryValue,
+      inventoryValue:
+        inventory.inventoryCost,
+
+      inventorySaleValue:
+        inventory.inventorySaleValue,
+
+      potentialInventoryProfit:
+        inventory.potentialProfit,
+
+      availableProducts:
+        inventory.availableProducts,
 
       lowStock:
-        this
-          .getLowStockProducts()
-          .length,
+        inventory.lowStock,
+
+      outOfStock:
+        inventory.outOfStock,
 
       invoices:
         sales.length,
@@ -1443,14 +2202,17 @@ const VAREX = {
     };
   },
 
-  /* =========================
+  /* =====================================================
      DASHBOARD
-     ========================= */
+     ===================================================== */
 
   getDashboard() {
 
     const reports =
       this.getReports();
+
+    const todaySales =
+      this.getTodaySalesSummary();
 
     return {
 
@@ -1460,14 +2222,38 @@ const VAREX = {
       totalProfit:
         reports.salesProfit,
 
+      todaySales:
+        todaySales.total,
+
+      todayProfit:
+        todaySales.profit,
+
+      todayInvoices:
+        todaySales.invoices,
+
+      todayItemsSold:
+        todaySales.items,
+
       products:
         reports.products,
 
       stockQuantity:
         reports.stockQuantity,
 
+      availableProducts:
+        reports.availableProducts,
+
       lowStock:
         reports.lowStock,
+
+      outOfStock:
+        reports.outOfStock,
+
+      inventoryValue:
+        reports.inventoryValue,
+
+      inventorySaleValue:
+        reports.inventorySaleValue,
 
       customers:
         reports.customers,
@@ -1494,21 +2280,21 @@ const VAREX = {
         reports.balance,
 
       employeeDocumentAlerts:
-        reports
-          .employeeDocumentAlerts,
+        reports.employeeDocumentAlerts,
 
       expiredEmployeeDocuments:
-        reports
-          .expiredEmployeeDocuments,
+        reports.expiredEmployeeDocuments,
 
       urgentEmployeeDocuments:
-        reports
-          .urgentEmployeeDocuments
+        reports.urgentEmployeeDocuments
     };
   }
 };
 
-/* جعل VAREX متاحاً لجميع الصفحات */
+
+/* =========================================================
+   جعل VAREX متاحاً لجميع الصفحات
+   ========================================================= */
 
 window.VAREX = VAREX;
 

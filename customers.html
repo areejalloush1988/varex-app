@@ -1,169 +1,325 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
-
 <head>
 <meta charset="UTF-8">
-
-<meta
-  name="viewport"
-  content="width=device-width, initial-scale=1.0"
->
-
-<title>العملاء - VAREX</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VAREX | العملاء</title>
 
 <style>
-
 *{
   box-sizing:border-box;
+  margin:0;
+  padding:0;
+}
+
+:root{
+  --navy:#172554;
+  --navy-dark:#0f1d43;
+  --blue:#2563eb;
+  --bg:#f4f6fb;
+  --white:#ffffff;
+  --border:#e5eaf2;
+  --text:#172554;
+  --muted:#64748b;
+  --green:#15803d;
+  --red:#b91c1c;
 }
 
 body{
-  margin:0;
   font-family:Arial,sans-serif;
-  background:#f4f6fb;
-  color:#172554;
+  background:var(--bg);
+  color:var(--text);
+  min-height:100vh;
 }
 
-/* =========================
-   HEADER
-   ========================= */
+/* SIDEBAR */
 
-header{
-  background:#172554;
+.sidebar{
+  position:fixed;
+  right:0;
+  top:0;
+  bottom:0;
+  width:230px;
+  background:linear-gradient(180deg,#172554,#0f1d43);
   color:white;
-  padding:18px 5%;
+  z-index:100;
+  display:flex;
+  flex-direction:column;
+}
+
+.brand{
+  padding:28px 22px 22px;
+  border-bottom:1px solid rgba(255,255,255,.10);
+}
+
+.logo{
+  font-size:29px;
+  font-weight:800;
+  letter-spacing:4px;
+}
+
+.brand-small{
+  font-size:11px;
+  color:#cbd5e1;
+  margin-top:6px;
+}
+
+.nav{
+  padding:18px 12px;
+  flex:1;
+}
+
+.nav a{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  color:#dbeafe;
+  text-decoration:none;
+  padding:12px 14px;
+  border-radius:10px;
+  margin-bottom:5px;
+  font-size:14px;
+  transition:.2s;
+}
+
+.nav a:hover{
+  background:rgba(255,255,255,.08);
+  color:white;
+}
+
+.nav a.active{
+  background:white;
+  color:var(--navy);
+  font-weight:bold;
+  box-shadow:0 5px 15px rgba(0,0,0,.15);
+}
+
+.nav-icon{
+  width:24px;
+  text-align:center;
+}
+
+.sidebar-footer{
+  padding:17px;
+  border-top:1px solid rgba(255,255,255,.10);
+  color:#94a3b8;
+  font-size:11px;
+  text-align:center;
+}
+
+/* MAIN */
+
+.main{
+  margin-right:230px;
+  min-height:100vh;
+}
+
+/* TOPBAR */
+
+.topbar{
+  height:76px;
+  background:white;
+  border-bottom:1px solid var(--border);
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:0 28px;
+  position:sticky;
+  top:0;
+  z-index:50;
+}
+
+.page-name{
+  display:flex;
+  align-items:center;
+  gap:12px;
+}
+
+.page-icon{
+  width:43px;
+  height:43px;
+  border-radius:12px;
+  background:#eef2ff;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:21px;
+}
+
+.page-name h2{
+  font-size:18px;
+}
+
+.page-name small{
+  display:block;
+  color:var(--muted);
+  margin-top:4px;
+}
+
+.top-info{
+  display:flex;
+  align-items:center;
+  gap:12px;
+}
+
+.info-chip{
+  background:#f8fafc;
+  border:1px solid var(--border);
+  border-radius:10px;
+  padding:9px 13px;
+  font-size:12px;
+  color:var(--muted);
+}
+
+.info-chip strong{
+  color:var(--navy);
+}
+
+/* CONTENT */
+
+.content{
+  width:95%;
+  max-width:1500px;
+  margin:24px auto 40px;
+}
+
+.hero{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:15px;
+  margin-bottom:18px;
+}
+
+.hero h1{
+  font-size:25px;
+  margin-bottom:6px;
+}
+
+.hero p{
+  color:var(--muted);
+  font-size:13px;
+}
+
+.primary{
+  border:0;
+  background:linear-gradient(135deg,#172554,#1e3a8a);
+  color:white;
+  padding:12px 18px;
+  border-radius:10px;
+  cursor:pointer;
+  font-weight:bold;
+}
+
+/* STATS */
+
+.stats{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:14px;
+  margin-bottom:18px;
+}
+
+.stat{
+  background:white;
+  border:1px solid var(--border);
+  border-radius:14px;
+  padding:17px 18px;
+  box-shadow:0 3px 12px rgba(15,23,42,.04);
+}
+
+.stat-top{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  margin-bottom:10px;
+}
+
+.stat-label{
+  font-size:12px;
+  color:var(--muted);
+}
+
+.stat-icon{
+  width:36px;
+  height:36px;
+  border-radius:10px;
+  background:#eef2ff;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+
+.stat-value{
+  font-size:22px;
+  font-weight:bold;
+}
+
+.stat-small{
+  color:#94a3b8;
+  font-size:11px;
+  margin-top:5px;
+}
+
+/* PANEL */
+
+.panel{
+  background:white;
+  border:1px solid var(--border);
+  border-radius:16px;
+  box-shadow:0 4px 18px rgba(15,23,42,.05);
+  overflow:hidden;
+}
+
+.panel-head{
+  padding:18px 20px;
+  border-bottom:1px solid var(--border);
   display:flex;
   justify-content:space-between;
   align-items:center;
 }
 
-.logo{
-  font-size:25px;
-  font-weight:bold;
-  letter-spacing:2px;
+.panel-head h3{
+  font-size:16px;
 }
 
-.back{
-  color:white;
-  text-decoration:none;
+.panel-head span{
+  font-size:11px;
+  color:var(--muted);
 }
-
-/* =========================
-   MAIN
-   ========================= */
-
-.container{
-  width:94%;
-  max-width:1400px;
-  margin:30px auto;
-}
-
-h1{
-  margin-bottom:5px;
-}
-
-.subtitle{
-  color:#64748b;
-  margin-top:0;
-}
-
-/* =========================
-   STATISTICS
-   ========================= */
-
-.stats{
-  display:grid;
-  grid-template-columns:
-    repeat(3,1fr);
-  gap:15px;
-  margin:25px 0;
-}
-
-.card,
-.panel{
-  background:white;
-  border-radius:15px;
-  padding:20px;
-  box-shadow:
-    0 4px 18px
-    rgba(0,0,0,.06);
-}
-
-.card span{
-  color:#64748b;
-  font-size:14px;
-}
-
-.card strong{
-  display:block;
-  font-size:24px;
-  margin-top:9px;
-}
-
-/* =========================
-   TOOLBAR
-   ========================= */
 
 .toolbar{
+  padding:15px 20px;
+  background:#fbfdff;
+  border-bottom:1px solid var(--border);
   display:flex;
-  gap:10px;
+  gap:9px;
   flex-wrap:wrap;
-  margin-bottom:18px;
 }
 
 input,
 textarea{
-  padding:12px;
+  padding:11px;
   border:1px solid #dbe1ea;
   border-radius:9px;
-  font-size:14px;
+  font-size:13px;
+  outline:none;
+  background:white;
   font-family:inherit;
+}
+
+input:focus,
+textarea:focus{
+  border-color:#94a3b8;
+  box-shadow:0 0 0 3px rgba(37,99,235,.05);
 }
 
 .search{
   flex:1;
-  min-width:220px;
+  min-width:250px;
 }
 
-button{
-  border:0;
-  border-radius:9px;
-  padding:11px 16px;
-  cursor:pointer;
-  font-family:inherit;
-}
-
-.primary{
-  background:#172554;
-  color:white;
-}
-
-.secondary{
-  background:#e5e7eb;
-  color:#111827;
-}
-
-.edit{
-  background:#e0e7ff;
-  color:#172554;
-  padding:7px 10px;
-}
-
-.delete{
-  background:#fee2e2;
-  color:#991b1b;
-  padding:7px 10px;
-}
-
-.details{
-  background:#ecfeff;
-  color:#155e75;
-  padding:7px 10px;
-}
-
-/* =========================
-   TABLE
-   ========================= */
+/* TABLE */
 
 .table-wrap{
   overflow-x:auto;
@@ -177,31 +333,72 @@ table{
 
 th,
 td{
-  padding:12px 9px;
+  padding:13px 10px;
   text-align:right;
   border-bottom:1px solid #edf0f5;
+  vertical-align:middle;
+  font-size:12px;
 }
 
 th{
   background:#f8fafc;
   color:#475569;
+  white-space:nowrap;
+}
+
+tbody tr:hover{
+  background:#fbfdff;
+}
+
+.customer-name{
+  font-weight:bold;
+  color:var(--navy);
+}
+
+button{
+  font-family:inherit;
+}
+
+.details{
+  border:0;
+  background:#ecfeff;
+  color:#155e75;
+  border-radius:7px;
+  padding:7px 10px;
+  cursor:pointer;
+}
+
+.edit{
+  border:0;
+  background:#eef2ff;
+  color:#172554;
+  border-radius:7px;
+  padding:7px 10px;
+  cursor:pointer;
+}
+
+.delete{
+  border:0;
+  background:#fee2e2;
+  color:#b91c1c;
+  border-radius:7px;
+  padding:7px 10px;
+  cursor:pointer;
 }
 
 .empty{
   text-align:center;
-  color:#64748b;
-  padding:25px;
+  color:var(--muted);
+  padding:35px;
 }
 
-/* =========================
-   MODAL
-   ========================= */
+/* MODAL */
 
 .modal{
   display:none;
   position:fixed;
   inset:0;
-  background:rgba(0,0,0,.45);
+  background:rgba(15,23,42,.55);
   align-items:center;
   justify-content:center;
   padding:15px;
@@ -213,22 +410,33 @@ th{
   width:100%;
   max-width:700px;
   border-radius:16px;
-  padding:25px;
-  max-height:92vh;
-  overflow-y:auto;
+  padding:24px;
+  max-height:90vh;
+  overflow:auto;
+  box-shadow:0 20px 50px rgba(0,0,0,.2);
+}
+
+.modal-header{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:18px;
+}
+
+.modal-header h2{
+  font-size:19px;
 }
 
 .close{
-  float:left;
-  font-size:25px;
   cursor:pointer;
+  font-size:24px;
+  color:#64748b;
 }
 
 .form-grid{
   display:grid;
-  grid-template-columns:
-    1fr 1fr;
-  gap:12px;
+  grid-template-columns:1fr 1fr;
+  gap:11px;
 }
 
 .form-grid input,
@@ -248,17 +456,33 @@ textarea{
 .form-actions{
   display:flex;
   gap:10px;
-  margin-top:18px;
+  margin-top:15px;
 }
 
-/* =========================
-   CUSTOMER DETAILS
-   ========================= */
+.save{
+  border:0;
+  background:linear-gradient(135deg,#172554,#1e3a8a);
+  color:white;
+  padding:12px 20px;
+  border-radius:9px;
+  cursor:pointer;
+  font-weight:bold;
+}
+
+.cancel{
+  border:0;
+  background:#e5e7eb;
+  color:#111827;
+  padding:12px 20px;
+  border-radius:9px;
+  cursor:pointer;
+}
+
+/* DETAILS */
 
 .details-grid{
   display:grid;
-  grid-template-columns:
-    1fr 1fr;
+  grid-template-columns:1fr 1fr;
   gap:12px;
 }
 
@@ -285,11 +509,72 @@ textarea{
   grid-column:1/-1;
 }
 
-/* =========================
-   MOBILE
-   ========================= */
+/* RESPONSIVE */
 
-@media(max-width:750px){
+@media(max-width:1100px){
+
+  .sidebar{
+    width:200px;
+  }
+
+  .main{
+    margin-right:200px;
+  }
+
+}
+
+@media(max-width:850px){
+
+  .sidebar{
+    position:relative;
+    width:100%;
+    height:auto;
+  }
+
+  .brand{
+    padding:17px 20px;
+  }
+
+  .nav{
+    display:flex;
+    overflow-x:auto;
+    padding:8px 10px 12px;
+  }
+
+  .nav a{
+    white-space:nowrap;
+    margin:0 3px;
+  }
+
+  .sidebar-footer{
+    display:none;
+  }
+
+  .main{
+    margin-right:0;
+  }
+
+  .topbar{
+    position:relative;
+    padding:0 16px;
+  }
+
+}
+
+@media(max-width:650px){
+
+  .content{
+    width:94%;
+  }
+
+  .top-info{
+    display:none;
+  }
+
+  .hero{
+    flex-direction:column;
+    align-items:flex-start;
+  }
 
   .stats{
     grid-template-columns:1fr;
@@ -312,89 +597,232 @@ textarea{
   }
 
 }
-
 </style>
 </head>
 
 <body>
 
-<!-- =========================
-     HEADER
-     ========================= -->
+<aside class="sidebar">
 
-<header>
-
-<div class="logo">
-VAREX
+<div class="brand">
+  <div class="logo">VAREX</div>
+  <div class="brand-small">
+    BUSINESS MANAGEMENT SYSTEM
+  </div>
 </div>
 
-<a
-  class="back"
-  href="index.html"
->
-← لوحة التحكم
+<nav class="nav">
+
+<a href="index.html">
+<span class="nav-icon">▦</span>
+لوحة التحكم
 </a>
+
+<a href="pos.html">
+<span class="nav-icon">🛒</span>
+نقطة البيع
+</a>
+
+<a href="products.html">
+<span class="nav-icon">📦</span>
+المنتجات والمخزون
+</a>
+
+<a href="customers.html" class="active">
+<span class="nav-icon">👥</span>
+العملاء
+</a>
+
+<a href="suppliers.html">
+<span class="nav-icon">🚚</span>
+الموردون
+</a>
+
+<a href="accounts.html">
+<span class="nav-icon">💰</span>
+الحسابات
+</a>
+
+<a href="employees.html">
+<span class="nav-icon">👤</span>
+الموظفون
+</a>
+
+<a href="reports.html">
+<span class="nav-icon">📊</span>
+التقارير
+</a>
+
+<a href="setting.html">
+<span class="nav-icon">⚙️</span>
+الإعدادات
+</a>
+
+</nav>
+
+<div class="sidebar-footer">
+VAREX CUSTOMER SYSTEM
+</div>
+
+</aside>
+
+
+<div class="main">
+
+<header class="topbar">
+
+<div class="page-name">
+
+<div class="page-icon">
+👥
+</div>
+
+<div>
+<h2>العملاء</h2>
+<small>VAREX CUSTOMERS</small>
+</div>
+
+</div>
+
+<div class="top-info">
+
+<div class="info-chip">
+المستخدم:
+<strong>المستخدم الحالي</strong>
+</div>
+
+<div
+  class="info-chip"
+  id="currentDate">
+—
+</div>
+
+<div
+  class="info-chip"
+  id="currentTime">
+—
+</div>
+
+</div>
 
 </header>
 
 
-<div class="container">
+<main class="content">
+
+<section class="hero">
+
+<div>
 
 <h1>
-👥 العملاء
+إدارة العملاء
 </h1>
 
-<p class="subtitle">
-إدارة بيانات العملاء ومعلومات التواصل والعناوين والملاحظات
+<p>
+إدارة بيانات العملاء ومعلومات التواصل والعناوين والملاحظات من مكان واحد
 </p>
 
+</div>
 
-<!-- =========================
-     STATISTICS
-     ========================= -->
+<button
+  class="primary"
+  onclick="openCustomerModal()">
+＋ إضافة عميل جديد
+</button>
 
-<div class="stats">
+</section>
 
-<div class="card">
-<span>
+
+<section class="stats">
+
+<div class="stat">
+
+<div class="stat-top">
+<div class="stat-label">
 إجمالي العملاء
-</span>
+</div>
+<div class="stat-icon">
+👥
+</div>
+</div>
 
-<strong id="totalCustomers">
+<div
+  class="stat-value"
+  id="totalCustomers">
 0
-</strong>
+</div>
+
+<div class="stat-small">
+عدد العملاء المسجلين
+</div>
+
 </div>
 
 
-<div class="card">
+<div class="stat">
+
+<div class="stat-top">
+<div class="stat-label">
+لديهم رقم هاتف
+</div>
+<div class="stat-icon">
+📞
+</div>
+</div>
+
+<div
+  class="stat-value"
+  id="customersWithPhone">
+0
+</div>
+
+<div class="stat-small">
+عملاء يمكن التواصل معهم هاتفياً
+</div>
+
+</div>
+
+
+<div class="stat">
+
+<div class="stat-top">
+<div class="stat-label">
+لديهم بريد إلكتروني
+</div>
+<div class="stat-icon">
+✉️
+</div>
+</div>
+
+<div
+  class="stat-value"
+  id="customersWithEmail">
+0
+</div>
+
+<div class="stat-small">
+عملاء مسجل لديهم بريد إلكتروني
+</div>
+
+</div>
+
+</section>
+
+
+<section class="panel">
+
+<div class="panel-head">
+
+<h3>
+قائمة العملاء
+</h3>
+
 <span>
-عملاء لديهم رقم هاتف
+إدارة بيانات العملاء ومعلومات التواصل
 </span>
 
-<strong id="customersWithPhone">
-0
-</strong>
 </div>
 
-
-<div class="card">
-<span>
-عملاء لديهم بريد إلكتروني
-</span>
-
-<strong id="customersWithEmail">
-0
-</strong>
-</div>
-
-</div>
-
-
-<!-- =========================
-     CUSTOMER LIST
-     ========================= -->
-
-<div class="panel">
 
 <div class="toolbar">
 
@@ -404,13 +832,6 @@ VAREX
   placeholder="🔍 ابحث باسم العميل أو الهاتف أو البريد الإلكتروني"
   oninput="renderCustomers()"
 >
-
-<button
-  class="primary"
-  onclick="openCustomerModal()"
->
-+ إضافة عميل
-</button>
 
 </div>
 
@@ -422,19 +843,12 @@ VAREX
 <thead>
 
 <tr>
-
 <th>#</th>
-
 <th>اسم العميل</th>
-
 <th>رقم الهاتف</th>
-
 <th>البريد الإلكتروني</th>
-
 <th>العنوان</th>
-
 <th>الإجراءات</th>
-
 </tr>
 
 </thead>
@@ -447,39 +861,38 @@ VAREX
 
 <div
   id="emptyMessage"
-  class="empty"
->
+  class="empty">
 لا يوجد عملاء حتى الآن
 </div>
 
 </div>
 
-</div>
+</section>
+
+</main>
 
 </div>
 
-
-<!-- =========================
-     ADD / EDIT CUSTOMER
-     ========================= -->
 
 <div
   class="modal"
-  id="customerModal"
->
+  id="customerModal">
 
 <div class="modal-box">
 
-<span
-  class="close"
-  onclick="closeCustomerModal()"
->
-×
-</span>
+<div class="modal-header">
 
 <h2 id="modalTitle">
 إضافة عميل جديد
 </h2>
+
+<span
+  class="close"
+  onclick="closeCustomerModal()">
+×
+</span>
+
+</div>
 
 
 <div class="form-grid">
@@ -508,8 +921,8 @@ VAREX
 <textarea
   id="notes"
   class="full"
-  placeholder="ملاحظات عن العميل"
-></textarea>
+  placeholder="ملاحظات عن العميل">
+</textarea>
 
 </div>
 
@@ -517,16 +930,14 @@ VAREX
 <div class="form-actions">
 
 <button
-  class="primary"
-  onclick="saveCustomer()"
->
+  class="save"
+  onclick="saveCustomer()">
 حفظ العميل
 </button>
 
 <button
-  class="secondary"
-  onclick="closeCustomerModal()"
->
+  class="cancel"
+  onclick="closeCustomerModal()">
 إلغاء
 </button>
 
@@ -537,42 +948,35 @@ VAREX
 </div>
 
 
-<!-- =========================
-     CUSTOMER DETAILS
-     ========================= -->
-
 <div
   class="modal"
-  id="detailsModal"
->
+  id="detailsModal">
 
 <div class="modal-box">
 
-<span
-  class="close"
-  onclick="closeDetailsModal()"
->
-×
-</span>
+<div class="modal-header">
 
 <h2 id="detailsTitle">
 بيانات العميل
 </h2>
 
+<span
+  class="close"
+  onclick="closeDetailsModal()">
+×
+</span>
+
+</div>
+
 <div
   class="details-grid"
-  id="detailsContent"
->
+  id="detailsContent">
 </div>
 
 </div>
 
 </div>
 
-
-<!-- =========================
-     VAREX CORE
-     ========================= -->
 
 <script src="varex.js"></script>
 
@@ -581,9 +985,47 @@ VAREX
 let editingCustomerId = null;
 
 
-/* =========================
-   GET CUSTOMERS
-   ========================= */
+/* CLOCK */
+
+function updateClock(){
+
+  const now = new Date();
+
+  document.getElementById(
+    "currentDate"
+  ).innerText =
+    now.toLocaleDateString(
+      "ar-AE",
+      {
+        year:"numeric",
+        month:"2-digit",
+        day:"2-digit"
+      }
+    );
+
+  document.getElementById(
+    "currentTime"
+  ).innerText =
+    now.toLocaleTimeString(
+      "ar-AE",
+      {
+        hour:"2-digit",
+        minute:"2-digit",
+        second:"2-digit"
+      }
+    );
+
+}
+
+updateClock();
+
+setInterval(
+  updateClock,
+  1000
+);
+
+
+/* GET */
 
 function getCustomers(){
 
@@ -592,9 +1034,7 @@ function getCustomers(){
 }
 
 
-/* =========================
-   SAVE CUSTOMERS
-   ========================= */
+/* SAVE */
 
 function saveCustomers(customers){
 
@@ -606,9 +1046,7 @@ function saveCustomers(customers){
 }
 
 
-/* =========================
-   FIND CUSTOMER
-   ========================= */
+/* FIND */
 
 function findCustomer(id){
 
@@ -621,9 +1059,7 @@ function findCustomer(id){
 }
 
 
-/* =========================
-   OPEN MODAL
-   ========================= */
+/* OPEN */
 
 function openCustomerModal(id = null){
 
@@ -652,30 +1088,25 @@ function openCustomerModal(id = null){
     ).innerText =
       "تعديل بيانات العميل";
 
-
     document.getElementById(
       "customerName"
     ).value =
       customer.name || "";
-
 
     document.getElementById(
       "phone"
     ).value =
       customer.phone || "";
 
-
     document.getElementById(
       "email"
     ).value =
       customer.email || "";
 
-
     document.getElementById(
       "address"
     ).value =
       customer.address || "";
-
 
     document.getElementById(
       "notes"
@@ -683,7 +1114,6 @@ function openCustomerModal(id = null){
       customer.notes || "";
 
   }
-
 
   document.getElementById(
     "customerModal"
@@ -693,9 +1123,7 @@ function openCustomerModal(id = null){
 }
 
 
-/* =========================
-   CLOSE MODAL
-   ========================= */
+/* CLOSE */
 
 function closeCustomerModal(){
 
@@ -709,9 +1137,7 @@ function closeCustomerModal(){
 }
 
 
-/* =========================
-   CLEAR FORM
-   ========================= */
+/* CLEAR */
 
 function clearCustomerForm(){
 
@@ -738,9 +1164,7 @@ function clearCustomerForm(){
 }
 
 
-/* =========================
-   SAVE CUSTOMER
-   ========================= */
+/* SAVE CUSTOMER */
 
 function saveCustomer(){
 
@@ -748,7 +1172,6 @@ function saveCustomer(){
     document.getElementById(
       "customerName"
     ).value.trim();
-
 
   if(!name){
 
@@ -763,7 +1186,7 @@ function saveCustomer(){
 
   const customerData = {
 
-    name,
+    name:name,
 
     phone:
       document.getElementById(
@@ -806,17 +1229,12 @@ function saveCustomer(){
           String(editingCustomerId)
       );
 
-
     if(index !== -1){
 
       customers[index] = {
-
         ...customers[index],
-
         ...customerData
-
       };
-
 
       saveCustomers(
         customers
@@ -826,7 +1244,6 @@ function saveCustomer(){
 
   }
 
-
   closeCustomerModal();
 
   renderCustomers();
@@ -834,20 +1251,16 @@ function saveCustomer(){
 }
 
 
-/* =========================
-   DELETE CUSTOMER
-   ========================= */
+/* DELETE */
 
 function deleteCustomer(id){
 
   const customer =
     findCustomer(id);
 
-
   if(!customer){
     return;
   }
-
 
   const confirmed =
     confirm(
@@ -856,11 +1269,9 @@ function deleteCustomer(id){
       "؟"
     );
 
-
   if(!confirmed){
     return;
   }
-
 
   const customers =
     getCustomers().filter(
@@ -869,36 +1280,30 @@ function deleteCustomer(id){
         String(id)
     );
 
-
   saveCustomers(
     customers
   );
-
 
   renderCustomers();
 
 }
 
 
-/* =========================
-   SHOW CUSTOMER DETAILS
-   ========================= */
+/* DETAILS */
 
 function openDetailsModal(id){
 
   const customer =
     findCustomer(id);
 
-
   if(!customer){
     return;
   }
 
-
   document.getElementById(
     "detailsTitle"
   ).innerText =
-    "👤 بيانات العميل — " +
+    "بيانات العميل — " +
     customer.name;
 
 
@@ -907,78 +1312,49 @@ function openDetailsModal(id){
   ).innerHTML = `
 
     <div class="detail-card">
-
-      <span>
-        اسم العميل
-      </span>
-
+      <span>اسم العميل</span>
       <strong>
         ${escapeHTML(
           customer.name || "-"
         )}
       </strong>
-
     </div>
 
-
     <div class="detail-card">
-
-      <span>
-        رقم الهاتف
-      </span>
-
+      <span>رقم الهاتف</span>
       <strong>
         ${escapeHTML(
           customer.phone || "-"
         )}
       </strong>
-
     </div>
 
-
     <div class="detail-card">
-
-      <span>
-        البريد الإلكتروني
-      </span>
-
+      <span>البريد الإلكتروني</span>
       <strong>
         ${escapeHTML(
           customer.email || "-"
         )}
       </strong>
-
     </div>
 
-
     <div class="detail-card">
-
-      <span>
-        العنوان
-      </span>
-
+      <span>العنوان</span>
       <strong>
         ${escapeHTML(
           customer.address || "-"
         )}
       </strong>
-
     </div>
 
-
     <div class="detail-card notes-card">
-
-      <span>
-        الملاحظات
-      </span>
-
+      <span>الملاحظات</span>
       <strong>
         ${escapeHTML(
           customer.notes ||
           "لا توجد ملاحظات"
         )}
       </strong>
-
     </div>
 
   `;
@@ -992,10 +1368,6 @@ function openDetailsModal(id){
 }
 
 
-/* =========================
-   CLOSE DETAILS
-   ========================= */
-
 function closeDetailsModal(){
 
   document.getElementById(
@@ -1006,15 +1378,12 @@ function closeDetailsModal(){
 }
 
 
-/* =========================
-   UPDATE STATISTICS
-   ========================= */
+/* STATS */
 
 function updateCustomerStats(){
 
   const customers =
     getCustomers();
-
 
   const withPhone =
     customers.filter(
@@ -1023,7 +1392,6 @@ function updateCustomerStats(){
           customer.phone || ""
         ).trim()
     ).length;
-
 
   const withEmail =
     customers.filter(
@@ -1054,21 +1422,17 @@ function updateCustomerStats(){
 }
 
 
-/* =========================
-   RENDER CUSTOMERS
-   ========================= */
+/* RENDER */
 
 function renderCustomers(){
 
   const customers =
     getCustomers();
 
-
   const table =
     document.getElementById(
       "customerTable"
     );
-
 
   const search =
     document.getElementById(
@@ -1077,16 +1441,13 @@ function renderCustomers(){
       .trim()
       .toLowerCase();
 
-
   table.innerHTML = "";
-
 
   let visible = 0;
 
 
   customers.forEach(
-    (customer,index) => {
-
+    customer => {
 
       const searchable =
         (
@@ -1124,7 +1485,7 @@ function renderCustomers(){
           ${visible}
         </td>
 
-        <td>
+        <td class="customer-name">
           ${escapeHTML(
             customer.name || "-"
           )}
@@ -1152,22 +1513,19 @@ function renderCustomers(){
 
           <button
             class="details"
-            onclick="openDetailsModal('${customer.id}')"
-          >
+            onclick="openDetailsModal('${customer.id}')">
             عرض
           </button>
 
           <button
             class="edit"
-            onclick="openCustomerModal('${customer.id}')"
-          >
+            onclick="openCustomerModal('${customer.id}')">
             تعديل
           </button>
 
           <button
             class="delete"
-            onclick="deleteCustomer('${customer.id}')"
-          >
+            onclick="deleteCustomer('${customer.id}')">
             حذف
           </button>
 
@@ -1197,9 +1555,7 @@ function renderCustomers(){
 }
 
 
-/* =========================
-   ESCAPE HTML
-   ========================= */
+/* SECURITY */
 
 function escapeHTML(value){
 
@@ -1218,9 +1574,7 @@ function escapeHTML(value){
 }
 
 
-/* =========================
-   CLOSE MODALS FROM OUTSIDE
-   ========================= */
+/* OUTSIDE CLICK */
 
 window.addEventListener(
   "click",
@@ -1241,9 +1595,7 @@ window.addEventListener(
       event.target ===
       customerModal
     ){
-
       closeCustomerModal();
-
     }
 
 
@@ -1251,18 +1603,14 @@ window.addEventListener(
       event.target ===
       detailsModal
     ){
-
       closeDetailsModal();
-
     }
 
   }
 );
 
 
-/* =========================
-   START PAGE
-   ========================= */
+/* START */
 
 renderCustomers();
 
