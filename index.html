@@ -10,12 +10,18 @@
      PWA
 ========================================== -->
 <link rel="manifest" href="./manifest.json">
+
 <meta name="theme-color" content="#172554">
 <meta name="application-name" content="VAREX">
 <meta name="mobile-web-app-capable" content="yes">
+
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="VAREX">
+
+<link rel="icon" type="image/png" sizes="192x192" href="./varex-icon-192.png">
+<link rel="icon" type="image/png" sizes="512x512" href="./varex-icon-512.png">
+<link rel="apple-touch-icon" href="./varex-icon-192.png">
 
 <style>
 *{
@@ -23,7 +29,6 @@
     margin:0;
     padding:0;
 }
-
 :root{
     --navy:#172554;
     --navy-dark:#0f1d43;
@@ -39,11 +44,9 @@
     --orange:#d97706;
     --sidebar-width:240px;
 }
-
 html{
     scroll-behavior:smooth;
 }
-
 body{
     font-family:Arial,Tahoma,sans-serif;
     background:var(--bg);
@@ -55,44 +58,34 @@ body{
 /* ==========================================
    SIDEBAR
 ========================================== */
-
 .sidebar{
     position:fixed;
     right:0;
     top:0;
     bottom:0;
     width:var(--sidebar-width);
-
     background:linear-gradient(
         180deg,
         #172554 0%,
         #13234f 48%,
         #0f1d43 100%
     );
-
     color:white;
     z-index:100;
-
     display:flex;
     flex-direction:column;
-
     box-shadow:-4px 0 18px rgba(15,29,67,.08);
 }
-
 .brand{
     min-height:150px;
     padding:25px 18px 20px;
-
     border-bottom:1px solid rgba(255,255,255,.10);
-
     display:flex;
     flex-direction:column;
     align-items:center;
     justify-content:center;
-
     text-align:center;
 }
-
 .logo{
     font-size:30px;
     line-height:1;
@@ -100,119 +93,83 @@ body{
     letter-spacing:4px;
     color:#ffffff;
 }
-
 .brand-small{
     width:100%;
-
     font-size:12px;
     line-height:1.45;
     font-weight:600;
-
     color:#e2e8f0;
-
     margin-top:10px;
     letter-spacing:.25px;
-
     text-align:center;
 }
-
 .brand-status{
     width:100%;
-
     display:flex;
     align-items:center;
     justify-content:center;
-
     gap:7px;
     margin-top:13px;
-
     font-size:11px;
     color:#d1fae5;
-
     text-align:center;
 }
-
 .brand-status-dot{
     width:8px;
     height:8px;
     min-width:8px;
-
     background:#22c55e;
     border-radius:50%;
-
     box-shadow:0 0 8px rgba(34,197,94,.75);
 }
-
 .nav{
     padding:17px 12px;
     flex:1;
     overflow-y:auto;
 }
-
 .nav a{
     width:100%;
     min-height:48px;
-
     display:flex;
     align-items:center;
     justify-content:flex-start;
-
     gap:11px;
-
     color:#dbeafe;
     text-decoration:none;
-
     padding:11px 14px;
-
     border-radius:10px;
     margin-bottom:5px;
-
     font-size:14px;
     font-weight:600;
-
     transition:.2s;
 }
-
 .nav a:hover{
     background:rgba(255,255,255,.08);
     color:#ffffff;
 }
-
 .nav a.active{
     background:#ffffff;
     color:var(--navy);
-
     font-weight:700;
-
     box-shadow:0 5px 15px rgba(0,0,0,.14);
 }
-
 .nav-icon{
     width:25px;
     min-width:25px;
     height:25px;
-
     display:flex;
     align-items:center;
     justify-content:center;
-
     text-align:center;
-
     font-size:17px;
 }
-
 .sidebar-footer{
     min-height:54px;
-
     padding:16px 10px;
-
     border-top:1px solid rgba(255,255,255,.10);
-
     color:#94a3b8;
-
     font-size:10px;
     text-align:center;
-
     display:flex;
     align-items:center;
     justify-content:center;
@@ -221,7 +178,6 @@ body{
 /* ==========================================
    MAIN
 ========================================== */
-
 .main{
     margin-right:var(--sidebar-width);
     min-height:100vh;
@@ -230,101 +186,68 @@ body{
 /* ==========================================
    TOP BAR
 ========================================== */
-
 .topbar{
     min-height:78px;
-
     background:#ffffff;
-
     border-bottom:1px solid var(--border);
-
     display:flex;
     align-items:center;
     justify-content:space-between;
-
     gap:20px;
-
     padding:0 28px;
-
     position:sticky;
     top:0;
-
     z-index:50;
 }
-
 .page-name{
     display:flex;
     align-items:center;
-
     gap:12px;
 }
-
 .page-icon{
     width:44px;
     min-width:44px;
     height:44px;
-
     border-radius:11px;
-
     background:#eef2ff;
-
     display:flex;
     align-items:center;
     justify-content:center;
-
     font-size:20px;
 }
-
 .page-name h2{
     font-size:19px;
     font-weight:700;
-
     color:var(--navy);
-
     line-height:1.3;
 }
-
 .page-name small{
     display:block;
-
     color:var(--muted);
-
     margin-top:4px;
-
     font-size:11px;
-
     direction:ltr;
     text-align:right;
 }
-
 .top-info{
     display:flex;
     align-items:center;
     justify-content:flex-end;
-
     gap:9px;
 }
-
 .info-chip{
     min-height:38px;
-
     background:#f8fafc;
-
     border:1px solid var(--border);
     border-radius:9px;
-
     padding:8px 12px;
-
     font-size:11px;
     color:var(--muted);
-
     display:flex;
     align-items:center;
     justify-content:center;
-
     white-space:nowrap;
 }
-
 .info-chip strong{
     color:var(--navy);
     margin-right:4px;
@@ -333,359 +256,238 @@ body{
 /* ==========================================
    LANGUAGE
 ========================================== */
-
 .language-selector{
     position:relative;
 }
-
 .language-button{
     height:38px;
     min-width:120px;
-
     display:flex;
     align-items:center;
     justify-content:center;
-
     gap:7px;
-
     border:1px solid #dbe3ef;
-
     background:#ffffff;
     color:var(--navy);
-
     border-radius:9px;
-
     padding:0 11px;
-
     font-size:11px;
     font-weight:bold;
-
     cursor:pointer;
-
     transition:.2s;
 }
-
 .language-button:hover{
     background:#f8fafc;
     border-color:#cbd5e1;
 }
-
 .language-globe{
     font-size:14px;
 }
-
 .language-arrow{
     font-size:8px;
     color:#64748b;
-
     transition:.2s;
 }
-
 .language-selector.open .language-arrow{
     transform:rotate(180deg);
 }
-
 .language-menu{
     display:none;
-
     position:absolute;
-
     top:45px;
     left:0;
-
     width:190px;
-
     background:#ffffff;
-
     border:1px solid var(--border);
     border-radius:11px;
-
     padding:7px;
-
     box-shadow:0 14px 35px rgba(15,23,42,.14);
-
     z-index:500;
 }
-
 .language-selector.open .language-menu{
     display:block;
 }
-
 .language-option{
     width:100%;
-
     border:0;
-
     background:#ffffff;
-
     border-radius:8px;
-
     padding:10px 11px;
-
     display:flex;
     align-items:center;
     justify-content:space-between;
-
     gap:10px;
-
     cursor:pointer;
-
     font-family:inherit;
     font-size:12px;
-
     color:#334155;
-
     text-align:right;
-
     transition:.15s;
 }
-
 .language-option:hover{
     background:#f1f5f9;
     color:var(--navy);
 }
-
 .language-option.active{
     background:#eef2ff;
     color:var(--navy);
-
     font-weight:bold;
 }
-
 .language-name{
     display:flex;
     align-items:center;
-
     gap:9px;
 }
-
 .language-code{
     color:#94a3b8;
-
     font-size:9px;
-
     direction:ltr;
 }
 
 /* ==========================================
    CONTENT
 ========================================== */
-
 .content{
     width:calc(100% - 48px);
-
     max-width:1450px;
-
     margin:24px auto 40px;
 }
 
 /* ==========================================
    HERO
 ========================================== */
-
 .hero{
     min-height:145px;
-
     background:linear-gradient(
         135deg,
         #172554,
         #1e3a6d
     );
-
     color:#ffffff;
-
     border-radius:16px;
-
     padding:26px 29px;
-
     display:flex;
     justify-content:space-between;
     align-items:center;
-
     gap:25px;
-
     margin-bottom:18px;
-
     box-shadow:0 8px 25px rgba(23,37,84,.14);
 }
-
 .hero > div:first-child{
     flex:1;
 }
-
 .hero h1{
     font-size:25px;
     line-height:1.4;
-
     margin-bottom:8px;
-
     font-weight:700;
 }
-
 .hero p{
     color:#dbeafe;
-
     font-size:13px;
     line-height:1.8;
-
     max-width:760px;
 }
-
 .hero-status{
     min-width:185px;
     min-height:44px;
-
     display:flex;
     align-items:center;
     justify-content:center;
-
     gap:8px;
-
     background:rgba(255,255,255,.10);
-
     border:1px solid rgba(255,255,255,.15);
-
     padding:10px 14px;
-
     border-radius:11px;
-
     font-size:11px;
-
     text-align:center;
 }
-
 .status-dot{
     width:9px;
     height:9px;
     min-width:9px;
-
     background:#4ade80;
-
     border-radius:50%;
-
     box-shadow:0 0 0 4px rgba(74,222,128,.15);
 }
 
 /* ==========================================
    QUICK STATS
 ========================================== */
-
 .quick-stats{
     display:grid;
-
     grid-template-columns:repeat(4,minmax(0,1fr));
-
     gap:14px;
-
     margin-bottom:22px;
 }
-
 .stat{
     min-height:145px;
-
     background:#ffffff;
-
     border:1px solid var(--border);
     border-radius:14px;
-
     padding:17px 18px;
-
     box-shadow:0 3px 12px rgba(15,23,42,.04);
-
     display:flex;
     flex-direction:column;
-
     align-items:center;
     justify-content:center;
-
     text-align:center;
 }
-
 .stat-top{
     width:100%;
-
     display:flex;
     flex-direction:column-reverse;
-
     justify-content:center;
     align-items:center;
-
     gap:8px;
-
     margin-bottom:9px;
 }
-
 .stat-icon{
     width:38px;
     height:38px;
-
     border-radius:10px;
-
     display:flex;
     align-items:center;
     justify-content:center;
-
     background:#eef2ff;
-
     font-size:18px;
 }
-
 .stat-label{
     font-size:12px;
-
     color:var(--muted);
-
     font-weight:600;
-
     text-align:center;
 }
-
 .stat-value{
     width:100%;
-
     font-size:21px;
-
     font-weight:700;
-
     color:var(--navy);
-
     text-align:center;
-
     direction:rtl;
 }
-
 .stat-small{
     width:100%;
-
     margin-top:6px;
-
     color:#94a3b8;
-
     font-size:10px;
-
     text-align:center;
 }
 
 /* ==========================================
    SECTION HEADER
 ========================================== */
-
 .section-header{
     display:flex;
-
     justify-content:space-between;
     align-items:center;
-
     gap:15px;
-
     margin-bottom:13px;
 }
-
 .section-header h3{
     font-size:17px;
     color:var(--navy);
 }
-
 .section-header span{
     font-size:11px;
     color:var(--muted);
@@ -694,269 +496,178 @@ body{
 /* ==========================================
    MODULES
 ========================================== */
-
 .modules{
     display:grid;
-
     grid-template-columns:repeat(4,minmax(0,1fr));
-
     gap:14px;
-
     margin-bottom:22px;
 }
-
 .module{
     text-decoration:none;
     color:inherit;
-
     background:#ffffff;
-
     border:1px solid var(--border);
     border-radius:14px;
-
     padding:18px 16px 40px;
-
     min-height:165px;
-
     box-shadow:0 3px 12px rgba(15,23,42,.04);
-
     transition:.2s;
-
     position:relative;
-
     display:flex;
     flex-direction:column;
-
     align-items:center;
-
     text-align:center;
 }
-
 .module:hover{
     transform:translateY(-3px);
-
     border-color:#c7d2fe;
-
     box-shadow:0 8px 22px rgba(15,23,42,.08);
 }
-
 .module-icon{
     width:43px;
     height:43px;
     min-height:43px;
-
     background:#eef2ff;
-
     border-radius:11px;
-
     display:flex;
     align-items:center;
     justify-content:center;
-
     font-size:20px;
-
     margin-bottom:12px;
 }
-
 .module h3{
     width:100%;
-
     color:var(--navy);
-
     font-size:14px;
-
     margin-bottom:6px;
-
     text-align:center;
 }
-
 .module p{
     width:100%;
-
     color:var(--muted);
-
     font-size:11px;
-
     line-height:1.65;
-
     text-align:center;
 }
-
 .module-arrow{
     position:absolute;
-
     left:50%;
-
     transform:translateX(-50%);
-
     bottom:11px;
-
     width:27px;
     height:27px;
-
     display:flex;
     align-items:center;
     justify-content:center;
-
     border-radius:7px;
-
     background:#f8fafc;
-
     color:var(--navy);
-
     font-size:13px;
 }
 
 /* ==========================================
    LOWER GRID
 ========================================== */
-
 .lower-grid{
     display:grid;
-
     grid-template-columns:minmax(0,1.4fr) minmax(280px,.8fr);
-
     gap:15px;
 }
 
 /* ==========================================
    PANEL
 ========================================== */
-
 .panel{
     background:#ffffff;
-
     border:1px solid var(--border);
     border-radius:15px;
-
     padding:19px;
-
     box-shadow:0 3px 12px rgba(15,23,42,.04);
 }
 
 /* ==========================================
    ACTIVITY
 ========================================== */
-
 .activity-list{
     margin-top:8px;
 }
-
 .activity{
     min-height:66px;
-
     display:flex;
     align-items:center;
-
     gap:12px;
-
     padding:12px 0;
-
     border-bottom:1px solid #edf0f5;
 }
-
 .activity:last-child{
     border-bottom:0;
 }
-
 .activity-icon{
     width:36px;
     min-width:36px;
     height:36px;
-
     border-radius:9px;
-
     background:#f1f5f9;
-
     display:flex;
     align-items:center;
     justify-content:center;
 }
-
 .activity-text{
     flex:1;
 }
-
 .activity-text strong{
     display:block;
-
     font-size:12px;
-
     margin-bottom:3px;
-
     color:var(--navy);
 }
-
 .activity-text span{
     color:var(--muted);
-
     font-size:10px;
-
     line-height:1.6;
 }
-
 .activity-time{
     min-width:45px;
-
     color:#94a3b8;
-
     font-size:9px;
-
     direction:ltr;
-
     text-align:center;
 }
 
 /* ==========================================
    SYSTEM INFO
 ========================================== */
-
 .system-box{
     background:linear-gradient(
         145deg,
         #f8fafc,
         #ffffff
     );
-
     border:1px solid var(--border);
     border-radius:12px;
-
     padding:14px 16px;
-
     margin-top:10px;
 }
-
 .system-row{
     min-height:42px;
-
     display:flex;
-
     justify-content:space-between;
     align-items:center;
-
     gap:15px;
-
     padding:9px 0;
-
     border-bottom:1px solid #edf0f5;
-
     font-size:11px;
 }
-
 .system-row:last-child{
     border-bottom:0;
 }
-
 .system-row span{
     color:var(--muted);
 }
-
 .system-row strong{
     color:var(--navy);
-
     text-align:left;
 }
-
 .online{
     color:var(--green) !important;
 }
@@ -964,218 +675,149 @@ body{
 /* ==========================================
    BOTTOM STATUS
 ========================================== */
-
 .bottom-status{
     margin-top:18px;
-
     background:#ecfdf3;
-
     color:#166534;
-
     border:1px solid #bbf7d0;
     border-radius:11px;
-
     padding:12px 15px;
-
     display:flex;
-
     justify-content:space-between;
     align-items:center;
-
     gap:15px;
-
     font-size:11px;
 }
-
 .bottom-status small{
     color:#64748b;
-
     direction:ltr;
 }
 
 /* ==========================================
    RESPONSIVE
 ========================================== */
-
 @media(max-width:1200px){
-
     .quick-stats{
         grid-template-columns:repeat(2,1fr);
     }
-
     .modules{
         grid-template-columns:repeat(3,1fr);
     }
 }
-
 @media(max-width:1000px){
-
     :root{
         --sidebar-width:210px;
     }
-
     .modules{
         grid-template-columns:repeat(2,1fr);
     }
-
     .topbar{
         padding:0 18px;
     }
 }
-
 @media(max-width:850px){
-
     :root{
         --sidebar-width:100%;
     }
-
     .sidebar{
         position:relative;
-
         width:100%;
         height:auto;
     }
-
     .brand{
         min-height:auto;
-
         padding:17px 20px;
     }
-
     .nav{
         display:flex;
-
         overflow-x:auto;
-
         padding:8px 10px 12px;
     }
-
     .nav a{
         width:auto;
-
         min-width:max-content;
-
         white-space:nowrap;
-
         margin:0 3px;
     }
-
     .sidebar-footer{
         display:none;
     }
-
     .main{
         margin-right:0;
     }
-
     .topbar{
         position:relative;
     }
-
     .lower-grid{
         grid-template-columns:1fr;
     }
-
     .content{
         width:94%;
     }
 }
-
 @media(max-width:650px){
-
     .hero{
         flex-direction:column;
-
         align-items:center;
-
         text-align:center;
-
         gap:16px;
     }
-
     .hero p{
         text-align:center;
     }
-
     .quick-stats{
         grid-template-columns:1fr 1fr;
     }
-
     .modules{
         grid-template-columns:1fr 1fr;
     }
-
     .top-info .info-chip{
         display:none;
     }
-
     .language-button{
         min-width:auto;
-
         padding:0 10px;
     }
-
     .language-menu{
         width:180px;
-
         left:0;
     }
 }
-
 @media(max-width:450px){
-
     .quick-stats{
         grid-template-columns:1fr;
     }
-
     .modules{
         grid-template-columns:1fr;
     }
-
     .page-name small{
         display:none;
     }
-
     .language-button{
         font-size:10px;
     }
-
     .hero h1{
         font-size:21px;
     }
 }
 </style>
-
 </head>
 
 <body>
 
-<!-- ==========================================
-     SIDEBAR
-========================================== -->
-
 <aside class="sidebar">
 
 <div class="brand">
-
-    <div class="logo">
-        VAREX
-    </div>
+    <div class="logo">VAREX</div>
 
     <div class="brand-small">
         BUSINESS MANAGEMENT SYSTEM
     </div>
 
     <div class="brand-status">
-
         <span class="brand-status-dot"></span>
-
-        <span>
-            النظام متصل وجاهز للعمل
-        </span>
-
+        <span>النظام متصل وجاهز للعمل</span>
     </div>
-
 </div>
 
 <nav class="nav">
@@ -1233,65 +875,36 @@ body{
 
 </aside>
 
-<!-- ==========================================
-     MAIN
-========================================== -->
-
 <div class="main">
 
 <header class="topbar">
 
 <div class="page-name">
 
-    <div class="page-icon">
-        ▦
-    </div>
+    <div class="page-icon">▦</div>
 
     <div>
-
-        <h2>
-            لوحة التحكم
-        </h2>
-
-        <small>
-            VAREX DASHBOARD
-        </small>
-
+        <h2>لوحة التحكم</h2>
+        <small>VAREX DASHBOARD</small>
     </div>
 
 </div>
 
 <div class="top-info">
 
-<div
-    class="language-selector"
-    id="languageSelector"
->
+<div class="language-selector" id="languageSelector">
 
 <button
     type="button"
     class="language-button"
     onclick="toggleLanguageMenu(event)"
 >
-
-<span class="language-globe">
-    🌐
-</span>
-
-<span id="currentLanguage">
-    العربية
-</span>
-
-<span class="language-arrow">
-    ▼
-</span>
-
+<span class="language-globe">🌐</span>
+<span id="currentLanguage">العربية</span>
+<span class="language-arrow">▼</span>
 </button>
 
-<div
-    class="language-menu"
-    id="languageMenu"
->
+<div class="language-menu" id="languageMenu">
 
 <button
     type="button"
@@ -1299,13 +912,8 @@ body{
     data-language="ar"
     onclick="selectLanguage('ar')"
 >
-    <span class="language-name">
-        🇦🇪 العربية
-    </span>
-
-    <span class="language-code">
-        AR
-    </span>
+<span class="language-name">🇦🇪 العربية</span>
+<span class="language-code">AR</span>
 </button>
 
 <button
@@ -1314,13 +922,8 @@ body{
     data-language="en"
     onclick="selectLanguage('en')"
 >
-    <span class="language-name">
-        🇬🇧 English
-    </span>
-
-    <span class="language-code">
-        EN
-    </span>
+<span class="language-name">🇬🇧 English</span>
+<span class="language-code">EN</span>
 </button>
 
 <button
@@ -1329,13 +932,8 @@ body{
     data-language="fr"
     onclick="selectLanguage('fr')"
 >
-    <span class="language-name">
-        🇫🇷 Français
-    </span>
-
-    <span class="language-code">
-        FR
-    </span>
+<span class="language-name">🇫🇷 Français</span>
+<span class="language-code">FR</span>
 </button>
 
 <button
@@ -1344,13 +942,8 @@ body{
     data-language="fa"
     onclick="selectLanguage('fa')"
 >
-    <span class="language-name">
-        🇮🇷 فارسی
-    </span>
-
-    <span class="language-code">
-        FA
-    </span>
+<span class="language-name">🇮🇷 فارسی</span>
+<span class="language-code">FA</span>
 </button>
 
 <button
@@ -1359,13 +952,8 @@ body{
     data-language="ur"
     onclick="selectLanguage('ur')"
 >
-    <span class="language-name">
-        🇵🇰 اردو
-    </span>
-
-    <span class="language-code">
-        UR
-    </span>
+<span class="language-name">🇵🇰 اردو</span>
+<span class="language-code">UR</span>
 </button>
 
 <button
@@ -1374,13 +962,8 @@ body{
     data-language="zh"
     onclick="selectLanguage('zh')"
 >
-    <span class="language-name">
-        🇨🇳 中文
-    </span>
-
-    <span class="language-code">
-        ZH
-    </span>
+<span class="language-name">🇨🇳 中文</span>
+<span class="language-code">ZH</span>
 </button>
 
 <button
@@ -1389,620 +972,264 @@ body{
     data-language="ko"
     onclick="selectLanguage('ko')"
 >
-    <span class="language-name">
-        🇰🇷 한국어
-    </span>
-
-    <span class="language-code">
-        KO
-    </span>
+<span class="language-name">🇰🇷 한국어</span>
+<span class="language-code">KO</span>
 </button>
 
 </div>
 </div>
 
 <div class="info-chip">
-
     المستخدم:
-
-    <strong>
-        المستخدم الحالي
-    </strong>
-
+    <strong>المستخدم الحالي</strong>
 </div>
 
-<div
-    class="info-chip"
-    id="currentDate"
->
-    —
-</div>
-
-<div
-    class="info-chip"
-    id="currentTime"
->
-    —
-</div>
+<div class="info-chip" id="currentDate">—</div>
+<div class="info-chip" id="currentTime">—</div>
 
 </div>
-
 </header>
 
-<!-- ==========================================
-     CONTENT
-========================================== -->
-
 <main class="content">
-
-<!-- HERO -->
 
 <section class="hero">
 
 <div>
-
-<h1>
-    مرحباً بك في VAREX
-</h1>
-
+<h1>مرحباً بك في VAREX</h1>
 <p>
     مركز إدارة أعمالك من مكان واحد —
     المبيعات والمخزون والعملاء والموردون
     والحسابات والموظفون والتقارير.
 </p>
-
 </div>
 
 <div class="hero-status">
-
 <span class="status-dot"></span>
-
-<span>
-    النظام يعمل بشكل طبيعي
-</span>
-
+<span>النظام يعمل بشكل طبيعي</span>
 </div>
 
 </section>
-
-<!-- ==========================================
-     QUICK STATS
-========================================== -->
 
 <section class="quick-stats">
 
 <div class="stat">
-
 <div class="stat-top">
-
-<div class="stat-label">
-    مبيعات اليوم
+<div class="stat-label">مبيعات اليوم</div>
+<div class="stat-icon">💰</div>
 </div>
-
-<div class="stat-icon">
-    💰
-</div>
-
-</div>
-
-<div
-    class="stat-value"
-    id="todaySales"
->
-    0.00 د.إ
-</div>
-
-<div class="stat-small">
-    إجمالي عمليات البيع اليوم
-</div>
-
+<div class="stat-value" id="todaySales">0.00 د.إ</div>
+<div class="stat-small">إجمالي عمليات البيع اليوم</div>
 </div>
 
 <div class="stat">
-
 <div class="stat-top">
-
-<div class="stat-label">
-    فواتير اليوم
+<div class="stat-label">فواتير اليوم</div>
+<div class="stat-icon">🧾</div>
 </div>
-
-<div class="stat-icon">
-    🧾
-</div>
-
-</div>
-
-<div
-    class="stat-value"
-    id="todayInvoices"
->
-    0
-</div>
-
-<div class="stat-small">
-    عدد الفواتير المسجلة اليوم
-</div>
-
+<div class="stat-value" id="todayInvoices">0</div>
+<div class="stat-small">عدد الفواتير المسجلة اليوم</div>
 </div>
 
 <div class="stat">
-
 <div class="stat-top">
-
-<div class="stat-label">
-    إجمالي المنتجات
+<div class="stat-label">إجمالي المنتجات</div>
+<div class="stat-icon">📦</div>
 </div>
-
-<div class="stat-icon">
-    📦
-</div>
-
-</div>
-
-<div
-    class="stat-value"
-    id="totalProducts"
->
-    0
-</div>
-
-<div class="stat-small">
-    المنتجات المسجلة بالنظام
-</div>
-
+<div class="stat-value" id="totalProducts">0</div>
+<div class="stat-small">المنتجات المسجلة بالنظام</div>
 </div>
 
 <div class="stat">
-
 <div class="stat-top">
-
-<div class="stat-label">
-    تنبيهات المخزون
+<div class="stat-label">تنبيهات المخزون</div>
+<div class="stat-icon">⚠️</div>
 </div>
-
-<div class="stat-icon">
-    ⚠️
-</div>
-
-</div>
-
-<div
-    class="stat-value"
-    id="stockAlerts"
->
-    0
-</div>
-
-<div class="stat-small">
-    المنتجات المنخفضة أو النافدة
-</div>
-
+<div class="stat-value" id="stockAlerts">0</div>
+<div class="stat-small">المنتجات المنخفضة أو النافدة</div>
 </div>
 
 </section>
 
-<!-- ==========================================
-     MODULES
-========================================== -->
-
 <div class="section-header">
-
-<h3>
-    أقسام النظام
-</h3>
-
-<span>
-    اختر القسم الذي تريد إدارته
-</span>
-
+<h3>أقسام النظام</h3>
+<span>اختر القسم الذي تريد إدارته</span>
 </div>
 
 <section class="modules">
 
-<a
-    class="module"
-    href="pos.html"
->
-
-<div class="module-icon">
-    🛒
-</div>
-
-<h3>
-    شاشة المبيعات
-</h3>
-
+<a class="module" href="pos.html">
+<div class="module-icon">🛒</div>
+<h3>شاشة المبيعات</h3>
 <p>
-    تنفيذ عمليات البيع وإنشاء
-    الفواتير وإدارة عمليات الكاشير.
+تنفيذ عمليات البيع وإنشاء
+الفواتير وإدارة عمليات الكاشير.
 </p>
-
-<span class="module-arrow">
-    ←
-</span>
-
+<span class="module-arrow">←</span>
 </a>
 
-<a
-    class="module"
-    href="products.html"
->
-
-<div class="module-icon">
-    📦
-</div>
-
-<h3>
-    المنتجات والمخزون
-</h3>
-
+<a class="module" href="products.html">
+<div class="module-icon">📦</div>
+<h3>المنتجات والمخزون</h3>
 <p>
-    إدارة المنتجات والكميات
-    والأسعار وحركة المخزون.
+إدارة المنتجات والكميات
+والأسعار وحركة المخزون.
 </p>
-
-<span class="module-arrow">
-    ←
-</span>
-
+<span class="module-arrow">←</span>
 </a>
 
-<a
-    class="module"
-    href="customers.html"
->
-
-<div class="module-icon">
-    👥
-</div>
-
-<h3>
-    العملاء
-</h3>
-
+<a class="module" href="customers.html">
+<div class="module-icon">👥</div>
+<h3>العملاء</h3>
 <p>
-    إدارة بيانات العملاء
-    ومتابعة سجل المشتريات.
+إدارة بيانات العملاء
+ومتابعة سجل المشتريات.
 </p>
-
-<span class="module-arrow">
-    ←
-</span>
-
+<span class="module-arrow">←</span>
 </a>
 
-<a
-    class="module"
-    href="suppliers.html"
->
-
-<div class="module-icon">
-    🚚
-</div>
-
-<h3>
-    الموردون
-</h3>
-
+<a class="module" href="suppliers.html">
+<div class="module-icon">🚚</div>
+<h3>الموردون</h3>
 <p>
-    إدارة الموردين والمشتريات
-    وعمليات التوريد.
+إدارة الموردين والمشتريات
+وعمليات التوريد.
 </p>
-
-<span class="module-arrow">
-    ←
-</span>
-
+<span class="module-arrow">←</span>
 </a>
 
-<a
-    class="module"
-    href="accounts.html"
->
-
-<div class="module-icon">
-    💰
-</div>
-
-<h3>
-    الحسابات
-</h3>
-
+<a class="module" href="accounts.html">
+<div class="module-icon">💰</div>
+<h3>الحسابات</h3>
 <p>
-    متابعة الإيرادات والمصروفات
-    والحركة المالية.
+متابعة الإيرادات والمصروفات
+والحركة المالية.
 </p>
-
-<span class="module-arrow">
-    ←
-</span>
-
+<span class="module-arrow">←</span>
 </a>
 
-<a
-    class="module"
-    href="employees.html"
->
-
-<div class="module-icon">
-    👤
-</div>
-
-<h3>
-    الموظفون
-</h3>
-
+<a class="module" href="employees.html">
+<div class="module-icon">👤</div>
+<h3>الموظفون</h3>
 <p>
-    إدارة الموظفين والصلاحيات
-    والوثائق والرواتب.
+إدارة الموظفين والصلاحيات
+والوثائق والرواتب.
 </p>
-
-<span class="module-arrow">
-    ←
-</span>
-
+<span class="module-arrow">←</span>
 </a>
 
-<a
-    class="module"
-    href="reports.html"
->
-
-<div class="module-icon">
-    📊
-</div>
-
-<h3>
-    التقارير
-</h3>
-
+<a class="module" href="reports.html">
+<div class="module-icon">📊</div>
+<h3>التقارير</h3>
 <p>
-    تقارير المبيعات والأرباح
-    والمخزون وأداء العمل.
+تقارير المبيعات والأرباح
+والمخزون وأداء العمل.
 </p>
-
-<span class="module-arrow">
-    ←
-</span>
-
+<span class="module-arrow">←</span>
 </a>
 
-<a
-    class="module"
-    href="setting.html"
->
-
-<div class="module-icon">
-    ⚙️
-</div>
-
-<h3>
-    الإعدادات
-</h3>
-
+<a class="module" href="setting.html">
+<div class="module-icon">⚙️</div>
+<h3>الإعدادات</h3>
 <p>
-    إعدادات النشاط والفواتير
-    والضريبة والمخزون والمبيعات.
+إعدادات النشاط والفواتير
+والضريبة والمخزون والمبيعات.
 </p>
-
-<span class="module-arrow">
-    ←
-</span>
-
+<span class="module-arrow">←</span>
 </a>
 
 </section>
-
-<!-- ==========================================
-     LOWER AREA
-========================================== -->
 
 <section class="lower-grid">
 
 <div class="panel">
 
 <div class="section-header">
-
-<h3>
-    نشاط النظام
-</h3>
-
-<span>
-    حالة الوحدات الرئيسية
-</span>
-
+<h3>نشاط النظام</h3>
+<span>حالة الوحدات الرئيسية</span>
 </div>
 
 <div class="activity-list">
 
 <div class="activity">
-
-<div class="activity-icon">
-    🛒
-</div>
-
+<div class="activity-icon">🛒</div>
 <div class="activity-text">
-
-<strong>
-    شاشة المبيعات جاهزة
-</strong>
-
-<span>
-    يمكنك بدء عمليات البيع وإنشاء الفواتير.
-</span>
-
+<strong>شاشة المبيعات جاهزة</strong>
+<span>يمكنك بدء عمليات البيع وإنشاء الفواتير.</span>
 </div>
-
-<div class="activity-time">
-    SALES
-</div>
-
+<div class="activity-time">SALES</div>
 </div>
 
 <div class="activity">
-
-<div class="activity-icon">
-    📦
-</div>
-
+<div class="activity-icon">📦</div>
 <div class="activity-text">
-
-<strong>
-    المخزون متصل بالنظام
-</strong>
-
-<span>
-    الكميات مرتبطة بعمليات البيع وحركة المخزون.
-</span>
-
+<strong>المخزون متصل بالنظام</strong>
+<span>الكميات مرتبطة بعمليات البيع وحركة المخزون.</span>
 </div>
-
-<div class="activity-time">
-    STOCK
-</div>
-
+<div class="activity-time">STOCK</div>
 </div>
 
 <div class="activity">
-
-<div class="activity-icon">
-    💾
-</div>
-
+<div class="activity-icon">💾</div>
 <div class="activity-text">
-
-<strong>
-    البيانات محفوظة محلياً
-</strong>
-
-<span>
-    بيانات النسخة الحالية محفوظة على هذا الجهاز.
-</span>
-
+<strong>البيانات محفوظة محلياً</strong>
+<span>بيانات النسخة الحالية محفوظة على هذا الجهاز.</span>
 </div>
-
-<div class="activity-time">
-    DATA
+<div class="activity-time">DATA</div>
 </div>
 
 </div>
-
 </div>
-
-</div>
-
-<!-- ==========================================
-     SYSTEM INFO
-========================================== -->
 
 <div class="panel">
 
 <div class="section-header">
-
-<h3>
-    حالة النظام
-</h3>
-
-<span>
-    VAREX
-</span>
-
+<h3>حالة النظام</h3>
+<span>VAREX</span>
 </div>
 
 <div class="system-box">
 
 <div class="system-row">
-
-<span>
-    النظام
-</span>
-
-<strong class="online">
-    ● متصل
-</strong>
-
+<span>النظام</span>
+<strong class="online">● متصل</strong>
 </div>
 
 <div class="system-row">
-
-<span>
-    شاشة المبيعات
-</span>
-
-<strong>
-    جاهزة
-</strong>
-
+<span>شاشة المبيعات</span>
+<strong>جاهزة</strong>
 </div>
 
 <div class="system-row">
-
-<span>
-    المخزون
-</span>
-
-<strong>
-    نشط
-</strong>
-
+<span>المخزون</span>
+<strong>نشط</strong>
 </div>
 
 <div class="system-row">
-
-<span>
-    العملة
-</span>
-
-<strong id="systemCurrency">
-    AED
-</strong>
-
+<span>العملة</span>
+<strong id="systemCurrency">AED</strong>
 </div>
 
 <div class="system-row">
-
-<span>
-    الضريبة
-</span>
-
-<strong id="systemTax">
-    5%
-</strong>
-
+<span>الضريبة</span>
+<strong id="systemTax">5%</strong>
 </div>
 
 <div class="system-row">
-
-<span>
-    إصدار النظام
-</span>
-
-<strong>
-    VAREX 1.0
-</strong>
-
+<span>إصدار النظام</span>
+<strong>VAREX 1.0</strong>
 </div>
 
 </div>
-
 </div>
 
 </section>
 
 <div class="bottom-status">
-
-<strong>
-    ✓ نظام VAREX يعمل بنجاح
-</strong>
-
-<small>
-    BUSINESS MANAGEMENT SYSTEM
-</small>
-
+<strong>✓ نظام VAREX يعمل بنجاح</strong>
+<small>BUSINESS MANAGEMENT SYSTEM</small>
 </div>
 
 </main>
-
 </div>
 
 <script src="./varex.js"></script>
@@ -2014,39 +1241,16 @@ body{
 ========================================== */
 
 const varexLanguages = {
-
-    ar:{
-        name:"العربية"
-    },
-
-    en:{
-        name:"English"
-    },
-
-    fr:{
-        name:"Français"
-    },
-
-    fa:{
-        name:"فارسی"
-    },
-
-    ur:{
-        name:"اردو"
-    },
-
-    zh:{
-        name:"中文"
-    },
-
-    ko:{
-        name:"한국어"
-    }
-
+    ar:{name:"العربية"},
+    en:{name:"English"},
+    fr:{name:"Français"},
+    fa:{name:"فارسی"},
+    ur:{name:"اردو"},
+    zh:{name:"中文"},
+    ko:{name:"한국어"}
 };
 
 function getSavedLanguage(){
-
     const saved =
         localStorage.getItem(
             "varex_language"
@@ -2074,11 +1278,9 @@ function toggleLanguageMenu(event){
         );
 
     if(selector){
-
         selector.classList.toggle(
             "open"
         );
-
     }
 }
 
@@ -2090,11 +1292,9 @@ function closeLanguageMenu(){
         );
 
     if(selector){
-
         selector.classList.remove(
             "open"
         );
-
     }
 }
 
@@ -2112,7 +1312,6 @@ function selectLanguage(language){
     );
 
     updateLanguageButton();
-
     closeLanguageMenu();
 }
 
@@ -2127,12 +1326,10 @@ function updateLanguageButton(){
         );
 
     if(current){
-
         current.textContent =
             varexLanguages[
                 language
             ].name;
-
     }
 
     document
@@ -2167,9 +1364,7 @@ document.addEventListener(
                 event.target
             )
         ){
-
             closeLanguageMenu();
-
         }
 
     }
@@ -2207,7 +1402,6 @@ function updateClock(){
                     day:"2-digit"
                 }
             );
-
     }
 
     if(timeElement){
@@ -2221,7 +1415,6 @@ function updateClock(){
                     second:"2-digit"
                 }
             );
-
     }
 }
 
@@ -2449,13 +1642,11 @@ function getSaleTotal(sale){
     }
 
     const candidates = [
-
         sale.total,
         sale.grandTotal,
         sale.finalTotal,
         sale.netTotal,
         sale.amount
-
     ];
 
     for(
@@ -2491,8 +1682,6 @@ function updateDashboard(){
     const sales =
         getDashboardSales();
 
-    /* PRODUCTS */
-
     const totalProductsElement =
         document.getElementById(
             "totalProducts"
@@ -2504,8 +1693,6 @@ function updateDashboard(){
             products.length;
 
     }
-
-    /* STOCK ALERTS */
 
     const defaultLowStock =
         Number(
@@ -2540,18 +1727,14 @@ function updateDashboard(){
                     minimum
                 )
             ){
-
                 minimum =
                     fallbackLimit;
-
             }
 
             if(
                 quantity <= minimum
             ){
-
                 stockAlerts++;
-
             }
 
         }
@@ -2568,8 +1751,6 @@ function updateDashboard(){
             stockAlerts;
 
     }
-
-    /* TODAY SALES */
 
     const todayKey =
         getLocalDateKey(
@@ -2632,8 +1813,6 @@ function updateDashboard(){
             todaySalesList.length;
 
     }
-
-    /* SYSTEM SETTINGS */
 
     const currencyElement =
         document.getElementById(
