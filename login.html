@@ -77,13 +77,12 @@ body{
 }
 
 .brand-side{
-    background:
-        linear-gradient(
-            145deg,
-            #172554 0%,
-            #14264f 50%,
-            #0f1d43 100%
-        );
+    background:linear-gradient(
+        145deg,
+        #172554 0%,
+        #14264f 50%,
+        #0f1d43 100%
+    );
     color:#ffffff;
     padding:55px 48px;
     display:flex;
@@ -328,7 +327,7 @@ body{
     border:1px solid var(--border);
     background:#ffffff;
     border-radius:10px;
-    padding:0 44px 0 44px;
+    padding:0 44px;
     outline:none;
     font-family:inherit;
     font-size:13px;
@@ -394,10 +393,6 @@ body{
     font-weight:600;
 }
 
-.forgot:hover{
-    text-decoration:underline;
-}
-
 .login-button{
     width:100%;
     height:50px;
@@ -415,7 +410,6 @@ body{
 
 .login-button:hover{
     transform:translateY(-1px);
-    box-shadow:0 10px 23px rgba(23,37,84,.23);
 }
 
 .login-button:disabled{
@@ -846,9 +840,7 @@ class="login-message"
 
 <div class="create-account">
 
-<p>
-ليس لديك حساب في VAREX؟
-</p>
+<p>ليس لديك حساب في VAREX؟</p>
 
 <button
 type="button"
@@ -877,10 +869,6 @@ onclick="openContact(event)"
 </div>
 
 
-<!-- ==========================================
-     FORGOT PASSWORD MODAL
-========================================== -->
-
 <div
 class="modal-overlay"
 id="forgotPasswordModal"
@@ -890,9 +878,7 @@ id="forgotPasswordModal"
 
 <div class="modal-header">
 
-<h3>
-استعادة كلمة المرور
-</h3>
+<h3>استعادة كلمة المرور</h3>
 
 <button
 type="button"
@@ -905,8 +891,7 @@ onclick="closeModal('forgotPasswordModal')"
 </div>
 
 <p>
-سيتم ربط استعادة كلمة المرور بحساب المستخدم
-عند تجهيز نظام استعادة كلمات المرور.
+سيتم تجهيز نظام استعادة كلمة المرور في النسخة القادمة.
 </p>
 
 <button
@@ -920,10 +905,6 @@ onclick="closeModal('forgotPasswordModal')"
 </div>
 </div>
 
-
-<!-- ==========================================
-     CONTACT MODAL
-========================================== -->
 
 <div
 class="modal-overlay"
@@ -934,9 +915,7 @@ id="contactModal"
 
 <div class="modal-header">
 
-<h3>
-تواصل معنا
-</h3>
+<h3>تواصل معنا</h3>
 
 <button
 type="button"
@@ -949,8 +928,7 @@ onclick="closeModal('contactModal')"
 </div>
 
 <p>
-سيتم إضافة بيانات التواصل الرسمية
-ودعم عملاء VAREX هنا قبل إطلاق النسخة النهائية.
+سيتم إضافة بيانات التواصل الرسمية ودعم عملاء VAREX هنا.
 </p>
 
 <button
@@ -965,14 +943,38 @@ onclick="closeModal('contactModal')"
 </div>
 
 
-<!-- ==========================================
-     VAREX CORE
-========================================== -->
-
+<!-- مهم جداً: تحميل نظام VAREX قبل كود تسجيل الدخول -->
 <script src="./varex.js"></script>
 
-
 <script>
+
+/* ==========================================
+   REDIRECT IF ALREADY LOGGED IN
+========================================== */
+
+(function(){
+
+    try{
+
+        if(
+            typeof VAREX !== "undefined" &&
+            typeof VAREX.isLoggedIn === "function" &&
+            VAREX.isLoggedIn()
+        ){
+            window.location.replace("./index.html");
+        }
+
+    }catch(error){
+
+        console.error(
+            "VAREX session check error:",
+            error
+        );
+
+    }
+
+})();
+
 
 /* ==========================================
    LANGUAGES
@@ -1049,6 +1051,7 @@ function selectLanguage(language){
     );
 
     updateLanguageButton();
+
     closeLanguageMenu();
 }
 
@@ -1063,6 +1066,7 @@ function updateLanguageButton(){
         );
 
     if(currentLanguage){
+
         currentLanguage.textContent =
             languages[language];
     }
@@ -1076,8 +1080,7 @@ function updateLanguageButton(){
 
                 option.classList.toggle(
                     "active",
-                    option.dataset.language ===
-                    language
+                    option.dataset.language === language
                 );
 
             }
@@ -1101,7 +1104,6 @@ document.addEventListener(
         ){
             closeLanguageMenu();
         }
-
     }
 );
 
@@ -1187,9 +1189,11 @@ function closeModal(id){
         document.getElementById(id);
 
     if(modal){
+
         modal.classList.remove(
             "show"
         );
+
     }
 }
 
@@ -1207,11 +1211,12 @@ document
                     if(
                         event.target === modal
                     ){
+
                         modal.classList.remove(
                             "show"
                         );
-                    }
 
+                    }
                 }
             );
 
@@ -1220,84 +1225,62 @@ document
 
 
 /* ==========================================
-   CHECK VAREX CORE
-========================================== */
-
-function isVarexReady(){
-
-    return (
-        typeof VAREX !== "undefined" &&
-        typeof VAREX.login === "function"
-    );
-}
-
-
-/* ==========================================
-   REDIRECT USER IF ALREADY LOGGED IN
-========================================== */
-
-if(
-    isVarexReady() &&
-    typeof VAREX.isLoggedIn === "function" &&
-    VAREX.isLoggedIn()
-){
-
-    window.location.replace(
-        "./index.html"
-    );
-}
-
-
-/* ==========================================
    REMEMBERED USER
 ========================================== */
 
-function loadRememberedUser(){
+(function(){
 
-    if(!isVarexReady()){
-        return;
-    }
+    try{
 
-    if(
-        typeof VAREX.getRememberedUser !==
-        "function"
-    ){
-        return;
-    }
+        if(
+            typeof VAREX !== "undefined" &&
+            typeof VAREX.getRememberedUser === "function"
+        ){
 
-    const remembered =
-        VAREX.getRememberedUser();
+            const remembered =
+                VAREX.getRememberedUser();
 
-    if(!remembered){
-        return;
-    }
+            const username =
+                document.getElementById(
+                    "username"
+                );
 
-    const usernameInput =
-        document.getElementById(
-            "username"
+            const rememberMe =
+                document.getElementById(
+                    "rememberMe"
+                );
+
+            if(
+                remembered &&
+                username
+            ){
+
+                username.value =
+                    remembered;
+
+                if(rememberMe){
+                    rememberMe.checked =
+                        true;
+                }
+
+            }
+
+        }
+
+    }catch(error){
+
+        console.error(
+            "Remembered user error:",
+            error
         );
 
-    const rememberInput =
-        document.getElementById(
-            "rememberMe"
-        );
-
-    if(usernameInput){
-        usernameInput.value =
-            remembered;
     }
 
-    if(rememberInput){
-        rememberInput.checked =
-            true;
-    }
-}
-
-loadRememberedUser();
+})();
 
 
 /* ==========================================
-   REAL VAREX LOGIN
+   LOGIN
 ========================================== */
 
 document
@@ -1310,13 +1293,15 @@ document
 
             event.preventDefault();
 
-            const username =
+
+            const identifier =
                 document
                     .getElementById(
                         "username"
                     )
                     .value
                     .trim();
+
 
             const password =
                 document
@@ -1325,17 +1310,20 @@ document
                     )
                     .value;
 
-            const rememberMe =
+
+            const remember =
                 document
                     .getElementById(
                         "rememberMe"
                     )
                     .checked;
 
+
             const message =
                 document.getElementById(
                     "loginMessage"
                 );
+
 
             const loginButton =
                 document.getElementById(
@@ -1351,7 +1339,7 @@ document
 
 
             if(
-                !username ||
+                !identifier ||
                 !password
             ){
 
@@ -1362,18 +1350,38 @@ document
                     "يرجى إدخال اسم المستخدم أو البريد الإلكتروني وكلمة المرور.";
 
                 return;
+
             }
 
 
-            if(!isVarexReady()){
+            if(
+                typeof VAREX === "undefined"
+            ){
 
                 message.className =
                     "login-message error";
 
                 message.textContent =
-                    "تعذر تحميل نظام VAREX. يرجى تحديث الصفحة والمحاولة مرة أخرى.";
+                    "تعذر تحميل نظام VAREX. تأكد من وجود ملف varex.js.";
 
                 return;
+
+            }
+
+
+            if(
+                typeof VAREX.login !==
+                "function"
+            ){
+
+                message.className =
+                    "login-message error";
+
+                message.textContent =
+                    "وظيفة تسجيل الدخول غير متوفرة في varex.js.";
+
+                return;
+
             }
 
 
@@ -1381,23 +1389,22 @@ document
                 true;
 
             loginButton.textContent =
-                "جارٍ تسجيل الدخول...";
+                "جاري تسجيل الدخول...";
 
 
             try{
 
                 /*
-                 * هذا هو التغيير الأساسي:
-                 * لم نعد ننشئ جلسة وهمية هنا.
-                 * VAREX.login يتحقق من الحساب الحقيقي
-                 * المحفوظ بواسطة register.html.
+                 * هذه هي النقطة الأساسية:
+                 * تسجيل الدخول أصبح يمر عبر VAREX.login
+                 * ولا يتم إنشاء Session يدوياً.
                  */
 
                 const result =
                     VAREX.login(
-                        username,
+                        identifier,
                         password,
-                        rememberMe
+                        remember
                     );
 
 
@@ -1410,14 +1417,10 @@ document
                         "login-message error";
 
                     message.textContent =
-                        (
-                            result &&
-                            result.message
-                        )
-                            ?
-                            result.message
-                            :
-                            "تعذر تسجيل الدخول.";
+                        result &&
+                        result.message
+                            ? result.message
+                            : "تعذر تسجيل الدخول.";
 
                     loginButton.disabled =
                         false;
@@ -1426,22 +1429,42 @@ document
                         "تسجيل الدخول";
 
                     return;
+
                 }
 
 
                 /*
-                 * تنظيف مفاتيح نظام الدخول القديم.
-                 * لا نحذف varex_session لأن النظام الجديد
-                 * يستخدمه أيضاً.
+                 * نتأكد أن الجلسة التي أنشأها
+                 * VAREX تحتوي فعلياً على userId.
                  */
 
-                localStorage.removeItem(
-                    "varex_authenticated"
-                );
+                const session =
+                    typeof VAREX.getSession ===
+                    "function"
+                        ? VAREX.getSession()
+                        : null;
 
-                sessionStorage.removeItem(
-                    "varex_authenticated"
-                );
+
+                if(
+                    !session ||
+                    !session.userId
+                ){
+
+                    message.className =
+                        "login-message error";
+
+                    message.textContent =
+                        "تعذر إنشاء جلسة المستخدم.";
+
+                    loginButton.disabled =
+                        false;
+
+                    loginButton.textContent =
+                        "تسجيل الدخول";
+
+                    return;
+
+                }
 
 
                 message.className =
@@ -1459,28 +1482,31 @@ document
                         );
 
                     },
-                    300
+                    250
                 );
 
 
             }catch(error){
 
                 console.error(
-                    "VAREX Login Error:",
+                    "VAREX login error:",
                     error
                 );
+
 
                 message.className =
                     "login-message error";
 
                 message.textContent =
-                    "حدث خطأ أثناء تسجيل الدخول. يرجى المحاولة مرة أخرى.";
+                    "حدث خطأ أثناء تسجيل الدخول.";
+
 
                 loginButton.disabled =
                     false;
 
                 loginButton.textContent =
                     "تسجيل الدخول";
+
             }
 
         }
@@ -1517,6 +1543,7 @@ if(
 
         }
     );
+
 }
 
 </script>
