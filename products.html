@@ -1,0 +1,1775 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VAREX | المنتجات والمخزون</title>
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+
+:root{
+    --navy:#172554;
+    --navy-dark:#0f1d43;
+    --blue:#2563eb;
+    --bg:#f4f6fb;
+    --white:#fff;
+    --border:#e5eaf2;
+    --text:#172554;
+    --muted:#64748b;
+    --green:#15803d;
+    --red:#b91c1c;
+    --orange:#d97706;
+}
+
+body{
+    font-family:Arial,sans-serif;
+    background:var(--bg);
+    color:var(--text);
+    min-height:100vh;
+}
+
+/* SIDEBAR */
+
+.sidebar{
+    position:fixed;
+    right:0;
+    top:0;
+    bottom:0;
+    width:230px;
+    background:linear-gradient(180deg,#172554,#0f1d43);
+    color:white;
+    z-index:100;
+    display:flex;
+    flex-direction:column;
+}
+
+.brand{
+    padding:28px 22px 22px;
+    border-bottom:1px solid rgba(255,255,255,.10);
+}
+
+.logo{
+    font-size:29px;
+    font-weight:800;
+    letter-spacing:4px;
+}
+
+.brand-small{
+    font-size:11px;
+    color:#cbd5e1;
+    margin-top:6px;
+}
+
+.nav{
+    padding:18px 12px;
+    flex:1;
+}
+
+.nav a{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    color:#dbeafe;
+    text-decoration:none;
+    padding:12px 14px;
+    border-radius:10px;
+    margin-bottom:5px;
+    font-size:14px;
+    transition:.2s;
+}
+
+.nav a:hover{
+    background:rgba(255,255,255,.08);
+    color:white;
+}
+
+.nav a.active{
+    background:white;
+    color:var(--navy);
+    font-weight:bold;
+    box-shadow:0 5px 15px rgba(0,0,0,.15);
+}
+
+.nav-icon{
+    width:24px;
+    text-align:center;
+}
+
+.sidebar-footer{
+    padding:17px;
+    border-top:1px solid rgba(255,255,255,.10);
+    color:#94a3b8;
+    font-size:11px;
+    text-align:center;
+}
+
+/* MAIN */
+
+.main{
+    margin-right:230px;
+    min-height:100vh;
+}
+
+/* TOPBAR */
+
+.topbar{
+    height:76px;
+    background:white;
+    border-bottom:1px solid var(--border);
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:0 28px;
+    position:sticky;
+    top:0;
+    z-index:50;
+}
+
+.page-name{
+    display:flex;
+    align-items:center;
+    gap:12px;
+}
+
+.page-icon{
+    width:43px;
+    height:43px;
+    border-radius:12px;
+    background:#eef2ff;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:21px;
+}
+
+.page-name h2{font-size:18px}
+
+.page-name small{
+    display:block;
+    color:var(--muted);
+    margin-top:4px;
+}
+
+.top-info{
+    display:flex;
+    align-items:center;
+    gap:12px;
+}
+
+.info-chip{
+    background:#f8fafc;
+    border:1px solid var(--border);
+    border-radius:10px;
+    padding:9px 13px;
+    font-size:12px;
+    color:var(--muted);
+}
+
+.info-chip strong{color:var(--navy)}
+
+.content{
+    width:95%;
+    max-width:1500px;
+    margin:24px auto 40px;
+}
+
+/* HERO */
+
+.hero{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:15px;
+    margin-bottom:18px;
+}
+
+.hero h1{
+    font-size:25px;
+    margin-bottom:6px;
+}
+
+.hero p{
+    color:var(--muted);
+    font-size:13px;
+}
+
+.add{
+    border:0;
+    background:linear-gradient(135deg,#172554,#1e3a8a);
+    color:white;
+    padding:12px 18px;
+    border-radius:10px;
+    cursor:pointer;
+    font-weight:bold;
+    box-shadow:0 5px 14px rgba(23,37,84,.16);
+}
+
+/* STATS */
+
+.stats{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:14px;
+    margin-bottom:18px;
+}
+
+.stat{
+    background:white;
+    border:1px solid var(--border);
+    border-radius:14px;
+    padding:17px 18px;
+    box-shadow:0 3px 12px rgba(15,23,42,.04);
+}
+
+.stat-top{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    margin-bottom:10px;
+}
+
+.stat-label{
+    font-size:12px;
+    color:var(--muted);
+}
+
+.stat-icon{
+    width:36px;
+    height:36px;
+    border-radius:10px;
+    background:#eef2ff;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+}
+
+.stat-value{
+    font-size:22px;
+    font-weight:bold;
+}
+
+.stat-small{
+    color:#94a3b8;
+    font-size:11px;
+    margin-top:5px;
+}
+
+/* PRODUCT DETAILS */
+
+.product-details{
+    display:none;
+    background:white;
+    border:1px solid var(--border);
+    border-radius:16px;
+    padding:20px;
+    margin-bottom:18px;
+    box-shadow:0 4px 18px rgba(15,23,42,.05);
+    border-right:5px solid var(--navy);
+}
+
+.details-header{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:15px;
+    margin-bottom:17px;
+}
+
+.details-header h2{
+    font-size:18px;
+}
+
+.close-details{
+    border:1px solid var(--border);
+    background:#f8fafc;
+    color:var(--navy);
+    border-radius:8px;
+    padding:8px 12px;
+    cursor:pointer;
+}
+
+.details-grid{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:11px;
+}
+
+.detail-card{
+    background:#f8fafc;
+    border:1px solid #e8edf5;
+    border-radius:12px;
+    padding:15px;
+}
+
+.detail-card span{
+    display:block;
+    color:var(--muted);
+    font-size:12px;
+    margin-bottom:8px;
+}
+
+.detail-card strong{
+    font-size:19px;
+}
+
+/* PANEL */
+
+.panel{
+    background:white;
+    border:1px solid var(--border);
+    border-radius:16px;
+    box-shadow:0 4px 18px rgba(15,23,42,.05);
+    overflow:hidden;
+}
+
+.panel-head{
+    padding:18px 20px;
+    border-bottom:1px solid var(--border);
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+}
+
+.panel-head h3{font-size:16px}
+
+.panel-head span{
+    font-size:11px;
+    color:var(--muted);
+}
+
+.toolbar{
+    padding:15px 20px;
+    background:#fbfdff;
+    border-bottom:1px solid var(--border);
+    display:flex;
+    gap:9px;
+    flex-wrap:wrap;
+}
+
+input,select{
+    padding:11px;
+    border:1px solid #dbe1ea;
+    border-radius:9px;
+    font-size:13px;
+    outline:none;
+    background:white;
+}
+
+input:focus,select:focus{
+    border-color:#94a3b8;
+    box-shadow:0 0 0 3px rgba(37,99,235,.05);
+}
+
+.search{
+    flex:1;
+    min-width:250px;
+}
+
+.table-wrap{
+    overflow-x:auto;
+}
+
+table{
+    width:100%;
+    border-collapse:collapse;
+    min-width:1150px;
+}
+
+th,td{
+    padding:13px 10px;
+    text-align:right;
+    border-bottom:1px solid #edf0f5;
+    vertical-align:middle;
+    font-size:12px;
+}
+
+th{
+    background:#f8fafc;
+    color:#475569;
+    white-space:nowrap;
+    font-weight:bold;
+}
+
+tbody tr:hover{
+    background:#fbfdff;
+}
+
+.product-name{
+    font-weight:bold;
+    color:var(--navy);
+}
+
+.barcode{
+    font-family:monospace;
+    color:#475569;
+}
+
+.stock-ok{
+    color:var(--green);
+    font-weight:bold;
+}
+
+.stock-low{
+    color:var(--orange);
+    font-weight:bold;
+}
+
+.stock-out{
+    color:var(--red);
+    font-weight:bold;
+}
+
+.today-sales{
+    color:var(--blue);
+    font-weight:bold;
+}
+
+.status-badge{
+    display:inline-block;
+    padding:5px 9px;
+    border-radius:20px;
+    font-size:10px;
+}
+
+.status-badge.ok{
+    background:#ecfdf5;
+    color:#15803d;
+}
+
+.status-badge.low{
+    background:#fff7ed;
+    color:#c2410c;
+}
+
+.status-badge.out{
+    background:#fef2f2;
+    color:#b91c1c;
+}
+
+.info{
+    border:0;
+    background:#e0e7ff;
+    color:#172554;
+    width:32px;
+    height:32px;
+    border-radius:50%;
+    cursor:pointer;
+    font-weight:bold;
+}
+
+.action{
+    border:0;
+    background:#eef2ff;
+    color:#172554;
+    border-radius:7px;
+    padding:7px 9px;
+    cursor:pointer;
+}
+
+.delete{
+    border:0;
+    background:#fee2e2;
+    color:#b91c1c;
+    border-radius:7px;
+    padding:7px 9px;
+    cursor:pointer;
+}
+
+.empty{
+    text-align:center;
+    color:var(--muted);
+    padding:35px;
+}
+
+/* MODAL */
+
+.modal{
+    display:none;
+    position:fixed;
+    inset:0;
+    background:rgba(15,23,42,.55);
+    align-items:center;
+    justify-content:center;
+    z-index:1000;
+}
+
+.modal-box{
+    background:white;
+    width:90%;
+    max-width:580px;
+    border-radius:16px;
+    padding:24px;
+    max-height:90vh;
+    overflow:auto;
+    box-shadow:0 20px 50px rgba(0,0,0,.2);
+}
+
+.modal-header{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:18px;
+}
+
+.modal-header h2{
+    font-size:19px;
+}
+
+.close{
+    cursor:pointer;
+    font-size:24px;
+    color:#64748b;
+}
+
+.form-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:11px;
+}
+
+.form-grid input{
+    width:100%;
+}
+
+.save{
+    border:0;
+    background:linear-gradient(135deg,#172554,#1e3a8a);
+    color:white;
+    width:100%;
+    padding:13px;
+    border-radius:9px;
+    margin-top:15px;
+    cursor:pointer;
+    font-weight:bold;
+}
+
+/* RESPONSIVE */
+
+@media(max-width:1100px){
+    .sidebar{width:200px}
+    .main{margin-right:200px}
+    .stats{grid-template-columns:repeat(2,1fr)}
+    .details-grid{grid-template-columns:repeat(2,1fr)}
+}
+
+@media(max-width:850px){
+    .sidebar{
+        position:relative;
+        width:100%;
+        height:auto;
+    }
+
+    .brand{padding:17px 20px}
+
+    .nav{
+        display:flex;
+        overflow-x:auto;
+        padding:8px 10px 12px;
+    }
+
+    .nav a{
+        white-space:nowrap;
+        margin:0 3px;
+    }
+
+    .sidebar-footer{display:none}
+    .main{margin-right:0}
+
+    .topbar{
+        position:relative;
+        padding:0 16px;
+    }
+}
+
+@media(max-width:600px){
+    .content{width:94%}
+    .top-info{display:none}
+
+    .hero{
+        align-items:flex-start;
+        flex-direction:column;
+    }
+
+    .stats{grid-template-columns:1fr 1fr}
+    .form-grid{grid-template-columns:1fr}
+    .details-grid{grid-template-columns:1fr 1fr}
+}
+
+@media(max-width:420px){
+    .stats{grid-template-columns:1fr}
+    .details-grid{grid-template-columns:1fr}
+}
+</style>
+</head>
+
+<body>
+
+<!-- القائمة الجانبية -->
+
+<aside class="sidebar">
+
+    <div class="brand">
+        <div class="logo">VAREX</div>
+        <div class="brand-small">
+            BUSINESS MANAGEMENT SYSTEM
+        </div>
+    </div>
+
+    <nav class="nav">
+
+        <a href="index.html">
+            <span class="nav-icon">▦</span>
+            لوحة التحكم
+        </a>
+
+        <a href="pos.html">
+            <span class="nav-icon">🛒</span>
+            نقطة البيع
+        </a>
+
+        <a href="products.html" class="active">
+            <span class="nav-icon">📦</span>
+            المنتجات والمخزون
+        </a>
+
+        <a href="customers.html">
+            <span class="nav-icon">👥</span>
+            العملاء
+        </a>
+
+        <a href="suppliers.html">
+            <span class="nav-icon">🚚</span>
+            الموردون
+        </a>
+
+        <a href="accounts.html">
+            <span class="nav-icon">💰</span>
+            الحسابات
+        </a>
+
+        <a href="employees.html">
+            <span class="nav-icon">👤</span>
+            الموظفون
+        </a>
+
+        <a href="reports.html">
+            <span class="nav-icon">📊</span>
+            التقارير
+        </a>
+
+        <a href="setting.html">
+            <span class="nav-icon">⚙️</span>
+            الإعدادات
+        </a>
+
+    </nav>
+
+    <div class="sidebar-footer">
+        VAREX INVENTORY SYSTEM
+    </div>
+
+</aside>
+
+<div class="main">
+
+<!-- الشريط العلوي -->
+
+<header class="topbar">
+
+    <div class="page-name">
+
+        <div class="page-icon">📦</div>
+
+        <div>
+            <h2>المنتجات والمخزون</h2>
+            <small>VAREX INVENTORY</small>
+        </div>
+
+    </div>
+
+    <div class="top-info">
+
+        <div class="info-chip">
+            المستخدم:
+            <strong>المستخدم الحالي</strong>
+        </div>
+
+        <div class="info-chip" id="currentDate">—</div>
+        <div class="info-chip" id="currentTime">—</div>
+
+    </div>
+
+</header>
+
+<main class="content">
+
+<!-- عنوان الصفحة -->
+
+<section class="hero">
+
+    <div>
+        <h1>إدارة المنتجات والمخزون</h1>
+        <p>
+            متابعة المنتجات والكميات والأسعار
+            وحركة المخزون والمبيعات من مكان واحد
+        </p>
+    </div>
+
+    <button class="add" onclick="openModal()">
+        ＋ إضافة منتج جديد
+    </button>
+
+</section>
+
+<!-- الإحصائيات -->
+
+<section class="stats">
+
+    <div class="stat">
+        <div class="stat-top">
+            <div class="stat-label">إجمالي المنتجات</div>
+            <div class="stat-icon">📦</div>
+        </div>
+        <div class="stat-value" id="totalProducts">0</div>
+        <div class="stat-small">عدد الأصناف المسجلة</div>
+    </div>
+
+    <div class="stat">
+        <div class="stat-top">
+            <div class="stat-label">منتجات متوفرة</div>
+            <div class="stat-icon">✓</div>
+        </div>
+        <div class="stat-value" id="availableProducts">0</div>
+        <div class="stat-small">أصناف مخزونها طبيعي</div>
+    </div>
+
+    <div class="stat">
+        <div class="stat-top">
+            <div class="stat-label">مخزون منخفض</div>
+            <div class="stat-icon">⚠️</div>
+        </div>
+        <div class="stat-value" id="lowProducts">0</div>
+        <div class="stat-small">وصلت إلى حد التنبيه</div>
+    </div>
+
+    <div class="stat">
+        <div class="stat-top">
+            <div class="stat-label">نفد المخزون</div>
+            <div class="stat-icon">⛔</div>
+        </div>
+        <div class="stat-value" id="outProducts">0</div>
+        <div class="stat-small">أصناف تحتاج إعادة توريد</div>
+    </div>
+
+</section>
+
+<!-- تفاصيل المنتج -->
+
+<section class="product-details" id="productDetails">
+
+    <div class="details-header">
+
+        <h2 id="detailsProductName">
+            تفاصيل المنتج
+        </h2>
+
+        <button
+            class="close-details"
+            onclick="closeProductDetails()">
+            إغلاق ×
+        </button>
+
+    </div>
+
+    <div class="details-grid">
+
+        <div class="detail-card">
+            <span>الكمية الحالية في المخزن</span>
+            <strong id="detailsCurrentStock">0</strong>
+        </div>
+
+        <div class="detail-card">
+            <span>مبيعات اليوم</span>
+            <strong id="detailsTodaySales">0</strong>
+        </div>
+
+        <div class="detail-card">
+            <span>حد تنبيه المخزون</span>
+            <strong id="detailsMinimumStock">0</strong>
+        </div>
+
+        <div class="detail-card">
+            <span>حالة المخزون</span>
+            <strong id="detailsStatus">-</strong>
+        </div>
+
+        <div class="detail-card">
+            <span>سعر البيع</span>
+            <strong id="detailsPrice">0.00 د.إ</strong>
+        </div>
+
+        <div class="detail-card">
+            <span>سعر التكلفة</span>
+            <strong id="detailsCost">0.00 د.إ</strong>
+        </div>
+
+        <div class="detail-card">
+            <span>الباركود</span>
+            <strong id="detailsBarcode">-</strong>
+        </div>
+
+        <div class="detail-card">
+            <span>التصنيف</span>
+            <strong id="detailsCategory">-</strong>
+        </div>
+
+    </div>
+
+</section>
+
+<!-- جدول المنتجات -->
+
+<section class="panel">
+
+    <div class="panel-head">
+        <h3>قائمة المنتجات</h3>
+        <span>
+            إدارة الأصناف والأسعار والكميات
+        </span>
+    </div>
+
+    <div class="toolbar">
+
+        <input
+            class="search"
+            id="search"
+            type="text"
+            placeholder="🔍 ابحث باسم المنتج أو الباركود"
+            oninput="renderProducts()"
+        >
+
+        <select
+            id="categoryFilter"
+            onchange="renderProducts()">
+
+            <option value="">
+                كل التصنيفات
+            </option>
+
+        </select>
+
+        <select
+            id="stockFilter"
+            onchange="renderProducts()">
+
+            <option value="">
+                كل حالات المخزون
+            </option>
+
+            <option value="available">
+                متوفر
+            </option>
+
+            <option value="low">
+                مخزون منخفض
+            </option>
+
+            <option value="out">
+                نفد المخزون
+            </option>
+
+        </select>
+
+    </div>
+
+    <div class="table-wrap">
+
+        <table>
+
+            <thead>
+                <tr>
+                    <th>المنتج</th>
+                    <th>الباركود</th>
+                    <th>التصنيف</th>
+                    <th>سعر البيع</th>
+                    <th>التكلفة</th>
+                    <th>الكمية الحالية</th>
+                    <th>مبيعات اليوم</th>
+                    <th>حد التنبيه</th>
+                    <th>الحالة</th>
+                    <th>التفاصيل</th>
+                    <th>الإجراءات</th>
+                </tr>
+            </thead>
+
+            <tbody id="productTable"></tbody>
+
+        </table>
+
+        <div class="empty" id="emptyMessage">
+            لا توجد منتجات حتى الآن.
+        </div>
+
+    </div>
+
+</section>
+
+</main>
+</div>
+
+<!-- نافذة إضافة وتعديل المنتج -->
+
+<div class="modal" id="productModal">
+
+    <div class="modal-box">
+
+        <div class="modal-header">
+
+            <h2 id="modalTitle">
+                إضافة منتج جديد
+            </h2>
+
+            <span
+                class="close"
+                onclick="closeModal()">
+                ×
+            </span>
+
+        </div>
+
+        <div class="form-grid">
+
+            <input id="name" placeholder="اسم المنتج">
+
+            <input id="barcode" placeholder="الباركود">
+
+            <input id="category" placeholder="التصنيف">
+
+            <input
+                id="price"
+                type="number"
+                min="0"
+                step="0.01"
+                placeholder="سعر البيع">
+
+            <input
+                id="cost"
+                type="number"
+                min="0"
+                step="0.01"
+                placeholder="سعر التكلفة">
+
+            <input
+                id="quantity"
+                type="number"
+                min="0"
+                step="1"
+                placeholder="الكمية الحالية في المخزن">
+
+            <input
+                id="minimumStock"
+                type="number"
+                min="0"
+                step="1"
+                value="5"
+                placeholder="حد تنبيه المخزون">
+
+            <input
+                id="supplier"
+                placeholder="المورد">
+
+        </div>
+
+        <button class="save" onclick="saveProduct()">
+            حفظ المنتج
+        </button>
+
+    </div>
+
+</div>
+
+<script src="varex.js"></script>
+
+<script>
+
+let editingProductId = null;
+
+/* الوقت */
+
+function updateClock(){
+
+    const now = new Date();
+
+    document.getElementById("currentDate").innerText =
+        now.toLocaleDateString(
+            "ar-AE",
+            {
+                year:"numeric",
+                month:"2-digit",
+                day:"2-digit"
+            }
+        );
+
+    document.getElementById("currentTime").innerText =
+        now.toLocaleTimeString(
+            "ar-AE",
+            {
+                hour:"2-digit",
+                minute:"2-digit",
+                second:"2-digit"
+            }
+        );
+}
+
+updateClock();
+setInterval(updateClock,1000);
+
+/* التاريخ */
+
+function normalizeDate(value){
+
+    if(!value) return "";
+
+    const date = new Date(value);
+
+    if(isNaN(date.getTime())){
+        return String(value).slice(0,10);
+    }
+
+    return (
+        date.getFullYear() +
+        "-" +
+        String(date.getMonth()+1).padStart(2,"0") +
+        "-" +
+        String(date.getDate()).padStart(2,"0")
+    );
+}
+
+function getTodayDate(){
+
+    const date = new Date();
+
+    return (
+        date.getFullYear() +
+        "-" +
+        String(date.getMonth()+1).padStart(2,"0") +
+        "-" +
+        String(date.getDate()).padStart(2,"0")
+    );
+}
+
+/* قراءة المبيعات */
+
+function getSalesData(){
+
+    try{
+
+        if(
+            window.VAREX &&
+            typeof VAREX.getSales === "function"
+        ){
+            return VAREX.getSales() || [];
+        }
+
+        if(
+            window.VAREX &&
+            typeof VAREX.getInvoices === "function"
+        ){
+            return VAREX.getInvoices() || [];
+        }
+
+        if(
+            window.VAREX &&
+            typeof VAREX.getTransactions === "function"
+        ){
+            return VAREX.getTransactions() || [];
+        }
+
+    }catch(error){
+        console.log(error);
+    }
+
+    const possibleKeys = [
+        "varex_sales",
+        "varexSales",
+        "sales",
+        "varex_invoices",
+        "varexInvoices",
+        "invoices"
+    ];
+
+    for(const key of possibleKeys){
+
+        try{
+
+            const stored =
+                localStorage.getItem(key);
+
+            if(stored){
+
+                const parsed =
+                    JSON.parse(stored);
+
+                if(Array.isArray(parsed)){
+                    return parsed;
+                }
+            }
+
+        }catch(error){}
+    }
+
+    return [];
+}
+
+/* مبيعات المنتج اليوم */
+
+function getTodaySalesForProduct(product){
+
+    const sales = getSalesData();
+    const today = getTodayDate();
+
+    let soldQuantity = 0;
+
+    sales.forEach(sale => {
+
+        const saleDate =
+            normalizeDate(
+                sale.date ||
+                sale.createdAt ||
+                sale.created_at ||
+                sale.timestamp ||
+                sale.saleDate
+            );
+
+        if(saleDate !== today){
+            return;
+        }
+
+        const items =
+            sale.items ||
+            sale.products ||
+            sale.cart ||
+            sale.lines ||
+            [];
+
+        if(!Array.isArray(items)){
+            return;
+        }
+
+        items.forEach(item => {
+
+            const itemProductId =
+                item.productId ||
+                item.product_id ||
+                item.id;
+
+            const itemBarcode =
+                item.barcode ||
+                item.productBarcode;
+
+            const matchesId =
+                itemProductId != null &&
+                String(itemProductId) ===
+                String(product.id);
+
+            const matchesBarcode =
+                product.barcode &&
+                itemBarcode &&
+                String(itemBarcode) ===
+                String(product.barcode);
+
+            const matchesName =
+                item.name &&
+                product.name &&
+                String(item.name).trim() ===
+                String(product.name).trim();
+
+            if(
+                matchesId ||
+                matchesBarcode ||
+                matchesName
+            ){
+                soldQuantity +=
+                    Number(
+                        item.quantity ||
+                        item.qty ||
+                        1
+                    );
+            }
+
+        });
+
+    });
+
+    return soldQuantity;
+}
+
+/* فتح إضافة */
+
+function openModal(){
+
+    editingProductId = null;
+
+    document.getElementById("modalTitle").innerText =
+        "إضافة منتج جديد";
+
+    clearForm();
+
+    document.getElementById("minimumStock").value =
+        5;
+
+    document.getElementById("productModal").style.display =
+        "flex";
+}
+
+/* إغلاق */
+
+function closeModal(){
+
+    document.getElementById("productModal").style.display =
+        "none";
+
+    editingProductId = null;
+}
+
+/* تنظيف */
+
+function clearForm(){
+
+    document.getElementById("name").value = "";
+    document.getElementById("barcode").value = "";
+    document.getElementById("category").value = "";
+    document.getElementById("price").value = "";
+    document.getElementById("cost").value = "";
+    document.getElementById("quantity").value = "";
+    document.getElementById("minimumStock").value = "";
+    document.getElementById("supplier").value = "";
+}
+
+/* حفظ */
+
+function saveProduct(){
+
+    const name =
+        document.getElementById("name").value.trim();
+
+    const barcode =
+        document.getElementById("barcode").value.trim();
+
+    const category =
+        document.getElementById("category").value.trim()
+        || "عام";
+
+    const price =
+        Number(
+            document.getElementById("price").value || 0
+        );
+
+    const cost =
+        Number(
+            document.getElementById("cost").value || 0
+        );
+
+    const quantity =
+        Number(
+            document.getElementById("quantity").value || 0
+        );
+
+    const minimumStock =
+        Number(
+            document.getElementById("minimumStock").value || 0
+        );
+
+    const supplier =
+        document.getElementById("supplier").value.trim();
+
+    if(!name){
+        alert("يرجى إدخال اسم المنتج");
+        return;
+    }
+
+    if(quantity < 0){
+        alert("الكمية لا يمكن أن تكون أقل من صفر");
+        return;
+    }
+
+    if(editingProductId){
+
+        VAREX.updateProduct(
+            editingProductId,
+            {
+                name,
+                barcode,
+                category,
+                price,
+                cost,
+                quantity,
+                minimumStock,
+                supplier
+            }
+        );
+
+    }else{
+
+        VAREX.addProduct({
+            name,
+            barcode,
+            category,
+            price,
+            cost,
+            quantity,
+            minimumStock,
+            supplier
+        });
+    }
+
+    closeModal();
+    updateCategoryFilter();
+    renderProducts();
+}
+
+/* تعديل */
+
+function editProduct(id){
+
+    const product =
+        VAREX.findProduct(id);
+
+    if(!product){
+        alert("لم يتم العثور على المنتج");
+        return;
+    }
+
+    editingProductId = id;
+
+    document.getElementById("modalTitle").innerText =
+        "تعديل المنتج";
+
+    document.getElementById("name").value =
+        product.name || "";
+
+    document.getElementById("barcode").value =
+        product.barcode || "";
+
+    document.getElementById("category").value =
+        product.category || "";
+
+    document.getElementById("price").value =
+        Number(product.price || 0);
+
+    document.getElementById("cost").value =
+        Number(product.cost || 0);
+
+    document.getElementById("quantity").value =
+        Number(product.quantity || 0);
+
+    document.getElementById("minimumStock").value =
+        Number(product.minimumStock || 0);
+
+    document.getElementById("supplier").value =
+        product.supplier || "";
+
+    document.getElementById("productModal").style.display =
+        "flex";
+}
+
+/* حذف */
+
+function deleteProduct(id){
+
+    const product =
+        VAREX.findProduct(id);
+
+    if(!product) return;
+
+    const confirmed =
+        confirm(
+            'هل تريد حذف المنتج "' +
+            product.name +
+            '"؟'
+        );
+
+    if(!confirmed) return;
+
+    const products =
+        VAREX.getProducts().filter(
+            item =>
+                String(item.id) !==
+                String(id)
+        );
+
+    VAREX.saveProducts(products);
+
+    closeProductDetails();
+    updateCategoryFilter();
+    renderProducts();
+}
+
+/* تفاصيل */
+
+function showProductDetails(id){
+
+    const product =
+        VAREX.findProduct(id);
+
+    if(!product) return;
+
+    const quantity =
+        Number(product.quantity || 0);
+
+    const minimum =
+        Number(product.minimumStock || 0);
+
+    const todaySales =
+        getTodaySalesForProduct(product);
+
+    let status = "متوفر";
+
+    if(quantity <= 0){
+        status = "نفد المخزون";
+    }else if(quantity <= minimum){
+        status = "مخزون منخفض";
+    }
+
+    document.getElementById("detailsProductName").innerText =
+        "تفاصيل المخزون — " +
+        (product.name || "المنتج");
+
+    document.getElementById("detailsCurrentStock").innerText =
+        quantity;
+
+    document.getElementById("detailsTodaySales").innerText =
+        todaySales;
+
+    document.getElementById("detailsMinimumStock").innerText =
+        minimum;
+
+    document.getElementById("detailsStatus").innerText =
+        status;
+
+    document.getElementById("detailsPrice").innerText =
+        Number(product.price || 0).toFixed(2) +
+        " د.إ";
+
+    document.getElementById("detailsCost").innerText =
+        Number(product.cost || 0).toFixed(2) +
+        " د.إ";
+
+    document.getElementById("detailsBarcode").innerText =
+        product.barcode || "-";
+
+    document.getElementById("detailsCategory").innerText =
+        product.category || "عام";
+
+    const details =
+        document.getElementById("productDetails");
+
+    details.style.display =
+        "block";
+
+    details.scrollIntoView({
+        behavior:"smooth",
+        block:"start"
+    });
+}
+
+function closeProductDetails(){
+
+    document.getElementById("productDetails").style.display =
+        "none";
+}
+
+/* التصنيفات */
+
+function updateCategoryFilter(){
+
+    const select =
+        document.getElementById("categoryFilter");
+
+    const currentValue =
+        select.value;
+
+    const products =
+        VAREX.getProducts();
+
+    const categories = [
+        ...new Set(
+            products
+                .map(
+                    product =>
+                        (product.category || "").trim()
+                )
+                .filter(Boolean)
+        )
+    ].sort();
+
+    select.innerHTML =
+        '<option value="">كل التصنيفات</option>';
+
+    categories.forEach(category => {
+
+        const option =
+            document.createElement("option");
+
+        option.value = category;
+        option.textContent = category;
+
+        select.appendChild(option);
+    });
+
+    if(categories.includes(currentValue)){
+        select.value = currentValue;
+    }
+}
+
+/* الإحصائيات */
+
+function updateStats(products){
+
+    let available = 0;
+    let low = 0;
+    let out = 0;
+
+    products.forEach(product => {
+
+        const quantity =
+            Number(product.quantity || 0);
+
+        const minimum =
+            Number(product.minimumStock || 0);
+
+        if(quantity <= 0){
+            out++;
+        }else if(quantity <= minimum){
+            low++;
+        }else{
+            available++;
+        }
+
+    });
+
+    document.getElementById("totalProducts").innerText =
+        products.length;
+
+    document.getElementById("availableProducts").innerText =
+        available;
+
+    document.getElementById("lowProducts").innerText =
+        low;
+
+    document.getElementById("outProducts").innerText =
+        out;
+}
+
+/* عرض المنتجات */
+
+function renderProducts(){
+
+    const products =
+        VAREX.getProducts();
+
+    updateStats(products);
+
+    const search =
+        document
+            .getElementById("search")
+            .value
+            .trim()
+            .toLowerCase();
+
+    const categoryFilter =
+        document.getElementById("categoryFilter").value;
+
+    const stockFilter =
+        document.getElementById("stockFilter").value;
+
+    const table =
+        document.getElementById("productTable");
+
+    const emptyMessage =
+        document.getElementById("emptyMessage");
+
+    table.innerHTML = "";
+
+    const filteredProducts =
+        products.filter(product => {
+
+            const searchable =
+                (
+                    (product.name || "") +
+                    " " +
+                    (product.barcode || "")
+                ).toLowerCase();
+
+            const matchesSearch =
+                searchable.includes(search);
+
+            const matchesCategory =
+                !categoryFilter ||
+                product.category === categoryFilter;
+
+            const quantity =
+                Number(product.quantity || 0);
+
+            const minimum =
+                Number(product.minimumStock || 0);
+
+            let stockState = "available";
+
+            if(quantity <= 0){
+                stockState = "out";
+            }else if(quantity <= minimum){
+                stockState = "low";
+            }
+
+            const matchesStock =
+                !stockFilter ||
+                stockFilter === stockState;
+
+            return (
+                matchesSearch &&
+                matchesCategory &&
+                matchesStock
+            );
+        });
+
+    filteredProducts.forEach(product => {
+
+        const quantity =
+            Number(product.quantity || 0);
+
+        const minimum =
+            Number(product.minimumStock || 0);
+
+        const todaySales =
+            getTodaySalesForProduct(product);
+
+        let status = "متوفر";
+        let statusClass = "ok";
+
+        if(quantity <= 0){
+            status = "نفد المخزون";
+            statusClass = "out";
+        }else if(quantity <= minimum){
+            status = "مخزون منخفض";
+            statusClass = "low";
+        }
+
+        const row =
+            document.createElement("tr");
+
+        row.innerHTML = `
+
+            <td class="product-name">
+                ${escapeHTML(product.name)}
+            </td>
+
+            <td class="barcode">
+                ${escapeHTML(product.barcode || "-")}
+            </td>
+
+            <td>
+                ${escapeHTML(product.category || "عام")}
+            </td>
+
+            <td>
+                ${Number(product.price || 0).toFixed(2)}
+                د.إ
+            </td>
+
+            <td>
+                ${Number(product.cost || 0).toFixed(2)}
+                د.إ
+            </td>
+
+            <td>
+                <strong>${quantity}</strong>
+            </td>
+
+            <td class="today-sales">
+                ${todaySales}
+            </td>
+
+            <td>
+                ${minimum}
+            </td>
+
+            <td>
+                <span class="status-badge ${statusClass}">
+                    ${status}
+                </span>
+            </td>
+
+            <td>
+                <button
+                    class="info"
+                    title="تفاصيل المخزون"
+                    onclick="showProductDetails('${product.id}')">
+                    i
+                </button>
+            </td>
+
+            <td>
+                <button
+                    class="action"
+                    onclick="editProduct('${product.id}')">
+                    تعديل
+                </button>
+
+                <button
+                    class="delete"
+                    onclick="deleteProduct('${product.id}')">
+                    حذف
+                </button>
+            </td>
+        `;
+
+        table.appendChild(row);
+    });
+
+    emptyMessage.style.display =
+        filteredProducts.length
+        ? "none"
+        : "block";
+}
+
+/* حماية النصوص */
+
+function escapeHTML(value){
+
+    const element =
+        document.createElement("div");
+
+    element.textContent =
+        value == null
+        ? ""
+        : String(value);
+
+    return element.innerHTML;
+}
+
+/* إغلاق المودال من الخارج */
+
+document
+.getElementById("productModal")
+.addEventListener(
+    "click",
+    function(event){
+
+        if(event.target === this){
+            closeModal();
+        }
+
+    }
+);
+
+/* تشغيل الصفحة */
+
+updateCategoryFilter();
+renderProducts();
+
+</script>
+
+</body>
+</html>
