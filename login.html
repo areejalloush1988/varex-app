@@ -754,11 +754,13 @@ onclick="toggleLanguageMenu(event)"
 <form id="loginForm">
 
 <div class="form-group">
+
 <label for="username">
 اسم المستخدم أو البريد الإلكتروني
 </label>
 
 <div class="input-wrapper">
+
 <span class="input-icon">👤</span>
 
 <input
@@ -769,6 +771,7 @@ autocomplete="username"
 placeholder="أدخل اسم المستخدم أو البريد الإلكتروني"
 required
 >
+
 </div>
 </div>
 
@@ -820,22 +823,30 @@ onclick="openForgotPassword(event)"
 
 </div>
 
-<button type="submit" class="login-button">
+<button
+type="submit"
+class="login-button"
+>
 تسجيل الدخول
 </button>
 
-<div id="loginMessage" class="login-message"></div>
+<div
+id="loginMessage"
+class="login-message"
+></div>
 
 </form>
 
 <div class="create-account">
 
-<p>ليس لديك حساب في VAREX؟</p>
+<p>
+ليس لديك حساب في VAREX؟
+</p>
 
 <button
 type="button"
 class="create-button"
-onclick="openCreateAccount()"
+onclick="goToRegister()"
 >
 إنشاء حساب جديد
 </button>
@@ -846,7 +857,10 @@ onclick="openCreateAccount()"
 
 تحتاج إلى مساعدة؟
 
-<a href="#" onclick="openContact(event)">
+<a
+href="#"
+onclick="openContact(event)"
+>
 تواصل معنا
 </a>
 
@@ -855,41 +869,23 @@ onclick="openCreateAccount()"
 </section>
 </div>
 
-<div class="modal-overlay" id="createAccountModal">
+
+<!-- ==========================================
+     FORGOT PASSWORD MODAL
+========================================== -->
+
+<div
+class="modal-overlay"
+id="forgotPasswordModal"
+>
+
 <div class="modal">
 
 <div class="modal-header">
-<h3>إنشاء حساب جديد</h3>
-<button
-type="button"
-class="modal-close"
-onclick="closeModal('createAccountModal')"
->
-×
-</button>
-</div>
 
-<p>
-سيتم تجهيز صفحة إنشاء الحساب وربطها
-بنظام حسابات VAREX في المرحلة التالية.
-</p>
-
-<button
-type="button"
-class="modal-button"
-onclick="closeModal('createAccountModal')"
->
-حسناً
-</button>
-
-</div>
-</div>
-
-<div class="modal-overlay" id="forgotPasswordModal">
-<div class="modal">
-
-<div class="modal-header">
-<h3>استعادة كلمة المرور</h3>
+<h3>
+استعادة كلمة المرور
+</h3>
 
 <button
 type="button"
@@ -898,11 +894,12 @@ onclick="closeModal('forgotPasswordModal')"
 >
 ×
 </button>
+
 </div>
 
 <p>
 سيتم ربط استعادة كلمة المرور بحساب المستخدم
-عند تجهيز نظام الحسابات.
+عند تجهيز نظام استعادة كلمات المرور.
 </p>
 
 <button
@@ -916,11 +913,23 @@ onclick="closeModal('forgotPasswordModal')"
 </div>
 </div>
 
-<div class="modal-overlay" id="contactModal">
+
+<!-- ==========================================
+     CONTACT MODAL
+========================================== -->
+
+<div
+class="modal-overlay"
+id="contactModal"
+>
+
 <div class="modal">
 
 <div class="modal-header">
-<h3>تواصل معنا</h3>
+
+<h3>
+تواصل معنا
+</h3>
 
 <button
 type="button"
@@ -929,6 +938,7 @@ onclick="closeModal('contactModal')"
 >
 ×
 </button>
+
 </div>
 
 <p>
@@ -947,7 +957,12 @@ onclick="closeModal('contactModal')"
 </div>
 </div>
 
+
 <script>
+
+/* ==========================================
+   LANGUAGES
+========================================== */
 
 const languages = {
     ar:"العربية",
@@ -960,9 +975,16 @@ const languages = {
 };
 
 function getSavedLanguage(){
-    const saved = localStorage.getItem("varex_language");
 
-    if(saved && languages[saved]){
+    const saved =
+        localStorage.getItem(
+            "varex_language"
+        );
+
+    if(
+        saved &&
+        languages[saved]
+    ){
         return saved;
     }
 
@@ -970,78 +992,122 @@ function getSavedLanguage(){
 }
 
 function toggleLanguageMenu(event){
+
     if(event){
         event.stopPropagation();
     }
 
-    const selector = document.getElementById("languageSelector");
+    const selector =
+        document.getElementById(
+            "languageSelector"
+        );
 
     if(selector){
-        selector.classList.toggle("open");
+        selector.classList.toggle(
+            "open"
+        );
     }
 }
 
 function closeLanguageMenu(){
-    const selector = document.getElementById("languageSelector");
+
+    const selector =
+        document.getElementById(
+            "languageSelector"
+        );
 
     if(selector){
-        selector.classList.remove("open");
+        selector.classList.remove(
+            "open"
+        );
     }
 }
 
 function selectLanguage(language){
+
     if(!languages[language]){
         return;
     }
 
-    localStorage.setItem("varex_language",language);
+    localStorage.setItem(
+        "varex_language",
+        language
+    );
+
     updateLanguageButton();
+
     closeLanguageMenu();
 }
 
 function updateLanguageButton(){
-    const language = getSavedLanguage();
+
+    const language =
+        getSavedLanguage();
 
     const currentLanguage =
-        document.getElementById("currentLanguage");
+        document.getElementById(
+            "currentLanguage"
+        );
 
     if(currentLanguage){
+
         currentLanguage.textContent =
             languages[language];
     }
 
     document
-        .querySelectorAll(".language-option")
-        .forEach(function(option){
+        .querySelectorAll(
+            ".language-option"
+        )
+        .forEach(
+            function(option){
 
-            option.classList.toggle(
-                "active",
-                option.dataset.language === language
-            );
+                option.classList.toggle(
+                    "active",
+                    option.dataset.language === language
+                );
 
-        });
+            }
+        );
 }
 
-document.addEventListener("click",function(event){
+document.addEventListener(
+    "click",
+    function(event){
 
-    const selector =
-        document.getElementById("languageSelector");
+        const selector =
+            document.getElementById(
+                "languageSelector"
+            );
 
-    if(
-        selector &&
-        !selector.contains(event.target)
-    ){
-        closeLanguageMenu();
+        if(
+            selector &&
+            !selector.contains(
+                event.target
+            )
+        ){
+            closeLanguageMenu();
+        }
     }
-
-});
+);
 
 updateLanguageButton();
+
+
+/* ==========================================
+   PASSWORD
+========================================== */
 
 function togglePassword(){
 
     const password =
-        document.getElementById("password");
+        document.getElementById(
+            "password"
+        );
+
+    if(!password){
+        return;
+    }
 
     password.type =
         password.type === "password"
@@ -1049,60 +1115,104 @@ function togglePassword(){
             : "password";
 }
 
-function openCreateAccount(){
-    document
-        .getElementById("createAccountModal")
-        .classList.add("show");
+
+/* ==========================================
+   CREATE ACCOUNT
+========================================== */
+
+function goToRegister(){
+
+    window.location.href =
+        "./register.html";
 }
+
+
+/* ==========================================
+   FORGOT PASSWORD
+========================================== */
 
 function openForgotPassword(event){
 
     event.preventDefault();
 
     document
-        .getElementById("forgotPasswordModal")
-        .classList.add("show");
+        .getElementById(
+            "forgotPasswordModal"
+        )
+        .classList.add(
+            "show"
+        );
 }
+
+
+/* ==========================================
+   CONTACT
+========================================== */
 
 function openContact(event){
 
     event.preventDefault();
 
     document
-        .getElementById("contactModal")
-        .classList.add("show");
+        .getElementById(
+            "contactModal"
+        )
+        .classList.add(
+            "show"
+        );
 }
+
+
+/* ==========================================
+   CLOSE MODAL
+========================================== */
 
 function closeModal(id){
 
-    document
-        .getElementById(id)
-        .classList.remove("show");
+    const modal =
+        document.getElementById(id);
+
+    if(modal){
+        modal.classList.remove(
+            "show"
+        );
+    }
 }
 
 document
-    .querySelectorAll(".modal-overlay")
-    .forEach(function(modal){
+    .querySelectorAll(
+        ".modal-overlay"
+    )
+    .forEach(
+        function(modal){
 
-        modal.addEventListener(
-            "click",
-            function(event){
+            modal.addEventListener(
+                "click",
+                function(event){
 
-                if(event.target === modal){
-                    modal.classList.remove("show");
+                    if(
+                        event.target === modal
+                    ){
+                        modal.classList.remove(
+                            "show"
+                        );
+                    }
                 }
+            );
+        }
+    );
 
-            }
-        );
-
-    });
 
 /* ==========================================
-   LOGIN SESSION
+   LOGIN
+   سيتم ربط التحقق الفعلي بالحسابات
+   في الخطوة التالية
 ========================================== */
 
 document
-    .getElementById("loginForm")
+    .getElementById(
+        "loginForm"
+    )
     .addEventListener(
         "submit",
         function(event){
@@ -1111,24 +1221,36 @@ document
 
             const username =
                 document
-                    .getElementById("username")
+                    .getElementById(
+                        "username"
+                    )
                     .value
                     .trim();
 
             const password =
                 document
-                    .getElementById("password")
+                    .getElementById(
+                        "password"
+                    )
                     .value;
 
             const rememberMe =
                 document
-                    .getElementById("rememberMe")
+                    .getElementById(
+                        "rememberMe"
+                    )
                     .checked;
 
             const message =
-                document.getElementById("loginMessage");
+                document.getElementById(
+                    "loginMessage"
+                );
 
-            if(!username || !password){
+
+            if(
+                !username ||
+                !password
+            ){
 
                 message.className =
                     "login-message error";
@@ -1139,11 +1261,19 @@ document
                 return;
             }
 
+
             const sessionData = {
+
                 authenticated:true,
-                username:username,
-                loginTime:new Date().toISOString()
+
+                username:
+                    username,
+
+                loginTime:
+                    new Date()
+                        .toISOString()
             };
+
 
             if(rememberMe){
 
@@ -1154,7 +1284,9 @@ document
 
                 localStorage.setItem(
                     "varex_session",
-                    JSON.stringify(sessionData)
+                    JSON.stringify(
+                        sessionData
+                    )
                 );
 
                 sessionStorage.removeItem(
@@ -1174,7 +1306,9 @@ document
 
                 sessionStorage.setItem(
                     "varex_session",
-                    JSON.stringify(sessionData)
+                    JSON.stringify(
+                        sessionData
+                    )
                 );
 
                 localStorage.removeItem(
@@ -1186,42 +1320,54 @@ document
                 );
             }
 
+
             message.className =
                 "login-message success";
 
             message.textContent =
                 "تم تسجيل الدخول بنجاح...";
 
+
             setTimeout(
                 function(){
+
                     window.location.replace(
                         "./index.html"
                     );
+
                 },
                 300
             );
         }
     );
 
+
 /* ==========================================
    SERVICE WORKER
 ========================================== */
 
-if("serviceWorker" in navigator){
+if(
+    "serviceWorker" in navigator
+){
 
     window.addEventListener(
         "load",
         function(){
 
-            navigator.serviceWorker
-                .register("./sw.js")
-                .catch(function(error){
-                    console.error(
-                        "Service Worker Error:",
-                        error
-                    );
-                });
+            navigator
+                .serviceWorker
+                .register(
+                    "./sw.js"
+                )
+                .catch(
+                    function(error){
 
+                        console.error(
+                            "Service Worker Error:",
+                            error
+                        );
+                    }
+                );
         }
     );
 }
