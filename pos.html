@@ -1,203 +1,985 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>VAREX | نقطة البيع</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <style>
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
+<title>VAREX | نقطة البيع</title>
+
+<style>
+*{
+    box-sizing:border-box;
+    margin:0;
+    padding:0;
+}
+
+body{
+    font-family:Arial,sans-serif;
+    background:#f4f6fb;
+    color:#172554;
+}
+
+header{
+    background:#172554;
+    color:white;
+    padding:18px 30px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+}
+
+.logo{
+    font-size:28px;
+    font-weight:bold;
+    letter-spacing:3px;
+}
+
+.back{
+    color:white;
+    text-decoration:none;
+    font-size:15px;
+}
+
+.container{
+    width:94%;
+    max-width:1250px;
+    margin:30px auto;
+}
+
+h1{
+    margin-bottom:8px;
+}
+
+.subtitle{
+    color:#64748b;
+    margin-bottom:25px;
+}
+
+.pos{
+    display:grid;
+    grid-template-columns:1.4fr 1fr;
+    gap:20px;
+}
+
+.panel{
+    background:white;
+    border-radius:16px;
+    padding:22px;
+    box-shadow:0 5px 20px rgba(0,0,0,.06);
+}
+
+.search{
+    width:100%;
+    padding:14px;
+    border:1px solid #dbe2ea;
+    border-radius:10px;
+    font-size:16px;
+    margin-bottom:18px;
+}
+
+.products{
+    display:grid;
+    grid-template-columns:repeat(2,1fr);
+    gap:12px;
+}
+
+.product{
+    border:1px solid #e2e8f0;
+    border-radius:12px;
+    padding:16px;
+    cursor:pointer;
+    background:white;
+    transition:.15s;
+}
+
+.product:hover{
+    background:#f8fafc;
+    transform:translateY(-2px);
+}
+
+.product-name{
+    font-weight:bold;
+    margin-bottom:7px;
+}
+
+.product-info{
+    font-size:13px;
+    color:#64748b;
+    margin-top:5px;
+}
+
+.price{
+    color:#2563eb;
+    font-weight:bold;
+    margin-top:8px;
+}
+
+.out{
+    opacity:.5;
+    cursor:not-allowed;
+}
+
+.cart-title{
+    margin-bottom:18px;
+}
+
+.cart-items{
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+}
+
+.cart-item{
+    border-bottom:1px solid #e2e8f0;
+    padding:12px 0;
+}
+
+.cart-top{
+    display:flex;
+    justify-content:space-between;
+    gap:10px;
+    margin-bottom:10px;
+}
+
+.cart-name{
+    font-weight:bold;
+}
+
+.cart-price{
+    font-weight:bold;
+}
+
+.quantity-controls{
+    display:flex;
+    align-items:center;
+    gap:8px;
+}
+
+.quantity-controls button{
+    width:32px;
+    height:32px;
+    border:0;
+    border-radius:7px;
+    cursor:pointer;
+    background:#eef2ff;
+    color:#172554;
+    font-size:17px;
+}
+
+.remove{
+    margin-right:auto;
+    background:#fee2e2 !important;
+    color:#b91c1c !important;
+    width:auto !important;
+    padding:0 10px;
+}
+
+.empty{
+    text-align:center;
+    padding:35px 10px;
+    color:#94a3b8;
+}
+
+.sale-options{
+    border-top:1px solid #e2e8f0;
+    margin-top:18px;
+    padding-top:18px;
+}
+
+.field{
+    margin-bottom:12px;
+}
+
+.field label{
+    display:block;
+    font-size:13px;
+    margin-bottom:6px;
+    color:#64748b;
+}
+
+.field input,
+.field select{
+    width:100%;
+    padding:11px;
+    border:1px solid #dbe2ea;
+    border-radius:9px;
+}
+
+.summary-row{
+    display:flex;
+    justify-content:space-between;
+    padding:7px 0;
+}
+
+.total{
+    display:flex;
+    justify-content:space-between;
+    font-size:21px;
+    font-weight:bold;
+    margin:15px 0;
+    border-top:1px solid #e2e8f0;
+    padding-top:15px;
+}
+
+.pay{
+    width:100%;
+    border:0;
+    background:#172554;
+    color:white;
+    padding:15px;
+    border-radius:10px;
+    font-size:17px;
+    cursor:pointer;
+}
+
+.pay:disabled{
+    opacity:.5;
+    cursor:not-allowed;
+}
+
+.success{
+    display:none;
+    background:#dcfce7;
+    color:#166534;
+    padding:13px;
+    border-radius:10px;
+    margin-bottom:15px;
+}
+
+.no-products{
+    grid-column:1/-1;
+    text-align:center;
+    color:#64748b;
+    padding:35px;
+}
+
+@media(max-width:750px){
+
+    .pos{
+        grid-template-columns:1fr;
     }
 
-    body {
-      font-family: Arial, sans-serif;
-      background: #f4f6fb;
-      color: #172554;
+    .products{
+        grid-template-columns:1fr;
     }
-
-    header {
-      background: #172554;
-      color: white;
-      padding: 18px 30px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    .logo {
-      font-size: 28px;
-      font-weight: bold;
-      letter-spacing: 3px;
-    }
-
-    .back {
-      color: white;
-      text-decoration: none;
-      font-size: 15px;
-    }
-
-    .container {
-      width: 94%;
-      max-width: 1200px;
-      margin: 30px auto;
-    }
-
-    h1 {
-      margin-bottom: 8px;
-    }
-
-    .subtitle {
-      color: #64748b;
-      margin-bottom: 25px;
-    }
-
-    .pos {
-      display: grid;
-      grid-template-columns: 1.5fr 1fr;
-      gap: 20px;
-    }
-
-    .panel {
-      background: white;
-      border-radius: 16px;
-      padding: 22px;
-      box-shadow: 0 5px 20px rgba(0,0,0,0.06);
-    }
-
-    .search {
-      width: 100%;
-      padding: 14px;
-      border: 1px solid #dbe2ea;
-      border-radius: 10px;
-      font-size: 16px;
-      margin-bottom: 18px;
-    }
-
-    .products {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 12px;
-    }
-
-    .product {
-      border: 1px solid #e2e8f0;
-      border-radius: 12px;
-      padding: 18px;
-      cursor: pointer;
-      background: #fff;
-    }
-
-    .product:hover {
-      background: #f8fafc;
-    }
-
-    .product strong {
-      display: block;
-      margin-bottom: 8px;
-    }
-
-    .price {
-      color: #2563eb;
-      font-weight: bold;
-    }
-
-    .cart-title {
-      margin-bottom: 18px;
-    }
-
-    .empty-cart {
-      text-align: center;
-      padding: 35px 10px;
-      color: #94a3b8;
-      border-bottom: 1px solid #e2e8f0;
-    }
-
-    .total {
-      display: flex;
-      justify-content: space-between;
-      font-size: 21px;
-      font-weight: bold;
-      margin: 22px 0;
-    }
-
-    .pay {
-      width: 100%;
-      border: 0;
-      background: #172554;
-      color: white;
-      padding: 15px;
-      border-radius: 10px;
-      font-size: 17px;
-      cursor: pointer;
-    }
-
-    @media (max-width: 750px) {
-      .pos {
-        grid-template-columns: 1fr;
-      }
-
-      .products {
-        grid-template-columns: 1fr;
-      }
-    }
-  </style>
+}
+</style>
 </head>
 
 <body>
 
 <header>
-  <div class="logo">VAREX</div>
-  <a class="back" href="index.html">← العودة إلى لوحة التحكم</a>
+    <div class="logo">VAREX</div>
+    <a class="back" href="index.html">
+        ← العودة إلى لوحة التحكم
+    </a>
 </header>
 
 <div class="container">
 
-  <h1>🛒 نقطة البيع</h1>
-  <p class="subtitle">إنشاء عملية بيع جديدة وإدارة الفاتورة.</p>
+    <h1>🛒 نقطة البيع</h1>
 
-  <div class="pos">
+    <p class="subtitle">
+        إنشاء عملية بيع جديدة وإدارة الفاتورة
+    </p>
 
-    <div class="panel">
-      <input
-        class="search"
-        type="text"
-        placeholder="🔍 ابحث عن منتج أو امسح الباركود"
-      >
+    <div id="successMessage" class="success"></div>
 
-      <div class="products">
-        <div class="product">
-          <strong>منتج تجريبي 1</strong>
-          <span class="price">25.00 د.إ</span>
+    <div class="pos">
+
+        <!-- المنتجات -->
+
+        <div class="panel">
+
+            <input
+                id="search"
+                class="search"
+                type="text"
+                placeholder="🔍 ابحث عن منتج أو امسح الباركود"
+                oninput="renderProducts()"
+            >
+
+            <div id="products" class="products"></div>
+
         </div>
 
-        <div class="product">
-          <strong>منتج تجريبي 2</strong>
-          <span class="price">40.00 د.إ</span>
+
+        <!-- الفاتورة -->
+
+        <div class="panel">
+
+            <h2 class="cart-title">
+                الفاتورة الحالية
+            </h2>
+
+            <div id="cartItems" class="cart-items"></div>
+
+            <div id="emptyCart" class="empty">
+                لم تتم إضافة أي منتجات بعد
+            </div>
+
+
+            <div class="sale-options">
+
+                <div class="field">
+                    <label>اسم العميل - اختياري</label>
+                    <input
+                        id="customerName"
+                        type="text"
+                        placeholder="اسم العميل"
+                    >
+                </div>
+
+
+                <div class="field">
+
+                    <label>طريقة الدفع</label>
+
+                    <select id="paymentMethod">
+
+                        <option value="نقدي">
+                            نقدي
+                        </option>
+
+                        <option value="بطاقة">
+                            بطاقة
+                        </option>
+
+                        <option value="تحويل بنكي">
+                            تحويل بنكي
+                        </option>
+
+                        <option value="آجل">
+                            آجل
+                        </option>
+
+                    </select>
+
+                </div>
+
+
+                <div class="field">
+
+                    <label>الخصم</label>
+
+                    <input
+                        id="discount"
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        value="0"
+                        oninput="renderCart()"
+                    >
+
+                </div>
+
+
+                <div class="field">
+
+                    <label>الضريبة</label>
+
+                    <input
+                        id="tax"
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        value="0"
+                        oninput="renderCart()"
+                    >
+
+                </div>
+
+            </div>
+
+
+            <div class="summary-row">
+                <span>المجموع الفرعي</span>
+                <strong id="subtotal">
+                    0.00 د.إ
+                </strong>
+            </div>
+
+            <div class="summary-row">
+                <span>الخصم</span>
+                <strong id="discountView">
+                    0.00 د.إ
+                </strong>
+            </div>
+
+            <div class="summary-row">
+                <span>الضريبة</span>
+                <strong id="taxView">
+                    0.00 د.إ
+                </strong>
+            </div>
+
+
+            <div class="total">
+
+                <span>الإجمالي</span>
+
+                <span id="total">
+                    0.00 د.إ
+                </span>
+
+            </div>
+
+
+            <button
+                id="payButton"
+                class="pay"
+                onclick="completeSale()"
+                disabled
+            >
+                إتمام عملية البيع
+            </button>
+
         </div>
-      </div>
+
     </div>
-
-    <div class="panel">
-      <h2 class="cart-title">الفاتورة الحالية</h2>
-
-      <div class="empty-cart">
-        لم تتم إضافة أي منتجات بعد
-      </div>
-
-      <div class="total">
-        <span>الإجمالي</span>
-        <span>0.00 د.إ</span>
-      </div>
-
-      <button class="pay">إتمام عملية البيع</button>
-    </div>
-
-  </div>
 
 </div>
+
+
+<!-- تحميل قلب النظام أولاً -->
+
+<script src="varex.js"></script>
+
+<script>
+
+let cart = [];
+
+
+/* =========================
+   عرض المنتجات
+   ========================= */
+
+function renderProducts(){
+
+    const products =
+        VAREX.getProducts();
+
+    const search =
+        document
+            .getElementById("search")
+            .value
+            .trim()
+            .toLowerCase();
+
+    const container =
+        document.getElementById("products");
+
+    container.innerHTML = "";
+
+
+    const filtered =
+        products.filter(product => {
+
+            const text =
+                (
+                    (product.name || "") +
+                    " " +
+                    (product.barcode || "")
+                ).toLowerCase();
+
+            return text.includes(search);
+
+        });
+
+
+    if(!filtered.length){
+
+        container.innerHTML = `
+            <div class="no-products">
+                لا توجد منتجات مطابقة
+            </div>
+        `;
+
+        return;
+    }
+
+
+    filtered.forEach(product => {
+
+        const quantity =
+            Number(product.quantity || 0);
+
+        const div =
+            document.createElement("div");
+
+        div.className =
+            "product" +
+            (quantity <= 0 ? " out" : "");
+
+
+        div.innerHTML = `
+
+            <div class="product-name">
+                ${escapeHTML(product.name)}
+            </div>
+
+            <div class="product-info">
+                الباركود:
+                ${escapeHTML(product.barcode || "-")}
+            </div>
+
+            <div class="product-info">
+                المتوفر: ${quantity}
+            </div>
+
+            <div class="price">
+                ${VAREX.money(product.price)}
+            </div>
+
+        `;
+
+
+        if(quantity > 0){
+
+            div.onclick = function(){
+                addToCart(product.id);
+            };
+
+        }
+
+
+        container.appendChild(div);
+
+    });
+
+}
+
+
+/* =========================
+   إضافة للسلة
+   ========================= */
+
+function addToCart(productId){
+
+    const product =
+        VAREX.findProduct(productId);
+
+    if(!product) return;
+
+
+    const available =
+        Number(product.quantity || 0);
+
+
+    if(available <= 0){
+
+        alert("هذا المنتج غير متوفر في المخزون");
+
+        return;
+    }
+
+
+    const existing =
+        cart.find(
+            item =>
+                String(item.productId) ===
+                String(productId)
+        );
+
+
+    if(existing){
+
+        if(existing.quantity >= available){
+
+            alert(
+                "لا توجد كمية إضافية متوفرة من هذا المنتج"
+            );
+
+            return;
+        }
+
+        existing.quantity++;
+
+    }else{
+
+        cart.push({
+
+            productId:product.id,
+
+            name:product.name,
+
+            price:Number(product.price || 0),
+
+            quantity:1
+
+        });
+
+    }
+
+
+    renderCart();
+
+}
+
+
+/* =========================
+   تعديل الكمية
+   ========================= */
+
+function changeQuantity(productId, amount){
+
+    const item =
+        cart.find(
+            item =>
+                String(item.productId) ===
+                String(productId)
+        );
+
+
+    if(!item) return;
+
+
+    const product =
+        VAREX.findProduct(productId);
+
+
+    if(!product){
+
+        removeFromCart(productId);
+
+        return;
+    }
+
+
+    const newQuantity =
+        item.quantity + amount;
+
+
+    if(newQuantity <= 0){
+
+        removeFromCart(productId);
+
+        return;
+    }
+
+
+    if(
+        newQuantity >
+        Number(product.quantity || 0)
+    ){
+
+        alert(
+            "الكمية المطلوبة أكبر من المخزون المتوفر"
+        );
+
+        return;
+    }
+
+
+    item.quantity =
+        newQuantity;
+
+
+    renderCart();
+
+}
+
+
+/* =========================
+   حذف من السلة
+   ========================= */
+
+function removeFromCart(productId){
+
+    cart =
+        cart.filter(
+            item =>
+                String(item.productId) !==
+                String(productId)
+        );
+
+
+    renderCart();
+
+}
+
+
+/* =========================
+   عرض السلة
+   ========================= */
+
+function renderCart(){
+
+    const container =
+        document.getElementById("cartItems");
+
+
+    const empty =
+        document.getElementById("emptyCart");
+
+
+    container.innerHTML = "";
+
+
+    let subtotal = 0;
+
+
+    cart.forEach(item => {
+
+        const itemTotal =
+            Number(item.price) *
+            Number(item.quantity);
+
+
+        subtotal += itemTotal;
+
+
+        const row =
+            document.createElement("div");
+
+
+        row.className =
+            "cart-item";
+
+
+        row.innerHTML = `
+
+            <div class="cart-top">
+
+                <span class="cart-name">
+                    ${escapeHTML(item.name)}
+                </span>
+
+                <span class="cart-price">
+                    ${VAREX.money(itemTotal)}
+                </span>
+
+            </div>
+
+
+            <div class="quantity-controls">
+
+                <button
+                    onclick="changeQuantity('${item.productId}',1)">
+                    +
+                </button>
+
+                <strong>
+                    ${item.quantity}
+                </strong>
+
+                <button
+                    onclick="changeQuantity('${item.productId}',-1)">
+                    −
+                </button>
+
+                <button
+                    class="remove"
+                    onclick="removeFromCart('${item.productId}')">
+                    حذف
+                </button>
+
+            </div>
+
+        `;
+
+
+        container.appendChild(row);
+
+    });
+
+
+    const discount =
+        Math.max(
+            0,
+            Number(
+                document.getElementById("discount").value || 0
+            )
+        );
+
+
+    const tax =
+        Math.max(
+            0,
+            Number(
+                document.getElementById("tax").value || 0
+            )
+        );
+
+
+    const total =
+        Math.max(
+            0,
+            subtotal - discount + tax
+        );
+
+
+    document.getElementById("subtotal").innerText =
+        VAREX.money(subtotal);
+
+
+    document.getElementById("discountView").innerText =
+        VAREX.money(discount);
+
+
+    document.getElementById("taxView").innerText =
+        VAREX.money(tax);
+
+
+    document.getElementById("total").innerText =
+        VAREX.money(total);
+
+
+    empty.style.display =
+        cart.length
+            ? "none"
+            : "block";
+
+
+    document.getElementById("payButton").disabled =
+        !cart.length;
+
+}
+
+
+/* =========================
+   إتمام البيع
+   ========================= */
+
+function completeSale(){
+
+    if(!cart.length){
+
+        alert("الفاتورة فارغة");
+
+        return;
+    }
+
+
+    const items =
+        cart.map(item => ({
+
+            productId:
+                item.productId,
+
+            quantity:
+                item.quantity,
+
+            price:
+                item.price
+
+        }));
+
+
+    const result =
+        VAREX.createSale(
+            items,
+            {
+
+                customerName:
+                    document
+                        .getElementById("customerName")
+                        .value
+                        .trim(),
+
+                paymentMethod:
+                    document
+                        .getElementById("paymentMethod")
+                        .value,
+
+                discount:
+                    Number(
+                        document
+                            .getElementById("discount")
+                            .value || 0
+                    ),
+
+                tax:
+                    Number(
+                        document
+                            .getElementById("tax")
+                            .value || 0
+                    )
+
+            }
+        );
+
+
+    if(!result.success){
+
+        alert(result.message);
+
+        return;
+    }
+
+
+    const sale =
+        result.sale;
+
+
+    const success =
+        document.getElementById("successMessage");
+
+
+    success.innerHTML =
+        "✓ تمت عملية البيع بنجاح — رقم الفاتورة: " +
+        escapeHTML(sale.invoiceNumber) +
+        " — الإجمالي: " +
+        VAREX.money(sale.total);
+
+
+    success.style.display =
+        "block";
+
+
+    cart = [];
+
+
+    document.getElementById("customerName").value =
+        "";
+
+
+    document.getElementById("discount").value =
+        "0";
+
+
+    document.getElementById("tax").value =
+        "0";
+
+
+    renderCart();
+
+    renderProducts();
+
+
+    window.scrollTo({
+        top:0,
+        behavior:"smooth"
+    });
+
+}
+
+
+/* =========================
+   حماية النص
+   ========================= */
+
+function escapeHTML(value){
+
+    const div =
+        document.createElement("div");
+
+    div.textContent =
+        value == null
+            ? ""
+            : String(value);
+
+    return div.innerHTML;
+
+}
+
+
+/* تشغيل نقطة البيع */
+
+renderProducts();
+renderCart();
+
+</script>
 
 </body>
 </html>

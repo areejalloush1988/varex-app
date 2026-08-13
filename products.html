@@ -35,15 +35,10 @@ header{
     max-width:1200px;
     margin:35px auto;
 }
-.title{
-    margin-bottom:25px;
-}
-.title h1{
-    margin:0 0 8px;
-}
-.title p{
-    color:#64748b;
-}
+.title{margin-bottom:25px}
+.title h1{margin:0 0 8px}
+.title p{color:#64748b}
+
 .stats{
     display:grid;
     grid-template-columns:repeat(4,1fr);
@@ -65,63 +60,98 @@ header{
     font-size:25px;
     margin-top:10px;
 }
+
 .panel{
     background:white;
     border-radius:16px;
     padding:22px;
     box-shadow:0 5px 18px rgba(0,0,0,.06);
 }
+
 .toolbar{
     display:flex;
     gap:10px;
     margin-bottom:20px;
     flex-wrap:wrap;
 }
+
 input,select{
     padding:12px;
     border:1px solid #dbe1ea;
     border-radius:9px;
     font-size:14px;
 }
+
 .search{
     flex:1;
     min-width:220px;
 }
+
 button{
     border:0;
     border-radius:9px;
     padding:12px 18px;
     cursor:pointer;
 }
+
 .add{
     background:#172554;
     color:white;
 }
+
+.table-wrap{
+    overflow-x:auto;
+}
+
 table{
     width:100%;
     border-collapse:collapse;
+    min-width:850px;
 }
+
 th,td{
     padding:14px 10px;
     text-align:right;
     border-bottom:1px solid #edf0f5;
 }
-th{
-    background:#f8fafc;
-}
+
+th{background:#f8fafc}
+
 .stock-ok{
     color:#15803d;
     font-weight:bold;
 }
+
 .stock-low{
     color:#dc2626;
     font-weight:bold;
 }
+
+.stock-out{
+    color:#991b1b;
+    font-weight:bold;
+}
+
 .action{
     background:#eef2ff;
     color:#172554;
     padding:7px 10px;
+    margin:2px;
 }
+
+.delete{
+    background:#fee2e2;
+    color:#b91c1c;
+    padding:7px 10px;
+    margin:2px;
+}
+
+.empty{
+    text-align:center;
+    color:#64748b;
+    padding:30px;
+}
+
 .modal{
     display:none;
     position:fixed;
@@ -129,37 +159,49 @@ th{
     background:rgba(0,0,0,.45);
     align-items:center;
     justify-content:center;
+    z-index:1000;
 }
+
 .modal-box{
     background:white;
     width:90%;
-    max-width:500px;
+    max-width:550px;
     border-radius:16px;
     padding:25px;
+    max-height:90vh;
+    overflow:auto;
 }
+
 .form-grid{
     display:grid;
     grid-template-columns:1fr 1fr;
     gap:12px;
 }
+
 .form-grid input{
     width:100%;
 }
+
 .save{
     background:#172554;
     color:white;
     width:100%;
     margin-top:15px;
 }
+
 .close{
     float:left;
     cursor:pointer;
-    font-size:22px;
+    font-size:24px;
 }
+
 @media(max-width:750px){
     .stats{grid-template-columns:1fr 1fr}
     .form-grid{grid-template-columns:1fr}
-    table{font-size:12px}
+}
+
+@media(max-width:450px){
+    .stats{grid-template-columns:1fr}
 }
 </style>
 </head>
@@ -179,196 +221,642 @@ th{
     </div>
 
     <div class="stats">
+
         <div class="card">
             <span>إجمالي المنتجات</span>
-            <strong id="totalProducts">2</strong>
+            <strong id="totalProducts">0</strong>
         </div>
 
         <div class="card">
             <span>إجمالي الوحدات</span>
-            <strong id="totalStock">18</strong>
+            <strong id="totalStock">0</strong>
         </div>
 
         <div class="card">
-            <span>قيمة المخزون</span>
-            <strong id="stockValue">475 د.إ</strong>
+            <span>قيمة المخزون بالتكلفة</span>
+            <strong id="stockValue">0.00 د.إ</strong>
         </div>
 
         <div class="card">
             <span>مخزون منخفض</span>
-            <strong id="lowStock">1</strong>
+            <strong id="lowStock">0</strong>
         </div>
+
     </div>
 
     <div class="panel">
 
         <div class="toolbar">
-            <input class="search" id="search" type="text"
-                   placeholder="🔍 ابحث باسم المنتج أو الباركود"
-                   onkeyup="searchProducts()">
 
-            <select id="categoryFilter" onchange="searchProducts()">
+            <input
+                class="search"
+                id="search"
+                type="text"
+                placeholder="🔍 ابحث باسم المنتج أو الباركود"
+                oninput="renderProducts()"
+            >
+
+            <select id="categoryFilter" onchange="renderProducts()">
                 <option value="">كل التصنيفات</option>
-                <option>عام</option>
-                <option>إلكترونيات</option>
-                <option>مواد غذائية</option>
-                <option>مشروبات</option>
             </select>
 
-            <button class="add" onclick="openModal()">+ إضافة منتج</button>
+            <button class="add" onclick="openModal()">
+                + إضافة منتج
+            </button>
+
         </div>
 
-        <table>
-            <thead>
-                <tr>
-                    <th>المنتج</th>
-                    <th>الباركود</th>
-                    <th>التصنيف</th>
-                    <th>سعر البيع</th>
-                    <th>التكلفة</th>
-                    <th>الكمية</th>
-                    <th>الحالة</th>
-                    <th>إجراء</th>
-                </tr>
-            </thead>
+        <div class="table-wrap">
 
-            <tbody id="productTable">
-                <tr>
-                    <td>منتج تجريبي 1</td>
-                    <td>100001</td>
-                    <td>عام</td>
-                    <td>25.00 د.إ</td>
-                    <td>15.00 د.إ</td>
-                    <td>10</td>
-                    <td class="stock-ok">متوفر</td>
-                    <td><button class="action">تعديل</button></td>
-                </tr>
+            <table>
 
-                <tr>
-                    <td>منتج تجريبي 2</td>
-                    <td>100002</td>
-                    <td>عام</td>
-                    <td>40.00 د.إ</td>
-                    <td>25.00 د.إ</td>
-                    <td>8</td>
-                    <td class="stock-low">منخفض</td>
-                    <td><button class="action">تعديل</button></td>
-                </tr>
-            </tbody>
-        </table>
+                <thead>
+                    <tr>
+                        <th>المنتج</th>
+                        <th>الباركود</th>
+                        <th>التصنيف</th>
+                        <th>سعر البيع</th>
+                        <th>التكلفة</th>
+                        <th>الكمية</th>
+                        <th>حد التنبيه</th>
+                        <th>الحالة</th>
+                        <th>إجراء</th>
+                    </tr>
+                </thead>
+
+                <tbody id="productTable"></tbody>
+
+            </table>
+
+            <div class="empty" id="emptyMessage">
+                لا توجد منتجات حتى الآن.
+            </div>
+
+        </div>
 
     </div>
+
 </div>
 
 <div class="modal" id="productModal">
+
     <div class="modal-box">
 
         <span class="close" onclick="closeModal()">×</span>
-        <h2>إضافة منتج جديد</h2>
+
+        <h2 id="modalTitle">إضافة منتج جديد</h2>
 
         <div class="form-grid">
+
             <input id="name" placeholder="اسم المنتج">
+
             <input id="barcode" placeholder="الباركود">
+
             <input id="category" placeholder="التصنيف">
-            <input id="price" type="number" placeholder="سعر البيع">
-            <input id="cost" type="number" placeholder="سعر التكلفة">
-            <input id="quantity" type="number" placeholder="الكمية">
+
+            <input
+                id="price"
+                type="number"
+                min="0"
+                step="0.01"
+                placeholder="سعر البيع"
+            >
+
+            <input
+                id="cost"
+                type="number"
+                min="0"
+                step="0.01"
+                placeholder="سعر التكلفة"
+            >
+
+            <input
+                id="quantity"
+                type="number"
+                min="0"
+                step="1"
+                placeholder="الكمية"
+            >
+
+            <input
+                id="minimumStock"
+                type="number"
+                min="0"
+                step="1"
+                value="5"
+                placeholder="حد تنبيه المخزون"
+            >
+
+            <input
+                id="supplier"
+                placeholder="المورد"
+            >
+
         </div>
 
-        <button class="save" onclick="addProduct()">حفظ المنتج</button>
+        <button class="save" onclick="saveProduct()">
+            حفظ المنتج
+        </button>
 
     </div>
+
 </div>
+
+<!-- الملف المركزي لازم يتحمل أولاً -->
+<script src="varex.js"></script>
 
 <script>
 
+let editingProductId = null;
+
+
+/* فتح نافذة إضافة منتج */
+
 function openModal(){
-    document.getElementById("productModal").style.display="flex";
+
+    editingProductId = null;
+
+    document.getElementById("modalTitle").innerText =
+        "إضافة منتج جديد";
+
+    clearForm();
+
+    document.getElementById("minimumStock").value = 5;
+
+    document.getElementById("productModal").style.display =
+        "flex";
 }
+
+
+/* إغلاق النافذة */
 
 function closeModal(){
-    document.getElementById("productModal").style.display="none";
+
+    document.getElementById("productModal").style.display =
+        "none";
+
+    editingProductId = null;
 }
 
-function addProduct(){
 
-    const name=document.getElementById("name").value;
-    const barcode=document.getElementById("barcode").value;
-    const category=document.getElementById("category").value || "عام";
-    const price=document.getElementById("price").value || 0;
-    const cost=document.getElementById("cost").value || 0;
-    const quantity=parseInt(document.getElementById("quantity").value || 0);
+/* تنظيف النموذج */
+
+function clearForm(){
+
+    document.getElementById("name").value = "";
+    document.getElementById("barcode").value = "";
+    document.getElementById("category").value = "";
+    document.getElementById("price").value = "";
+    document.getElementById("cost").value = "";
+    document.getElementById("quantity").value = "";
+    document.getElementById("minimumStock").value = "";
+    document.getElementById("supplier").value = "";
+}
+
+
+/* حفظ منتج جديد أو تعديل منتج */
+
+function saveProduct(){
+
+    const name =
+        document.getElementById("name").value.trim();
+
+    const barcode =
+        document.getElementById("barcode").value.trim();
+
+    const category =
+        document.getElementById("category").value.trim() || "عام";
+
+    const price =
+        Number(document.getElementById("price").value || 0);
+
+    const cost =
+        Number(document.getElementById("cost").value || 0);
+
+    const quantity =
+        Number(document.getElementById("quantity").value || 0);
+
+    const minimumStock =
+        Number(document.getElementById("minimumStock").value || 0);
+
+    const supplier =
+        document.getElementById("supplier").value.trim();
+
 
     if(!name){
         alert("يرجى إدخال اسم المنتج");
         return;
     }
 
-    const status=quantity<=8 ? "منخفض" : "متوفر";
-    const statusClass=quantity<=8 ? "stock-low" : "stock-ok";
 
-    const row=document.createElement("tr");
+    if(quantity < 0){
+        alert("الكمية لا يمكن أن تكون أقل من صفر");
+        return;
+    }
 
-    row.innerHTML=`
-        <td>${name}</td>
-        <td>${barcode}</td>
-        <td>${category}</td>
-        <td>${Number(price).toFixed(2)} د.إ</td>
-        <td>${Number(cost).toFixed(2)} د.إ</td>
-        <td>${quantity}</td>
-        <td class="${statusClass}">${status}</td>
-        <td><button class="action">تعديل</button></td>
-    `;
 
-    document.getElementById("productTable").appendChild(row);
+    if(editingProductId){
 
-    updateStats();
+        VAREX.updateProduct(
+            editingProductId,
+            {
+                name,
+                barcode,
+                category,
+                price,
+                cost,
+                quantity,
+                minimumStock,
+                supplier
+            }
+        );
+
+    }else{
+
+        VAREX.addProduct({
+            name,
+            barcode,
+            category,
+            price,
+            cost,
+            quantity,
+            minimumStock,
+            supplier
+        });
+
+    }
+
+
     closeModal();
+
+    updateCategoryFilter();
+
+    renderProducts();
 }
 
-function searchProducts(){
 
-    const search=document.getElementById("search").value.toLowerCase();
-    const category=document.getElementById("categoryFilter").value;
+/* فتح المنتج للتعديل */
 
-    const rows=document.querySelectorAll("#productTable tr");
+function editProduct(id){
 
-    rows.forEach(row=>{
+    const product =
+        VAREX.findProduct(id);
 
-        const text=row.innerText.toLowerCase();
-        const rowCategory=row.children[2].innerText;
+    if(!product){
+        alert("لم يتم العثور على المنتج");
+        return;
+    }
 
-        const matchSearch=text.includes(search);
-        const matchCategory=!category || rowCategory===category;
 
-        row.style.display=(matchSearch && matchCategory) ? "" : "none";
+    editingProductId = id;
+
+    document.getElementById("modalTitle").innerText =
+        "تعديل المنتج";
+
+
+    document.getElementById("name").value =
+        product.name || "";
+
+    document.getElementById("barcode").value =
+        product.barcode || "";
+
+    document.getElementById("category").value =
+        product.category || "";
+
+    document.getElementById("price").value =
+        Number(product.price || 0);
+
+    document.getElementById("cost").value =
+        Number(product.cost || 0);
+
+    document.getElementById("quantity").value =
+        Number(product.quantity || 0);
+
+    document.getElementById("minimumStock").value =
+        Number(product.minimumStock || 0);
+
+    document.getElementById("supplier").value =
+        product.supplier || "";
+
+
+    document.getElementById("productModal").style.display =
+        "flex";
+}
+
+
+/* حذف المنتج */
+
+function deleteProduct(id){
+
+    const product =
+        VAREX.findProduct(id);
+
+    if(!product) return;
+
+
+    const confirmed =
+        confirm(
+            'هل تريد حذف المنتج "' +
+            product.name +
+            '"؟'
+        );
+
+    if(!confirmed) return;
+
+
+    const products =
+        VAREX.getProducts().filter(
+            item =>
+                String(item.id) !== String(id)
+        );
+
+
+    VAREX.saveProducts(products);
+
+    updateCategoryFilter();
+
+    renderProducts();
+}
+
+
+/* تحديث قائمة التصنيفات */
+
+function updateCategoryFilter(){
+
+    const select =
+        document.getElementById("categoryFilter");
+
+    const currentValue =
+        select.value;
+
+
+    const products =
+        VAREX.getProducts();
+
+
+    const categories =
+        [
+            ...new Set(
+                products
+                    .map(product =>
+                        (product.category || "").trim()
+                    )
+                    .filter(Boolean)
+            )
+        ].sort();
+
+
+    select.innerHTML =
+        '<option value="">كل التصنيفات</option>';
+
+
+    categories.forEach(category => {
+
+        const option =
+            document.createElement("option");
+
+        option.value = category;
+        option.textContent = category;
+
+        select.appendChild(option);
+
     });
+
+
+    if(categories.includes(currentValue)){
+        select.value = currentValue;
+    }
 }
 
-function updateStats(){
 
-    const rows=document.querySelectorAll("#productTable tr");
+/* عرض المنتجات */
 
-    let stock=0;
-    let value=0;
-    let low=0;
+function renderProducts(){
 
-    rows.forEach(row=>{
+    const products =
+        VAREX.getProducts();
 
-        const price=parseFloat(row.children[3].innerText);
-        const quantity=parseInt(row.children[5].innerText);
 
-        stock+=quantity;
-        value+=price*quantity;
+    const search =
+        document
+            .getElementById("search")
+            .value
+            .trim()
+            .toLowerCase();
 
-        if(quantity<=8) low++;
+
+    const categoryFilter =
+        document.getElementById("categoryFilter").value;
+
+
+    const table =
+        document.getElementById("productTable");
+
+
+    const emptyMessage =
+        document.getElementById("emptyMessage");
+
+
+    table.innerHTML = "";
+
+
+    let totalStock = 0;
+    let stockValue = 0;
+    let lowStock = 0;
+
+
+    /* الإحصائيات تعتمد على كل المنتجات */
+
+    products.forEach(product => {
+
+        const quantity =
+            Number(product.quantity || 0);
+
+        const cost =
+            Number(product.cost || 0);
+
+        const minimum =
+            Number(product.minimumStock || 0);
+
+
+        totalStock += quantity;
+
+        stockValue +=
+            cost * quantity;
+
+
+        if(quantity <= minimum){
+            lowStock++;
+        }
+
     });
 
-    document.getElementById("totalProducts").innerText=rows.length;
-    document.getElementById("totalStock").innerText=stock;
-    document.getElementById("stockValue").innerText=value.toFixed(2)+" د.إ";
-    document.getElementById("lowStock").innerText=low;
+
+    /* البحث والتصفية */
+
+    const filteredProducts =
+        products.filter(product => {
+
+            const searchable =
+                (
+                    (product.name || "") +
+                    " " +
+                    (product.barcode || "")
+                ).toLowerCase();
+
+
+            const matchesSearch =
+                searchable.includes(search);
+
+
+            const matchesCategory =
+                !categoryFilter ||
+                product.category === categoryFilter;
+
+
+            return matchesSearch && matchesCategory;
+
+        });
+
+
+    filteredProducts.forEach(product => {
+
+        const quantity =
+            Number(product.quantity || 0);
+
+        const minimum =
+            Number(product.minimumStock || 0);
+
+
+        let status = "متوفر";
+        let statusClass = "stock-ok";
+
+
+        if(quantity <= 0){
+
+            status = "نفد المخزون";
+            statusClass = "stock-out";
+
+        }else if(quantity <= minimum){
+
+            status = "منخفض";
+            statusClass = "stock-low";
+
+        }
+
+
+        const row =
+            document.createElement("tr");
+
+
+        row.innerHTML = `
+            <td>${escapeHTML(product.name)}</td>
+
+            <td>
+                ${escapeHTML(product.barcode || "-")}
+            </td>
+
+            <td>
+                ${escapeHTML(product.category || "عام")}
+            </td>
+
+            <td>
+                ${Number(product.price || 0).toFixed(2)} د.إ
+            </td>
+
+            <td>
+                ${Number(product.cost || 0).toFixed(2)} د.إ
+            </td>
+
+            <td>
+                ${quantity}
+            </td>
+
+            <td>
+                ${minimum}
+            </td>
+
+            <td class="${statusClass}">
+                ${status}
+            </td>
+
+            <td>
+
+                <button
+                    class="action"
+                    onclick="editProduct('${product.id}')">
+                    تعديل
+                </button>
+
+                <button
+                    class="delete"
+                    onclick="deleteProduct('${product.id}')">
+                    حذف
+                </button>
+
+            </td>
+        `;
+
+
+        table.appendChild(row);
+
+    });
+
+
+    emptyMessage.style.display =
+        filteredProducts.length
+            ? "none"
+            : "block";
+
+
+    document.getElementById("totalProducts").innerText =
+        products.length;
+
+
+    document.getElementById("totalStock").innerText =
+        totalStock;
+
+
+    document.getElementById("stockValue").innerText =
+        stockValue.toFixed(2) + " د.إ";
+
+
+    document.getElementById("lowStock").innerText =
+        lowStock;
 }
+
+
+/* حماية النصوص المعروضة */
+
+function escapeHTML(value){
+
+    const element =
+        document.createElement("div");
+
+    element.textContent =
+        value == null ? "" : String(value);
+
+    return element.innerHTML;
+}
+
+
+/* إغلاق النافذة عند الضغط خارجها */
+
+document
+    .getElementById("productModal")
+    .addEventListener("click", function(event){
+
+        if(event.target === this){
+            closeModal();
+        }
+
+    });
+
+
+/* تشغيل الصفحة */
+
+updateCategoryFilter();
+renderProducts();
 
 </script>
 

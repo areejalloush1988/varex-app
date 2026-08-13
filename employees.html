@@ -1,102 +1,654 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
+
 <head>
+
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>الموظفون - VAREX</title>
+
+<meta
+  name="viewport"
+  content="width=device-width, initial-scale=1.0"
+>
+
+<title>
+الموظفون - VAREX
+</title>
 
 <style>
-*{box-sizing:border-box}
-body{margin:0;font-family:Arial,sans-serif;background:#f4f6fb;color:#172554}
-header{background:#172554;color:white;padding:18px 5%;display:flex;justify-content:space-between;align-items:center}
-.logo{font-size:25px;font-weight:bold;letter-spacing:2px}
-.back{color:white;text-decoration:none}
-.container{width:94%;max-width:1300px;margin:30px auto}
-h1{margin-bottom:5px}
-.subtitle{color:#64748b;margin-top:0}
-.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:15px;margin:25px 0}
-.card,.panel{background:white;border-radius:15px;padding:20px;box-shadow:0 4px 18px rgba(0,0,0,.06)}
-.card span{color:#64748b;font-size:14px}
-.card strong{display:block;font-size:24px;margin-top:9px}
-.toolbar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:18px}
-input,select{padding:12px;border:1px solid #dbe1ea;border-radius:9px;font-size:14px}
-.search{flex:1;min-width:220px}
-button{border:0;border-radius:9px;padding:11px 16px;cursor:pointer}
-.primary{background:#172554;color:white}
-.secondary{background:#e5e7eb;color:#111827}
-.edit{background:#e0e7ff;color:#172554;padding:7px 10px}
-.delete{background:#fee2e2;color:#991b1b;padding:7px 10px}
-table{width:100%;border-collapse:collapse;min-width:900px}
-th,td{padding:12px 9px;text-align:right;border-bottom:1px solid #edf0f5}
-th{background:#f8fafc;color:#475569}
-.table-wrap{overflow-x:auto}
-.active{color:#15803d;font-weight:bold}
-.inactive{color:#dc2626;font-weight:bold}
-.modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);align-items:center;justify-content:center;padding:15px}
-.modal-box{background:white;width:100%;max-width:650px;border-radius:16px;padding:25px}
-.close{float:left;font-size:25px;cursor:pointer}
-.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-.form-grid input,.form-grid select{width:100%}
-.form-actions{display:flex;gap:10px;margin-top:18px}
-.empty{text-align:center;color:#64748b;padding:25px}
-@media(max-width:750px){
-.stats{grid-template-columns:1fr 1fr}
-.form-grid{grid-template-columns:1fr}
+
+*{
+  box-sizing:border-box;
 }
+
+body{
+  margin:0;
+  font-family:Arial,sans-serif;
+  background:#f4f6fb;
+  color:#172554;
+}
+
+header{
+  background:#172554;
+  color:white;
+  padding:18px 5%;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+
+.logo{
+  font-size:25px;
+  font-weight:bold;
+  letter-spacing:2px;
+}
+
+.back{
+  color:white;
+  text-decoration:none;
+}
+
+.container{
+  width:94%;
+  max-width:1400px;
+  margin:30px auto;
+}
+
+h1{
+  margin-bottom:5px;
+}
+
+.subtitle{
+  color:#64748b;
+  margin-top:0;
+}
+
+/* =========================
+   STATS
+   ========================= */
+
+.stats{
+  display:grid;
+  grid-template-columns:
+    repeat(4,1fr);
+  gap:15px;
+  margin:25px 0;
+}
+
+.card,
+.panel{
+  background:white;
+  border-radius:15px;
+  padding:20px;
+  box-shadow:
+    0 4px 18px
+    rgba(0,0,0,.06);
+}
+
+.card span{
+  color:#64748b;
+  font-size:14px;
+}
+
+.card strong{
+  display:block;
+  font-size:24px;
+  margin-top:9px;
+}
+
+/* =========================
+   ALERTS
+   ========================= */
+
+.alert-panel{
+  background:white;
+  border-radius:15px;
+  padding:20px;
+  margin-bottom:20px;
+  box-shadow:
+    0 4px 18px
+    rgba(0,0,0,.06);
+}
+
+.alert-header{
+  display:flex;
+  justify-content:
+    space-between;
+  align-items:center;
+  gap:10px;
+  margin-bottom:15px;
+}
+
+.alert-header h3{
+  margin:0;
+}
+
+.alert-count{
+  background:#fee2e2;
+  color:#991b1b;
+  padding:6px 12px;
+  border-radius:20px;
+  font-weight:bold;
+}
+
+.alert-list{
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+}
+
+.alert-item{
+  border-radius:10px;
+  padding:13px 15px;
+  display:flex;
+  justify-content:
+    space-between;
+  align-items:center;
+  gap:15px;
+}
+
+.alert-info{
+  line-height:1.7;
+}
+
+.alert-info strong{
+  display:block;
+}
+
+.alert-date{
+  font-size:13px;
+}
+
+.alert-notice{
+  background:#fefce8;
+  color:#854d0e;
+  border-right:
+    4px solid #eab308;
+}
+
+.alert-warning{
+  background:#fff7ed;
+  color:#9a3412;
+  border-right:
+    4px solid #f97316;
+}
+
+.alert-danger{
+  background:#fef2f2;
+  color:#991b1b;
+  border-right:
+    4px solid #dc2626;
+}
+
+.no-alerts{
+  background:#dcfce7;
+  color:#166534;
+  padding:14px;
+  border-radius:10px;
+  text-align:center;
+}
+
+/* =========================
+   TOOLBAR
+   ========================= */
+
+.toolbar{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+  margin-bottom:18px;
+}
+
+input,
+select{
+  padding:12px;
+  border:
+    1px solid #dbe1ea;
+  border-radius:9px;
+  font-size:14px;
+  font-family:inherit;
+}
+
+.search{
+  flex:1;
+  min-width:220px;
+}
+
+button{
+  border:0;
+  border-radius:9px;
+  padding:11px 16px;
+  cursor:pointer;
+  font-family:inherit;
+}
+
+.primary{
+  background:#172554;
+  color:white;
+}
+
+.secondary{
+  background:#e5e7eb;
+  color:#111827;
+}
+
+.edit{
+  background:#e0e7ff;
+  color:#172554;
+  padding:7px 10px;
+}
+
+.delete{
+  background:#fee2e2;
+  color:#991b1b;
+  padding:7px 10px;
+}
+
+.documents-button{
+  background:#ecfeff;
+  color:#155e75;
+  padding:7px 10px;
+}
+
+/* =========================
+   TABLE
+   ========================= */
+
+table{
+  width:100%;
+  border-collapse:collapse;
+  min-width:1050px;
+}
+
+th,
+td{
+  padding:12px 9px;
+  text-align:right;
+  border-bottom:
+    1px solid #edf0f5;
+}
+
+th{
+  background:#f8fafc;
+  color:#475569;
+}
+
+.table-wrap{
+  overflow-x:auto;
+}
+
+.active{
+  color:#15803d;
+  font-weight:bold;
+}
+
+.inactive{
+  color:#dc2626;
+  font-weight:bold;
+}
+
+.doc-ok{
+  color:#15803d;
+  font-weight:bold;
+}
+
+.doc-warning{
+  color:#d97706;
+  font-weight:bold;
+}
+
+.doc-danger{
+  color:#dc2626;
+  font-weight:bold;
+}
+
+.empty{
+  text-align:center;
+  color:#64748b;
+  padding:25px;
+}
+
+/* =========================
+   MODAL
+   ========================= */
+
+.modal{
+  display:none;
+  position:fixed;
+  inset:0;
+  background:
+    rgba(0,0,0,.45);
+  align-items:center;
+  justify-content:center;
+  padding:15px;
+  z-index:1000;
+}
+
+.modal-box{
+  background:white;
+  width:100%;
+  max-width:800px;
+  border-radius:16px;
+  padding:25px;
+  max-height:92vh;
+  overflow-y:auto;
+}
+
+.close{
+  float:left;
+  font-size:25px;
+  cursor:pointer;
+}
+
+.form-grid{
+  display:grid;
+  grid-template-columns:
+    1fr 1fr;
+  gap:12px;
+}
+
+.form-grid input,
+.form-grid select{
+  width:100%;
+}
+
+.form-section{
+  grid-column:1/-1;
+  margin-top:12px;
+  padding-top:15px;
+  border-top:
+    1px solid #e5e7eb;
+}
+
+.form-section h3{
+  margin:
+    0 0 5px;
+  color:#172554;
+}
+
+.section-description{
+  color:#64748b;
+  font-size:13px;
+  margin:
+    0 0 15px;
+}
+
+.field{
+  width:100%;
+}
+
+.field label{
+  display:block;
+  color:#475569;
+  font-size:13px;
+  margin-bottom:6px;
+}
+
+.file-field{
+  border:
+    1px solid #e2e8f0;
+  border-radius:10px;
+  padding:12px;
+  background:#f8fafc;
+}
+
+.file-field label{
+  display:block;
+  font-size:13px;
+  font-weight:bold;
+  margin-bottom:8px;
+}
+
+.file-field input{
+  background:white;
+}
+
+.saved-file{
+  color:#15803d;
+  font-size:12px;
+  margin-top:6px;
+  min-height:16px;
+}
+
+.form-actions{
+  display:flex;
+  gap:10px;
+  margin-top:18px;
+}
+
+/* =========================
+   DOCUMENT VIEW
+   ========================= */
+
+.documents-grid{
+  display:grid;
+  grid-template-columns:
+    1fr 1fr;
+  gap:12px;
+}
+
+.document-card{
+  border:
+    1px solid #e2e8f0;
+  border-radius:12px;
+  padding:15px;
+}
+
+.document-card h4{
+  margin:
+    0 0 10px;
+}
+
+.document-row{
+  display:flex;
+  justify-content:
+    space-between;
+  gap:10px;
+  margin-top:7px;
+  font-size:14px;
+}
+
+.profile-box{
+  grid-column:1/-1;
+  background:#f8fafc;
+  border-radius:12px;
+  padding:15px;
+}
+
+@media(max-width:750px){
+
+  .stats{
+    grid-template-columns:
+      1fr 1fr;
+  }
+
+  .form-grid{
+    grid-template-columns:
+      1fr;
+  }
+
+  .form-section{
+    grid-column:auto;
+  }
+
+  .documents-grid{
+    grid-template-columns:
+      1fr;
+  }
+
+  .profile-box{
+    grid-column:auto;
+  }
+
+  .alert-item{
+    flex-direction:column;
+    align-items:flex-start;
+  }
+
+}
+
+@media(max-width:450px){
+
+  .stats{
+    grid-template-columns:
+      1fr;
+  }
+
+}
+
 </style>
+
 </head>
 
 <body>
 
 <header>
-<div class="logo">VAREX</div>
-<a class="back" href="index.html">← لوحة التحكم</a>
+
+<div class="logo">
+VAREX
+</div>
+
+<a
+  class="back"
+  href="index.html"
+>
+← لوحة التحكم
+</a>
+
 </header>
 
 <div class="container">
 
-<h1>👨‍💼 الموظفون</h1>
-<p class="subtitle">إدارة الموظفين والوظائف والرواتب والصلاحيات</p>
+<h1>
+👨‍💼 الموظفون
+</h1>
+
+<p class="subtitle">
+إدارة الموظفين والوظائف والرواتب والصلاحيات والوثائق الرسمية
+</p>
+
+<!-- =========================
+     الإحصائيات
+     ========================= -->
 
 <div class="stats">
+
 <div class="card">
-<span>إجمالي الموظفين</span>
-<strong id="totalEmployees">0</strong>
+
+<span>
+إجمالي الموظفين
+</span>
+
+<strong id="totalEmployees">
+0
+</strong>
+
 </div>
 
 <div class="card">
-<span>الموظفون النشطون</span>
-<strong id="activeEmployees">0</strong>
+
+<span>
+الموظفون النشطون
+</span>
+
+<strong id="activeEmployees">
+0
+</strong>
+
 </div>
 
 <div class="card">
-<span>إجمالي الرواتب الشهرية</span>
-<strong id="totalSalaries">0.00 د.إ</strong>
+
+<span>
+إجمالي الرواتب الشهرية
+</span>
+
+<strong id="totalSalaries">
+0.00 د.إ
+</strong>
+
 </div>
 
 <div class="card">
-<span>مديرو النظام</span>
-<strong id="adminCount">0</strong>
+
+<span>
+تنبيهات الوثائق
+</span>
+
+<strong id="documentAlertCount">
+0
+</strong>
+
 </div>
+
 </div>
+
+<!-- =========================
+     تنبيهات الوثائق
+     ========================= -->
+
+<div class="alert-panel">
+
+<div class="alert-header">
+
+<h3>
+🔔 تنبيهات وثائق الموظفين
+</h3>
+
+<span
+  class="alert-count"
+  id="alertBadge"
+>
+0
+</span>
+
+</div>
+
+<div
+  class="alert-list"
+  id="documentAlerts"
+>
+</div>
+
+</div>
+
+<!-- =========================
+     قائمة الموظفين
+     ========================= -->
 
 <div class="panel">
 
 <div class="toolbar">
 
 <input
-id="search"
-class="search"
-placeholder="🔍 ابحث باسم الموظف أو الهاتف أو الوظيفة"
-oninput="renderEmployees()">
+  id="search"
+  class="search"
+  placeholder="🔍 ابحث باسم الموظف أو الهاتف أو الوظيفة"
+  oninput="renderEmployees()"
+>
 
-<select id="statusFilter" onchange="renderEmployees()">
-<option value="">كل الحالات</option>
-<option value="نشط">نشط</option>
-<option value="غير نشط">غير نشط</option>
+<select
+  id="statusFilter"
+  onchange="renderEmployees()"
+>
+
+<option value="">
+كل الحالات
+</option>
+
+<option value="نشط">
+نشط
+</option>
+
+<option value="غير نشط">
+غير نشط
+</option>
+
 </select>
 
-<button class="primary" onclick="openEmployeeModal()">
+<button
+  class="primary"
+  onclick="openEmployeeModal()"
+>
 + إضافة موظف
 </button>
 
@@ -105,277 +657,1544 @@ oninput="renderEmployees()">
 <div class="table-wrap">
 
 <table>
+
 <thead>
+
 <tr>
+
 <th>#</th>
+
 <th>اسم الموظف</th>
+
 <th>الهاتف</th>
+
 <th>الوظيفة</th>
+
 <th>الراتب</th>
+
 <th>الصلاحية</th>
+
 <th>الحالة</th>
+
 <th>تاريخ التعيين</th>
+
+<th>الوثائق</th>
+
 <th>الإجراءات</th>
+
 </tr>
+
 </thead>
 
-<tbody id="employeeTable"></tbody>
+<tbody id="employeeTable">
+</tbody>
+
 </table>
 
-<div id="emptyMessage" class="empty">
+<div
+  id="emptyMessage"
+  class="empty"
+>
 لا يوجد موظفون حتى الآن
 </div>
 
 </div>
-</div>
 
 </div>
 
-<div class="modal" id="employeeModal">
+</div>
+
+<!-- =========================
+     نافذة إضافة / تعديل موظف
+     ========================= -->
+
+<div
+  class="modal"
+  id="employeeModal"
+>
 
 <div class="modal-box">
 
-<span class="close" onclick="closeEmployeeModal()">×</span>
+<span
+  class="close"
+  onclick="closeEmployeeModal()"
+>
+×
+</span>
 
-<h2 id="modalTitle">إضافة موظف جديد</h2>
+<h2 id="modalTitle">
+إضافة موظف جديد
+</h2>
 
 <div class="form-grid">
 
-<input id="employeeName" placeholder="اسم الموظف">
+<input
+  id="employeeName"
+  placeholder="اسم الموظف"
+>
 
-<input id="phone" placeholder="رقم الهاتف">
+<input
+  id="phone"
+  placeholder="رقم الهاتف"
+>
 
-<input id="email" type="email" placeholder="البريد الإلكتروني">
+<input
+  id="email"
+  type="email"
+  placeholder="البريد الإلكتروني"
+>
 
-<input id="job" placeholder="المسمى الوظيفي">
+<input
+  id="job"
+  placeholder="المسمى الوظيفي"
+>
 
-<input id="salary" type="number" min="0" step="0.01" placeholder="الراتب الشهري">
+<input
+  id="salary"
+  type="number"
+  min="0"
+  step="0.01"
+  placeholder="الراتب الشهري"
+>
 
 <select id="role">
-<option value="موظف">موظف</option>
-<option value="كاشير">كاشير</option>
-<option value="مشرف">مشرف</option>
-<option value="مدير">مدير</option>
-<option value="مدير النظام">مدير النظام</option>
+
+<option value="موظف">
+موظف
+</option>
+
+<option value="كاشير">
+كاشير
+</option>
+
+<option value="مشرف">
+مشرف
+</option>
+
+<option value="مدير">
+مدير
+</option>
+
+<option value="مدير النظام">
+مدير النظام
+</option>
+
 </select>
 
 <select id="status">
-<option value="نشط">نشط</option>
-<option value="غير نشط">غير نشط</option>
+
+<option value="نشط">
+نشط
+</option>
+
+<option value="غير نشط">
+غير نشط
+</option>
+
 </select>
 
-<input id="hireDate" type="date">
+<div class="field">
+
+<label>
+تاريخ التعيين
+</label>
+
+<input
+  id="hireDate"
+  type="date"
+>
+
+</div>
+
+<!-- الوثائق -->
+
+<div class="form-section">
+
+<h3>
+📁 المستندات والوثائق
+</h3>
+
+<p class="section-description">
+أدخل تواريخ انتهاء الوثائق ليقوم VAREX بتنبيهك تلقائياً قبل انتهاء صلاحيتها.
+</p>
+
+</div>
+
+<!-- الصورة الشخصية -->
+
+<div class="file-field">
+
+<label>
+📷 الصورة الشخصية
+</label>
+
+<input
+  id="profilePhoto"
+  type="file"
+  accept="image/*"
+>
+
+<div
+  class="saved-file"
+  id="profilePhotoSaved"
+>
+</div>
+
+</div>
+
+<div></div>
+
+<!-- الجواز -->
+
+<div class="file-field">
+
+<label>
+🛂 صورة جواز السفر
+</label>
+
+<input
+  id="passportFile"
+  type="file"
+  accept="image/*,.pdf"
+>
+
+<div
+  class="saved-file"
+  id="passportFileSaved"
+>
+</div>
+
+</div>
+
+<div class="field">
+
+<label>
+تاريخ انتهاء جواز السفر
+</label>
+
+<input
+  id="passportExpiry"
+  type="date"
+>
+
+</div>
+
+<!-- الإقامة -->
+
+<div class="file-field">
+
+<label>
+📄 صورة الإقامة
+</label>
+
+<input
+  id="residenceFile"
+  type="file"
+  accept="image/*,.pdf"
+>
+
+<div
+  class="saved-file"
+  id="residenceFileSaved"
+>
+</div>
+
+</div>
+
+<div class="field">
+
+<label>
+تاريخ انتهاء الإقامة
+</label>
+
+<input
+  id="residenceExpiry"
+  type="date"
+>
+
+</div>
+
+<!-- الهوية -->
+
+<div class="file-field">
+
+<label>
+🪪 صورة الهوية الإماراتية
+</label>
+
+<input
+  id="emiratesIdFile"
+  type="file"
+  accept="image/*,.pdf"
+>
+
+<div
+  class="saved-file"
+  id="emiratesIdFileSaved"
+>
+</div>
+
+</div>
+
+<div class="field">
+
+<label>
+تاريخ انتهاء الهوية الإماراتية
+</label>
+
+<input
+  id="emiratesIdExpiry"
+  type="date"
+>
+
+</div>
+
+<!-- بطاقة العمل -->
+
+<div class="file-field">
+
+<label>
+💼 صورة بطاقة / تصريح العمل
+</label>
+
+<input
+  id="workPermitFile"
+  type="file"
+  accept="image/*,.pdf"
+>
+
+<div
+  class="saved-file"
+  id="workPermitFileSaved"
+>
+</div>
+
+</div>
+
+<div class="field">
+
+<label>
+تاريخ انتهاء بطاقة العمل
+</label>
+
+<input
+  id="workPermitExpiry"
+  type="date"
+>
+
+</div>
 
 </div>
 
 <div class="form-actions">
 
-<button class="primary" onclick="saveEmployee()">
+<button
+  class="primary"
+  onclick="saveEmployee()"
+>
 حفظ الموظف
 </button>
 
-<button class="secondary" onclick="closeEmployeeModal()">
+<button
+  class="secondary"
+  onclick="closeEmployeeModal()"
+>
 إلغاء
 </button>
 
 </div>
 
 </div>
+
 </div>
+
+<!-- =========================
+     نافذة عرض الوثائق
+     ========================= -->
+
+<div
+  class="modal"
+  id="documentsModal"
+>
+
+<div class="modal-box">
+
+<span
+  class="close"
+  onclick="closeDocumentsModal()"
+>
+×
+</span>
+
+<h2 id="documentsEmployeeName">
+وثائق الموظف
+</h2>
+
+<div
+  class="documents-grid"
+  id="documentsContent"
+>
+</div>
+
+</div>
+
+</div>
+
+<!-- قلب النظام -->
+
+<script src="varex.js"></script>
 
 <script>
 
-let employees =
-JSON.parse(localStorage.getItem("varexEmployees")) || [];
+let editingEmployeeId = null;
 
-let editingIndex = -1;
+/* =========================
+   فتح نافذة الموظف
+   ========================= */
 
-function money(value){
-return (Number(value)||0).toFixed(2)+" د.إ";
+function openEmployeeModal(id = null){
+
+  editingEmployeeId = id;
+
+  clearEmployeeForm();
+
+  if(id === null){
+
+    document.getElementById(
+      "modalTitle"
+    ).innerText =
+      "إضافة موظف جديد";
+
+    document.getElementById(
+      "status"
+    ).value =
+      "نشط";
+
+    document.getElementById(
+      "role"
+    ).value =
+      "موظف";
+
+    document.getElementById(
+      "hireDate"
+    ).value =
+      VAREX.today();
+
+  }else{
+
+    const employee =
+      VAREX.findEmployee(id);
+
+    if(!employee){
+      return;
+    }
+
+    document.getElementById(
+      "modalTitle"
+    ).innerText =
+      "تعديل بيانات الموظف";
+
+    document.getElementById(
+      "employeeName"
+    ).value =
+      employee.name || "";
+
+    document.getElementById(
+      "phone"
+    ).value =
+      employee.phone || "";
+
+    document.getElementById(
+      "email"
+    ).value =
+      employee.email || "";
+
+    document.getElementById(
+      "job"
+    ).value =
+      employee.job || "";
+
+    document.getElementById(
+      "salary"
+    ).value =
+      employee.salary || "";
+
+    document.getElementById(
+      "role"
+    ).value =
+      employee.role || "موظف";
+
+    document.getElementById(
+      "status"
+    ).value =
+      employee.status || "نشط";
+
+    document.getElementById(
+      "hireDate"
+    ).value =
+      employee.hireDate || "";
+
+    document.getElementById(
+      "passportExpiry"
+    ).value =
+      employee.passportExpiry || "";
+
+    document.getElementById(
+      "residenceExpiry"
+    ).value =
+      employee.residenceExpiry || "";
+
+    document.getElementById(
+      "emiratesIdExpiry"
+    ).value =
+      employee.emiratesIdExpiry || "";
+
+    document.getElementById(
+      "workPermitExpiry"
+    ).value =
+      employee.workPermitExpiry || "";
+
+    showSavedFile(
+      "profilePhotoSaved",
+      employee.profilePhoto
+    );
+
+    showSavedFile(
+      "passportFileSaved",
+      employee.passportFile
+    );
+
+    showSavedFile(
+      "residenceFileSaved",
+      employee.residenceFile
+    );
+
+    showSavedFile(
+      "emiratesIdFileSaved",
+      employee.emiratesIdFile
+    );
+
+    showSavedFile(
+      "workPermitFileSaved",
+      employee.workPermitFile
+    );
+
+  }
+
+  document.getElementById(
+    "employeeModal"
+  ).style.display =
+    "flex";
 }
 
-function saveData(){
-localStorage.setItem("varexEmployees",JSON.stringify(employees));
-}
-
-function openEmployeeModal(index=-1){
-
-editingIndex=index;
-
-if(index===-1){
-
-document.getElementById("modalTitle").innerText="إضافة موظف جديد";
-
-document.getElementById("employeeName").value="";
-document.getElementById("phone").value="";
-document.getElementById("email").value="";
-document.getElementById("job").value="";
-document.getElementById("salary").value="";
-document.getElementById("role").value="موظف";
-document.getElementById("status").value="نشط";
-document.getElementById("hireDate").value="";
-
-}else{
-
-const e=employees[index];
-
-document.getElementById("modalTitle").innerText="تعديل بيانات الموظف";
-
-document.getElementById("employeeName").value=e.name;
-document.getElementById("phone").value=e.phone;
-document.getElementById("email").value=e.email;
-document.getElementById("job").value=e.job;
-document.getElementById("salary").value=e.salary;
-document.getElementById("role").value=e.role;
-document.getElementById("status").value=e.status;
-document.getElementById("hireDate").value=e.hireDate;
-
-}
-
-document.getElementById("employeeModal").style.display="flex";
-}
+/* =========================
+   إغلاق النافذة
+   ========================= */
 
 function closeEmployeeModal(){
-document.getElementById("employeeModal").style.display="none";
-editingIndex=-1;
+
+  document.getElementById(
+    "employeeModal"
+  ).style.display =
+    "none";
+
+  editingEmployeeId =
+    null;
 }
+
+/* =========================
+   تنظيف الحقول
+   ========================= */
+
+function clearEmployeeForm(){
+
+  const textFields = [
+    "employeeName",
+    "phone",
+    "email",
+    "job",
+    "salary",
+    "hireDate",
+    "passportExpiry",
+    "residenceExpiry",
+    "emiratesIdExpiry",
+    "workPermitExpiry"
+  ];
+
+  textFields.forEach(id => {
+
+    document.getElementById(
+      id
+    ).value = "";
+
+  });
+
+  document.getElementById(
+    "role"
+  ).value =
+    "موظف";
+
+  document.getElementById(
+    "status"
+  ).value =
+    "نشط";
+
+  const fileFields = [
+    "profilePhoto",
+    "passportFile",
+    "residenceFile",
+    "emiratesIdFile",
+    "workPermitFile"
+  ];
+
+  fileFields.forEach(id => {
+
+    document.getElementById(
+      id
+    ).value = "";
+
+  });
+
+  const savedFields = [
+    "profilePhotoSaved",
+    "passportFileSaved",
+    "residenceFileSaved",
+    "emiratesIdFileSaved",
+    "workPermitFileSaved"
+  ];
+
+  savedFields.forEach(id => {
+
+    document.getElementById(
+      id
+    ).innerText = "";
+
+  });
+
+}
+
+/* =========================
+   اسم الملف المختار
+   ========================= */
+
+function getSelectedFileName(
+  inputId,
+  oldValue = ""
+){
+
+  const input =
+    document.getElementById(
+      inputId
+    );
+
+  if(
+    input.files &&
+    input.files.length
+  ){
+    return input.files[0].name;
+  }
+
+  return oldValue || "";
+}
+
+/* =========================
+   إظهار الملف المسجل
+   ========================= */
+
+function showSavedFile(
+  elementId,
+  fileName
+){
+
+  const element =
+    document.getElementById(
+      elementId
+    );
+
+  element.innerText =
+    fileName
+      ? "✓ الملف المسجل: " +
+        fileName
+      : "";
+}
+
+/* =========================
+   حفظ الموظف
+   ========================= */
 
 function saveEmployee(){
 
-const name=document.getElementById("employeeName").value.trim();
+  const name =
+    document.getElementById(
+      "employeeName"
+    ).value.trim();
 
-if(!name){
-alert("يرجى إدخال اسم الموظف");
-return;
+  if(!name){
+
+    alert(
+      "يرجى إدخال اسم الموظف"
+    );
+
+    return;
+  }
+
+  const oldEmployee =
+    editingEmployeeId !== null
+      ? VAREX.findEmployee(
+          editingEmployeeId
+        )
+      : null;
+
+  const employeeData = {
+
+    name,
+
+    phone:
+      document.getElementById(
+        "phone"
+      ).value.trim(),
+
+    email:
+      document.getElementById(
+        "email"
+      ).value.trim(),
+
+    job:
+      document.getElementById(
+        "job"
+      ).value.trim(),
+
+    salary:
+      Number(
+        document.getElementById(
+          "salary"
+        ).value
+      ) || 0,
+
+    role:
+      document.getElementById(
+        "role"
+      ).value,
+
+    status:
+      document.getElementById(
+        "status"
+      ).value,
+
+    hireDate:
+      document.getElementById(
+        "hireDate"
+      ).value,
+
+    passportExpiry:
+      document.getElementById(
+        "passportExpiry"
+      ).value,
+
+    residenceExpiry:
+      document.getElementById(
+        "residenceExpiry"
+      ).value,
+
+    emiratesIdExpiry:
+      document.getElementById(
+        "emiratesIdExpiry"
+      ).value,
+
+    workPermitExpiry:
+      document.getElementById(
+        "workPermitExpiry"
+      ).value,
+
+    profilePhoto:
+      getSelectedFileName(
+        "profilePhoto",
+        oldEmployee
+          ? oldEmployee.profilePhoto
+          : ""
+      ),
+
+    passportFile:
+      getSelectedFileName(
+        "passportFile",
+        oldEmployee
+          ? oldEmployee.passportFile
+          : ""
+      ),
+
+    residenceFile:
+      getSelectedFileName(
+        "residenceFile",
+        oldEmployee
+          ? oldEmployee.residenceFile
+          : ""
+      ),
+
+    emiratesIdFile:
+      getSelectedFileName(
+        "emiratesIdFile",
+        oldEmployee
+          ? oldEmployee.emiratesIdFile
+          : ""
+      ),
+
+    workPermitFile:
+      getSelectedFileName(
+        "workPermitFile",
+        oldEmployee
+          ? oldEmployee.workPermitFile
+          : ""
+      )
+
+  };
+
+  if(
+    editingEmployeeId === null
+  ){
+
+    VAREX.addEmployee(
+      employeeData
+    );
+
+  }else{
+
+    VAREX.updateEmployee(
+      editingEmployeeId,
+      employeeData
+    );
+
+  }
+
+  closeEmployeeModal();
+
+  renderEmployees();
+
+  renderDocumentAlerts();
 }
 
-const employee={
-name:name,
-phone:document.getElementById("phone").value.trim(),
-email:document.getElementById("email").value.trim(),
-job:document.getElementById("job").value.trim(),
-salary:Number(document.getElementById("salary").value)||0,
-role:document.getElementById("role").value,
-status:document.getElementById("status").value,
-hireDate:document.getElementById("hireDate").value
-};
+/* =========================
+   حذف الموظف
+   ========================= */
 
-if(editingIndex===-1){
-employees.push(employee);
-}else{
-employees[editingIndex]=employee;
-}
+function deleteEmployee(id){
 
-saveData();
-renderEmployees();
-closeEmployeeModal();
-}
+  const employee =
+    VAREX.findEmployee(id);
 
-function deleteEmployee(index){
+  if(!employee){
+    return;
+  }
 
-if(confirm("هل تريد حذف الموظف "+employees[index].name+"؟")){
+  if(
+    confirm(
+      "هل تريد حذف الموظف " +
+      employee.name +
+      "؟"
+    )
+  ){
 
-employees.splice(index,1);
+    VAREX.deleteEmployee(id);
 
-saveData();
-renderEmployees();
+    renderEmployees();
+
+    renderDocumentAlerts();
+
+  }
 
 }
+
+/* =========================
+   حالة وثائق الموظف
+   ========================= */
+
+function getEmployeeDocumentsStatus(
+  employee
+){
+
+  const alerts =
+    VAREX.getEmployeeDocumentAlerts(
+      employee
+    );
+
+  if(!alerts.length){
+
+    return {
+      text:"سارية",
+      className:"doc-ok"
+    };
+
+  }
+
+  const expired =
+    alerts.some(
+      alert =>
+        alert.days < 0
+    );
+
+  if(expired){
+
+    return {
+      text:"وثيقة منتهية",
+      className:"doc-danger"
+    };
+
+  }
+
+  const urgent =
+    alerts.some(
+      alert =>
+        alert.days <= 7
+    );
+
+  if(urgent){
+
+    return {
+      text:"تنبيه عاجل",
+      className:"doc-danger"
+    };
+
+  }
+
+  return {
+    text:"قرب انتهاء وثيقة",
+    className:"doc-warning"
+  };
+
 }
 
-function escapeHTML(value){
-const div=document.createElement("div");
-div.textContent=value||"";
-return div.innerHTML;
-}
+/* =========================
+   عرض الموظفين
+   ========================= */
 
 function renderEmployees(){
 
-const table=document.getElementById("employeeTable");
+  const employees =
+    VAREX.getEmployees();
 
-const search=document.getElementById("search").value.toLowerCase();
+  const table =
+    document.getElementById(
+      "employeeTable"
+    );
 
-const statusFilter=document.getElementById("statusFilter").value;
+  const search =
+    document.getElementById(
+      "search"
+    ).value
+      .trim()
+      .toLowerCase();
 
-table.innerHTML="";
+  const statusFilter =
+    document.getElementById(
+      "statusFilter"
+    ).value;
 
-let visible=0;
+  table.innerHTML = "";
 
-employees.forEach((e,index)=>{
+  let visible = 0;
 
-const searchable=(e.name+" "+e.phone+" "+e.job).toLowerCase();
+  employees.forEach(
+    (employee,index) => {
 
-if(!searchable.includes(search)) return;
+      const searchable =
+        (
+          (employee.name || "") +
+          " " +
+          (employee.phone || "") +
+          " " +
+          (employee.job || "")
+        ).toLowerCase();
 
-if(statusFilter && e.status!==statusFilter) return;
+      if(
+        !searchable.includes(
+          search
+        )
+      ){
+        return;
+      }
 
-visible++;
+      if(
+        statusFilter &&
+        employee.status !==
+          statusFilter
+      ){
+        return;
+      }
 
-const statusClass=e.status==="نشط"?"active":"inactive";
+      visible++;
 
-const row=document.createElement("tr");
+      const statusClass =
+        employee.status ===
+        "نشط"
+          ? "active"
+          : "inactive";
 
-row.innerHTML=`
-<td>${index+1}</td>
-<td>${escapeHTML(e.name)}</td>
-<td>${escapeHTML(e.phone||"-")}</td>
-<td>${escapeHTML(e.job||"-")}</td>
-<td>${money(e.salary)}</td>
-<td>${escapeHTML(e.role)}</td>
-<td class="${statusClass}">${escapeHTML(e.status)}</td>
-<td>${escapeHTML(e.hireDate||"-")}</td>
-<td>
-<button class="edit" onclick="openEmployeeModal(${index})">تعديل</button>
-<button class="delete" onclick="deleteEmployee(${index})">حذف</button>
-</td>
-`;
+      const documentStatus =
+        getEmployeeDocumentsStatus(
+          employee
+        );
 
-table.appendChild(row);
+      const row =
+        document.createElement(
+          "tr"
+        );
 
-});
+      row.innerHTML = `
 
-document.getElementById("emptyMessage").style.display=
-visible===0?"block":"none";
+        <td>
+          ${index + 1}
+        </td>
 
-updateStats();
+        <td>
+          ${escapeHTML(
+            employee.name
+          )}
+        </td>
+
+        <td>
+          ${escapeHTML(
+            employee.phone ||
+            "-"
+          )}
+        </td>
+
+        <td>
+          ${escapeHTML(
+            employee.job ||
+            "-"
+          )}
+        </td>
+
+        <td>
+          ${VAREX.money(
+            employee.salary
+          )}
+        </td>
+
+        <td>
+          ${escapeHTML(
+            employee.role ||
+            "-"
+          )}
+        </td>
+
+        <td
+          class="${statusClass}"
+        >
+          ${escapeHTML(
+            employee.status ||
+            "-"
+          )}
+        </td>
+
+        <td>
+          ${escapeHTML(
+            employee.hireDate ||
+            "-"
+          )}
+        </td>
+
+        <td
+          class="${documentStatus.className}"
+        >
+          ${documentStatus.text}
+        </td>
+
+        <td>
+
+          <button
+            class="documents-button"
+            onclick="openDocumentsModal('${employee.id}')"
+          >
+            الوثائق
+          </button>
+
+          <button
+            class="edit"
+            onclick="openEmployeeModal('${employee.id}')"
+          >
+            تعديل
+          </button>
+
+          <button
+            class="delete"
+            onclick="deleteEmployee('${employee.id}')"
+          >
+            حذف
+          </button>
+
+        </td>
+
+      `;
+
+      table.appendChild(
+        row
+      );
+
+    }
+  );
+
+  document.getElementById(
+    "emptyMessage"
+  ).style.display =
+    visible === 0
+      ? "block"
+      : "none";
+
+  updateStats();
 }
+
+/* =========================
+   الإحصائيات
+   ========================= */
 
 function updateStats(){
 
-let active=0;
-let salaries=0;
-let admins=0;
+  const employees =
+    VAREX.getEmployees();
 
-employees.forEach(e=>{
+  let active = 0;
+  let salaries = 0;
 
-if(e.status==="نشط") active++;
+  employees.forEach(
+    employee => {
 
-salaries+=Number(e.salary)||0;
+      if(
+        employee.status ===
+        "نشط"
+      ){
+        active++;
+      }
 
-if(e.role==="مدير النظام") admins++;
+      salaries +=
+        Number(
+          employee.salary || 0
+        );
 
-});
+    }
+  );
 
-document.getElementById("totalEmployees").innerText=employees.length;
+  const alerts =
+    VAREX
+      .getAllEmployeeDocumentAlerts();
 
-document.getElementById("activeEmployees").innerText=active;
+  document.getElementById(
+    "totalEmployees"
+  ).innerText =
+    employees.length;
 
-document.getElementById("totalSalaries").innerText=money(salaries);
+  document.getElementById(
+    "activeEmployees"
+  ).innerText =
+    active;
 
-document.getElementById("adminCount").innerText=admins;
+  document.getElementById(
+    "totalSalaries"
+  ).innerText =
+    VAREX.money(
+      salaries
+    );
+
+  document.getElementById(
+    "documentAlertCount"
+  ).innerText =
+    alerts.length;
+
+  document.getElementById(
+    "alertBadge"
+  ).innerText =
+    alerts.length;
 }
 
-window.onclick=function(event){
+/* =========================
+   عرض التنبيهات
+   ========================= */
 
-if(event.target===document.getElementById("employeeModal")){
-closeEmployeeModal();
+function renderDocumentAlerts(){
+
+  const alerts =
+    VAREX
+      .getAllEmployeeDocumentAlerts();
+
+  const container =
+    document.getElementById(
+      "documentAlerts"
+    );
+
+  container.innerHTML = "";
+
+  if(!alerts.length){
+
+    container.innerHTML = `
+
+      <div class="no-alerts">
+        ✓ لا توجد وثائق قاربت على الانتهاء حالياً
+      </div>
+
+    `;
+
+    updateStats();
+
+    return;
+  }
+
+  alerts.forEach(alert => {
+
+    let className =
+      "alert-notice";
+
+    let icon =
+      "⚠️";
+
+    if(
+      alert.level ===
+      "warning"
+    ){
+
+      className =
+        "alert-warning";
+
+      icon =
+        "⚠️";
+
+    }
+
+    if(
+      alert.level ===
+      "danger"
+    ){
+
+      className =
+        "alert-danger";
+
+      icon =
+        "🚨";
+
+    }
+
+    const div =
+      document.createElement(
+        "div"
+      );
+
+    div.className =
+      "alert-item " +
+      className;
+
+    div.innerHTML = `
+
+      <div class="alert-info">
+
+        <strong>
+          ${icon}
+          ${escapeHTML(
+            alert.employeeName
+          )}
+          —
+          ${escapeHTML(
+            alert.documentName
+          )}
+        </strong>
+
+        <span>
+          ${escapeHTML(
+            alert.text
+          )}
+        </span>
+
+      </div>
+
+      <div class="alert-date">
+
+        تاريخ الانتهاء:
+        ${escapeHTML(
+          alert.expiryDate
+        )}
+
+      </div>
+
+    `;
+
+    container.appendChild(
+      div
+    );
+
+  });
+
+  updateStats();
 }
 
-};
+/* =========================
+   عرض وثائق الموظف
+   ========================= */
+
+function openDocumentsModal(id){
+
+  const employee =
+    VAREX.findEmployee(id);
+
+  if(!employee){
+    return;
+  }
+
+  document.getElementById(
+    "documentsEmployeeName"
+  ).innerText =
+    "📁 وثائق الموظف — " +
+    employee.name;
+
+  const documents = [
+
+    {
+      name:"جواز السفر",
+      file:
+        employee.passportFile,
+      expiry:
+        employee.passportExpiry
+    },
+
+    {
+      name:"الإقامة",
+      file:
+        employee.residenceFile,
+      expiry:
+        employee.residenceExpiry
+    },
+
+    {
+      name:"الهوية الإماراتية",
+      file:
+        employee.emiratesIdFile,
+      expiry:
+        employee.emiratesIdExpiry
+    },
+
+    {
+      name:"بطاقة العمل",
+      file:
+        employee.workPermitFile,
+      expiry:
+        employee.workPermitExpiry
+    }
+
+  ];
+
+  const container =
+    document.getElementById(
+      "documentsContent"
+    );
+
+  container.innerHTML = `
+
+    <div class="profile-box">
+
+      <strong>
+        📷 الصورة الشخصية
+      </strong>
+
+      <div style="margin-top:8px">
+
+        ${
+          employee.profilePhoto
+            ? escapeHTML(
+                employee.profilePhoto
+              )
+            : "لم تتم إضافة صورة"
+        }
+
+      </div>
+
+    </div>
+
+  `;
+
+  documents.forEach(
+    documentItem => {
+
+      const status =
+        VAREX.getDocumentStatus(
+          documentItem.expiry
+        );
+
+      let statusClass =
+        "doc-ok";
+
+      if(
+        status.level ===
+        "notice" ||
+        status.level ===
+        "warning"
+      ){
+        statusClass =
+          "doc-warning";
+      }
+
+      if(
+        status.level ===
+        "danger"
+      ){
+        statusClass =
+          "doc-danger";
+      }
+
+      const card =
+        document.createElement(
+          "div"
+        );
+
+      card.className =
+        "document-card";
+
+      card.innerHTML = `
+
+        <h4>
+          ${escapeHTML(
+            documentItem.name
+          )}
+        </h4>
+
+        <div class="document-row">
+
+          <span>
+            الملف:
+          </span>
+
+          <strong>
+            ${
+              documentItem.file
+                ? escapeHTML(
+                    documentItem.file
+                  )
+                : "غير مرفق"
+            }
+          </strong>
+
+        </div>
+
+        <div class="document-row">
+
+          <span>
+            تاريخ الانتهاء:
+          </span>
+
+          <strong>
+            ${
+              documentItem.expiry
+                ? escapeHTML(
+                    documentItem.expiry
+                  )
+                : "غير محدد"
+            }
+          </strong>
+
+        </div>
+
+        <div class="document-row">
+
+          <span>
+            الحالة:
+          </span>
+
+          <strong
+            class="${statusClass}"
+          >
+            ${escapeHTML(
+              status.text
+            )}
+          </strong>
+
+        </div>
+
+      `;
+
+      container.appendChild(
+        card
+      );
+
+    }
+  );
+
+  document.getElementById(
+    "documentsModal"
+  ).style.display =
+    "flex";
+}
+
+/* =========================
+   إغلاق نافذة الوثائق
+   ========================= */
+
+function closeDocumentsModal(){
+
+  document.getElementById(
+    "documentsModal"
+  ).style.display =
+    "none";
+}
+
+/* =========================
+   حماية النصوص
+   ========================= */
+
+function escapeHTML(value){
+
+  const div =
+    document.createElement(
+      "div"
+    );
+
+  div.textContent =
+    value == null
+      ? ""
+      : String(value);
+
+  return div.innerHTML;
+}
+
+/* =========================
+   إغلاق النوافذ من الخارج
+   ========================= */
+
+window.addEventListener(
+  "click",
+  function(event){
+
+    const employeeModal =
+      document.getElementById(
+        "employeeModal"
+      );
+
+    const documentsModal =
+      document.getElementById(
+        "documentsModal"
+      );
+
+    if(
+      event.target ===
+      employeeModal
+    ){
+      closeEmployeeModal();
+    }
+
+    if(
+      event.target ===
+      documentsModal
+    ){
+      closeDocumentsModal();
+    }
+
+  }
+);
+
+/* =========================
+   تشغيل الصفحة
+   ========================= */
 
 renderEmployees();
+
+renderDocumentAlerts();
 
 </script>
 
 </body>
+
 </html>
