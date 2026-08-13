@@ -1,133 +1,421 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
-
 <head>
-
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<meta
-  name="viewport"
-  content="width=device-width, initial-scale=1.0"
->
-
-<title>
-الموظفون - VAREX
-</title>
+<title>VAREX | الموظفون</title>
 
 <style>
-
 *{
   box-sizing:border-box;
+  margin:0;
+  padding:0;
+}
+
+:root{
+  --navy:#172554;
+  --navy-dark:#0f1d43;
+  --blue:#2563eb;
+  --bg:#f4f6fb;
+  --white:#ffffff;
+  --border:#e5eaf2;
+  --text:#172554;
+  --muted:#64748b;
+  --green:#15803d;
+  --red:#b91c1c;
+  --orange:#d97706;
+  --purple:#7c3aed;
 }
 
 body{
-  margin:0;
   font-family:Arial,sans-serif;
-  background:#f4f6fb;
-  color:#172554;
+  background:var(--bg);
+  color:var(--text);
+  min-height:100vh;
 }
 
-header{
-  background:#172554;
+/* =========================
+   SIDEBAR
+========================= */
+
+.sidebar{
+  position:fixed;
+  right:0;
+  top:0;
+  bottom:0;
+  width:230px;
+  background:linear-gradient(
+    180deg,
+    #172554,
+    #0f1d43
+  );
   color:white;
-  padding:18px 5%;
+  z-index:100;
   display:flex;
-  justify-content:space-between;
-  align-items:center;
+  flex-direction:column;
+}
+
+.brand{
+  padding:26px 22px 18px;
+  border-bottom:
+    1px solid rgba(255,255,255,.10);
 }
 
 .logo{
-  font-size:25px;
-  font-weight:bold;
-  letter-spacing:2px;
+  font-size:29px;
+  font-weight:800;
+  letter-spacing:4px;
 }
 
-.back{
-  color:white;
+.brand-small{
+  font-size:11px;
+  color:#cbd5e1;
+  margin-top:6px;
+}
+
+.system-status{
+  margin-top:13px;
+  display:flex;
+  align-items:center;
+  gap:7px;
+  font-size:11px;
+  color:#d1fae5;
+}
+
+.status-dot{
+  width:8px;
+  height:8px;
+  border-radius:50%;
+  background:#22c55e;
+  box-shadow:
+    0 0 8px rgba(34,197,94,.8);
+  flex-shrink:0;
+}
+
+.nav{
+  padding:18px 12px;
+  flex:1;
+}
+
+.nav a{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  color:#dbeafe;
   text-decoration:none;
-}
-
-.container{
-  width:94%;
-  max-width:1400px;
-  margin:30px auto;
-}
-
-h1{
+  padding:12px 14px;
+  border-radius:10px;
   margin-bottom:5px;
+  font-size:14px;
+  transition:.2s;
 }
 
-.subtitle{
-  color:#64748b;
-  margin-top:0;
+.nav a:hover{
+  background:
+    rgba(255,255,255,.08);
+  color:white;
+}
+
+.nav a.active{
+  background:white;
+  color:var(--navy);
+  font-weight:bold;
+  box-shadow:
+    0 5px 15px rgba(0,0,0,.15);
+}
+
+.nav-icon{
+  width:24px;
+  text-align:center;
+}
+
+.sidebar-footer{
+  padding:17px;
+  border-top:
+    1px solid rgba(255,255,255,.10);
+  color:#94a3b8;
+  font-size:11px;
+  text-align:center;
+}
+
+/* =========================
+   MAIN
+========================= */
+
+.main{
+  margin-right:230px;
+  min-height:100vh;
+}
+
+/* =========================
+   TOPBAR
+========================= */
+
+.topbar{
+  height:76px;
+  background:white;
+  border-bottom:
+    1px solid var(--border);
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:0 28px;
+  position:sticky;
+  top:0;
+  z-index:50;
+}
+
+.page-name{
+  display:flex;
+  align-items:center;
+  gap:12px;
+}
+
+.page-icon{
+  width:43px;
+  height:43px;
+  border-radius:12px;
+  background:#eef2ff;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:21px;
+}
+
+.page-name h2{
+  font-size:18px;
+}
+
+.page-name small{
+  display:block;
+  color:var(--muted);
+  margin-top:4px;
+}
+
+.top-info{
+  display:flex;
+  align-items:center;
+  gap:12px;
+}
+
+.info-chip{
+  background:#f8fafc;
+  border:
+    1px solid var(--border);
+  border-radius:10px;
+  padding:9px 13px;
+  font-size:12px;
+  color:var(--muted);
+}
+
+.info-chip strong{
+  color:var(--navy);
+}
+
+/* =========================
+   CONTENT
+========================= */
+
+.content{
+  width:95%;
+  max-width:1500px;
+  margin:24px auto 40px;
+}
+
+.hero{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:15px;
+  margin-bottom:18px;
+}
+
+.hero h1{
+  font-size:25px;
+  margin-bottom:6px;
+}
+
+.hero p{
+  color:var(--muted);
+  font-size:13px;
+}
+
+/* =========================
+   BUTTONS
+========================= */
+
+button{
+  border:0;
+  border-radius:9px;
+  cursor:pointer;
+  font-family:inherit;
+}
+
+.primary{
+  background:
+    linear-gradient(
+      135deg,
+      #172554,
+      #1e3a8a
+    );
+  color:white;
+  padding:12px 18px;
+  font-weight:bold;
+  box-shadow:
+    0 5px 14px
+    rgba(23,37,84,.16);
+}
+
+.secondary{
+  background:#e5e7eb;
+  color:#111827;
+  padding:11px 16px;
+}
+
+.edit{
+  background:#e0e7ff;
+  color:#172554;
+  padding:7px 10px;
+}
+
+.delete{
+  background:#fee2e2;
+  color:#991b1b;
+  padding:7px 10px;
+}
+
+.documents-button{
+  background:#ecfeff;
+  color:#155e75;
+  padding:7px 10px;
 }
 
 /* =========================
    STATS
-   ========================= */
+========================= */
 
 .stats{
   display:grid;
   grid-template-columns:
     repeat(4,1fr);
-  gap:15px;
-  margin:25px 0;
+  gap:14px;
+  margin-bottom:18px;
 }
 
-.card,
-.panel{
+.stat{
   background:white;
-  border-radius:15px;
-  padding:20px;
+  border:
+    1px solid var(--border);
+  border-radius:14px;
+  padding:17px 18px;
   box-shadow:
-    0 4px 18px
-    rgba(0,0,0,.06);
+    0 3px 12px
+    rgba(15,23,42,.04);
 }
 
-.card span{
-  color:#64748b;
-  font-size:14px;
+.stat-top{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  margin-bottom:10px;
 }
 
-.card strong{
-  display:block;
-  font-size:24px;
-  margin-top:9px;
+.stat-label{
+  font-size:12px;
+  color:var(--muted);
+}
+
+.stat-icon{
+  width:36px;
+  height:36px;
+  border-radius:10px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:17px;
+}
+
+.employee-stat .stat-icon{
+  background:#eef2ff;
+}
+
+.active-stat .stat-icon{
+  background:#ecfdf5;
+}
+
+.salary-stat .stat-icon{
+  background:#eff6ff;
+}
+
+.alert-stat .stat-icon{
+  background:#fef2f2;
+}
+
+.stat-value{
+  font-size:22px;
+  font-weight:bold;
+}
+
+.employee-stat .stat-value{
+  color:var(--navy);
+}
+
+.active-stat .stat-value{
+  color:var(--green);
+}
+
+.salary-stat .stat-value{
+  color:var(--blue);
+}
+
+.alert-stat .stat-value{
+  color:var(--red);
+}
+
+.stat-small{
+  color:#94a3b8;
+  font-size:11px;
+  margin-top:5px;
 }
 
 /* =========================
-   ALERTS
-   ========================= */
+   ALERT PANEL
+========================= */
 
 .alert-panel{
   background:white;
-  border-radius:15px;
+  border:
+    1px solid var(--border);
+  border-radius:16px;
   padding:20px;
-  margin-bottom:20px;
+  margin-bottom:18px;
   box-shadow:
     0 4px 18px
-    rgba(0,0,0,.06);
+    rgba(15,23,42,.05);
 }
 
 .alert-header{
   display:flex;
-  justify-content:
-    space-between;
+  justify-content:space-between;
   align-items:center;
   gap:10px;
   margin-bottom:15px;
 }
 
 .alert-header h3{
-  margin:0;
+  font-size:16px;
 }
 
 .alert-count{
   background:#fee2e2;
   color:#991b1b;
+  min-width:32px;
+  text-align:center;
   padding:6px 12px;
   border-radius:20px;
   font-weight:bold;
+  font-size:12px;
 }
 
 .alert-list{
@@ -148,6 +436,7 @@ h1{
 
 .alert-info{
   line-height:1.7;
+  font-size:13px;
 }
 
 .alert-info strong{
@@ -155,7 +444,7 @@ h1{
 }
 
 .alert-date{
-  font-size:13px;
+  font-size:12px;
 }
 
 .alert-notice{
@@ -180,110 +469,141 @@ h1{
 }
 
 .no-alerts{
-  background:#dcfce7;
+  background:#ecfdf5;
   color:#166534;
   padding:14px;
   border-radius:10px;
   text-align:center;
+  font-size:13px;
+}
+
+/* =========================
+   PANEL
+========================= */
+
+.panel{
+  background:white;
+  border:
+    1px solid var(--border);
+  border-radius:16px;
+  box-shadow:
+    0 4px 18px
+    rgba(15,23,42,.05);
+  overflow:hidden;
+}
+
+.panel-head{
+  padding:18px 20px;
+  border-bottom:
+    1px solid var(--border);
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+
+.panel-head h3{
+  font-size:16px;
+}
+
+.panel-head span{
+  font-size:11px;
+  color:var(--muted);
 }
 
 /* =========================
    TOOLBAR
-   ========================= */
+========================= */
 
 .toolbar{
+  padding:15px 20px;
+  background:#fbfdff;
+  border-bottom:
+    1px solid var(--border);
   display:flex;
-  gap:10px;
+  gap:9px;
   flex-wrap:wrap;
-  margin-bottom:18px;
 }
 
 input,
 select{
-  padding:12px;
+  padding:11px;
   border:
     1px solid #dbe1ea;
   border-radius:9px;
-  font-size:14px;
+  font-size:13px;
+  outline:none;
+  background:white;
   font-family:inherit;
+}
+
+input:focus,
+select:focus{
+  border-color:#94a3b8;
+  box-shadow:
+    0 0 0 3px
+    rgba(37,99,235,.05);
 }
 
 .search{
   flex:1;
-  min-width:220px;
-}
-
-button{
-  border:0;
-  border-radius:9px;
-  padding:11px 16px;
-  cursor:pointer;
-  font-family:inherit;
-}
-
-.primary{
-  background:#172554;
-  color:white;
-}
-
-.secondary{
-  background:#e5e7eb;
-  color:#111827;
-}
-
-.edit{
-  background:#e0e7ff;
-  color:#172554;
-  padding:7px 10px;
-}
-
-.delete{
-  background:#fee2e2;
-  color:#991b1b;
-  padding:7px 10px;
-}
-
-.documents-button{
-  background:#ecfeff;
-  color:#155e75;
-  padding:7px 10px;
+  min-width:250px;
 }
 
 /* =========================
    TABLE
-   ========================= */
-
-table{
-  width:100%;
-  border-collapse:collapse;
-  min-width:1050px;
-}
-
-th,
-td{
-  padding:12px 9px;
-  text-align:right;
-  border-bottom:
-    1px solid #edf0f5;
-}
-
-th{
-  background:#f8fafc;
-  color:#475569;
-}
+========================= */
 
 .table-wrap{
   overflow-x:auto;
 }
 
-.active{
-  color:#15803d;
+table{
+  width:100%;
+  border-collapse:collapse;
+  min-width:1100px;
+}
+
+th,
+td{
+  padding:13px 10px;
+  text-align:right;
+  border-bottom:
+    1px solid #edf0f5;
+  vertical-align:middle;
+  font-size:12px;
+}
+
+th{
+  background:#f8fafc;
+  color:#475569;
+  white-space:nowrap;
+}
+
+tbody tr:hover{
+  background:#fbfdff;
+}
+
+.employee-name{
+  font-weight:bold;
+  color:var(--navy);
+}
+
+.status-badge{
+  display:inline-block;
+  padding:5px 10px;
+  border-radius:20px;
+  font-size:10px;
   font-weight:bold;
 }
 
-.inactive{
-  color:#dc2626;
-  font-weight:bold;
+.status-active{
+  background:#ecfdf5;
+  color:#15803d;
+}
+
+.status-inactive{
+  background:#fef2f2;
+  color:#b91c1c;
 }
 
 .doc-ok{
@@ -303,20 +623,20 @@ th{
 
 .empty{
   text-align:center;
-  color:#64748b;
-  padding:25px;
+  color:var(--muted);
+  padding:35px;
 }
 
 /* =========================
    MODAL
-   ========================= */
+========================= */
 
 .modal{
   display:none;
   position:fixed;
   inset:0;
   background:
-    rgba(0,0,0,.45);
+    rgba(15,23,42,.55);
   align-items:center;
   justify-content:center;
   padding:15px;
@@ -328,15 +648,29 @@ th{
   width:100%;
   max-width:800px;
   border-radius:16px;
-  padding:25px;
+  padding:24px;
   max-height:92vh;
   overflow-y:auto;
+  box-shadow:
+    0 20px 50px
+    rgba(0,0,0,.20);
+}
+
+.modal-header{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  margin-bottom:18px;
+}
+
+.modal-header h2{
+  font-size:19px;
 }
 
 .close{
-  float:left;
   font-size:25px;
   cursor:pointer;
+  color:#64748b;
 }
 
 .form-grid{
@@ -351,6 +685,17 @@ th{
   width:100%;
 }
 
+.field{
+  width:100%;
+}
+
+.field label{
+  display:block;
+  color:#475569;
+  font-size:12px;
+  margin-bottom:6px;
+}
+
 .form-section{
   grid-column:1/-1;
   margin-top:12px;
@@ -360,27 +705,15 @@ th{
 }
 
 .form-section h3{
-  margin:
-    0 0 5px;
-  color:#172554;
+  margin-bottom:5px;
+  font-size:16px;
 }
 
 .section-description{
   color:#64748b;
-  font-size:13px;
-  margin:
-    0 0 15px;
-}
-
-.field{
-  width:100%;
-}
-
-.field label{
-  display:block;
-  color:#475569;
-  font-size:13px;
-  margin-bottom:6px;
+  font-size:12px;
+  margin-bottom:15px;
+  line-height:1.7;
 }
 
 .file-field{
@@ -393,18 +726,19 @@ th{
 
 .file-field label{
   display:block;
-  font-size:13px;
+  font-size:12px;
   font-weight:bold;
   margin-bottom:8px;
 }
 
 .file-field input{
   background:white;
+  width:100%;
 }
 
 .saved-file{
   color:#15803d;
-  font-size:12px;
+  font-size:11px;
   margin-top:6px;
   min-height:16px;
 }
@@ -417,7 +751,7 @@ th{
 
 /* =========================
    DOCUMENT VIEW
-   ========================= */
+========================= */
 
 .documents-grid{
   display:grid;
@@ -434,8 +768,7 @@ th{
 }
 
 .document-card h4{
-  margin:
-    0 0 10px;
+  margin-bottom:10px;
 }
 
 .document-row{
@@ -444,26 +777,79 @@ th{
     space-between;
   gap:10px;
   margin-top:7px;
-  font-size:14px;
+  font-size:12px;
 }
 
 .profile-box{
   grid-column:1/-1;
   background:#f8fafc;
+  border:
+    1px solid #e2e8f0;
   border-radius:12px;
   padding:15px;
 }
 
-@media(max-width:750px){
+/* =========================
+   RESPONSIVE
+========================= */
+
+@media(max-width:1100px){
+
+  .sidebar{
+    width:200px;
+  }
+
+  .main{
+    margin-right:200px;
+  }
 
   .stats{
     grid-template-columns:
-      1fr 1fr;
+      repeat(2,1fr);
+  }
+}
+
+@media(max-width:850px){
+
+  .sidebar{
+    position:relative;
+    width:100%;
+    height:auto;
   }
 
+  .brand{
+    padding:17px 20px;
+  }
+
+  .nav{
+    display:flex;
+    overflow-x:auto;
+    padding:8px 10px 12px;
+  }
+
+  .nav a{
+    white-space:nowrap;
+    margin:0 3px;
+  }
+
+  .sidebar-footer{
+    display:none;
+  }
+
+  .main{
+    margin-right:0;
+  }
+
+  .topbar{
+    position:relative;
+    padding:0 16px;
+  }
+}
+
+@media(max-width:750px){
+
   .form-grid{
-    grid-template-columns:
-      1fr;
+    grid-template-columns:1fr;
   }
 
   .form-section{
@@ -471,8 +857,7 @@ th{
   }
 
   .documents-grid{
-    grid-template-columns:
-      1fr;
+    grid-template-columns:1fr;
   }
 
   .profile-box{
@@ -483,123 +868,339 @@ th{
     flex-direction:column;
     align-items:flex-start;
   }
-
 }
 
-@media(max-width:450px){
+@media(max-width:600px){
+
+  .content{
+    width:94%;
+  }
+
+  .top-info{
+    display:none;
+  }
+
+  .hero{
+    flex-direction:column;
+    align-items:flex-start;
+  }
 
   .stats{
     grid-template-columns:
-      1fr;
+      1fr 1fr;
   }
-
 }
 
-</style>
+@media(max-width:420px){
 
+  .stats{
+    grid-template-columns:1fr;
+  }
+}
+</style>
 </head>
 
 <body>
 
-<header>
+<!-- =========================
+     SIDEBAR
+========================= -->
 
-<div class="logo">
-VAREX
+<aside class="sidebar">
+
+<div class="brand">
+
+  <div class="logo">
+    VAREX
+  </div>
+
+  <div class="brand-small">
+    BUSINESS MANAGEMENT SYSTEM
+  </div>
+
+  <div class="system-status">
+    <span class="status-dot"></span>
+    <span>
+      النظام متصل وجاهز للعمل
+    </span>
+  </div>
+
 </div>
 
-<a
-  class="back"
-  href="index.html"
->
-← لوحة التحكم
-</a>
+<nav class="nav">
+
+  <a href="index.html">
+    <span class="nav-icon">▦</span>
+    لوحة التحكم
+  </a>
+
+  <a href="pos.html">
+    <span class="nav-icon">🛒</span>
+    نقطة البيع
+  </a>
+
+  <a href="products.html">
+    <span class="nav-icon">📦</span>
+    المنتجات والمخزون
+  </a>
+
+  <a href="customers.html">
+    <span class="nav-icon">👥</span>
+    العملاء
+  </a>
+
+  <a href="suppliers.html">
+    <span class="nav-icon">🚚</span>
+    الموردون
+  </a>
+
+  <a href="accounts.html">
+    <span class="nav-icon">💰</span>
+    الحسابات
+  </a>
+
+  <a
+    href="employees.html"
+    class="active"
+  >
+    <span class="nav-icon">👤</span>
+    الموظفون
+  </a>
+
+  <a href="reports.html">
+    <span class="nav-icon">📊</span>
+    التقارير
+  </a>
+
+  <a href="setting.html">
+    <span class="nav-icon">⚙️</span>
+    الإعدادات
+  </a>
+
+</nav>
+
+<div class="sidebar-footer">
+  VAREX BUSINESS SYSTEM
+</div>
+
+</aside>
+
+<!-- =========================
+     MAIN
+========================= -->
+
+<div class="main">
+
+<header class="topbar">
+
+<div class="page-name">
+
+  <div class="page-icon">
+    👤
+  </div>
+
+  <div>
+    <h2>
+      الموظفون
+    </h2>
+    <small>
+      VAREX EMPLOYEES
+    </small>
+  </div>
+
+</div>
+
+<div class="top-info">
+
+  <div class="info-chip">
+    المستخدم:
+    <strong>
+      المستخدم الحالي
+    </strong>
+  </div>
+
+  <div
+    class="info-chip"
+    id="currentDate"
+  >
+    —
+  </div>
+
+  <div
+    class="info-chip"
+    id="currentTime"
+  >
+    —
+  </div>
+
+</div>
 
 </header>
 
-<div class="container">
-
-<h1>
-👨‍💼 الموظفون
-</h1>
-
-<p class="subtitle">
-إدارة الموظفين والوظائف والرواتب والصلاحيات والوثائق الرسمية
-</p>
+<main class="content">
 
 <!-- =========================
-     الإحصائيات
-     ========================= -->
+     HERO
+========================= -->
 
-<div class="stats">
+<section class="hero">
 
-<div class="card">
+<div>
 
-<span>
-إجمالي الموظفين
-</span>
+  <h1>
+    إدارة الموظفين
+  </h1>
 
-<strong id="totalEmployees">
-0
-</strong>
-
-</div>
-
-<div class="card">
-
-<span>
-الموظفون النشطون
-</span>
-
-<strong id="activeEmployees">
-0
-</strong>
+  <p>
+    إدارة بيانات الموظفين والوظائف والرواتب
+    والصلاحيات والوثائق الرسمية
+  </p>
 
 </div>
 
-<div class="card">
+<button
+  class="primary"
+  onclick="openEmployeeModal()"
+>
+  ＋ إضافة موظف
+</button>
 
-<span>
-إجمالي الرواتب الشهرية
-</span>
-
-<strong id="totalSalaries">
-0.00 د.إ
-</strong>
-
-</div>
-
-<div class="card">
-
-<span>
-تنبيهات الوثائق
-</span>
-
-<strong id="documentAlertCount">
-0
-</strong>
-
-</div>
-
-</div>
+</section>
 
 <!-- =========================
-     تنبيهات الوثائق
-     ========================= -->
+     STATS
+========================= -->
 
-<div class="alert-panel">
+<section class="stats">
+
+<div class="stat employee-stat">
+
+  <div class="stat-top">
+
+    <div class="stat-label">
+      إجمالي الموظفين
+    </div>
+
+    <div class="stat-icon">
+      👥
+    </div>
+
+  </div>
+
+  <div
+    class="stat-value"
+    id="totalEmployees"
+  >
+    0
+  </div>
+
+  <div class="stat-small">
+    جميع الموظفين المسجلين
+  </div>
+
+</div>
+
+<div class="stat active-stat">
+
+  <div class="stat-top">
+
+    <div class="stat-label">
+      الموظفون النشطون
+    </div>
+
+    <div class="stat-icon">
+      ✓
+    </div>
+
+  </div>
+
+  <div
+    class="stat-value"
+    id="activeEmployees"
+  >
+    0
+  </div>
+
+  <div class="stat-small">
+    الموظفون العاملون حالياً
+  </div>
+
+</div>
+
+<div class="stat salary-stat">
+
+  <div class="stat-top">
+
+    <div class="stat-label">
+      إجمالي الرواتب الشهرية
+    </div>
+
+    <div class="stat-icon">
+      💳
+    </div>
+
+  </div>
+
+  <div
+    class="stat-value"
+    id="totalSalaries"
+  >
+    0.00 د.إ
+  </div>
+
+  <div class="stat-small">
+    إجمالي الرواتب المسجلة
+  </div>
+
+</div>
+
+<div class="stat alert-stat">
+
+  <div class="stat-top">
+
+    <div class="stat-label">
+      تنبيهات الوثائق
+    </div>
+
+    <div class="stat-icon">
+      🔔
+    </div>
+
+  </div>
+
+  <div
+    class="stat-value"
+    id="documentAlertCount"
+  >
+    0
+  </div>
+
+  <div class="stat-small">
+    الوثائق التي تحتاج متابعة
+  </div>
+
+</div>
+
+</section>
+
+<!-- =========================
+     ALERTS
+========================= -->
+
+<section class="alert-panel">
 
 <div class="alert-header">
 
-<h3>
-🔔 تنبيهات وثائق الموظفين
-</h3>
+  <h3>
+    🔔 تنبيهات وثائق الموظفين
+  </h3>
 
-<span
-  class="alert-count"
-  id="alertBadge"
->
-0
-</span>
+  <span
+    class="alert-count"
+    id="alertBadge"
+  >
+    0
+  </span>
 
 </div>
 
@@ -609,13 +1210,25 @@ VAREX
 >
 </div>
 
-</div>
+</section>
 
 <!-- =========================
-     قائمة الموظفين
-     ========================= -->
+     EMPLOYEE LIST
+========================= -->
 
-<div class="panel">
+<section class="panel">
+
+<div class="panel-head">
+
+  <h3>
+    قائمة الموظفين
+  </h3>
+
+  <span>
+    الموظفون والرواتب والصلاحيات والوثائق
+  </span>
+
+</div>
 
 <div class="toolbar">
 
@@ -631,26 +1244,19 @@ VAREX
   onchange="renderEmployees()"
 >
 
-<option value="">
-كل الحالات
-</option>
+  <option value="">
+    كل الحالات
+  </option>
 
-<option value="نشط">
-نشط
-</option>
+  <option value="نشط">
+    نشط
+  </option>
 
-<option value="غير نشط">
-غير نشط
-</option>
+  <option value="غير نشط">
+    غير نشط
+  </option>
 
 </select>
-
-<button
-  class="primary"
-  onclick="openEmployeeModal()"
->
-+ إضافة موظف
-</button>
 
 </div>
 
@@ -659,31 +1265,18 @@ VAREX
 <table>
 
 <thead>
-
 <tr>
-
-<th>#</th>
-
-<th>اسم الموظف</th>
-
-<th>الهاتف</th>
-
-<th>الوظيفة</th>
-
-<th>الراتب</th>
-
-<th>الصلاحية</th>
-
-<th>الحالة</th>
-
-<th>تاريخ التعيين</th>
-
-<th>الوثائق</th>
-
-<th>الإجراءات</th>
-
+  <th>#</th>
+  <th>اسم الموظف</th>
+  <th>الهاتف</th>
+  <th>الوظيفة</th>
+  <th>الراتب</th>
+  <th>الصلاحية</th>
+  <th>الحالة</th>
+  <th>تاريخ التعيين</th>
+  <th>الوثائق</th>
+  <th>الإجراءات</th>
 </tr>
-
 </thead>
 
 <tbody id="employeeTable">
@@ -695,18 +1288,19 @@ VAREX
   id="emptyMessage"
   class="empty"
 >
-لا يوجد موظفون حتى الآن
+  لا يوجد موظفون حتى الآن
 </div>
 
 </div>
 
-</div>
+</section>
 
+</main>
 </div>
 
 <!-- =========================
-     نافذة إضافة / تعديل موظف
-     ========================= -->
+     EMPLOYEE MODAL
+========================= -->
 
 <div
   class="modal"
@@ -715,16 +1309,20 @@ VAREX
 
 <div class="modal-box">
 
-<span
-  class="close"
-  onclick="closeEmployeeModal()"
->
-×
-</span>
+<div class="modal-header">
 
-<h2 id="modalTitle">
-إضافة موظف جديد
-</h2>
+  <h2 id="modalTitle">
+    إضافة موظف جديد
+  </h2>
+
+  <span
+    class="close"
+    onclick="closeEmployeeModal()"
+  >
+    ×
+  </span>
+
+</div>
 
 <div class="form-grid">
 
@@ -759,44 +1357,44 @@ VAREX
 
 <select id="role">
 
-<option value="موظف">
-موظف
-</option>
+  <option value="موظف">
+    موظف
+  </option>
 
-<option value="كاشير">
-كاشير
-</option>
+  <option value="كاشير">
+    كاشير
+  </option>
 
-<option value="مشرف">
-مشرف
-</option>
+  <option value="مشرف">
+    مشرف
+  </option>
 
-<option value="مدير">
-مدير
-</option>
+  <option value="مدير">
+    مدير
+  </option>
 
-<option value="مدير النظام">
-مدير النظام
-</option>
+  <option value="مدير النظام">
+    مدير النظام
+  </option>
 
 </select>
 
 <select id="status">
 
-<option value="نشط">
-نشط
-</option>
+  <option value="نشط">
+    نشط
+  </option>
 
-<option value="غير نشط">
-غير نشط
-</option>
+  <option value="غير نشط">
+    غير نشط
+  </option>
 
 </select>
 
 <div class="field">
 
 <label>
-تاريخ التعيين
+  تاريخ التعيين
 </label>
 
 <input
@@ -806,26 +1404,25 @@ VAREX
 
 </div>
 
-<!-- الوثائق -->
+<!-- DOCUMENT SECTION -->
 
 <div class="form-section">
 
 <h3>
-📁 المستندات والوثائق
+  📁 المستندات والوثائق
 </h3>
 
 <p class="section-description">
-أدخل تواريخ انتهاء الوثائق ليقوم VAREX بتنبيهك تلقائياً قبل انتهاء صلاحيتها.
+  أدخل تواريخ انتهاء الوثائق ليقوم VAREX
+  بتنبيهك تلقائياً قبل انتهاء صلاحيتها.
 </p>
 
 </div>
 
-<!-- الصورة الشخصية -->
-
 <div class="file-field">
 
 <label>
-📷 الصورة الشخصية
+  📷 الصورة الشخصية
 </label>
 
 <input
@@ -837,19 +1434,16 @@ VAREX
 <div
   class="saved-file"
   id="profilePhotoSaved"
->
-</div>
+></div>
 
 </div>
 
 <div></div>
 
-<!-- الجواز -->
-
 <div class="file-field">
 
 <label>
-🛂 صورة جواز السفر
+  🛂 صورة جواز السفر
 </label>
 
 <input
@@ -861,15 +1455,14 @@ VAREX
 <div
   class="saved-file"
   id="passportFileSaved"
->
-</div>
+></div>
 
 </div>
 
 <div class="field">
 
 <label>
-تاريخ انتهاء جواز السفر
+  تاريخ انتهاء جواز السفر
 </label>
 
 <input
@@ -879,12 +1472,10 @@ VAREX
 
 </div>
 
-<!-- الإقامة -->
-
 <div class="file-field">
 
 <label>
-📄 صورة الإقامة
+  📄 صورة الإقامة
 </label>
 
 <input
@@ -896,15 +1487,14 @@ VAREX
 <div
   class="saved-file"
   id="residenceFileSaved"
->
-</div>
+></div>
 
 </div>
 
 <div class="field">
 
 <label>
-تاريخ انتهاء الإقامة
+  تاريخ انتهاء الإقامة
 </label>
 
 <input
@@ -914,12 +1504,10 @@ VAREX
 
 </div>
 
-<!-- الهوية -->
-
 <div class="file-field">
 
 <label>
-🪪 صورة الهوية الإماراتية
+  🪪 صورة الهوية الإماراتية
 </label>
 
 <input
@@ -931,15 +1519,14 @@ VAREX
 <div
   class="saved-file"
   id="emiratesIdFileSaved"
->
-</div>
+></div>
 
 </div>
 
 <div class="field">
 
 <label>
-تاريخ انتهاء الهوية الإماراتية
+  تاريخ انتهاء الهوية الإماراتية
 </label>
 
 <input
@@ -949,12 +1536,10 @@ VAREX
 
 </div>
 
-<!-- بطاقة العمل -->
-
 <div class="file-field">
 
 <label>
-💼 صورة بطاقة / تصريح العمل
+  💼 صورة بطاقة / تصريح العمل
 </label>
 
 <input
@@ -966,15 +1551,14 @@ VAREX
 <div
   class="saved-file"
   id="workPermitFileSaved"
->
-</div>
+></div>
 
 </div>
 
 <div class="field">
 
 <label>
-تاريخ انتهاء بطاقة العمل
+  تاريخ انتهاء بطاقة العمل
 </label>
 
 <input
@@ -992,25 +1576,24 @@ VAREX
   class="primary"
   onclick="saveEmployee()"
 >
-حفظ الموظف
+  حفظ الموظف
 </button>
 
 <button
   class="secondary"
   onclick="closeEmployeeModal()"
 >
-إلغاء
+  إلغاء
 </button>
 
 </div>
 
 </div>
-
 </div>
 
 <!-- =========================
-     نافذة عرض الوثائق
-     ========================= -->
+     DOCUMENTS MODAL
+========================= -->
 
 <div
   class="modal"
@@ -1019,16 +1602,20 @@ VAREX
 
 <div class="modal-box">
 
+<div class="modal-header">
+
+<h2 id="documentsEmployeeName">
+  وثائق الموظف
+</h2>
+
 <span
   class="close"
   onclick="closeDocumentsModal()"
 >
-×
+  ×
 </span>
 
-<h2 id="documentsEmployeeName">
-وثائق الموظف
-</h2>
+</div>
 
 <div
   class="documents-grid"
@@ -1037,10 +1624,7 @@ VAREX
 </div>
 
 </div>
-
 </div>
-
-<!-- قلب النظام -->
 
 <script src="varex.js"></script>
 
@@ -1049,8 +1633,53 @@ VAREX
 let editingEmployeeId = null;
 
 /* =========================
-   فتح نافذة الموظف
-   ========================= */
+   CLOCK
+========================= */
+
+function updateClock(){
+
+  const now =
+    new Date();
+
+  document
+    .getElementById(
+      "currentDate"
+    )
+    .innerText =
+    now.toLocaleDateString(
+      "ar-AE",
+      {
+        year:"numeric",
+        month:"2-digit",
+        day:"2-digit"
+      }
+    );
+
+  document
+    .getElementById(
+      "currentTime"
+    )
+    .innerText =
+    now.toLocaleTimeString(
+      "ar-AE",
+      {
+        hour:"2-digit",
+        minute:"2-digit",
+        second:"2-digit"
+      }
+    );
+}
+
+updateClock();
+
+setInterval(
+  updateClock,
+  1000
+);
+
+/* =========================
+   OPEN EMPLOYEE
+========================= */
 
 function openEmployeeModal(id = null){
 
@@ -1060,24 +1689,32 @@ function openEmployeeModal(id = null){
 
   if(id === null){
 
-    document.getElementById(
-      "modalTitle"
-    ).innerText =
+    document
+      .getElementById(
+        "modalTitle"
+      )
+      .innerText =
       "إضافة موظف جديد";
 
-    document.getElementById(
-      "status"
-    ).value =
+    document
+      .getElementById(
+        "status"
+      )
+      .value =
       "نشط";
 
-    document.getElementById(
-      "role"
-    ).value =
+    document
+      .getElementById(
+        "role"
+      )
+      .value =
       "موظف";
 
-    document.getElementById(
-      "hireDate"
-    ).value =
+    document
+      .getElementById(
+        "hireDate"
+      )
+      .value =
       VAREX.today();
 
   }else{
@@ -1089,9 +1726,11 @@ function openEmployeeModal(id = null){
       return;
     }
 
-    document.getElementById(
-      "modalTitle"
-    ).innerText =
+    document
+      .getElementById(
+        "modalTitle"
+      )
+      .innerText =
       "تعديل بيانات الموظف";
 
     document.getElementById(
@@ -1178,24 +1817,27 @@ function openEmployeeModal(id = null){
       "workPermitFileSaved",
       employee.workPermitFile
     );
-
   }
 
-  document.getElementById(
-    "employeeModal"
-  ).style.display =
+  document
+    .getElementById(
+      "employeeModal"
+    )
+    .style.display =
     "flex";
 }
 
 /* =========================
-   إغلاق النافذة
-   ========================= */
+   CLOSE EMPLOYEE
+========================= */
 
 function closeEmployeeModal(){
 
-  document.getElementById(
-    "employeeModal"
-  ).style.display =
+  document
+    .getElementById(
+      "employeeModal"
+    )
+    .style.display =
     "none";
 
   editingEmployeeId =
@@ -1203,8 +1845,8 @@ function closeEmployeeModal(){
 }
 
 /* =========================
-   تنظيف الحقول
-   ========================= */
+   CLEAR FORM
+========================= */
 
 function clearEmployeeForm(){
 
@@ -1223,20 +1865,20 @@ function clearEmployeeForm(){
 
   textFields.forEach(id => {
 
-    document.getElementById(
-      id
-    ).value = "";
-
+    document
+      .getElementById(id)
+      .value =
+      "";
   });
 
-  document.getElementById(
-    "role"
-  ).value =
+  document
+    .getElementById("role")
+    .value =
     "موظف";
 
-  document.getElementById(
-    "status"
-  ).value =
+  document
+    .getElementById("status")
+    .value =
     "نشط";
 
   const fileFields = [
@@ -1249,10 +1891,10 @@ function clearEmployeeForm(){
 
   fileFields.forEach(id => {
 
-    document.getElementById(
-      id
-    ).value = "";
-
+    document
+      .getElementById(id)
+      .value =
+      "";
   });
 
   const savedFields = [
@@ -1265,17 +1907,16 @@ function clearEmployeeForm(){
 
   savedFields.forEach(id => {
 
-    document.getElementById(
-      id
-    ).innerText = "";
-
+    document
+      .getElementById(id)
+      .innerText =
+      "";
   });
-
 }
 
 /* =========================
-   اسم الملف المختار
-   ========================= */
+   FILE NAME
+========================= */
 
 function getSelectedFileName(
   inputId,
@@ -1283,9 +1924,10 @@ function getSelectedFileName(
 ){
 
   const input =
-    document.getElementById(
-      inputId
-    );
+    document
+      .getElementById(
+        inputId
+      );
 
   if(
     input.files &&
@@ -1297,21 +1939,16 @@ function getSelectedFileName(
   return oldValue || "";
 }
 
-/* =========================
-   إظهار الملف المسجل
-   ========================= */
-
 function showSavedFile(
   elementId,
   fileName
 ){
 
-  const element =
-    document.getElementById(
+  document
+    .getElementById(
       elementId
-    );
-
-  element.innerText =
+    )
+    .innerText =
     fileName
       ? "✓ الملف المسجل: " +
         fileName
@@ -1319,15 +1956,18 @@ function showSavedFile(
 }
 
 /* =========================
-   حفظ الموظف
-   ========================= */
+   SAVE EMPLOYEE
+========================= */
 
 function saveEmployee(){
 
   const name =
-    document.getElementById(
-      "employeeName"
-    ).value.trim();
+    document
+      .getElementById(
+        "employeeName"
+      )
+      .value
+      .trim();
 
   if(!name){
 
@@ -1350,61 +1990,64 @@ function saveEmployee(){
     name,
 
     phone:
-      document.getElementById(
-        "phone"
-      ).value.trim(),
+      document
+        .getElementById("phone")
+        .value
+        .trim(),
 
     email:
-      document.getElementById(
-        "email"
-      ).value.trim(),
+      document
+        .getElementById("email")
+        .value
+        .trim(),
 
     job:
-      document.getElementById(
-        "job"
-      ).value.trim(),
+      document
+        .getElementById("job")
+        .value
+        .trim(),
 
     salary:
       Number(
-        document.getElementById(
-          "salary"
-        ).value
+        document
+          .getElementById("salary")
+          .value
       ) || 0,
 
     role:
-      document.getElementById(
-        "role"
-      ).value,
+      document
+        .getElementById("role")
+        .value,
 
     status:
-      document.getElementById(
-        "status"
-      ).value,
+      document
+        .getElementById("status")
+        .value,
 
     hireDate:
-      document.getElementById(
-        "hireDate"
-      ).value,
+      document
+        .getElementById("hireDate")
+        .value,
 
     passportExpiry:
-      document.getElementById(
-        "passportExpiry"
-      ).value,
+      document
+        .getElementById("passportExpiry")
+        .value,
 
     residenceExpiry:
-      document.getElementById(
-        "residenceExpiry"
-      ).value,
+      document
+        .getElementById("residenceExpiry")
+        .value,
 
     emiratesIdExpiry:
-      document.getElementById(
-        "emiratesIdExpiry"
-      ).value,
+      document
+        .getElementById("emiratesIdExpiry")
+        .value,
 
     workPermitExpiry:
-      document.getElementById(
-        "workPermitExpiry"
-      ).value,
+      document
+        .getElementById("workPermitExpiry")
+        .value,
 
     profilePhoto:
       getSelectedFileName(
@@ -1445,12 +2088,9 @@ function saveEmployee(){
           ? oldEmployee.workPermitFile
           : ""
       )
-
   };
 
-  if(
-    editingEmployeeId === null
-  ){
+  if(editingEmployeeId === null){
 
     VAREX.addEmployee(
       employeeData
@@ -1462,7 +2102,6 @@ function saveEmployee(){
       editingEmployeeId,
       employeeData
     );
-
   }
 
   closeEmployeeModal();
@@ -1473,8 +2112,8 @@ function saveEmployee(){
 }
 
 /* =========================
-   حذف الموظف
-   ========================= */
+   DELETE EMPLOYEE
+========================= */
 
 function deleteEmployee(id){
 
@@ -1498,23 +2137,22 @@ function deleteEmployee(id){
     renderEmployees();
 
     renderDocumentAlerts();
-
   }
-
 }
 
 /* =========================
-   حالة وثائق الموظف
-   ========================= */
+   DOCUMENT STATUS
+========================= */
 
 function getEmployeeDocumentsStatus(
   employee
 ){
 
   const alerts =
-    VAREX.getEmployeeDocumentAlerts(
-      employee
-    );
+    VAREX
+      .getEmployeeDocumentAlerts(
+        employee
+      );
 
   if(!alerts.length){
 
@@ -1522,7 +2160,6 @@ function getEmployeeDocumentsStatus(
       text:"سارية",
       className:"doc-ok"
     };
-
   }
 
   const expired =
@@ -1537,7 +2174,6 @@ function getEmployeeDocumentsStatus(
       text:"وثيقة منتهية",
       className:"doc-danger"
     };
-
   }
 
   const urgent =
@@ -1552,19 +2188,17 @@ function getEmployeeDocumentsStatus(
       text:"تنبيه عاجل",
       className:"doc-danger"
     };
-
   }
 
   return {
     text:"قرب انتهاء وثيقة",
     className:"doc-warning"
   };
-
 }
 
 /* =========================
-   عرض الموظفين
-   ========================= */
+   RENDER EMPLOYEES
+========================= */
 
 function renderEmployees(){
 
@@ -1572,28 +2206,35 @@ function renderEmployees(){
     VAREX.getEmployees();
 
   const table =
-    document.getElementById(
-      "employeeTable"
-    );
+    document
+      .getElementById(
+        "employeeTable"
+      );
 
   const search =
-    document.getElementById(
-      "search"
-    ).value
+    document
+      .getElementById(
+        "search"
+      )
+      .value
       .trim()
       .toLowerCase();
 
   const statusFilter =
-    document.getElementById(
-      "statusFilter"
-    ).value;
+    document
+      .getElementById(
+        "statusFilter"
+      )
+      .value;
 
-  table.innerHTML = "";
+  table.innerHTML =
+    "";
 
-  let visible = 0;
+  let visible =
+    0;
 
   employees.forEach(
-    (employee,index) => {
+    employee => {
 
       const searchable =
         (
@@ -1602,7 +2243,8 @@ function renderEmployees(){
           (employee.phone || "") +
           " " +
           (employee.job || "")
-        ).toLowerCase();
+        )
+        .toLowerCase();
 
       if(
         !searchable.includes(
@@ -1615,18 +2257,17 @@ function renderEmployees(){
       if(
         statusFilter &&
         employee.status !==
-          statusFilter
+        statusFilter
       ){
         return;
       }
 
       visible++;
 
-      const statusClass =
-        employee.status ===
-        "نشط"
-          ? "active"
-          : "inactive";
+      const statusBadge =
+        employee.status === "نشط"
+          ? "status-active"
+          : "status-inactive";
 
       const documentStatus =
         getEmployeeDocumentsStatus(
@@ -1641,10 +2282,10 @@ function renderEmployees(){
       row.innerHTML = `
 
         <td>
-          ${index + 1}
+          ${visible}
         </td>
 
-        <td>
+        <td class="employee-name">
           ${escapeHTML(
             employee.name
           )}
@@ -1652,15 +2293,13 @@ function renderEmployees(){
 
         <td>
           ${escapeHTML(
-            employee.phone ||
-            "-"
+            employee.phone || "-"
           )}
         </td>
 
         <td>
           ${escapeHTML(
-            employee.job ||
-            "-"
+            employee.job || "-"
           )}
         </td>
 
@@ -1672,24 +2311,23 @@ function renderEmployees(){
 
         <td>
           ${escapeHTML(
-            employee.role ||
-            "-"
-          )}
-        </td>
-
-        <td
-          class="${statusClass}"
-        >
-          ${escapeHTML(
-            employee.status ||
-            "-"
+            employee.role || "-"
           )}
         </td>
 
         <td>
+          <span
+            class="status-badge ${statusBadge}"
+          >
+            ${escapeHTML(
+              employee.status || "-"
+            )}
+          </span>
+        </td>
+
+        <td>
           ${escapeHTML(
-            employee.hireDate ||
-            "-"
+            employee.hireDate || "-"
           )}
         </td>
 
@@ -1723,19 +2361,19 @@ function renderEmployees(){
           </button>
 
         </td>
-
       `;
 
       table.appendChild(
         row
       );
-
     }
   );
 
-  document.getElementById(
-    "emptyMessage"
-  ).style.display =
+  document
+    .getElementById(
+      "emptyMessage"
+    )
+    .style.display =
     visible === 0
       ? "block"
       : "none";
@@ -1744,8 +2382,8 @@ function renderEmployees(){
 }
 
 /* =========================
-   الإحصائيات
-   ========================= */
+   STATS
+========================= */
 
 function updateStats(){
 
@@ -1769,7 +2407,6 @@ function updateStats(){
         Number(
           employee.salary || 0
         );
-
     }
   );
 
@@ -1777,37 +2414,47 @@ function updateStats(){
     VAREX
       .getAllEmployeeDocumentAlerts();
 
-  document.getElementById(
-    "totalEmployees"
-  ).innerText =
+  document
+    .getElementById(
+      "totalEmployees"
+    )
+    .innerText =
     employees.length;
 
-  document.getElementById(
-    "activeEmployees"
-  ).innerText =
+  document
+    .getElementById(
+      "activeEmployees"
+    )
+    .innerText =
     active;
 
-  document.getElementById(
-    "totalSalaries"
-  ).innerText =
+  document
+    .getElementById(
+      "totalSalaries"
+    )
+    .innerText =
     VAREX.money(
       salaries
     );
 
-  document.getElementById(
-    "documentAlertCount"
-  ).innerText =
+  document
+    .getElementById(
+      "documentAlertCount"
+    )
+    .innerText =
     alerts.length;
 
-  document.getElementById(
-    "alertBadge"
-  ).innerText =
+  document
+    .getElementById(
+      "alertBadge"
+    )
+    .innerText =
     alerts.length;
 }
 
 /* =========================
-   عرض التنبيهات
-   ========================= */
+   DOCUMENT ALERTS
+========================= */
 
 function renderDocumentAlerts(){
 
@@ -1816,20 +2463,20 @@ function renderDocumentAlerts(){
       .getAllEmployeeDocumentAlerts();
 
   const container =
-    document.getElementById(
-      "documentAlerts"
-    );
+    document
+      .getElementById(
+        "documentAlerts"
+      );
 
-  container.innerHTML = "";
+  container.innerHTML =
+    "";
 
   if(!alerts.length){
 
     container.innerHTML = `
-
       <div class="no-alerts">
         ✓ لا توجد وثائق قاربت على الانتهاء حالياً
       </div>
-
     `;
 
     updateStats();
@@ -1837,95 +2484,88 @@ function renderDocumentAlerts(){
     return;
   }
 
-  alerts.forEach(alert => {
+  alerts.forEach(
+    alert => {
 
-    let className =
-      "alert-notice";
+      let className =
+        "alert-notice";
 
-    let icon =
-      "⚠️";
-
-    if(
-      alert.level ===
-      "warning"
-    ){
-
-      className =
-        "alert-warning";
-
-      icon =
+      let icon =
         "⚠️";
 
-    }
+      if(
+        alert.level ===
+        "warning"
+      ){
+        className =
+          "alert-warning";
+      }
 
-    if(
-      alert.level ===
-      "danger"
-    ){
+      if(
+        alert.level ===
+        "danger"
+      ){
+        className =
+          "alert-danger";
 
-      className =
-        "alert-danger";
+        icon =
+          "🚨";
+      }
 
-      icon =
-        "🚨";
+      const div =
+        document.createElement(
+          "div"
+        );
 
-    }
+      div.className =
+        "alert-item " +
+        className;
 
-    const div =
-      document.createElement(
-        "div"
+      div.innerHTML = `
+
+        <div class="alert-info">
+
+          <strong>
+            ${icon}
+            ${escapeHTML(
+              alert.employeeName
+            )}
+            —
+            ${escapeHTML(
+              alert.documentName
+            )}
+          </strong>
+
+          <span>
+            ${escapeHTML(
+              alert.text
+            )}
+          </span>
+
+        </div>
+
+        <div class="alert-date">
+
+          تاريخ الانتهاء:
+          ${escapeHTML(
+            alert.expiryDate
+          )}
+
+        </div>
+      `;
+
+      container.appendChild(
+        div
       );
-
-    div.className =
-      "alert-item " +
-      className;
-
-    div.innerHTML = `
-
-      <div class="alert-info">
-
-        <strong>
-          ${icon}
-          ${escapeHTML(
-            alert.employeeName
-          )}
-          —
-          ${escapeHTML(
-            alert.documentName
-          )}
-        </strong>
-
-        <span>
-          ${escapeHTML(
-            alert.text
-          )}
-        </span>
-
-      </div>
-
-      <div class="alert-date">
-
-        تاريخ الانتهاء:
-        ${escapeHTML(
-          alert.expiryDate
-        )}
-
-      </div>
-
-    `;
-
-    container.appendChild(
-      div
-    );
-
-  });
+    }
+  );
 
   updateStats();
 }
 
 /* =========================
-   عرض وثائق الموظف
-   ========================= */
+   DOCUMENTS MODAL
+========================= */
 
 function openDocumentsModal(id){
 
@@ -1936,9 +2576,11 @@ function openDocumentsModal(id){
     return;
   }
 
-  document.getElementById(
-    "documentsEmployeeName"
-  ).innerText =
+  document
+    .getElementById(
+      "documentsEmployeeName"
+    )
+    .innerText =
     "📁 وثائق الموظف — " +
     employee.name;
 
@@ -1979,9 +2621,10 @@ function openDocumentsModal(id){
   ];
 
   const container =
-    document.getElementById(
-      "documentsContent"
-    );
+    document
+      .getElementById(
+        "documentsContent"
+      );
 
   container.innerHTML = `
 
@@ -2004,25 +2647,25 @@ function openDocumentsModal(id){
       </div>
 
     </div>
-
   `;
 
   documents.forEach(
     documentItem => {
 
       const status =
-        VAREX.getDocumentStatus(
-          documentItem.expiry
-        );
+        VAREX
+          .getDocumentStatus(
+            documentItem.expiry
+          );
 
       let statusClass =
         "doc-ok";
 
       if(
         status.level ===
-        "notice" ||
+          "notice" ||
         status.level ===
-        "warning"
+          "warning"
       ){
         statusClass =
           "doc-warning";
@@ -2059,6 +2702,7 @@ function openDocumentsModal(id){
           </span>
 
           <strong>
+
             ${
               documentItem.file
                 ? escapeHTML(
@@ -2066,6 +2710,7 @@ function openDocumentsModal(id){
                   )
                 : "غير مرفق"
             }
+
           </strong>
 
         </div>
@@ -2077,6 +2722,7 @@ function openDocumentsModal(id){
           </span>
 
           <strong>
+
             ${
               documentItem.expiry
                 ? escapeHTML(
@@ -2084,6 +2730,7 @@ function openDocumentsModal(id){
                   )
                 : "غير محدد"
             }
+
           </strong>
 
         </div>
@@ -2103,37 +2750,35 @@ function openDocumentsModal(id){
           </strong>
 
         </div>
-
       `;
 
       container.appendChild(
         card
       );
-
     }
   );
 
-  document.getElementById(
-    "documentsModal"
-  ).style.display =
+  document
+    .getElementById(
+      "documentsModal"
+    )
+    .style.display =
     "flex";
 }
 
-/* =========================
-   إغلاق نافذة الوثائق
-   ========================= */
-
 function closeDocumentsModal(){
 
-  document.getElementById(
-    "documentsModal"
-  ).style.display =
+  document
+    .getElementById(
+      "documentsModal"
+    )
+    .style.display =
     "none";
 }
 
 /* =========================
-   حماية النصوص
-   ========================= */
+   ESCAPE HTML
+========================= */
 
 function escapeHTML(value){
 
@@ -2151,8 +2796,8 @@ function escapeHTML(value){
 }
 
 /* =========================
-   إغلاق النوافذ من الخارج
-   ========================= */
+   CLOSE MODALS OUTSIDE
+========================= */
 
 window.addEventListener(
   "click",
@@ -2181,20 +2826,17 @@ window.addEventListener(
     ){
       closeDocumentsModal();
     }
-
   }
 );
 
 /* =========================
-   تشغيل الصفحة
-   ========================= */
+   START
+========================= */
 
 renderEmployees();
-
 renderDocumentAlerts();
 
 </script>
 
 </body>
-
 </html>

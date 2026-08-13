@@ -1,0 +1,2066 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>المنتجات والمخزون - VAREX</title>
+
+<style>
+*{
+  box-sizing:border-box;
+  margin:0;
+  padding:0;
+}
+
+:root{
+  --navy:#172554;
+  --navy-dark:#0f1d43;
+  --blue:#2563eb;
+  --bg:#f4f6fb;
+  --white:#ffffff;
+  --border:#e5eaf2;
+  --text:#172554;
+  --muted:#64748b;
+  --green:#15803d;
+  --red:#b91c1c;
+  --orange:#d97706;
+  --purple:#7c3aed;
+}
+
+body{
+  font-family:Arial,sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  min-height:100vh;
+}
+
+/* =========================
+   SIDEBAR
+========================= */
+
+.sidebar{
+  position:fixed;
+  right:0;
+  top:0;
+  bottom:0;
+  width:230px;
+  background:linear-gradient(
+    180deg,
+    #172554,
+    #0f1d43
+  );
+  color:white;
+  z-index:100;
+  display:flex;
+  flex-direction:column;
+}
+
+.brand{
+  padding:26px 22px 18px;
+  border-bottom:1px solid rgba(255,255,255,.10);
+}
+
+.logo{
+  font-size:29px;
+  font-weight:800;
+  letter-spacing:4px;
+}
+
+.brand-small{
+  font-size:11px;
+  color:#cbd5e1;
+  margin-top:6px;
+}
+
+.system-status{
+  margin-top:13px;
+  display:flex;
+  align-items:center;
+  gap:7px;
+  font-size:11px;
+  color:#d1fae5;
+}
+
+.status-dot{
+  width:8px;
+  height:8px;
+  border-radius:50%;
+  background:#22c55e;
+  box-shadow:0 0 8px rgba(34,197,94,.8);
+  flex-shrink:0;
+}
+
+.nav{
+  padding:18px 12px;
+  flex:1;
+}
+
+.nav a{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  color:#dbeafe;
+  text-decoration:none;
+  padding:12px 14px;
+  border-radius:10px;
+  margin-bottom:5px;
+  font-size:14px;
+  transition:.2s;
+}
+
+.nav a:hover{
+  background:rgba(255,255,255,.08);
+  color:white;
+}
+
+.nav a.active{
+  background:white;
+  color:var(--navy);
+  font-weight:bold;
+  box-shadow:0 5px 15px rgba(0,0,0,.15);
+}
+
+.nav-icon{
+  width:24px;
+  text-align:center;
+}
+
+.sidebar-footer{
+  padding:17px;
+  border-top:1px solid rgba(255,255,255,.10);
+  color:#94a3b8;
+  font-size:11px;
+  text-align:center;
+}
+
+/* =========================
+   MAIN
+========================= */
+
+.main{
+  margin-right:230px;
+  min-height:100vh;
+}
+
+/* =========================
+   TOPBAR
+========================= */
+
+.topbar{
+  height:76px;
+  background:white;
+  border-bottom:1px solid var(--border);
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:0 28px;
+  position:sticky;
+  top:0;
+  z-index:50;
+}
+
+.page-name{
+  display:flex;
+  align-items:center;
+  gap:12px;
+}
+
+.page-icon{
+  width:43px;
+  height:43px;
+  border-radius:12px;
+  background:#eef2ff;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:21px;
+}
+
+.page-name h2{
+  font-size:18px;
+}
+
+.page-name small{
+  display:block;
+  color:var(--muted);
+  margin-top:4px;
+}
+
+.top-info{
+  display:flex;
+  align-items:center;
+  gap:12px;
+}
+
+.info-chip{
+  background:#f8fafc;
+  border:1px solid var(--border);
+  border-radius:10px;
+  padding:9px 13px;
+  font-size:12px;
+  color:var(--muted);
+}
+
+.info-chip strong{
+  color:var(--navy);
+}
+
+/* =========================
+   CONTENT
+========================= */
+
+.content{
+  width:95%;
+  max-width:1500px;
+  margin:24px auto 40px;
+}
+
+.hero{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:15px;
+  margin-bottom:18px;
+}
+
+.hero h1{
+  font-size:25px;
+  margin-bottom:6px;
+}
+
+.hero p{
+  color:var(--muted);
+  font-size:13px;
+}
+
+/* =========================
+   BUTTONS
+========================= */
+
+button{
+  border:0;
+  border-radius:9px;
+  cursor:pointer;
+  font-family:inherit;
+}
+
+.primary{
+  background:linear-gradient(
+    135deg,
+    #172554,
+    #1e3a8a
+  );
+  color:white;
+  padding:12px 18px;
+  font-weight:bold;
+  box-shadow:0 5px 14px rgba(23,37,84,.16);
+}
+
+.secondary{
+  background:#e5e7eb;
+  color:#111827;
+  padding:11px 16px;
+}
+
+.edit{
+  background:#e0e7ff;
+  color:#172554;
+  padding:7px 10px;
+}
+
+.delete{
+  background:#fee2e2;
+  color:#991b1b;
+  padding:7px 10px;
+}
+
+.stock-btn{
+  background:#ecfeff;
+  color:#155e75;
+  padding:7px 10px;
+}
+
+/* =========================
+   STATS
+========================= */
+
+.stats{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:14px;
+  margin-bottom:18px;
+}
+
+.stat{
+  background:white;
+  border:1px solid var(--border);
+  border-radius:14px;
+  padding:17px 18px;
+  box-shadow:0 3px 12px rgba(15,23,42,.04);
+}
+
+.stat-top{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  margin-bottom:10px;
+}
+
+.stat-label{
+  font-size:12px;
+  color:var(--muted);
+}
+
+.stat-icon{
+  width:36px;
+  height:36px;
+  border-radius:10px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:17px;
+}
+
+.products-stat .stat-icon{
+  background:#eef2ff;
+}
+
+.quantity-stat .stat-icon{
+  background:#ecfdf5;
+}
+
+.value-stat .stat-icon{
+  background:#eff6ff;
+}
+
+.low-stat .stat-icon{
+  background:#fef2f2;
+}
+
+.stat-value{
+  font-size:22px;
+  font-weight:bold;
+}
+
+.products-stat .stat-value{
+  color:var(--navy);
+}
+
+.quantity-stat .stat-value{
+  color:var(--green);
+}
+
+.value-stat .stat-value{
+  color:var(--blue);
+}
+
+.low-stat .stat-value{
+  color:var(--red);
+}
+
+.stat-small{
+  color:#94a3b8;
+  font-size:11px;
+  margin-top:5px;
+}
+
+/* =========================
+   PANEL
+========================= */
+
+.panel{
+  background:white;
+  border:1px solid var(--border);
+  border-radius:16px;
+  box-shadow:0 4px 18px rgba(15,23,42,.05);
+  overflow:hidden;
+}
+
+.panel-head{
+  padding:18px 20px;
+  border-bottom:1px solid var(--border);
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+
+.panel-head h3{
+  font-size:16px;
+}
+
+.panel-head span{
+  font-size:11px;
+  color:var(--muted);
+}
+
+/* =========================
+   TOOLBAR
+========================= */
+
+.toolbar{
+  padding:15px 20px;
+  background:#fbfdff;
+  border-bottom:1px solid var(--border);
+  display:flex;
+  gap:9px;
+  flex-wrap:wrap;
+}
+
+input,
+select{
+  padding:11px;
+  border:1px solid #dbe1ea;
+  border-radius:9px;
+  font-size:13px;
+  outline:none;
+  background:white;
+  font-family:inherit;
+}
+
+input:focus,
+select:focus{
+  border-color:#94a3b8;
+  box-shadow:0 0 0 3px rgba(37,99,235,.05);
+}
+
+.search{
+  flex:1;
+  min-width:250px;
+}
+
+/* =========================
+   TABLE
+========================= */
+
+.table-wrap{
+  overflow-x:auto;
+}
+
+table{
+  width:100%;
+  border-collapse:collapse;
+  min-width:1050px;
+}
+
+th,
+td{
+  padding:13px 10px;
+  text-align:right;
+  border-bottom:1px solid #edf0f5;
+  vertical-align:middle;
+  font-size:12px;
+}
+
+th{
+  background:#f8fafc;
+  color:#475569;
+  white-space:nowrap;
+}
+
+tbody tr:hover{
+  background:#fbfdff;
+}
+
+.product-name{
+  font-weight:bold;
+  color:var(--navy);
+}
+
+.stock-badge{
+  display:inline-block;
+  padding:5px 10px;
+  border-radius:20px;
+  font-size:10px;
+  font-weight:bold;
+}
+
+.stock-ok{
+  background:#ecfdf5;
+  color:#15803d;
+}
+
+.stock-low{
+  background:#fff7ed;
+  color:#c2410c;
+}
+
+.stock-zero{
+  background:#fef2f2;
+  color:#b91c1c;
+}
+
+.empty{
+  text-align:center;
+  color:var(--muted);
+  padding:35px;
+}
+
+/* =========================
+   MODAL
+========================= */
+
+.modal{
+  display:none;
+  position:fixed;
+  inset:0;
+  background:rgba(15,23,42,.55);
+  align-items:center;
+  justify-content:center;
+  padding:15px;
+  z-index:1000;
+}
+
+.modal-box{
+  background:white;
+  width:100%;
+  max-width:720px;
+  border-radius:16px;
+  padding:24px;
+  max-height:92vh;
+  overflow-y:auto;
+  box-shadow:0 20px 50px rgba(0,0,0,.20);
+}
+
+.modal-header{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  margin-bottom:18px;
+}
+
+.modal-header h2{
+  font-size:19px;
+}
+
+.close{
+  font-size:25px;
+  cursor:pointer;
+  color:#64748b;
+}
+
+.form-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:12px;
+}
+
+.form-grid input,
+.form-grid select{
+  width:100%;
+}
+
+.full{
+  grid-column:1/-1;
+}
+
+.field label{
+  display:block;
+  color:#475569;
+  font-size:12px;
+  margin-bottom:6px;
+}
+
+.form-actions{
+  display:flex;
+  gap:10px;
+  margin-top:18px;
+}
+
+/* =========================
+   STOCK MODAL
+========================= */
+
+.stock-product{
+  background:#f8fafc;
+  border:1px solid var(--border);
+  border-radius:12px;
+  padding:15px;
+  margin-bottom:15px;
+}
+
+.stock-product strong{
+  display:block;
+  margin-bottom:6px;
+}
+
+.stock-product span{
+  color:var(--muted);
+  font-size:12px;
+}
+
+/* =========================
+   RESPONSIVE
+========================= */
+
+@media(max-width:1100px){
+
+  .sidebar{
+    width:200px;
+  }
+
+  .main{
+    margin-right:200px;
+  }
+
+  .stats{
+    grid-template-columns:repeat(2,1fr);
+  }
+}
+
+@media(max-width:850px){
+
+  .sidebar{
+    position:relative;
+    width:100%;
+    height:auto;
+  }
+
+  .brand{
+    padding:17px 20px;
+  }
+
+  .nav{
+    display:flex;
+    overflow-x:auto;
+    padding:8px 10px 12px;
+  }
+
+  .nav a{
+    white-space:nowrap;
+    margin:0 3px;
+  }
+
+  .sidebar-footer{
+    display:none;
+  }
+
+  .main{
+    margin-right:0;
+  }
+
+  .topbar{
+    position:relative;
+    padding:0 16px;
+  }
+}
+
+@media(max-width:650px){
+
+  .content{
+    width:94%;
+  }
+
+  .top-info{
+    display:none;
+  }
+
+  .hero{
+    flex-direction:column;
+    align-items:flex-start;
+  }
+
+  .form-grid{
+    grid-template-columns:1fr;
+  }
+
+  .full{
+    grid-column:auto;
+  }
+
+  .stats{
+    grid-template-columns:1fr 1fr;
+  }
+}
+
+@media(max-width:420px){
+
+  .stats{
+    grid-template-columns:1fr;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<!-- =========================
+     SIDEBAR
+========================= -->
+
+<aside class="sidebar">
+
+<div class="brand">
+
+<div class="logo">
+VAREX
+</div>
+
+<div class="brand-small">
+BUSINESS MANAGEMENT SYSTEM
+</div>
+
+<div class="system-status">
+<span class="status-dot"></span>
+<span>
+النظام متصل وجاهز للعمل
+</span>
+</div>
+
+</div>
+
+<nav class="nav">
+
+<a href="index.html">
+<span class="nav-icon">▦</span>
+لوحة التحكم
+</a>
+
+<a href="pos.html">
+<span class="nav-icon">🛒</span>
+نقطة البيع
+</a>
+
+<a
+  href="products.html"
+  class="active"
+>
+<span class="nav-icon">📦</span>
+المنتجات والمخزون
+</a>
+
+<a href="customers.html">
+<span class="nav-icon">👥</span>
+العملاء
+</a>
+
+<a href="suppliers.html">
+<span class="nav-icon">🚚</span>
+الموردون
+</a>
+
+<a href="accounts.html">
+<span class="nav-icon">💰</span>
+الحسابات
+</a>
+
+<a href="employees.html">
+<span class="nav-icon">👤</span>
+الموظفون
+</a>
+
+<a href="reports.html">
+<span class="nav-icon">📊</span>
+التقارير
+</a>
+
+<a href="setting.html">
+<span class="nav-icon">⚙️</span>
+الإعدادات
+</a>
+
+</nav>
+
+<div class="sidebar-footer">
+VAREX BUSINESS SYSTEM
+</div>
+
+</aside>
+
+<!-- =========================
+     MAIN
+========================= -->
+
+<div class="main">
+
+<header class="topbar">
+
+<div class="page-name">
+
+<div class="page-icon">
+📦
+</div>
+
+<div>
+<h2>
+المنتجات والمخزون
+</h2>
+
+<small>
+VAREX INVENTORY
+</small>
+</div>
+
+</div>
+
+<div class="top-info">
+
+<div class="info-chip">
+المستخدم:
+<strong>
+المستخدم الحالي
+</strong>
+</div>
+
+<div
+  class="info-chip"
+  id="currentDate"
+>
+—
+</div>
+
+<div
+  class="info-chip"
+  id="currentTime"
+>
+—
+</div>
+
+</div>
+
+</header>
+
+<main class="content">
+
+<section class="hero">
+
+<div>
+
+<h1>
+إدارة المنتجات والمخزون
+</h1>
+
+<p>
+إدارة المنتجات والكميات والأسعار ومراقبة مستوى المخزون
+</p>
+
+</div>
+
+<button
+  class="primary"
+  onclick="openProductModal()"
+>
+＋ إضافة منتج
+</button>
+
+</section>
+
+<!-- =========================
+     STATS
+========================= -->
+
+<section class="stats">
+
+<div class="stat products-stat">
+
+<div class="stat-top">
+
+<div class="stat-label">
+إجمالي المنتجات
+</div>
+
+<div class="stat-icon">
+📦
+</div>
+
+</div>
+
+<div
+  class="stat-value"
+  id="totalProducts"
+>
+0
+</div>
+
+<div class="stat-small">
+عدد المنتجات المسجلة
+</div>
+
+</div>
+
+<div class="stat quantity-stat">
+
+<div class="stat-top">
+
+<div class="stat-label">
+إجمالي كمية المخزون
+</div>
+
+<div class="stat-icon">
+▦
+</div>
+
+</div>
+
+<div
+  class="stat-value"
+  id="totalQuantity"
+>
+0
+</div>
+
+<div class="stat-small">
+إجمالي الوحدات المتوفرة
+</div>
+
+</div>
+
+<div class="stat value-stat">
+
+<div class="stat-top">
+
+<div class="stat-label">
+قيمة المخزون
+</div>
+
+<div class="stat-icon">
+💰
+</div>
+
+</div>
+
+<div
+  class="stat-value"
+  id="inventoryValue"
+>
+0.00 د.إ
+</div>
+
+<div class="stat-small">
+حسب تكلفة شراء المنتجات
+</div>
+
+</div>
+
+<div class="stat low-stat">
+
+<div class="stat-top">
+
+<div class="stat-label">
+مخزون منخفض
+</div>
+
+<div class="stat-icon">
+⚠️
+</div>
+
+</div>
+
+<div
+  class="stat-value"
+  id="lowStockCount"
+>
+0
+</div>
+
+<div class="stat-small">
+منتجات تحتاج إعادة طلب
+</div>
+
+</div>
+
+</section>
+
+<!-- =========================
+     PRODUCTS PANEL
+========================= -->
+
+<section class="panel">
+
+<div class="panel-head">
+
+<h3>
+قائمة المنتجات
+</h3>
+
+<span>
+المنتجات والأسعار والكميات الحالية
+</span>
+
+</div>
+
+<div class="toolbar">
+
+<input
+  id="search"
+  class="search"
+  placeholder="🔍 ابحث باسم المنتج أو الباركود أو التصنيف"
+  oninput="renderProducts()"
+>
+
+<select
+  id="stockFilter"
+  onchange="renderProducts()"
+>
+
+<option value="">
+كل المخزون
+</option>
+
+<option value="available">
+متوفر
+</option>
+
+<option value="low">
+مخزون منخفض
+</option>
+
+<option value="zero">
+نفد المخزون
+</option>
+
+</select>
+
+</div>
+
+<div class="table-wrap">
+
+<table>
+
+<thead>
+
+<tr>
+<th>#</th>
+<th>اسم المنتج</th>
+<th>الباركود</th>
+<th>التصنيف</th>
+<th>التكلفة</th>
+<th>سعر البيع</th>
+<th>الكمية</th>
+<th>الحد الأدنى</th>
+<th>المورد</th>
+<th>حالة المخزون</th>
+<th>الإجراءات</th>
+</tr>
+
+</thead>
+
+<tbody id="productTable">
+</tbody>
+
+</table>
+
+<div
+  id="emptyMessage"
+  class="empty"
+>
+لا توجد منتجات حتى الآن
+</div>
+
+</div>
+
+</section>
+
+</main>
+</div>
+
+<!-- =========================
+     ADD / EDIT PRODUCT
+========================= -->
+
+<div
+  class="modal"
+  id="productModal"
+>
+
+<div class="modal-box">
+
+<div class="modal-header">
+
+<h2 id="modalTitle">
+إضافة منتج جديد
+</h2>
+
+<span
+  class="close"
+  onclick="closeProductModal()"
+>
+×
+</span>
+
+</div>
+
+<div class="form-grid">
+
+<input
+  id="productName"
+  placeholder="اسم المنتج"
+>
+
+<input
+  id="barcode"
+  placeholder="الباركود / SKU"
+>
+
+<input
+  id="category"
+  placeholder="التصنيف"
+>
+
+<input
+  id="supplier"
+  placeholder="المورد"
+>
+
+<div class="field">
+
+<label>
+تكلفة الشراء
+</label>
+
+<input
+  id="cost"
+  type="number"
+  min="0"
+  step="0.01"
+  placeholder="0.00"
+>
+
+</div>
+
+<div class="field">
+
+<label>
+سعر البيع
+</label>
+
+<input
+  id="price"
+  type="number"
+  min="0"
+  step="0.01"
+  placeholder="0.00"
+>
+
+</div>
+
+<div class="field">
+
+<label>
+الكمية الحالية
+</label>
+
+<input
+  id="quantity"
+  type="number"
+  min="0"
+  step="1"
+  placeholder="0"
+>
+
+</div>
+
+<div class="field">
+
+<label>
+الحد الأدنى للمخزون
+</label>
+
+<input
+  id="minimumStock"
+  type="number"
+  min="0"
+  step="1"
+  placeholder="0"
+>
+
+</div>
+
+</div>
+
+<div class="form-actions">
+
+<button
+  class="primary"
+  onclick="saveProduct()"
+>
+حفظ المنتج
+</button>
+
+<button
+  class="secondary"
+  onclick="closeProductModal()"
+>
+إلغاء
+</button>
+
+</div>
+
+</div>
+</div>
+
+<!-- =========================
+     STOCK MODAL
+========================= -->
+
+<div
+  class="modal"
+  id="stockModal"
+>
+
+<div class="modal-box">
+
+<div class="modal-header">
+
+<h2>
+تعديل كمية المخزون
+</h2>
+
+<span
+  class="close"
+  onclick="closeStockModal()"
+>
+×
+</span>
+
+</div>
+
+<div
+  class="stock-product"
+  id="stockProductInfo"
+>
+</div>
+
+<div class="form-grid">
+
+<select id="stockAction">
+
+<option value="add">
+إضافة كمية
+</option>
+
+<option value="remove">
+خصم كمية
+</option>
+
+</select>
+
+<input
+  id="stockAmount"
+  type="number"
+  min="1"
+  step="1"
+  placeholder="الكمية"
+>
+
+</div>
+
+<div class="form-actions">
+
+<button
+  class="primary"
+  onclick="saveStockChange()"
+>
+حفظ التعديل
+</button>
+
+<button
+  class="secondary"
+  onclick="closeStockModal()"
+>
+إلغاء
+</button>
+
+</div>
+
+</div>
+</div>
+
+<script src="varex.js"></script>
+
+<script>
+
+let editingProductId = null;
+let stockProductId = null;
+
+/* =========================
+   CLOCK
+========================= */
+
+function updateClock(){
+
+  const now =
+    new Date();
+
+  document.getElementById(
+    "currentDate"
+  ).innerText =
+    now.toLocaleDateString(
+      "ar-AE",
+      {
+        year:"numeric",
+        month:"2-digit",
+        day:"2-digit"
+      }
+    );
+
+  document.getElementById(
+    "currentTime"
+  ).innerText =
+    now.toLocaleTimeString(
+      "ar-AE",
+      {
+        hour:"2-digit",
+        minute:"2-digit",
+        second:"2-digit"
+      }
+    );
+}
+
+updateClock();
+
+setInterval(
+  updateClock,
+  1000
+);
+
+/* =========================
+   OPEN PRODUCT
+========================= */
+
+function openProductModal(id = null){
+
+  editingProductId = id;
+
+  clearProductForm();
+
+  if(id === null){
+
+    document.getElementById(
+      "modalTitle"
+    ).innerText =
+      "إضافة منتج جديد";
+
+  }else{
+
+    const product =
+      VAREX.findProduct(id);
+
+    if(!product){
+      return;
+    }
+
+    document.getElementById(
+      "modalTitle"
+    ).innerText =
+      "تعديل المنتج";
+
+    document.getElementById(
+      "productName"
+    ).value =
+      product.name || "";
+
+    document.getElementById(
+      "barcode"
+    ).value =
+      product.barcode || "";
+
+    document.getElementById(
+      "category"
+    ).value =
+      product.category || "";
+
+    document.getElementById(
+      "supplier"
+    ).value =
+      product.supplier || "";
+
+    document.getElementById(
+      "cost"
+    ).value =
+      product.cost || 0;
+
+    document.getElementById(
+      "price"
+    ).value =
+      product.price || 0;
+
+    document.getElementById(
+      "quantity"
+    ).value =
+      product.quantity || 0;
+
+    document.getElementById(
+      "minimumStock"
+    ).value =
+      product.minimumStock || 0;
+  }
+
+  document.getElementById(
+    "productModal"
+  ).style.display =
+    "flex";
+}
+
+/* =========================
+   CLOSE PRODUCT
+========================= */
+
+function closeProductModal(){
+
+  document.getElementById(
+    "productModal"
+  ).style.display =
+    "none";
+
+  editingProductId =
+    null;
+}
+
+/* =========================
+   CLEAR PRODUCT
+========================= */
+
+function clearProductForm(){
+
+  [
+    "productName",
+    "barcode",
+    "category",
+    "supplier",
+    "cost",
+    "price",
+    "quantity",
+    "minimumStock"
+  ].forEach(id => {
+
+    document.getElementById(
+      id
+    ).value = "";
+  });
+}
+
+/* =========================
+   SAVE PRODUCT
+========================= */
+
+function saveProduct(){
+
+  const name =
+    document.getElementById(
+      "productName"
+    ).value.trim();
+
+  if(!name){
+
+    alert(
+      "يرجى إدخال اسم المنتج"
+    );
+
+    return;
+  }
+
+  const cost =
+    Number(
+      document.getElementById(
+        "cost"
+      ).value
+    ) || 0;
+
+  const price =
+    Number(
+      document.getElementById(
+        "price"
+      ).value
+    ) || 0;
+
+  const quantity =
+    Number(
+      document.getElementById(
+        "quantity"
+      ).value
+    ) || 0;
+
+  const minimumStock =
+    Number(
+      document.getElementById(
+        "minimumStock"
+      ).value
+    ) || 0;
+
+  if(
+    cost < 0 ||
+    price < 0 ||
+    quantity < 0 ||
+    minimumStock < 0
+  ){
+
+    alert(
+      "لا يمكن إدخال قيم سالبة"
+    );
+
+    return;
+  }
+
+  const productData = {
+
+    name,
+
+    barcode:
+      document.getElementById(
+        "barcode"
+      ).value.trim(),
+
+    category:
+      document.getElementById(
+        "category"
+      ).value.trim(),
+
+    supplier:
+      document.getElementById(
+        "supplier"
+      ).value.trim(),
+
+    cost,
+
+    price,
+
+    quantity,
+
+    minimumStock
+  };
+
+  if(editingProductId === null){
+
+    VAREX.addProduct(
+      productData
+    );
+
+  }else{
+
+    VAREX.updateProduct(
+      editingProductId,
+      productData
+    );
+  }
+
+  closeProductModal();
+
+  renderProducts();
+}
+
+/* =========================
+   DELETE PRODUCT
+========================= */
+
+function deleteProduct(id){
+
+  const product =
+    VAREX.findProduct(id);
+
+  if(!product){
+    return;
+  }
+
+  if(
+    !confirm(
+      "هل تريد حذف المنتج " +
+      product.name +
+      "؟"
+    )
+  ){
+    return;
+  }
+
+  const products =
+    VAREX
+      .getProducts()
+      .filter(
+        item =>
+          String(item.id) !==
+          String(id)
+      );
+
+  VAREX.saveProducts(
+    products
+  );
+
+  renderProducts();
+}
+
+/* =========================
+   OPEN STOCK
+========================= */
+
+function openStockModal(id){
+
+  const product =
+    VAREX.findProduct(id);
+
+  if(!product){
+    return;
+  }
+
+  stockProductId =
+    id;
+
+  document.getElementById(
+    "stockAction"
+  ).value =
+    "add";
+
+  document.getElementById(
+    "stockAmount"
+  ).value =
+    "";
+
+  document.getElementById(
+    "stockProductInfo"
+  ).innerHTML = `
+
+    <strong>
+      ${escapeHTML(
+        product.name
+      )}
+    </strong>
+
+    <span>
+      الكمية الحالية:
+      ${Number(
+        product.quantity || 0
+      )}
+    </span>
+  `;
+
+  document.getElementById(
+    "stockModal"
+  ).style.display =
+    "flex";
+}
+
+function closeStockModal(){
+
+  document.getElementById(
+    "stockModal"
+  ).style.display =
+    "none";
+
+  stockProductId =
+    null;
+}
+
+/* =========================
+   SAVE STOCK
+========================= */
+
+function saveStockChange(){
+
+  if(stockProductId === null){
+    return;
+  }
+
+  const amount =
+    Number(
+      document.getElementById(
+        "stockAmount"
+      ).value
+    );
+
+  if(
+    !amount ||
+    amount <= 0
+  ){
+
+    alert(
+      "يرجى إدخال كمية صحيحة"
+    );
+
+    return;
+  }
+
+  const action =
+    document.getElementById(
+      "stockAction"
+    ).value;
+
+  const change =
+    action === "remove"
+      ? -amount
+      : amount;
+
+  const result =
+    VAREX.changeStock(
+      stockProductId,
+      change
+    );
+
+  if(!result){
+
+    alert(
+      "لا يمكن خصم هذه الكمية. الكمية المتوفرة غير كافية."
+    );
+
+    return;
+  }
+
+  closeStockModal();
+
+  renderProducts();
+}
+
+/* =========================
+   STOCK STATUS
+========================= */
+
+function getStockStatus(product){
+
+  const quantity =
+    Number(
+      product.quantity || 0
+    );
+
+  const minimum =
+    Number(
+      product.minimumStock || 0
+    );
+
+  if(quantity <= 0){
+
+    return {
+      text:"نفد المخزون",
+      className:"stock-zero"
+    };
+  }
+
+  if(quantity <= minimum){
+
+    return {
+      text:"مخزون منخفض",
+      className:"stock-low"
+    };
+  }
+
+  return {
+    text:"متوفر",
+    className:"stock-ok"
+  };
+}
+
+/* =========================
+   STATS
+========================= */
+
+function updateStats(){
+
+  const products =
+    VAREX.getProducts();
+
+  const quantity =
+    products.reduce(
+      (sum,product) =>
+        sum +
+        Number(
+          product.quantity || 0
+        ),
+      0
+    );
+
+  const value =
+    products.reduce(
+      (sum,product) =>
+        sum +
+        (
+          Number(
+            product.cost || 0
+          ) *
+          Number(
+            product.quantity || 0
+          )
+        ),
+      0
+    );
+
+  const low =
+    VAREX
+      .getLowStockProducts()
+      .length;
+
+  document.getElementById(
+    "totalProducts"
+  ).innerText =
+    products.length;
+
+  document.getElementById(
+    "totalQuantity"
+  ).innerText =
+    quantity;
+
+  document.getElementById(
+    "inventoryValue"
+  ).innerText =
+    VAREX.money(value);
+
+  document.getElementById(
+    "lowStockCount"
+  ).innerText =
+    low;
+}
+
+/* =========================
+   RENDER PRODUCTS
+========================= */
+
+function renderProducts(){
+
+  const products =
+    VAREX.getProducts();
+
+  const table =
+    document.getElementById(
+      "productTable"
+    );
+
+  const search =
+    document.getElementById(
+      "search"
+    ).value
+      .trim()
+      .toLowerCase();
+
+  const stockFilter =
+    document.getElementById(
+      "stockFilter"
+    ).value;
+
+  table.innerHTML =
+    "";
+
+  let visible =
+    0;
+
+  products.forEach(
+    product => {
+
+      const searchable =
+        (
+          (product.name || "") +
+          " " +
+          (product.barcode || "") +
+          " " +
+          (product.category || "") +
+          " " +
+          (product.supplier || "")
+        ).toLowerCase();
+
+      if(
+        !searchable.includes(
+          search
+        )
+      ){
+        return;
+      }
+
+      const quantity =
+        Number(
+          product.quantity || 0
+        );
+
+      const minimum =
+        Number(
+          product.minimumStock || 0
+        );
+
+      if(
+        stockFilter ===
+          "zero" &&
+        quantity > 0
+      ){
+        return;
+      }
+
+      if(
+        stockFilter ===
+          "low" &&
+        (
+          quantity <= 0 ||
+          quantity > minimum
+        )
+      ){
+        return;
+      }
+
+      if(
+        stockFilter ===
+          "available" &&
+        quantity <= minimum
+      ){
+        return;
+      }
+
+      visible++;
+
+      const stock =
+        getStockStatus(
+          product
+        );
+
+      const row =
+        document.createElement(
+          "tr"
+        );
+
+      row.innerHTML = `
+
+        <td>
+          ${visible}
+        </td>
+
+        <td class="product-name">
+          ${escapeHTML(
+            product.name || "-"
+          )}
+        </td>
+
+        <td>
+          ${escapeHTML(
+            product.barcode || "-"
+          )}
+        </td>
+
+        <td>
+          ${escapeHTML(
+            product.category || "-"
+          )}
+        </td>
+
+        <td>
+          ${VAREX.money(
+            product.cost
+          )}
+        </td>
+
+        <td>
+          ${VAREX.money(
+            product.price
+          )}
+        </td>
+
+        <td>
+          ${quantity}
+        </td>
+
+        <td>
+          ${minimum}
+        </td>
+
+        <td>
+          ${escapeHTML(
+            product.supplier || "-"
+          )}
+        </td>
+
+        <td>
+
+          <span
+            class="stock-badge ${stock.className}"
+          >
+            ${stock.text}
+          </span>
+
+        </td>
+
+        <td>
+
+          <button
+            class="stock-btn"
+            onclick="openStockModal('${product.id}')"
+          >
+            المخزون
+          </button>
+
+          <button
+            class="edit"
+            onclick="openProductModal('${product.id}')"
+          >
+            تعديل
+          </button>
+
+          <button
+            class="delete"
+            onclick="deleteProduct('${product.id}')"
+          >
+            حذف
+          </button>
+
+        </td>
+      `;
+
+      table.appendChild(
+        row
+      );
+    }
+  );
+
+  document.getElementById(
+    "emptyMessage"
+  ).style.display =
+    visible === 0
+      ? "block"
+      : "none";
+
+  updateStats();
+}
+
+/* =========================
+   ESCAPE HTML
+========================= */
+
+function escapeHTML(value){
+
+  const div =
+    document.createElement(
+      "div"
+    );
+
+  div.textContent =
+    value == null
+      ? ""
+      : String(value);
+
+  return div.innerHTML;
+}
+
+/* =========================
+   CLOSE OUTSIDE
+========================= */
+
+window.addEventListener(
+  "click",
+  function(event){
+
+    const productModal =
+      document.getElementById(
+        "productModal"
+      );
+
+    const stockModal =
+      document.getElementById(
+        "stockModal"
+      );
+
+    if(
+      event.target ===
+      productModal
+    ){
+      closeProductModal();
+    }
+
+    if(
+      event.target ===
+      stockModal
+    ){
+      closeStockModal();
+    }
+  }
+);
+
+/* =========================
+   START
+========================= */
+
+renderProducts();
+
+</script>
+
+</body>
+</html>

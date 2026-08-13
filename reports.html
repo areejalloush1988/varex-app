@@ -1,182 +1,450 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
-
 <head>
-
 <meta charset="UTF-8">
-
-<meta
-  name="viewport"
-  content="width=device-width, initial-scale=1.0"
->
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <title>التقارير - VAREX</title>
 
 <style>
-
 *{
   box-sizing:border-box;
+  margin:0;
+  padding:0;
+}
+
+:root{
+  --navy:#172554;
+  --navy-dark:#0f1d43;
+  --blue:#2563eb;
+  --bg:#f4f6fb;
+  --white:#ffffff;
+  --border:#e5eaf2;
+  --text:#172554;
+  --muted:#64748b;
+  --green:#15803d;
+  --red:#b91c1c;
+  --orange:#d97706;
+  --purple:#7c3aed;
+  --cyan:#0891b2;
 }
 
 body{
-  margin:0;
   font-family:Arial,sans-serif;
-  background:#f4f6fb;
-  color:#172554;
+  background:var(--bg);
+  color:var(--text);
+  min-height:100vh;
 }
 
-header{
-  background:#172554;
+/* =========================
+   SIDEBAR
+========================= */
+
+.sidebar{
+  position:fixed;
+  right:0;
+  top:0;
+  bottom:0;
+  width:230px;
+  background:linear-gradient(180deg,#172554,#0f1d43);
   color:white;
-  padding:18px 5%;
+  z-index:100;
+  display:flex;
+  flex-direction:column;
+}
+
+.brand{
+  padding:26px 22px 18px;
+  border-bottom:1px solid rgba(255,255,255,.10);
+}
+
+.logo{
+  font-size:29px;
+  font-weight:800;
+  letter-spacing:4px;
+}
+
+.brand-small{
+  font-size:11px;
+  color:#cbd5e1;
+  margin-top:6px;
+}
+
+.system-status{
+  margin-top:13px;
+  display:flex;
+  align-items:center;
+  gap:7px;
+  font-size:11px;
+  color:#d1fae5;
+}
+
+.status-dot{
+  width:8px;
+  height:8px;
+  border-radius:50%;
+  background:#22c55e;
+  box-shadow:0 0 8px rgba(34,197,94,.8);
+  flex-shrink:0;
+}
+
+.nav{
+  padding:18px 12px;
+  flex:1;
+}
+
+.nav a{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  color:#dbeafe;
+  text-decoration:none;
+  padding:12px 14px;
+  border-radius:10px;
+  margin-bottom:5px;
+  font-size:14px;
+  transition:.2s;
+}
+
+.nav a:hover{
+  background:rgba(255,255,255,.08);
+  color:white;
+}
+
+.nav a.active{
+  background:white;
+  color:var(--navy);
+  font-weight:bold;
+  box-shadow:0 5px 15px rgba(0,0,0,.15);
+}
+
+.nav-icon{
+  width:24px;
+  text-align:center;
+}
+
+.sidebar-footer{
+  padding:17px;
+  border-top:1px solid rgba(255,255,255,.10);
+  color:#94a3b8;
+  font-size:11px;
+  text-align:center;
+}
+
+/* =========================
+   MAIN
+========================= */
+
+.main{
+  margin-right:230px;
+  min-height:100vh;
+}
+
+/* =========================
+   TOP BAR
+========================= */
+
+.topbar{
+  height:76px;
+  background:white;
+  border-bottom:1px solid var(--border);
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:0 28px;
+  position:sticky;
+  top:0;
+  z-index:50;
+}
+
+.page-name{
+  display:flex;
+  align-items:center;
+  gap:12px;
+}
+
+.page-icon{
+  width:43px;
+  height:43px;
+  border-radius:12px;
+  background:#eef2ff;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:21px;
+}
+
+.page-name h2{
+  font-size:18px;
+}
+
+.page-name small{
+  display:block;
+  color:var(--muted);
+  margin-top:4px;
+}
+
+.top-info{
+  display:flex;
+  align-items:center;
+  gap:12px;
+}
+
+.info-chip{
+  background:#f8fafc;
+  border:1px solid var(--border);
+  border-radius:10px;
+  padding:9px 13px;
+  font-size:12px;
+  color:var(--muted);
+}
+
+.info-chip strong{
+  color:var(--navy);
+}
+
+/* =========================
+   CONTENT
+========================= */
+
+.content{
+  width:95%;
+  max-width:1500px;
+  margin:24px auto 40px;
+}
+
+.hero{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:15px;
+  margin-bottom:22px;
+}
+
+.hero h1{
+  font-size:25px;
+  margin-bottom:6px;
+}
+
+.hero p{
+  color:var(--muted);
+  font-size:13px;
+}
+
+.primary{
+  border:0;
+  background:linear-gradient(135deg,#172554,#1e3a8a);
+  color:white;
+  padding:12px 18px;
+  border-radius:10px;
+  cursor:pointer;
+  font-weight:bold;
+  font-family:inherit;
+  box-shadow:0 5px 14px rgba(23,37,84,.16);
+}
+
+/* =========================
+   SECTION TITLE
+========================= */
+
+.section-title{
+  margin-top:28px;
+  margin-bottom:14px;
+  display:flex;
+  align-items:center;
+  gap:8px;
+  font-size:18px;
+}
+
+/* =========================
+   STATS
+========================= */
+
+.stats{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:14px;
+  margin-bottom:18px;
+}
+
+.stat{
+  background:white;
+  border:1px solid var(--border);
+  border-radius:14px;
+  padding:17px 18px;
+  box-shadow:0 3px 12px rgba(15,23,42,.04);
+}
+
+.stat-top{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  margin-bottom:10px;
+}
+
+.stat-label{
+  font-size:12px;
+  color:var(--muted);
+}
+
+.stat-icon{
+  width:36px;
+  height:36px;
+  border-radius:10px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+
+.stat-value{
+  font-size:22px;
+  font-weight:bold;
+}
+
+.stat-small{
+  color:#94a3b8;
+  font-size:11px;
+  margin-top:5px;
+}
+
+.sales .stat-icon{
+  background:#eff6ff;
+}
+
+.sales .stat-value{
+  color:var(--blue);
+}
+
+.profit .stat-icon{
+  background:#ecfdf5;
+}
+
+.profit .stat-value{
+  color:var(--green);
+}
+
+.expense .stat-icon{
+  background:#fef2f2;
+}
+
+.expense .stat-value{
+  color:var(--red);
+}
+
+.balance .stat-icon{
+  background:#f5f3ff;
+}
+
+.balance .stat-value{
+  color:var(--purple);
+}
+
+.inventory .stat-icon{
+  background:#ecfeff;
+}
+
+.inventory .stat-value{
+  color:var(--cyan);
+}
+
+.warning .stat-icon{
+  background:#fff7ed;
+}
+
+.warning .stat-value{
+  color:var(--orange);
+}
+
+.employee .stat-icon{
+  background:#eef2ff;
+}
+
+.employee .stat-value{
+  color:#4f46e5;
+}
+
+.alert .stat-icon{
+  background:#fef2f2;
+}
+
+.alert .stat-value{
+  color:var(--red);
+}
+
+/* =========================
+   PANEL
+========================= */
+
+.panel{
+  background:white;
+  border:1px solid var(--border);
+  border-radius:16px;
+  box-shadow:0 4px 18px rgba(15,23,42,.05);
+  overflow:hidden;
+  margin-bottom:18px;
+}
+
+.panel-head{
+  padding:18px 20px;
+  border-bottom:1px solid var(--border);
   display:flex;
   justify-content:space-between;
   align-items:center;
 }
 
-.logo{
-  font-size:25px;
-  font-weight:bold;
-  letter-spacing:2px;
+.panel-head h3{
+  font-size:16px;
 }
 
-.back{
-  color:white;
-  text-decoration:none;
+.panel-head span{
+  font-size:11px;
+  color:var(--muted);
 }
 
-.container{
-  width:94%;
-  max-width:1400px;
-  margin:30px auto;
-}
-
-h1{
-  margin-bottom:5px;
-}
-
-.subtitle{
-  color:#64748b;
-  margin-top:0;
+.panel-body{
+  padding:18px 20px;
 }
 
 /* =========================
-   SECTION
-   ========================= */
-
-.section-title{
-  margin-top:30px;
-  margin-bottom:15px;
-  display:flex;
-  align-items:center;
-  gap:8px;
-}
-
-/* =========================
-   CARDS
-   ========================= */
-
-.stats{
-  display:grid;
-  grid-template-columns:
-    repeat(4,1fr);
-  gap:15px;
-  margin-bottom:20px;
-}
-
-.card,
-.panel{
-  background:white;
-  border-radius:15px;
-  padding:20px;
-  box-shadow:
-    0 4px 18px
-    rgba(0,0,0,.06);
-}
-
-.card span{
-  color:#64748b;
-  font-size:14px;
-}
-
-.card strong{
-  display:block;
-  font-size:23px;
-  margin-top:9px;
-}
-
-.sales-card{
-  border-top:4px solid #2563eb;
-}
-
-.profit-card{
-  border-top:4px solid #16a34a;
-}
-
-.expense-card{
-  border-top:4px solid #dc2626;
-}
-
-.balance-card{
-  border-top:4px solid #7c3aed;
-}
-
-.inventory-card{
-  border-top:4px solid #0891b2;
-}
-
-.warning-card{
-  border-top:4px solid #f59e0b;
-}
-
-.employee-card{
-  border-top:4px solid #6366f1;
-}
-
-.alert-card{
-  border-top:4px solid #ef4444;
-}
-
-/* =========================
-   FINANCIAL SUMMARY
-   ========================= */
+   SUMMARY
+========================= */
 
 .summary-grid{
   display:grid;
-  grid-template-columns:
-    repeat(2,1fr);
-  gap:15px;
+  grid-template-columns:repeat(2,1fr);
+  gap:12px;
 }
 
 .summary-row{
   background:#f8fafc;
+  border:1px solid #edf0f5;
   border-radius:10px;
   padding:15px;
   display:flex;
-  justify-content:
-    space-between;
+  justify-content:space-between;
   gap:15px;
 }
 
 .summary-row span{
-  color:#64748b;
+  color:var(--muted);
+  font-size:13px;
 }
 
 .summary-row strong{
-  color:#172554;
+  color:var(--navy);
 }
 
 .positive{
-  color:#15803d !important;
+  color:var(--green)!important;
 }
 
 .negative{
-  color:#dc2626 !important;
+  color:var(--red)!important;
 }
 
 /* =========================
    ALERTS
-   ========================= */
+========================= */
 
 .alert-list{
   display:flex;
@@ -188,8 +456,7 @@ h1{
   border-radius:10px;
   padding:13px 15px;
   display:flex;
-  justify-content:
-    space-between;
+  justify-content:space-between;
   align-items:center;
   gap:15px;
 }
@@ -197,22 +464,19 @@ h1{
 .alert-danger{
   background:#fef2f2;
   color:#991b1b;
-  border-right:
-    4px solid #dc2626;
+  border-right:4px solid #dc2626;
 }
 
 .alert-warning{
   background:#fff7ed;
   color:#9a3412;
-  border-right:
-    4px solid #f97316;
+  border-right:4px solid #f97316;
 }
 
 .alert-notice{
   background:#fefce8;
   color:#854d0e;
-  border-right:
-    4px solid #eab308;
+  border-right:4px solid #eab308;
 }
 
 .no-alerts{
@@ -225,7 +489,7 @@ h1{
 
 /* =========================
    TABLE
-   ========================= */
+========================= */
 
 .table-wrap{
   overflow-x:auto;
@@ -239,10 +503,10 @@ table{
 
 th,
 td{
-  padding:12px 9px;
+  padding:13px 10px;
   text-align:right;
-  border-bottom:
-    1px solid #edf0f5;
+  border-bottom:1px solid #edf0f5;
+  font-size:12px;
 }
 
 th{
@@ -250,125 +514,279 @@ th{
   color:#475569;
 }
 
+tbody tr:hover{
+  background:#fbfdff;
+}
+
 .empty{
   text-align:center;
-  color:#64748b;
-  padding:20px;
-}
-
-/* =========================
-   PRINT
-   ========================= */
-
-.actions{
-  display:flex;
-  justify-content:flex-end;
-  margin-bottom:20px;
-}
-
-button{
-  border:0;
-  border-radius:9px;
-  padding:11px 18px;
-  cursor:pointer;
-  font-family:inherit;
-}
-
-.primary{
-  background:#172554;
-  color:white;
+  color:var(--muted);
+  padding:30px;
 }
 
 /* =========================
    RESPONSIVE
-   ========================= */
+========================= */
 
-@media(max-width:900px){
+@media(max-width:1100px){
 
-  .stats{
-    grid-template-columns:
-      1fr 1fr;
+  .sidebar{
+    width:200px;
   }
 
+  .main{
+    margin-right:200px;
+  }
+
+  .stats{
+    grid-template-columns:repeat(2,1fr);
+  }
+}
+
+@media(max-width:850px){
+
+  .sidebar{
+    position:relative;
+    width:100%;
+    height:auto;
+  }
+
+  .brand{
+    padding:17px 20px;
+  }
+
+  .nav{
+    display:flex;
+    overflow-x:auto;
+    padding:8px 10px 12px;
+  }
+
+  .nav a{
+    white-space:nowrap;
+    margin:0 3px;
+  }
+
+  .sidebar-footer{
+    display:none;
+  }
+
+  .main{
+    margin-right:0;
+  }
+
+  .topbar{
+    position:relative;
+    padding:0 16px;
+  }
 }
 
 @media(max-width:600px){
 
+  .content{
+    width:94%;
+  }
+
+  .top-info{
+    display:none;
+  }
+
+  .hero{
+    flex-direction:column;
+    align-items:flex-start;
+  }
+
   .stats{
-    grid-template-columns:
-      1fr;
+    grid-template-columns:1fr;
   }
 
   .summary-grid{
-    grid-template-columns:
-      1fr;
+    grid-template-columns:1fr;
   }
 
   .alert-item{
     flex-direction:column;
     align-items:flex-start;
   }
-
 }
+
+/* =========================
+   PRINT
+========================= */
 
 @media print{
 
-  header,
-  .actions{
-    display:none;
+  .sidebar,
+  .topbar,
+  .hero button{
+    display:none!important;
+  }
+
+  .main{
+    margin:0;
   }
 
   body{
     background:white;
   }
 
-  .container{
+  .content{
     width:100%;
+    max-width:none;
     margin:0;
   }
 
-  .card,
+  .stat,
   .panel{
     box-shadow:none;
-    border:1px solid #e5e7eb;
   }
-
 }
-
 </style>
-
 </head>
 
 <body>
 
-<header>
+<!-- =========================
+     SIDEBAR
+========================= -->
+
+<aside class="sidebar">
+
+<div class="brand">
 
 <div class="logo">
 VAREX
 </div>
 
-<a
-  class="back"
-  href="index.html"
->
-← لوحة التحكم
+<div class="brand-small">
+BUSINESS MANAGEMENT SYSTEM
+</div>
+
+<div class="system-status">
+<span class="status-dot"></span>
+<span>النظام متصل وجاهز للعمل</span>
+</div>
+
+</div>
+
+<nav class="nav">
+
+<a href="index.html">
+<span class="nav-icon">▦</span>
+لوحة التحكم
 </a>
+
+<a href="pos.html">
+<span class="nav-icon">🛒</span>
+نقطة البيع
+</a>
+
+<a href="products.html">
+<span class="nav-icon">📦</span>
+المنتجات والمخزون
+</a>
+
+<a href="customers.html">
+<span class="nav-icon">👥</span>
+العملاء
+</a>
+
+<a href="suppliers.html">
+<span class="nav-icon">🚚</span>
+الموردون
+</a>
+
+<a href="accounts.html">
+<span class="nav-icon">💰</span>
+الحسابات
+</a>
+
+<a href="employees.html">
+<span class="nav-icon">👤</span>
+الموظفون
+</a>
+
+<a
+  href="reports.html"
+  class="active"
+>
+<span class="nav-icon">📊</span>
+التقارير
+</a>
+
+<a href="setting.html">
+<span class="nav-icon">⚙️</span>
+الإعدادات
+</a>
+
+</nav>
+
+<div class="sidebar-footer">
+VAREX BUSINESS SYSTEM
+</div>
+
+</aside>
+
+<!-- =========================
+     MAIN
+========================= -->
+
+<div class="main">
+
+<header class="topbar">
+
+<div class="page-name">
+
+<div class="page-icon">
+📊
+</div>
+
+<div>
+<h2>التقارير</h2>
+<small>VAREX REPORTS</small>
+</div>
+
+</div>
+
+<div class="top-info">
+
+<div class="info-chip">
+المستخدم:
+<strong>المستخدم الحالي</strong>
+</div>
+
+<div
+  class="info-chip"
+  id="currentDate"
+>
+—
+</div>
+
+<div
+  class="info-chip"
+  id="currentTime"
+>
+—
+</div>
+
+</div>
 
 </header>
 
+<main class="content">
 
-<div class="container">
+<section class="hero">
+
+<div>
 
 <h1>
-📊 التقارير
+مركز التقارير
 </h1>
 
-<p class="subtitle">
+<p>
 نظرة شاملة على أداء المبيعات والمخزون والحسابات والعملاء والموردين والموظفين
 </p>
 
-
-<div class="actions">
+</div>
 
 <button
   class="primary"
@@ -377,365 +795,483 @@ VAREX
 🖨️ طباعة التقرير
 </button>
 
-</div>
-
+</section>
 
 <!-- =========================
-     FINANCIAL REPORT
-     ========================= -->
+     FINANCIAL
+========================= -->
 
 <h2 class="section-title">
 💰 التقرير المالي
 </h2>
 
-<div class="stats">
+<section class="stats">
 
-<div class="card sales-card">
+<div class="stat sales">
 
-<span>
-إجمالي المبيعات
-</span>
+<div class="stat-top">
+<div class="stat-label">إجمالي المبيعات</div>
+<div class="stat-icon">💳</div>
+</div>
 
-<strong id="salesTotal">
+<div
+  class="stat-value"
+  id="salesTotal"
+>
 0.00 د.إ
-</strong>
+</div>
+
+<div class="stat-small">
+إجمالي قيمة الفواتير
+</div>
 
 </div>
 
+<div class="stat profit">
 
-<div class="card profit-card">
+<div class="stat-top">
+<div class="stat-label">أرباح المبيعات</div>
+<div class="stat-icon">↗</div>
+</div>
 
-<span>
-أرباح المبيعات
-</span>
-
-<strong id="salesProfit">
+<div
+  class="stat-value"
+  id="salesProfit"
+>
 0.00 د.إ
-</strong>
+</div>
+
+<div class="stat-small">
+الربح من عمليات البيع
+</div>
 
 </div>
 
+<div class="stat expense">
 
-<div class="card expense-card">
+<div class="stat-top">
+<div class="stat-label">إجمالي المصروفات</div>
+<div class="stat-icon">↘</div>
+</div>
 
-<span>
-إجمالي المصروفات
-</span>
-
-<strong id="expenses">
+<div
+  class="stat-value"
+  id="expenses"
+>
 0.00 د.إ
-</strong>
+</div>
+
+<div class="stat-small">
+المصروفات المسجلة
+</div>
 
 </div>
 
+<div class="stat balance">
 
-<div class="card balance-card">
+<div class="stat-top">
+<div class="stat-label">الرصيد المالي</div>
+<div class="stat-icon">💰</div>
+</div>
 
-<span>
-الرصيد المالي
-</span>
-
-<strong id="balance">
+<div
+  class="stat-value"
+  id="balance"
+>
 0.00 د.إ
-</strong>
+</div>
 
+<div class="stat-small">
+الإيرادات ناقص المصروفات
 </div>
 
 </div>
 
+</section>
 
-<div class="panel">
+<!-- FINANCIAL SUMMARY -->
+
+<section class="panel">
+
+<div class="panel-head">
 
 <h3>
 الملخص المالي
 </h3>
 
+<span>
+ملخص الحسابات المسجلة في النظام
+</span>
+
+</div>
+
+<div class="panel-body">
+
 <div class="summary-grid">
 
 <div class="summary-row">
-
-<span>
-إجمالي الإيرادات
-</span>
-
+<span>إجمالي الإيرادات</span>
 <strong
   id="income"
   class="positive"
 >
 0.00 د.إ
 </strong>
-
 </div>
 
-
 <div class="summary-row">
-
-<span>
-إجمالي المصروفات
-</span>
-
+<span>إجمالي المصروفات</span>
 <strong
   id="expensesSummary"
   class="negative"
 >
 0.00 د.إ
 </strong>
-
 </div>
 
-
 <div class="summary-row">
-
-<span>
-صافي الرصيد
-</span>
-
+<span>صافي الرصيد</span>
 <strong id="balanceSummary">
 0.00 د.إ
 </strong>
-
 </div>
 
-
 <div class="summary-row">
-
-<span>
-عدد الفواتير
-</span>
-
+<span>عدد الفواتير</span>
 <strong id="invoiceCount">
 0
 </strong>
-
 </div>
 
 </div>
 
 </div>
 
+</section>
 
 <!-- =========================
-     INVENTORY REPORT
-     ========================= -->
+     INVENTORY
+========================= -->
 
 <h2 class="section-title">
 📦 تقرير المنتجات والمخزون
 </h2>
 
-<div class="stats">
+<section class="stats">
 
-<div class="card inventory-card">
+<div class="stat inventory">
 
-<span>
-عدد المنتجات
-</span>
+<div class="stat-top">
+<div class="stat-label">عدد المنتجات</div>
+<div class="stat-icon">📦</div>
+</div>
 
-<strong id="productCount">
+<div
+  class="stat-value"
+  id="productCount"
+>
 0
-</strong>
+</div>
+
+<div class="stat-small">
+الأصناف المسجلة
+</div>
 
 </div>
 
+<div class="stat inventory">
 
-<div class="card inventory-card">
+<div class="stat-top">
+<div class="stat-label">إجمالي وحدات المخزون</div>
+<div class="stat-icon">▦</div>
+</div>
 
-<span>
-إجمالي وحدات المخزون
-</span>
-
-<strong id="stockQuantity">
+<div
+  class="stat-value"
+  id="stockQuantity"
+>
 0
-</strong>
+</div>
+
+<div class="stat-small">
+الوحدات الموجودة حالياً
+</div>
 
 </div>
 
+<div class="stat inventory">
 
-<div class="card inventory-card">
+<div class="stat-top">
+<div class="stat-label">قيمة المخزون بالتكلفة</div>
+<div class="stat-icon">💰</div>
+</div>
 
-<span>
-قيمة المخزون بالتكلفة
-</span>
-
-<strong id="inventoryValue">
+<div
+  class="stat-value"
+  id="inventoryValue"
+>
 0.00 د.إ
-</strong>
+</div>
+
+<div class="stat-small">
+قيمة البضاعة الحالية
+</div>
 
 </div>
 
+<div class="stat warning">
 
-<div class="card warning-card">
+<div class="stat-top">
+<div class="stat-label">مخزون منخفض</div>
+<div class="stat-icon">⚠️</div>
+</div>
 
-<span>
-منتجات منخفضة المخزون
-</span>
-
-<strong id="lowStock">
+<div
+  class="stat-value"
+  id="lowStock"
+>
 0
-</strong>
+</div>
 
+<div class="stat-small">
+أصناف تحتاج إعادة طلب
 </div>
 
 </div>
 
+</section>
 
 <!-- =========================
-     RELATIONSHIPS
-     ========================= -->
+     CUSTOMERS / SUPPLIERS
+========================= -->
 
 <h2 class="section-title">
 👥 العملاء والموردون
 </h2>
 
-<div class="stats">
+<section class="stats">
 
-<div class="card">
+<div class="stat">
 
-<span>
-إجمالي العملاء
-</span>
+<div class="stat-top">
+<div class="stat-label">إجمالي العملاء</div>
+<div class="stat-icon">👥</div>
+</div>
 
-<strong id="customerCount">
+<div
+  class="stat-value"
+  id="customerCount"
+>
 0
-</strong>
+</div>
+
+<div class="stat-small">
+العملاء المسجلون
+</div>
 
 </div>
 
+<div class="stat">
 
-<div class="card">
+<div class="stat-top">
+<div class="stat-label">إجمالي الموردين</div>
+<div class="stat-icon">🚚</div>
+</div>
 
-<span>
-إجمالي الموردين
-</span>
-
-<strong id="supplierCount">
+<div
+  class="stat-value"
+  id="supplierCount"
+>
 0
-</strong>
+</div>
 
+<div class="stat-small">
+الموردون المسجلون
 </div>
 
 </div>
 
+</section>
 
 <!-- =========================
      EMPLOYEES
-     ========================= -->
+========================= -->
 
 <h2 class="section-title">
 👨‍💼 تقرير الموظفين
 </h2>
 
-<div class="stats">
+<section class="stats">
 
-<div class="card employee-card">
+<div class="stat employee">
 
-<span>
-إجمالي الموظفين
-</span>
+<div class="stat-top">
+<div class="stat-label">إجمالي الموظفين</div>
+<div class="stat-icon">👤</div>
+</div>
 
-<strong id="employeeCount">
+<div
+  class="stat-value"
+  id="employeeCount"
+>
 0
-</strong>
+</div>
+
+<div class="stat-small">
+الموظفون المسجلون
+</div>
 
 </div>
 
+<div class="stat employee">
 
-<div class="card employee-card">
+<div class="stat-top">
+<div class="stat-label">الموظفون النشطون</div>
+<div class="stat-icon">✓</div>
+</div>
 
-<span>
-الموظفون النشطون
-</span>
-
-<strong id="activeEmployees">
+<div
+  class="stat-value"
+  id="activeEmployees"
+>
 0
-</strong>
+</div>
+
+<div class="stat-small">
+الموظفون بحالة نشط
+</div>
 
 </div>
 
+<div class="stat employee">
 
-<div class="card employee-card">
+<div class="stat-top">
+<div class="stat-label">إجمالي الرواتب الشهرية</div>
+<div class="stat-icon">💵</div>
+</div>
 
-<span>
-إجمالي الرواتب الشهرية
-</span>
-
-<strong id="salaries">
+<div
+  class="stat-value"
+  id="salaries"
+>
 0.00 د.إ
-</strong>
+</div>
+
+<div class="stat-small">
+إجمالي الرواتب المسجلة
+</div>
 
 </div>
 
+<div class="stat employee">
 
-<div class="card employee-card">
+<div class="stat-top">
+<div class="stat-label">مديرو النظام</div>
+<div class="stat-icon">⚙️</div>
+</div>
 
-<span>
-مديرو النظام
-</span>
-
-<strong id="adminCount">
+<div
+  class="stat-value"
+  id="adminCount"
+>
 0
-</strong>
+</div>
 
+<div class="stat-small">
+المستخدمون بصلاحية مدير النظام
 </div>
 
 </div>
 
+</section>
 
 <!-- =========================
      DOCUMENT ALERTS
-     ========================= -->
+========================= -->
 
 <h2 class="section-title">
 🔔 وثائق الموظفين
 </h2>
 
-<div class="stats">
+<section class="stats">
 
-<div class="card alert-card">
+<div class="stat alert">
 
-<span>
-إجمالي تنبيهات الوثائق
-</span>
+<div class="stat-top">
+<div class="stat-label">تنبيهات الوثائق</div>
+<div class="stat-icon">🔔</div>
+</div>
 
-<strong id="documentAlerts">
+<div
+  class="stat-value"
+  id="documentAlerts"
+>
 0
-</strong>
+</div>
+
+<div class="stat-small">
+إجمالي التنبيهات الحالية
+</div>
 
 </div>
 
+<div class="stat alert">
 
-<div class="card alert-card">
+<div class="stat-top">
+<div class="stat-label">وثائق منتهية</div>
+<div class="stat-icon">⛔</div>
+</div>
 
-<span>
-وثائق منتهية
-</span>
-
-<strong id="expiredDocuments">
+<div
+  class="stat-value"
+  id="expiredDocuments"
+>
 0
-</strong>
+</div>
+
+<div class="stat-small">
+وثائق تجاوزت تاريخ الانتهاء
+</div>
 
 </div>
 
+<div class="stat warning">
 
-<div class="card warning-card">
+<div class="stat-top">
+<div class="stat-label">عاجلة خلال 7 أيام</div>
+<div class="stat-icon">⚠️</div>
+</div>
 
-<span>
-وثائق عاجلة خلال 7 أيام
-</span>
-
-<strong id="urgentDocuments">
+<div
+  class="stat-value"
+  id="urgentDocuments"
+>
 0
-</strong>
+</div>
 
+<div class="stat-small">
+وثائق تحتاج متابعة عاجلة
 </div>
 
 </div>
 
+</section>
 
-<div class="panel">
+<section class="panel">
+
+<div class="panel-head">
 
 <h3>
 تنبيهات انتهاء الوثائق
 </h3>
+
+<span>
+جوازات السفر والإقامات والهويات وتصاريح العمل
+</span>
+
+</div>
+
+<div class="panel-body">
 
 <div
   class="alert-list"
@@ -745,16 +1281,29 @@ VAREX
 
 </div>
 
+</section>
 
 <!-- =========================
-     LOW STOCK
-     ========================= -->
+     LOW STOCK TABLE
+========================= -->
 
 <h2 class="section-title">
 ⚠️ المنتجات منخفضة المخزون
 </h2>
 
-<div class="panel">
+<section class="panel">
+
+<div class="panel-head">
+
+<h3>
+تنبيهات إعادة التوريد
+</h3>
+
+<span>
+المنتجات التي وصلت إلى الحد الأدنى أو أقل
+</span>
+
+</div>
 
 <div class="table-wrap">
 
@@ -763,19 +1312,12 @@ VAREX
 <thead>
 
 <tr>
-
 <th>#</th>
-
 <th>المنتج</th>
-
 <th>الباركود</th>
-
 <th>الكمية الحالية</th>
-
 <th>الحد الأدنى</th>
-
 <th>سعر التكلفة</th>
-
 </tr>
 
 </thead>
@@ -784,7 +1326,6 @@ VAREX
 </tbody>
 
 </table>
-
 
 <div
   id="lowStockEmpty"
@@ -795,27 +1336,64 @@ VAREX
 
 </div>
 
-</div>
+</section>
 
+</main>
 </div>
-
 
 <script src="varex.js"></script>
-
 
 <script>
 
 /* =========================
+   CLOCK
+========================= */
+
+function updateClock(){
+
+  const now =
+    new Date();
+
+  document.getElementById(
+    "currentDate"
+  ).innerText =
+    now.toLocaleDateString(
+      "ar-AE",
+      {
+        year:"numeric",
+        month:"2-digit",
+        day:"2-digit"
+      }
+    );
+
+  document.getElementById(
+    "currentTime"
+  ).innerText =
+    now.toLocaleTimeString(
+      "ar-AE",
+      {
+        hour:"2-digit",
+        minute:"2-digit",
+        second:"2-digit"
+      }
+    );
+}
+
+updateClock();
+
+setInterval(
+  updateClock,
+  1000
+);
+
+/* =========================
    MAIN REPORT
-   ========================= */
+========================= */
 
 function renderReports(){
 
   const report =
     VAREX.getReports();
-
-
-  /* المالية */
 
   setText(
     "salesTotal",
@@ -871,9 +1449,6 @@ function renderReports(){
     report.invoices
   );
 
-
-  /* المخزون */
-
   setText(
     "productCount",
     report.products
@@ -896,9 +1471,6 @@ function renderReports(){
     report.lowStock
   );
 
-
-  /* العملاء والموردون */
-
   setText(
     "customerCount",
     report.customers
@@ -908,9 +1480,6 @@ function renderReports(){
     "supplierCount",
     report.suppliers
   );
-
-
-  /* الموظفون */
 
   setText(
     "employeeCount",
@@ -934,9 +1503,6 @@ function renderReports(){
     report.adminCount
   );
 
-
-  /* الوثائق */
-
   setText(
     "documentAlerts",
     report.employeeDocumentAlerts
@@ -952,9 +1518,6 @@ function renderReports(){
     report.urgentEmployeeDocuments
   );
 
-
-  /* لون الرصيد */
-
   const balanceElement =
     document.getElementById(
       "balanceSummary"
@@ -963,28 +1526,20 @@ function renderReports(){
   if(
     Number(report.balance) < 0
   ){
-
     balanceElement.className =
       "negative";
-
   }else{
-
     balanceElement.className =
       "positive";
-
   }
 
-
   renderEmployeeAlerts();
-
   renderLowStock();
-
 }
-
 
 /* =========================
    EMPLOYEE ALERTS
-   ========================= */
+========================= */
 
 function renderEmployeeAlerts(){
 
@@ -997,26 +1552,19 @@ function renderEmployeeAlerts(){
       "alertsList"
     );
 
-  container.innerHTML = "";
-
+  container.innerHTML =
+    "";
 
   if(!alerts.length){
 
     container.innerHTML = `
-
       <div class="no-alerts">
-
-        ✓ لا توجد وثائق موظفين
-        قاربت على الانتهاء حالياً
-
+        ✓ لا توجد وثائق موظفين قاربت على الانتهاء حالياً
       </div>
-
     `;
 
     return;
-
   }
-
 
   alerts.forEach(
     alert => {
@@ -1027,106 +1575,80 @@ function renderEmployeeAlerts(){
       let icon =
         "⚠️";
 
-
       if(
         alert.level ===
         "warning"
       ){
-
         className =
           "alert-warning";
-
       }
-
 
       if(
         alert.level ===
         "danger"
       ){
-
         className =
           "alert-danger";
 
         icon =
           "🚨";
-
       }
-
 
       const item =
         document.createElement(
           "div"
         );
 
-
       item.className =
         "alert-item " +
         className;
-
 
       item.innerHTML = `
 
         <div>
 
           <strong>
-
             ${icon}
-
             ${escapeHTML(
               alert.employeeName
             )}
-
             —
-
             ${escapeHTML(
               alert.documentName
             )}
-
           </strong>
 
-          <div
-            style="margin-top:5px"
-          >
-
+          <div style="margin-top:5px">
             ${escapeHTML(
               alert.text
             )}
-
           </div>
 
         </div>
-
 
         <div>
 
           تاريخ الانتهاء:
 
           <strong>
-
             ${escapeHTML(
               alert.expiryDate
             )}
-
           </strong>
 
         </div>
-
       `;
-
 
       container.appendChild(
         item
       );
-
     }
   );
-
 }
-
 
 /* =========================
    LOW STOCK
-   ========================= */
+========================= */
 
 function renderLowStock(){
 
@@ -1144,9 +1666,8 @@ function renderLowStock(){
       "lowStockEmpty"
     );
 
-
-  table.innerHTML = "";
-
+  table.innerHTML =
+    "";
 
   if(!products.length){
 
@@ -1154,13 +1675,10 @@ function renderLowStock(){
       "block";
 
     return;
-
   }
-
 
   empty.style.display =
     "none";
-
 
   products.forEach(
     (product,index) => {
@@ -1169,7 +1687,6 @@ function renderLowStock(){
         document.createElement(
           "tr"
         );
-
 
       row.innerHTML = `
 
@@ -1206,28 +1723,20 @@ function renderLowStock(){
             product.cost
           )}
         </td>
-
       `;
-
 
       table.appendChild(
         row
       );
-
     }
   );
-
 }
-
 
 /* =========================
    SET TEXT
-   ========================= */
+========================= */
 
-function setText(
-  id,
-  value
-){
+function setText(id,value){
 
   const element =
     document.getElementById(
@@ -1238,15 +1747,12 @@ function setText(
 
     element.innerText =
       value;
-
   }
-
 }
-
 
 /* =========================
    ESCAPE HTML
-   ========================= */
+========================= */
 
 function escapeHTML(value){
 
@@ -1261,13 +1767,11 @@ function escapeHTML(value){
       : String(value);
 
   return div.innerHTML;
-
 }
-
 
 /* =========================
    START
-   ========================= */
+========================= */
 
 renderReports();
 

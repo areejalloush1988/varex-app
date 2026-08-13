@@ -23,6 +23,7 @@
   --muted:#64748b;
   --green:#15803d;
   --red:#b91c1c;
+  --orange:#d97706;
 }
 
 body{
@@ -32,7 +33,9 @@ body{
   min-height:100vh;
 }
 
-/* SIDEBAR */
+/* =========================
+   SIDEBAR
+========================= */
 
 .sidebar{
   position:fixed;
@@ -40,7 +43,11 @@ body{
   top:0;
   bottom:0;
   width:230px;
-  background:linear-gradient(180deg,#172554,#0f1d43);
+  background:linear-gradient(
+    180deg,
+    #172554,
+    #0f1d43
+  );
   color:white;
   z-index:100;
   display:flex;
@@ -49,7 +56,8 @@ body{
 
 .brand{
   padding:28px 22px 22px;
-  border-bottom:1px solid rgba(255,255,255,.10);
+  border-bottom:
+    1px solid rgba(255,255,255,.10);
 }
 
 .logo{
@@ -67,6 +75,7 @@ body{
 .nav{
   padding:18px 12px;
   flex:1;
+  overflow-y:auto;
 }
 
 .nav a{
@@ -91,7 +100,8 @@ body{
   background:white;
   color:var(--navy);
   font-weight:bold;
-  box-shadow:0 5px 15px rgba(0,0,0,.15);
+  box-shadow:
+    0 5px 15px rgba(0,0,0,.15);
 }
 
 .nav-icon{
@@ -101,25 +111,31 @@ body{
 
 .sidebar-footer{
   padding:17px;
-  border-top:1px solid rgba(255,255,255,.10);
+  border-top:
+    1px solid rgba(255,255,255,.10);
   color:#94a3b8;
   font-size:11px;
   text-align:center;
 }
 
-/* MAIN */
+/* =========================
+   MAIN
+========================= */
 
 .main{
   margin-right:230px;
   min-height:100vh;
 }
 
-/* TOPBAR */
+/* =========================
+   TOPBAR
+========================= */
 
 .topbar{
   height:76px;
   background:white;
-  border-bottom:1px solid var(--border);
+  border-bottom:
+    1px solid var(--border);
   display:flex;
   align-items:center;
   justify-content:space-between;
@@ -164,7 +180,8 @@ body{
 
 .info-chip{
   background:#f8fafc;
-  border:1px solid var(--border);
+  border:
+    1px solid var(--border);
   border-radius:10px;
   padding:9px 13px;
   font-size:12px;
@@ -175,7 +192,9 @@ body{
   color:var(--navy);
 }
 
-/* CONTENT */
+/* =========================
+   CONTENT
+========================= */
 
 .content{
   width:95%;
@@ -199,33 +218,45 @@ body{
 .hero p{
   color:var(--muted);
   font-size:13px;
+  line-height:1.7;
 }
 
 .primary{
   border:0;
-  background:linear-gradient(135deg,#172554,#1e3a8a);
+  background:
+    linear-gradient(
+      135deg,
+      #172554,
+      #1e3a8a
+    );
   color:white;
   padding:12px 18px;
   border-radius:10px;
   cursor:pointer;
   font-weight:bold;
+  font-family:inherit;
 }
 
-/* STATS */
+/* =========================
+   STATS
+========================= */
 
 .stats{
   display:grid;
-  grid-template-columns:repeat(3,1fr);
+  grid-template-columns:
+    repeat(4,1fr);
   gap:14px;
   margin-bottom:18px;
 }
 
 .stat{
   background:white;
-  border:1px solid var(--border);
+  border:
+    1px solid var(--border);
   border-radius:14px;
   padding:17px 18px;
-  box-shadow:0 3px 12px rgba(15,23,42,.04);
+  box-shadow:
+    0 3px 12px rgba(15,23,42,.04);
 }
 
 .stat-top{
@@ -261,19 +292,24 @@ body{
   margin-top:5px;
 }
 
-/* PANEL */
+/* =========================
+   PANEL
+========================= */
 
 .panel{
   background:white;
-  border:1px solid var(--border);
+  border:
+    1px solid var(--border);
   border-radius:16px;
-  box-shadow:0 4px 18px rgba(15,23,42,.05);
+  box-shadow:
+    0 4px 18px rgba(15,23,42,.05);
   overflow:hidden;
 }
 
 .panel-head{
   padding:18px 20px;
-  border-bottom:1px solid var(--border);
+  border-bottom:
+    1px solid var(--border);
   display:flex;
   justify-content:space-between;
   align-items:center;
@@ -291,16 +327,19 @@ body{
 .toolbar{
   padding:15px 20px;
   background:#fbfdff;
-  border-bottom:1px solid var(--border);
+  border-bottom:
+    1px solid var(--border);
   display:flex;
   gap:9px;
   flex-wrap:wrap;
 }
 
 input,
-textarea{
+textarea,
+select{
   padding:11px;
-  border:1px solid #dbe1ea;
+  border:
+    1px solid #dbe1ea;
   border-radius:9px;
   font-size:13px;
   outline:none;
@@ -309,9 +348,11 @@ textarea{
 }
 
 input:focus,
-textarea:focus{
+textarea:focus,
+select:focus{
   border-color:#94a3b8;
-  box-shadow:0 0 0 3px rgba(37,99,235,.05);
+  box-shadow:
+    0 0 0 3px rgba(37,99,235,.05);
 }
 
 .search{
@@ -319,7 +360,13 @@ textarea:focus{
   min-width:250px;
 }
 
-/* TABLE */
+.filter{
+  min-width:150px;
+}
+
+/* =========================
+   TABLE
+========================= */
 
 .table-wrap{
   overflow-x:auto;
@@ -328,14 +375,15 @@ textarea:focus{
 table{
   width:100%;
   border-collapse:collapse;
-  min-width:950px;
+  min-width:1200px;
 }
 
 th,
 td{
   padding:13px 10px;
   text-align:right;
-  border-bottom:1px solid #edf0f5;
+  border-bottom:
+    1px solid #edf0f5;
   vertical-align:middle;
   font-size:12px;
 }
@@ -353,6 +401,36 @@ tbody tr:hover{
 .customer-name{
   font-weight:bold;
   color:var(--navy);
+}
+
+.customer-code{
+  color:#475569;
+  font-weight:bold;
+}
+
+.money-positive{
+  color:var(--green);
+  font-weight:bold;
+}
+
+.money-due{
+  color:var(--red);
+  font-weight:bold;
+}
+
+.no-due{
+  color:var(--green);
+  font-weight:bold;
+}
+
+.type-badge{
+  display:inline-block;
+  padding:5px 9px;
+  border-radius:20px;
+  background:#eef2ff;
+  color:#3730a3;
+  font-size:11px;
+  font-weight:bold;
 }
 
 button{
@@ -392,7 +470,9 @@ button{
   padding:35px;
 }
 
-/* MODAL */
+/* =========================
+   MODAL
+========================= */
 
 .modal{
   display:none;
@@ -408,12 +488,13 @@ button{
 .modal-box{
   background:white;
   width:100%;
-  max-width:700px;
+  max-width:800px;
   border-radius:16px;
   padding:24px;
-  max-height:90vh;
+  max-height:92vh;
   overflow:auto;
-  box-shadow:0 20px 50px rgba(0,0,0,.2);
+  box-shadow:
+    0 20px 50px rgba(0,0,0,.2);
 }
 
 .modal-header{
@@ -433,14 +514,41 @@ button{
   color:#64748b;
 }
 
+.form-section{
+  margin:18px 0 12px;
+  padding-bottom:8px;
+  border-bottom:
+    1px solid #e5e7eb;
+  grid-column:1/-1;
+}
+
+.form-section h3{
+  font-size:14px;
+  color:#172554;
+}
+
 .form-grid{
   display:grid;
-  grid-template-columns:1fr 1fr;
+  grid-template-columns:
+    1fr 1fr;
   gap:11px;
 }
 
-.form-grid input,
-.form-grid textarea{
+.field{
+  width:100%;
+}
+
+.field label{
+  display:block;
+  font-size:12px;
+  color:#475569;
+  margin-bottom:6px;
+  font-weight:bold;
+}
+
+.field input,
+.field select,
+.field textarea{
   width:100%;
 }
 
@@ -456,12 +564,17 @@ textarea{
 .form-actions{
   display:flex;
   gap:10px;
-  margin-top:15px;
+  margin-top:18px;
 }
 
 .save{
   border:0;
-  background:linear-gradient(135deg,#172554,#1e3a8a);
+  background:
+    linear-gradient(
+      135deg,
+      #172554,
+      #1e3a8a
+    );
   color:white;
   padding:12px 20px;
   border-radius:9px;
@@ -478,17 +591,21 @@ textarea{
   cursor:pointer;
 }
 
-/* DETAILS */
+/* =========================
+   DETAILS
+========================= */
 
 .details-grid{
   display:grid;
-  grid-template-columns:1fr 1fr;
+  grid-template-columns:
+    1fr 1fr;
   gap:12px;
 }
 
 .detail-card{
   background:#f8fafc;
-  border:1px solid #e2e8f0;
+  border:
+    1px solid #e2e8f0;
   border-radius:10px;
   padding:15px;
 }
@@ -496,7 +613,7 @@ textarea{
 .detail-card span{
   display:block;
   color:#64748b;
-  font-size:13px;
+  font-size:12px;
   margin-bottom:6px;
 }
 
@@ -509,7 +626,9 @@ textarea{
   grid-column:1/-1;
 }
 
-/* RESPONSIVE */
+/* =========================
+   RESPONSIVE
+========================= */
 
 @media(max-width:1100px){
 
@@ -519,6 +638,11 @@ textarea{
 
   .main{
     margin-right:200px;
+  }
+
+  .stats{
+    grid-template-columns:
+      repeat(2,1fr);
   }
 
 }
@@ -584,7 +708,8 @@ textarea{
     grid-template-columns:1fr;
   }
 
-  .full{
+  .full,
+  .form-section{
     grid-column:auto;
   }
 
@@ -602,10 +727,17 @@ textarea{
 
 <body>
 
+<!-- =========================
+     SIDEBAR
+========================= -->
+
 <aside class="sidebar">
 
 <div class="brand">
-  <div class="logo">VAREX</div>
+  <div class="logo">
+    VAREX
+  </div>
+
   <div class="brand-small">
     BUSINESS MANAGEMENT SYSTEM
   </div>
@@ -628,7 +760,10 @@ textarea{
 المنتجات والمخزون
 </a>
 
-<a href="customers.html" class="active">
+<a
+  href="customers.html"
+  class="active"
+>
 <span class="nav-icon">👥</span>
 العملاء
 </a>
@@ -666,6 +801,9 @@ VAREX CUSTOMER SYSTEM
 
 </aside>
 
+<!-- =========================
+     MAIN
+========================= -->
 
 <div class="main">
 
@@ -678,8 +816,13 @@ VAREX CUSTOMER SYSTEM
 </div>
 
 <div>
-<h2>العملاء</h2>
-<small>VAREX CUSTOMERS</small>
+<h2>
+العملاء
+</h2>
+
+<small>
+VAREX CUSTOMERS
+</small>
 </div>
 
 </div>
@@ -688,18 +831,22 @@ VAREX CUSTOMER SYSTEM
 
 <div class="info-chip">
 المستخدم:
-<strong>المستخدم الحالي</strong>
+<strong>
+المستخدم الحالي
+</strong>
 </div>
 
 <div
   class="info-chip"
-  id="currentDate">
+  id="currentDate"
+>
 —
 </div>
 
 <div
   class="info-chip"
-  id="currentTime">
+  id="currentTime"
+>
 —
 </div>
 
@@ -707,8 +854,11 @@ VAREX CUSTOMER SYSTEM
 
 </header>
 
-
 <main class="content">
+
+<!-- =========================
+     HERO
+========================= -->
 
 <section class="hero">
 
@@ -719,36 +869,46 @@ VAREX CUSTOMER SYSTEM
 </h1>
 
 <p>
-إدارة بيانات العملاء ومعلومات التواصل والعناوين والملاحظات من مكان واحد
+إدارة بيانات العملاء ومتابعة
+المشتريات والفواتير والأرصدة
+والحدود الائتمانية من مكان واحد.
 </p>
 
 </div>
 
 <button
   class="primary"
-  onclick="openCustomerModal()">
+  onclick="openCustomerModal()"
+>
 ＋ إضافة عميل جديد
 </button>
 
 </section>
 
+<!-- =========================
+     STATS
+========================= -->
 
 <section class="stats">
 
 <div class="stat">
 
 <div class="stat-top">
+
 <div class="stat-label">
 إجمالي العملاء
 </div>
+
 <div class="stat-icon">
 👥
 </div>
+
 </div>
 
 <div
   class="stat-value"
-  id="totalCustomers">
+  id="totalCustomers"
+>
 0
 </div>
 
@@ -758,56 +918,92 @@ VAREX CUSTOMER SYSTEM
 
 </div>
 
-
 <div class="stat">
 
 <div class="stat-top">
+
 <div class="stat-label">
-لديهم رقم هاتف
+إجمالي مشتريات العملاء
 </div>
+
 <div class="stat-icon">
-📞
+🛒
 </div>
+
 </div>
 
 <div
   class="stat-value"
-  id="customersWithPhone">
-0
+  id="totalCustomerPurchases"
+>
+0.00 د.إ
 </div>
 
 <div class="stat-small">
-عملاء يمكن التواصل معهم هاتفياً
+من فواتير المبيعات المسجلة
 </div>
 
 </div>
-
 
 <div class="stat">
 
 <div class="stat-top">
+
 <div class="stat-label">
-لديهم بريد إلكتروني
+إجمالي المستحقات
 </div>
+
 <div class="stat-icon">
-✉️
+💳
 </div>
+
 </div>
 
 <div
   class="stat-value"
-  id="customersWithEmail">
+  id="totalCustomerDue"
+>
+0.00 د.إ
+</div>
+
+<div class="stat-small">
+المبالغ المستحقة على العملاء
+</div>
+
+</div>
+
+<div class="stat">
+
+<div class="stat-top">
+
+<div class="stat-label">
+عملاء لديهم رصيد مستحق
+</div>
+
+<div class="stat-icon">
+⚠️
+</div>
+
+</div>
+
+<div
+  class="stat-value"
+  id="customersWithDue"
+>
 0
 </div>
 
 <div class="stat-small">
-عملاء مسجل لديهم بريد إلكتروني
+عملاء لديهم فواتير غير مسددة
 </div>
 
 </div>
 
 </section>
 
+<!-- =========================
+     CUSTOMERS TABLE
+========================= -->
 
 <section class="panel">
 
@@ -818,23 +1014,41 @@ VAREX CUSTOMER SYSTEM
 </h3>
 
 <span>
-إدارة بيانات العملاء ومعلومات التواصل
+إدارة بيانات العملاء وسجل المبيعات
 </span>
 
 </div>
-
 
 <div class="toolbar">
 
 <input
   id="search"
   class="search"
-  placeholder="🔍 ابحث باسم العميل أو الهاتف أو البريد الإلكتروني"
+  placeholder="🔍 ابحث برقم العميل أو الاسم أو الهاتف أو البريد"
   oninput="renderCustomers()"
 >
 
-</div>
+<select
+  id="typeFilter"
+  class="filter"
+  onchange="renderCustomers()"
+>
 
+<option value="">
+كل أنواع العملاء
+</option>
+
+<option value="فرد">
+فرد
+</option>
+
+<option value="شركة">
+شركة
+</option>
+
+</select>
+
+</div>
 
 <div class="table-wrap">
 
@@ -843,12 +1057,18 @@ VAREX CUSTOMER SYSTEM
 <thead>
 
 <tr>
+
 <th>#</th>
+<th>رقم العميل</th>
 <th>اسم العميل</th>
-<th>رقم الهاتف</th>
-<th>البريد الإلكتروني</th>
-<th>العنوان</th>
+<th>النوع</th>
+<th>الهاتف</th>
+<th>إجمالي المشتريات</th>
+<th>المستحق</th>
+<th>عدد الفواتير</th>
+<th>آخر شراء</th>
 <th>الإجراءات</th>
+
 </tr>
 
 </thead>
@@ -858,10 +1078,10 @@ VAREX CUSTOMER SYSTEM
 
 </table>
 
-
 <div
   id="emptyMessage"
-  class="empty">
+  class="empty"
+>
 لا يوجد عملاء حتى الآن
 </div>
 
@@ -873,10 +1093,14 @@ VAREX CUSTOMER SYSTEM
 
 </div>
 
+<!-- =========================
+     CUSTOMER MODAL
+========================= -->
 
 <div
   class="modal"
-  id="customerModal">
+  id="customerModal"
+>
 
 <div class="modal-box">
 
@@ -888,24 +1112,72 @@ VAREX CUSTOMER SYSTEM
 
 <span
   class="close"
-  onclick="closeCustomerModal()">
+  onclick="closeCustomerModal()"
+>
 ×
 </span>
 
 </div>
 
-
 <div class="form-grid">
+
+<div class="form-section">
+<h3>
+👤 البيانات الأساسية
+</h3>
+</div>
+
+<div class="field">
+
+<label>
+اسم العميل *
+</label>
 
 <input
   id="customerName"
   placeholder="اسم العميل"
 >
 
+</div>
+
+<div class="field">
+
+<label>
+نوع العميل
+</label>
+
+<select id="customerType">
+
+<option value="فرد">
+فرد
+</option>
+
+<option value="شركة">
+شركة
+</option>
+
+</select>
+
+</div>
+
+<div class="field">
+
+<label>
+رقم الهاتف
+</label>
+
 <input
   id="phone"
   placeholder="رقم الهاتف"
 >
+
+</div>
+
+<div class="field">
+
+<label>
+البريد الإلكتروني
+</label>
 
 <input
   id="email"
@@ -913,31 +1185,84 @@ VAREX CUSTOMER SYSTEM
   placeholder="البريد الإلكتروني"
 >
 
-<input
-  id="address"
-  placeholder="العنوان"
->
+</div>
 
-<textarea
-  id="notes"
-  class="full"
-  placeholder="ملاحظات عن العميل">
-</textarea>
+<div class="field">
+
+<label>
+الرقم الضريبي TRN
+</label>
+
+<input
+  id="taxNumber"
+  placeholder="الرقم الضريبي إن وجد"
+>
 
 </div>
 
+<div class="field">
+
+<label>
+الحد الائتماني
+</label>
+
+<input
+  id="creditLimit"
+  type="number"
+  min="0"
+  step="0.01"
+  placeholder="0.00"
+>
+
+</div>
+
+<div class="form-section">
+<h3>
+📍 بيانات إضافية
+</h3>
+</div>
+
+<div class="field full">
+
+<label>
+العنوان
+</label>
+
+<input
+  id="address"
+  placeholder="عنوان العميل"
+>
+
+</div>
+
+<div class="field full">
+
+<label>
+ملاحظات
+</label>
+
+<textarea
+  id="notes"
+  placeholder="ملاحظات عن العميل"
+></textarea>
+
+</div>
+
+</div>
 
 <div class="form-actions">
 
 <button
   class="save"
-  onclick="saveCustomer()">
+  onclick="saveCustomer()"
+>
 حفظ العميل
 </button>
 
 <button
   class="cancel"
-  onclick="closeCustomerModal()">
+  onclick="closeCustomerModal()"
+>
 إلغاء
 </button>
 
@@ -947,10 +1272,14 @@ VAREX CUSTOMER SYSTEM
 
 </div>
 
+<!-- =========================
+     DETAILS MODAL
+========================= -->
 
 <div
   class="modal"
-  id="detailsModal">
+  id="detailsModal"
+>
 
 <div class="modal-box">
 
@@ -962,7 +1291,8 @@ VAREX CUSTOMER SYSTEM
 
 <span
   class="close"
-  onclick="closeDetailsModal()">
+  onclick="closeDetailsModal()"
+>
 ×
 </span>
 
@@ -970,13 +1300,13 @@ VAREX CUSTOMER SYSTEM
 
 <div
   class="details-grid"
-  id="detailsContent">
+  id="detailsContent"
+>
 </div>
 
 </div>
 
 </div>
-
 
 <script src="varex.js"></script>
 
@@ -984,12 +1314,14 @@ VAREX CUSTOMER SYSTEM
 
 let editingCustomerId = null;
 
-
-/* CLOCK */
+/* =========================
+   CLOCK
+========================= */
 
 function updateClock(){
 
-  const now = new Date();
+  const now =
+    new Date();
 
   document.getElementById(
     "currentDate"
@@ -1024,19 +1356,62 @@ setInterval(
   1000
 );
 
-
-/* GET */
+/* =========================
+   DATA
+========================= */
 
 function getCustomers(){
 
-  return VAREX.getCustomers();
+  try{
+
+    return (
+      VAREX.getCustomers() || []
+    );
+
+  }catch(error){
+
+    console.error(
+      "تعذر قراءة العملاء",
+      error
+    );
+
+    return [];
+
+  }
 
 }
 
+function getSales(){
 
-/* SAVE */
+  try{
 
-function saveCustomers(customers){
+    if(
+      typeof VAREX.getSales ===
+      "function"
+    ){
+
+      return (
+        VAREX.getSales() || []
+      );
+
+    }
+
+  }catch(error){
+
+    console.error(
+      "تعذر قراءة المبيعات",
+      error
+    );
+
+  }
+
+  return [];
+
+}
+
+function saveCustomers(
+  customers
+){
 
   VAREX.saveData(
     VAREX.keys.customers,
@@ -1044,9 +1419,6 @@ function saveCustomers(customers){
   );
 
 }
-
-
-/* FIND */
 
 function findCustomer(id){
 
@@ -1058,12 +1430,258 @@ function findCustomer(id){
 
 }
 
+/* =========================
+   CUSTOMER CODE
+========================= */
 
-/* OPEN */
+function getCustomerCode(
+  customer
+){
 
-function openCustomerModal(id = null){
+  if(customer.customerCode){
 
-  editingCustomerId = id;
+    return customer.customerCode;
+
+  }
+
+  const id =
+    String(
+      customer.id || ""
+    );
+
+  const numeric =
+    id.replace(
+      /\D/g,
+      ""
+    );
+
+  if(numeric){
+
+    return (
+      "CUS-" +
+      numeric
+        .slice(-6)
+        .padStart(6,"0")
+    );
+
+  }
+
+  return (
+    "CUS-" +
+    id
+      .slice(-6)
+      .toUpperCase()
+  );
+
+}
+
+/* =========================
+   SALES LINK
+========================= */
+
+function saleBelongsToCustomer(
+  sale,
+  customer
+){
+
+  if(!sale || !customer){
+
+    return false;
+
+  }
+
+  const customerId =
+    String(
+      customer.id || ""
+    );
+
+  const saleCustomerId =
+    String(
+      sale.customerId ||
+      sale.customerID ||
+      ""
+    );
+
+  if(
+    customerId &&
+    saleCustomerId &&
+    customerId ===
+    saleCustomerId
+  ){
+
+    return true;
+
+  }
+
+  const customerPhone =
+    String(
+      customer.phone || ""
+    ).trim();
+
+  const salePhone =
+    String(
+      sale.customerPhone ||
+      sale.phone ||
+      ""
+    ).trim();
+
+  if(
+    customerPhone &&
+    salePhone &&
+    customerPhone === salePhone
+  ){
+
+    return true;
+
+  }
+
+  return false;
+
+}
+
+/* =========================
+   CUSTOMER FINANCIAL DATA
+========================= */
+
+function getCustomerFinancials(
+  customer
+){
+
+  const sales =
+    getSales().filter(
+      sale =>
+        saleBelongsToCustomer(
+          sale,
+          customer
+        )
+    );
+
+  let purchases = 0;
+  let due = 0;
+
+  sales.forEach(
+    sale => {
+
+      const total =
+        Number(
+          sale.total ||
+          sale.grandTotal ||
+          0
+        );
+
+      purchases += total;
+
+      if(
+        sale.due !== undefined
+      ){
+
+        due += Math.max(
+          0,
+          Number(
+            sale.due || 0
+          )
+        );
+
+      }else if(
+        sale.remaining !==
+        undefined
+      ){
+
+        due += Math.max(
+          0,
+          Number(
+            sale.remaining || 0
+          )
+        );
+
+      }else if(
+        sale.paid !== undefined
+      ){
+
+        due += Math.max(
+          0,
+          total -
+          Number(
+            sale.paid || 0
+          )
+        );
+
+      }
+
+    }
+  );
+
+  let lastPurchase = "";
+
+  sales.forEach(
+    sale => {
+
+      const rawDate =
+        sale.createdAt ||
+        sale.saleDate ||
+        sale.date ||
+        "";
+
+      if(!rawDate){
+        return;
+      }
+
+      const date =
+        new Date(rawDate);
+
+      if(
+        isNaN(
+          date.getTime()
+        )
+      ){
+        return;
+      }
+
+      if(!lastPurchase){
+
+        lastPurchase =
+          date;
+
+      }else if(
+        date > lastPurchase
+      ){
+
+        lastPurchase =
+          date;
+
+      }
+
+    }
+  );
+
+  return {
+
+    purchases:
+      purchases,
+
+    due:
+      due,
+
+    invoiceCount:
+      sales.length,
+
+    lastPurchase:
+      lastPurchase
+
+  };
+
+}
+
+/* =========================
+   OPEN CUSTOMER
+========================= */
+
+function openCustomerModal(
+  id = null
+){
+
+  editingCustomerId =
+    id;
 
   clearCustomerForm();
 
@@ -1094,6 +1712,11 @@ function openCustomerModal(id = null){
       customer.name || "";
 
     document.getElementById(
+      "customerType"
+    ).value =
+      customer.type || "فرد";
+
+    document.getElementById(
       "phone"
     ).value =
       customer.phone || "";
@@ -1102,6 +1725,16 @@ function openCustomerModal(id = null){
       "email"
     ).value =
       customer.email || "";
+
+    document.getElementById(
+      "taxNumber"
+    ).value =
+      customer.taxNumber || "";
+
+    document.getElementById(
+      "creditLimit"
+    ).value =
+      customer.creditLimit || "";
 
     document.getElementById(
       "address"
@@ -1122,8 +1755,9 @@ function openCustomerModal(id = null){
 
 }
 
-
-/* CLOSE */
+/* =========================
+   CLOSE CUSTOMER
+========================= */
 
 function closeCustomerModal(){
 
@@ -1132,12 +1766,14 @@ function closeCustomerModal(){
   ).style.display =
     "none";
 
-  editingCustomerId = null;
+  editingCustomerId =
+    null;
 
 }
 
-
-/* CLEAR */
+/* =========================
+   CLEAR
+========================= */
 
 function clearCustomerForm(){
 
@@ -1146,11 +1782,24 @@ function clearCustomerForm(){
   ).value = "";
 
   document.getElementById(
+    "customerType"
+  ).value =
+    "فرد";
+
+  document.getElementById(
     "phone"
   ).value = "";
 
   document.getElementById(
     "email"
+  ).value = "";
+
+  document.getElementById(
+    "taxNumber"
+  ).value = "";
+
+  document.getElementById(
+    "creditLimit"
   ).value = "";
 
   document.getElementById(
@@ -1163,8 +1812,9 @@ function clearCustomerForm(){
 
 }
 
-
-/* SAVE CUSTOMER */
+/* =========================
+   SAVE CUSTOMER
+========================= */
 
 function saveCustomer(){
 
@@ -1183,10 +1833,14 @@ function saveCustomer(){
 
   }
 
-
   const customerData = {
 
     name:name,
+
+    type:
+      document.getElementById(
+        "customerType"
+      ).value,
 
     phone:
       document.getElementById(
@@ -1197,6 +1851,18 @@ function saveCustomer(){
       document.getElementById(
         "email"
       ).value.trim(),
+
+    taxNumber:
+      document.getElementById(
+        "taxNumber"
+      ).value.trim(),
+
+    creditLimit:
+      Number(
+        document.getElementById(
+          "creditLimit"
+        ).value
+      ) || 0,
 
     address:
       document.getElementById(
@@ -1210,12 +1876,15 @@ function saveCustomer(){
 
   };
 
+  if(
+    editingCustomerId ===
+    null
+  ){
 
-  if(editingCustomerId === null){
-
-    VAREX.addCustomer(
-      customerData
-    );
+    const newCustomer =
+      VAREX.addCustomer(
+        customerData
+      );
 
   }else{
 
@@ -1225,15 +1894,22 @@ function saveCustomer(){
     const index =
       customers.findIndex(
         customer =>
-          String(customer.id) ===
-          String(editingCustomerId)
+          String(
+            customer.id
+          ) ===
+          String(
+            editingCustomerId
+          )
       );
 
     if(index !== -1){
 
       customers[index] = {
+
         ...customers[index],
+
         ...customerData
+
       };
 
       saveCustomers(
@@ -1250,8 +1926,9 @@ function saveCustomer(){
 
 }
 
-
-/* DELETE */
+/* =========================
+   DELETE
+========================= */
 
 function deleteCustomer(id){
 
@@ -1273,6 +1950,30 @@ function deleteCustomer(id){
     return;
   }
 
+  const financials =
+    getCustomerFinancials(
+      customer
+    );
+
+  if(
+    financials.due > 0
+  ){
+
+    const secondConfirm =
+      confirm(
+        "تنبيه: يوجد على هذا العميل رصيد مستحق بقيمة " +
+        VAREX.money(
+          financials.due
+        ) +
+        ". هل تريد حذفه رغم ذلك؟"
+      );
+
+    if(!secondConfirm){
+      return;
+    }
+
+  }
+
   const customers =
     getCustomers().filter(
       item =>
@@ -1288,8 +1989,9 @@ function deleteCustomer(id){
 
 }
 
-
-/* DETAILS */
+/* =========================
+   DETAILS
+========================= */
 
 function openDetailsModal(id){
 
@@ -1300,65 +2002,225 @@ function openDetailsModal(id){
     return;
   }
 
+  const financials =
+    getCustomerFinancials(
+      customer
+    );
+
+  const lastPurchase =
+    financials.lastPurchase
+      ?
+      financials.lastPurchase
+        .toLocaleDateString(
+          "ar-AE"
+        )
+      :
+      "لا توجد مشتريات";
+
   document.getElementById(
     "detailsTitle"
   ).innerText =
     "بيانات العميل — " +
     customer.name;
 
-
   document.getElementById(
     "detailsContent"
   ).innerHTML = `
 
     <div class="detail-card">
-      <span>اسم العميل</span>
+
+      <span>
+        رقم العميل
+      </span>
+
+      <strong>
+        ${escapeHTML(
+          getCustomerCode(
+            customer
+          )
+        )}
+      </strong>
+
+    </div>
+
+    <div class="detail-card">
+
+      <span>
+        اسم العميل
+      </span>
+
       <strong>
         ${escapeHTML(
           customer.name || "-"
         )}
       </strong>
+
     </div>
 
     <div class="detail-card">
-      <span>رقم الهاتف</span>
+
+      <span>
+        نوع العميل
+      </span>
+
+      <strong>
+        ${escapeHTML(
+          customer.type || "فرد"
+        )}
+      </strong>
+
+    </div>
+
+    <div class="detail-card">
+
+      <span>
+        رقم الهاتف
+      </span>
+
       <strong>
         ${escapeHTML(
           customer.phone || "-"
         )}
       </strong>
+
     </div>
 
     <div class="detail-card">
-      <span>البريد الإلكتروني</span>
+
+      <span>
+        البريد الإلكتروني
+      </span>
+
       <strong>
         ${escapeHTML(
           customer.email || "-"
         )}
       </strong>
+
     </div>
 
     <div class="detail-card">
-      <span>العنوان</span>
+
+      <span>
+        الرقم الضريبي TRN
+      </span>
+
+      <strong>
+        ${escapeHTML(
+          customer.taxNumber || "-"
+        )}
+      </strong>
+
+    </div>
+
+    <div class="detail-card">
+
+      <span>
+        الحد الائتماني
+      </span>
+
+      <strong>
+        ${VAREX.money(
+          Number(
+            customer.creditLimit || 0
+          )
+        )}
+      </strong>
+
+    </div>
+
+    <div class="detail-card">
+
+      <span>
+        إجمالي المشتريات
+      </span>
+
+      <strong class="money-positive">
+        ${VAREX.money(
+          financials.purchases
+        )}
+      </strong>
+
+    </div>
+
+    <div class="detail-card">
+
+      <span>
+        الرصيد المستحق
+      </span>
+
+      <strong
+        class="${
+          financials.due > 0
+            ?
+            "money-due"
+            :
+            "no-due"
+        }"
+      >
+        ${VAREX.money(
+          financials.due
+        )}
+      </strong>
+
+    </div>
+
+    <div class="detail-card">
+
+      <span>
+        عدد الفواتير
+      </span>
+
+      <strong>
+        ${financials.invoiceCount}
+      </strong>
+
+    </div>
+
+    <div class="detail-card">
+
+      <span>
+        آخر عملية شراء
+      </span>
+
+      <strong>
+        ${escapeHTML(
+          lastPurchase
+        )}
+      </strong>
+
+    </div>
+
+    <div class="detail-card">
+
+      <span>
+        العنوان
+      </span>
+
       <strong>
         ${escapeHTML(
           customer.address || "-"
         )}
       </strong>
+
     </div>
 
     <div class="detail-card notes-card">
-      <span>الملاحظات</span>
+
+      <span>
+        الملاحظات
+      </span>
+
       <strong>
         ${escapeHTML(
           customer.notes ||
           "لا توجد ملاحظات"
         )}
       </strong>
+
     </div>
 
   `;
-
 
   document.getElementById(
     "detailsModal"
@@ -1366,7 +2228,6 @@ function openDetailsModal(id){
     "flex";
 
 }
-
 
 function closeDetailsModal(){
 
@@ -1377,52 +2238,73 @@ function closeDetailsModal(){
 
 }
 
-
-/* STATS */
+/* =========================
+   STATS
+========================= */
 
 function updateCustomerStats(){
 
   const customers =
     getCustomers();
 
-  const withPhone =
-    customers.filter(
-      customer =>
-        String(
-          customer.phone || ""
-        ).trim()
-    ).length;
+  let purchases = 0;
+  let due = 0;
+  let withDue = 0;
 
-  const withEmail =
-    customers.filter(
-      customer =>
-        String(
-          customer.email || ""
-        ).trim()
-    ).length;
+  customers.forEach(
+    customer => {
 
+      const financials =
+        getCustomerFinancials(
+          customer
+        );
+
+      purchases +=
+        financials.purchases;
+
+      due +=
+        financials.due;
+
+      if(
+        financials.due > 0
+      ){
+
+        withDue++;
+
+      }
+
+    }
+  );
 
   document.getElementById(
     "totalCustomers"
   ).innerText =
     customers.length;
 
+  document.getElementById(
+    "totalCustomerPurchases"
+  ).innerText =
+    VAREX.money(
+      purchases
+    );
 
   document.getElementById(
-    "customersWithPhone"
+    "totalCustomerDue"
   ).innerText =
-    withPhone;
-
+    VAREX.money(
+      due
+    );
 
   document.getElementById(
-    "customersWithEmail"
+    "customersWithDue"
   ).innerText =
-    withEmail;
+    withDue;
 
 }
 
-
-/* RENDER */
+/* =========================
+   RENDER
+========================= */
 
 function renderCustomers(){
 
@@ -1441,16 +2323,27 @@ function renderCustomers(){
       .trim()
       .toLowerCase();
 
+  const typeFilter =
+    document.getElementById(
+      "typeFilter"
+    ).value;
+
   table.innerHTML = "";
 
   let visible = 0;
 
-
   customers.forEach(
     customer => {
 
+      const code =
+        getCustomerCode(
+          customer
+        );
+
       const searchable =
         (
+          code +
+          " " +
           (customer.name || "") +
           " " +
           (customer.phone || "") +
@@ -1460,7 +2353,6 @@ function renderCustomers(){
           (customer.address || "")
         ).toLowerCase();
 
-
       if(
         !searchable.includes(
           search
@@ -1469,15 +2361,39 @@ function renderCustomers(){
         return;
       }
 
+      const customerType =
+        customer.type ||
+        "فرد";
+
+      if(
+        typeFilter &&
+        customerType !==
+        typeFilter
+      ){
+        return;
+      }
 
       visible++;
 
+      const financials =
+        getCustomerFinancials(
+          customer
+        );
+
+      const lastPurchase =
+        financials.lastPurchase
+          ?
+          financials.lastPurchase
+            .toLocaleDateString(
+              "ar-AE"
+            )
+          :
+          "-";
 
       const row =
         document.createElement(
           "tr"
         );
-
 
       row.innerHTML = `
 
@@ -1485,10 +2401,30 @@ function renderCustomers(){
           ${visible}
         </td>
 
-        <td class="customer-name">
+        <td
+          class="customer-code"
+        >
+          ${escapeHTML(code)}
+        </td>
+
+        <td
+          class="customer-name"
+        >
           ${escapeHTML(
             customer.name || "-"
           )}
+        </td>
+
+        <td>
+
+          <span class="type-badge">
+
+            ${escapeHTML(
+              customerType
+            )}
+
+          </span>
+
         </td>
 
         <td>
@@ -1497,15 +2433,35 @@ function renderCustomers(){
           )}
         </td>
 
-        <td>
-          ${escapeHTML(
-            customer.email || "-"
+        <td
+          class="money-positive"
+        >
+          ${VAREX.money(
+            financials.purchases
+          )}
+        </td>
+
+        <td
+          class="${
+            financials.due > 0
+              ?
+              "money-due"
+              :
+              "no-due"
+          }"
+        >
+          ${VAREX.money(
+            financials.due
           )}
         </td>
 
         <td>
+          ${financials.invoiceCount}
+        </td>
+
+        <td>
           ${escapeHTML(
-            customer.address || "-"
+            lastPurchase
           )}
         </td>
 
@@ -1513,26 +2469,28 @@ function renderCustomers(){
 
           <button
             class="details"
-            onclick="openDetailsModal('${customer.id}')">
+            onclick="openDetailsModal('${customer.id}')"
+          >
             عرض
           </button>
 
           <button
             class="edit"
-            onclick="openCustomerModal('${customer.id}')">
+            onclick="openCustomerModal('${customer.id}')"
+          >
             تعديل
           </button>
 
           <button
             class="delete"
-            onclick="deleteCustomer('${customer.id}')">
+            onclick="deleteCustomer('${customer.id}')"
+          >
             حذف
           </button>
 
         </td>
 
       `;
-
 
       table.appendChild(
         row
@@ -1541,21 +2499,22 @@ function renderCustomers(){
     }
   );
 
-
   document.getElementById(
     "emptyMessage"
   ).style.display =
     visible === 0
-      ? "block"
-      : "none";
-
+      ?
+      "block"
+      :
+      "none";
 
   updateCustomerStats();
 
 }
 
-
-/* SECURITY */
+/* =========================
+   SECURITY
+========================= */
 
 function escapeHTML(value){
 
@@ -1566,15 +2525,18 @@ function escapeHTML(value){
 
   div.textContent =
     value == null
-      ? ""
-      : String(value);
+      ?
+      ""
+      :
+      String(value);
 
   return div.innerHTML;
 
 }
 
-
-/* OUTSIDE CLICK */
+/* =========================
+   OUTSIDE CLICK
+========================= */
 
 window.addEventListener(
   "click",
@@ -1590,27 +2552,30 @@ window.addEventListener(
         "detailsModal"
       );
 
-
     if(
       event.target ===
       customerModal
     ){
-      closeCustomerModal();
-    }
 
+      closeCustomerModal();
+
+    }
 
     if(
       event.target ===
       detailsModal
     ){
+
       closeDetailsModal();
+
     }
 
   }
 );
 
-
-/* START */
+/* =========================
+   START
+========================= */
 
 renderCustomers();
 

@@ -3,460 +3,1121 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<title>الحسابات - VAREX</title>
+<title>VAREX | الحسابات</title>
 
 <style>
 *{
-  box-sizing:border-box;
+    box-sizing:border-box;
+    margin:0;
+    padding:0;
+}
+
+:root{
+    --navy:#172554;
+    --navy-dark:#0f1d43;
+    --blue:#2563eb;
+    --bg:#f4f6fb;
+    --white:#ffffff;
+    --border:#e5eaf2;
+    --text:#172554;
+    --muted:#64748b;
+    --green:#15803d;
+    --red:#b91c1c;
+    --purple:#7c3aed;
 }
 
 body{
-  margin:0;
-  font-family:Arial,sans-serif;
-  background:#f4f6fb;
-  color:#172554;
+    font-family:Arial,sans-serif;
+    background:var(--bg);
+    color:var(--text);
+    min-height:100vh;
 }
 
-header{
-  background:#172554;
-  color:white;
-  padding:18px 5%;
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
+/* =========================
+   SIDEBAR
+========================= */
+
+.sidebar{
+    position:fixed;
+    right:0;
+    top:0;
+    bottom:0;
+    width:230px;
+    background:linear-gradient(180deg,#172554,#0f1d43);
+    color:white;
+    z-index:100;
+    display:flex;
+    flex-direction:column;
+}
+
+.brand{
+    padding:26px 22px 18px;
+    border-bottom:1px solid rgba(255,255,255,.10);
 }
 
 .logo{
-  font-size:25px;
-  font-weight:bold;
-  letter-spacing:2px;
+    font-size:29px;
+    font-weight:800;
+    letter-spacing:4px;
 }
 
-.back{
-  color:white;
-  text-decoration:none;
+.brand-small{
+    font-size:11px;
+    color:#cbd5e1;
+    margin-top:6px;
 }
 
-.container{
-  width:94%;
-  max-width:1400px;
-  margin:30px auto;
+.system-status{
+    margin-top:13px;
+    display:flex;
+    align-items:center;
+    gap:7px;
+    font-size:11px;
+    color:#d1fae5;
 }
 
-h1{
-  margin-bottom:5px;
+.status-dot{
+    width:8px;
+    height:8px;
+    border-radius:50%;
+    background:#22c55e;
+    box-shadow:0 0 8px rgba(34,197,94,.8);
+    flex-shrink:0;
 }
 
-.subtitle{
-  color:#64748b;
-  margin-top:0;
+.nav{
+    padding:18px 12px;
+    flex:1;
+}
+
+.nav a{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    color:#dbeafe;
+    text-decoration:none;
+    padding:12px 14px;
+    border-radius:10px;
+    margin-bottom:5px;
+    font-size:14px;
+    transition:.2s;
+}
+
+.nav a:hover{
+    background:rgba(255,255,255,.08);
+    color:white;
+}
+
+.nav a.active{
+    background:white;
+    color:var(--navy);
+    font-weight:bold;
+    box-shadow:0 5px 15px rgba(0,0,0,.15);
+}
+
+.nav-icon{
+    width:24px;
+    text-align:center;
+}
+
+.sidebar-footer{
+    padding:17px;
+    border-top:1px solid rgba(255,255,255,.10);
+    color:#94a3b8;
+    font-size:11px;
+    text-align:center;
 }
 
 /* =========================
-   STATISTICS
-   ========================= */
+   MAIN
+========================= */
 
-.stats{
-  display:grid;
-  grid-template-columns:repeat(4,1fr);
-  gap:15px;
-  margin:25px 0;
-}
-
-.card,
-.panel{
-  background:white;
-  border-radius:15px;
-  padding:20px;
-  box-shadow:0 4px 18px rgba(0,0,0,.06);
-}
-
-.card span{
-  color:#64748b;
-  font-size:14px;
-}
-
-.card strong{
-  display:block;
-  font-size:24px;
-  margin-top:9px;
-}
-
-.income-card{
-  border-top:4px solid #16a34a;
-}
-
-.expense-card{
-  border-top:4px solid #dc2626;
-}
-
-.balance-card{
-  border-top:4px solid #2563eb;
-}
-
-.transaction-card{
-  border-top:4px solid #7c3aed;
+.main{
+    margin-right:230px;
+    min-height:100vh;
 }
 
 /* =========================
-   TOOLBAR
-   ========================= */
+   TOPBAR
+========================= */
 
-.toolbar{
-  display:flex;
-  gap:10px;
-  flex-wrap:wrap;
-  margin-bottom:18px;
+.topbar{
+    height:76px;
+    background:white;
+    border-bottom:1px solid var(--border);
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:0 28px;
+    position:sticky;
+    top:0;
+    z-index:50;
 }
 
-input,
-select,
-textarea{
-  padding:12px;
-  border:1px solid #dbe1ea;
-  border-radius:9px;
-  font-size:14px;
-  font-family:inherit;
+.page-name{
+    display:flex;
+    align-items:center;
+    gap:12px;
 }
 
-.search{
-  flex:1;
-  min-width:220px;
+.page-icon{
+    width:43px;
+    height:43px;
+    border-radius:12px;
+    background:#eef2ff;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:21px;
 }
 
-button{
-  border:0;
-  border-radius:9px;
-  padding:11px 16px;
-  cursor:pointer;
-  font-family:inherit;
+.page-name h2{
+    font-size:18px;
+}
+
+.page-name small{
+    display:block;
+    color:var(--muted);
+    margin-top:4px;
+}
+
+.top-info{
+    display:flex;
+    align-items:center;
+    gap:12px;
+}
+
+.info-chip{
+    background:#f8fafc;
+    border:1px solid var(--border);
+    border-radius:10px;
+    padding:9px 13px;
+    font-size:12px;
+    color:var(--muted);
+}
+
+.info-chip strong{
+    color:var(--navy);
+}
+
+/* =========================
+   CONTENT
+========================= */
+
+.content{
+    width:95%;
+    max-width:1500px;
+    margin:24px auto 40px;
+}
+
+.hero{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:15px;
+    margin-bottom:18px;
+}
+
+.hero h1{
+    font-size:25px;
+    margin-bottom:6px;
+}
+
+.hero p{
+    color:var(--muted);
+    font-size:13px;
 }
 
 .primary{
-  background:#172554;
-  color:white;
+    border:0;
+    background:linear-gradient(135deg,#172554,#1e3a8a);
+    color:white;
+    padding:12px 18px;
+    border-radius:10px;
+    cursor:pointer;
+    font-weight:bold;
+    font-family:inherit;
+    box-shadow:0 5px 14px rgba(23,37,84,.16);
 }
 
-.secondary{
-  background:#e5e7eb;
-  color:#111827;
+/* =========================
+   STATS
+========================= */
+
+.stats{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:14px;
+    margin-bottom:18px;
 }
 
-.delete{
-  background:#fee2e2;
-  color:#991b1b;
-  padding:7px 10px;
+.stat{
+    background:white;
+    border:1px solid var(--border);
+    border-radius:14px;
+    padding:17px 18px;
+    box-shadow:0 3px 12px rgba(15,23,42,.04);
+}
+
+.stat-top{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    margin-bottom:10px;
+}
+
+.stat-label{
+    font-size:12px;
+    color:var(--muted);
+}
+
+.stat-icon{
+    width:36px;
+    height:36px;
+    border-radius:10px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:17px;
+}
+
+.income-stat .stat-icon{
+    background:#ecfdf5;
+}
+
+.expense-stat .stat-icon{
+    background:#fef2f2;
+}
+
+.balance-stat .stat-icon{
+    background:#eff6ff;
+}
+
+.transactions-stat .stat-icon{
+    background:#f5f3ff;
+}
+
+.stat-value{
+    font-size:22px;
+    font-weight:bold;
+}
+
+.income-stat .stat-value{
+    color:var(--green);
+}
+
+.expense-stat .stat-value{
+    color:var(--red);
+}
+
+.balance-stat .stat-value{
+    color:var(--blue);
+}
+
+.transactions-stat .stat-value{
+    color:var(--purple);
+}
+
+.stat-small{
+    color:#94a3b8;
+    font-size:11px;
+    margin-top:5px;
+}
+
+/* =========================
+   PANEL
+========================= */
+
+.panel{
+    background:white;
+    border:1px solid var(--border);
+    border-radius:16px;
+    box-shadow:0 4px 18px rgba(15,23,42,.05);
+    overflow:hidden;
+}
+
+.panel-head{
+    padding:18px 20px;
+    border-bottom:1px solid var(--border);
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+}
+
+.panel-head h3{
+    font-size:16px;
+}
+
+.panel-head span{
+    font-size:11px;
+    color:var(--muted);
+}
+
+.toolbar{
+    padding:15px 20px;
+    background:#fbfdff;
+    border-bottom:1px solid var(--border);
+    display:flex;
+    gap:9px;
+    flex-wrap:wrap;
+}
+
+input,
+select{
+    padding:11px;
+    border:1px solid #dbe1ea;
+    border-radius:9px;
+    font-size:13px;
+    outline:none;
+    background:white;
+    font-family:inherit;
+}
+
+input:focus,
+select:focus{
+    border-color:#94a3b8;
+    box-shadow:0 0 0 3px rgba(37,99,235,.05);
+}
+
+.search{
+    flex:1;
+    min-width:250px;
 }
 
 /* =========================
    TABLE
-   ========================= */
+========================= */
 
 .table-wrap{
-  overflow-x:auto;
+    overflow-x:auto;
 }
 
 table{
-  width:100%;
-  border-collapse:collapse;
-  min-width:900px;
+    width:100%;
+    border-collapse:collapse;
+    min-width:950px;
 }
 
 th,
 td{
-  padding:12px 9px;
-  text-align:right;
-  border-bottom:1px solid #edf0f5;
+    padding:13px 10px;
+    text-align:right;
+    border-bottom:1px solid #edf0f5;
+    vertical-align:middle;
+    font-size:12px;
 }
 
 th{
-  background:#f8fafc;
-  color:#475569;
+    background:#f8fafc;
+    color:#475569;
+    white-space:nowrap;
+    font-weight:bold;
+}
+
+tbody tr:hover{
+    background:#fbfdff;
+}
+
+.description{
+    font-weight:bold;
+    color:var(--navy);
 }
 
 .income{
-  color:#15803d;
-  font-weight:bold;
+    color:var(--green);
+    font-weight:bold;
 }
 
 .expense{
-  color:#dc2626;
-  font-weight:bold;
+    color:var(--red);
+    font-weight:bold;
+}
+
+.type-badge{
+    display:inline-block;
+    padding:5px 10px;
+    border-radius:20px;
+    font-size:10px;
+    font-weight:bold;
+}
+
+.type-badge.income-badge{
+    background:#ecfdf5;
+    color:#15803d;
+}
+
+.type-badge.expense-badge{
+    background:#fef2f2;
+    color:#b91c1c;
+}
+
+.delete{
+    border:0;
+    background:#fee2e2;
+    color:#b91c1c;
+    border-radius:7px;
+    padding:7px 10px;
+    cursor:pointer;
+    font-family:inherit;
 }
 
 .empty{
-  text-align:center;
-  color:#64748b;
-  padding:25px;
+    text-align:center;
+    color:var(--muted);
+    padding:35px;
 }
 
 /* =========================
    MODAL
-   ========================= */
+========================= */
 
 .modal{
-  display:none;
-  position:fixed;
-  inset:0;
-  background:rgba(0,0,0,.45);
-  align-items:center;
-  justify-content:center;
-  padding:15px;
-  z-index:1000;
+    display:none;
+    position:fixed;
+    inset:0;
+    background:rgba(15,23,42,.55);
+    align-items:center;
+    justify-content:center;
+    z-index:1000;
+    padding:15px;
 }
 
 .modal-box{
-  background:white;
-  width:100%;
-  max-width:650px;
-  border-radius:16px;
-  padding:25px;
-  max-height:92vh;
-  overflow-y:auto;
+    background:white;
+    width:100%;
+    max-width:650px;
+    border-radius:16px;
+    padding:24px;
+    max-height:90vh;
+    overflow:auto;
+    box-shadow:0 20px 50px rgba(0,0,0,.2);
+}
+
+.modal-header{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:18px;
+}
+
+.modal-header h2{
+    font-size:19px;
 }
 
 .close{
-  float:left;
-  font-size:25px;
-  cursor:pointer;
+    cursor:pointer;
+    font-size:24px;
+    color:#64748b;
 }
 
 .form-grid{
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:12px;
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:11px;
 }
 
 .form-grid input,
-.form-grid select,
-.form-grid textarea{
-  width:100%;
+.form-grid select{
+    width:100%;
 }
 
 .full{
-  grid-column:1/-1;
+    grid-column:1/-1;
 }
 
 .form-actions{
-  display:flex;
-  gap:10px;
-  margin-top:18px;
+    display:flex;
+    gap:10px;
+    margin-top:17px;
 }
 
-@media(max-width:800px){
-  .stats{
-    grid-template-columns:1fr 1fr;
-  }
+.save{
+    border:0;
+    background:linear-gradient(135deg,#172554,#1e3a8a);
+    color:white;
+    padding:12px 18px;
+    border-radius:9px;
+    cursor:pointer;
+    font-weight:bold;
+    font-family:inherit;
+}
+
+.secondary{
+    border:0;
+    background:#e5e7eb;
+    color:#111827;
+    padding:12px 18px;
+    border-radius:9px;
+    cursor:pointer;
+    font-family:inherit;
+}
+
+/* =========================
+   RESPONSIVE
+========================= */
+
+@media(max-width:1100px){
+    .sidebar{
+        width:200px;
+    }
+
+    .main{
+        margin-right:200px;
+    }
+
+    .stats{
+        grid-template-columns:repeat(2,1fr);
+    }
+}
+
+@media(max-width:850px){
+    .sidebar{
+        position:relative;
+        width:100%;
+        height:auto;
+    }
+
+    .brand{
+        padding:17px 20px;
+    }
+
+    .nav{
+        display:flex;
+        overflow-x:auto;
+        padding:8px 10px 12px;
+    }
+
+    .nav a{
+        white-space:nowrap;
+        margin:0 3px;
+    }
+
+    .sidebar-footer{
+        display:none;
+    }
+
+    .main{
+        margin-right:0;
+    }
+
+    .topbar{
+        position:relative;
+        padding:0 16px;
+    }
 }
 
 @media(max-width:600px){
-  .stats{
-    grid-template-columns:1fr;
-  }
+    .content{
+        width:94%;
+    }
 
-  .form-grid{
-    grid-template-columns:1fr;
-  }
+    .top-info{
+        display:none;
+    }
 
-  .full{
-    grid-column:auto;
-  }
+    .hero{
+        align-items:flex-start;
+        flex-direction:column;
+    }
+
+    .stats{
+        grid-template-columns:1fr 1fr;
+    }
+
+    .form-grid{
+        grid-template-columns:1fr;
+    }
+
+    .full{
+        grid-column:auto;
+    }
+}
+
+@media(max-width:420px){
+    .stats{
+        grid-template-columns:1fr;
+    }
 }
 </style>
 </head>
 
 <body>
 
-<header>
-<div class="logo">VAREX</div>
+<!-- =========================
+     SIDEBAR
+========================= -->
 
-<a class="back" href="index.html">
-← لوحة التحكم
-</a>
+<aside class="sidebar">
+
+    <div class="brand">
+
+        <div class="logo">
+            VAREX
+        </div>
+
+        <div class="brand-small">
+            BUSINESS MANAGEMENT SYSTEM
+        </div>
+
+        <div class="system-status">
+            <span class="status-dot"></span>
+            <span>النظام متصل وجاهز للعمل</span>
+        </div>
+
+    </div>
+
+    <nav class="nav">
+
+        <a href="index.html">
+            <span class="nav-icon">▦</span>
+            لوحة التحكم
+        </a>
+
+        <a href="pos.html">
+            <span class="nav-icon">🛒</span>
+            نقطة البيع
+        </a>
+
+        <a href="products.html">
+            <span class="nav-icon">📦</span>
+            المنتجات والمخزون
+        </a>
+
+        <a href="customers.html">
+            <span class="nav-icon">👥</span>
+            العملاء
+        </a>
+
+        <a href="suppliers.html">
+            <span class="nav-icon">🚚</span>
+            الموردون
+        </a>
+
+        <a href="accounts.html" class="active">
+            <span class="nav-icon">💰</span>
+            الحسابات
+        </a>
+
+        <a href="employees.html">
+            <span class="nav-icon">👤</span>
+            الموظفون
+        </a>
+
+        <a href="reports.html">
+            <span class="nav-icon">📊</span>
+            التقارير
+        </a>
+
+        <a href="setting.html">
+            <span class="nav-icon">⚙️</span>
+            الإعدادات
+        </a>
+
+    </nav>
+
+    <div class="sidebar-footer">
+        VAREX BUSINESS SYSTEM
+    </div>
+
+</aside>
+
+<!-- =========================
+     MAIN
+========================= -->
+
+<div class="main">
+
+<header class="topbar">
+
+    <div class="page-name">
+
+        <div class="page-icon">
+            💰
+        </div>
+
+        <div>
+            <h2>الحسابات</h2>
+            <small>VAREX ACCOUNTS</small>
+        </div>
+
+    </div>
+
+    <div class="top-info">
+
+        <div class="info-chip">
+            المستخدم:
+            <strong>المستخدم الحالي</strong>
+        </div>
+
+        <div
+            class="info-chip"
+            id="currentDate">
+            —
+        </div>
+
+        <div
+            class="info-chip"
+            id="currentTime">
+            —
+        </div>
+
+    </div>
+
 </header>
 
-<div class="container">
+<main class="content">
 
-<h1>💰 الحسابات</h1>
+<!-- =========================
+     HERO
+========================= -->
 
-<p class="subtitle">
-إدارة الإيرادات والمصروفات والحركات المالية
-</p>
+<section class="hero">
 
-<!-- الإحصائيات -->
+    <div>
 
-<div class="stats">
+        <h1>
+            إدارة الحسابات
+        </h1>
 
-<div class="card income-card">
-<span>إجمالي الإيرادات</span>
-<strong id="totalIncome">
-0.00 د.إ
-</strong>
+        <p>
+            متابعة الإيرادات والمصروفات
+            والرصيد والحركات المالية من مكان واحد
+        </p>
+
+    </div>
+
+    <button
+        class="primary"
+        onclick="openTransactionModal()">
+
+        ＋ إضافة حركة مالية
+
+    </button>
+
+</section>
+
+<!-- =========================
+     STATS
+========================= -->
+
+<section class="stats">
+
+    <div class="stat income-stat">
+
+        <div class="stat-top">
+
+            <div class="stat-label">
+                إجمالي الإيرادات
+            </div>
+
+            <div class="stat-icon">
+                ↗
+            </div>
+
+        </div>
+
+        <div
+            class="stat-value"
+            id="totalIncome">
+
+            0.00 د.إ
+
+        </div>
+
+        <div class="stat-small">
+            جميع الإيرادات المسجلة
+        </div>
+
+    </div>
+
+    <div class="stat expense-stat">
+
+        <div class="stat-top">
+
+            <div class="stat-label">
+                إجمالي المصروفات
+            </div>
+
+            <div class="stat-icon">
+                ↘
+            </div>
+
+        </div>
+
+        <div
+            class="stat-value"
+            id="totalExpenses">
+
+            0.00 د.إ
+
+        </div>
+
+        <div class="stat-small">
+            جميع المصروفات المسجلة
+        </div>
+
+    </div>
+
+    <div class="stat balance-stat">
+
+        <div class="stat-top">
+
+            <div class="stat-label">
+                الرصيد الصافي
+            </div>
+
+            <div class="stat-icon">
+                💳
+            </div>
+
+        </div>
+
+        <div
+            class="stat-value"
+            id="balance">
+
+            0.00 د.إ
+
+        </div>
+
+        <div class="stat-small">
+            الإيرادات ناقص المصروفات
+        </div>
+
+    </div>
+
+    <div class="stat transactions-stat">
+
+        <div class="stat-top">
+
+            <div class="stat-label">
+                عدد الحركات المالية
+            </div>
+
+            <div class="stat-icon">
+                ≡
+            </div>
+
+        </div>
+
+        <div
+            class="stat-value"
+            id="transactionCount">
+
+            0
+
+        </div>
+
+        <div class="stat-small">
+            إجمالي الحركات المسجلة
+        </div>
+
+    </div>
+
+</section>
+
+<!-- =========================
+     TRANSACTIONS
+========================= -->
+
+<section class="panel">
+
+    <div class="panel-head">
+
+        <h3>
+            سجل الحركات المالية
+        </h3>
+
+        <span>
+            الإيرادات والمصروفات وطرق الدفع
+        </span>
+
+    </div>
+
+    <div class="toolbar">
+
+        <input
+            id="search"
+            class="search"
+            placeholder="🔍 ابحث في الحركات المالية"
+            oninput="renderTransactions()"
+        >
+
+        <select
+            id="typeFilter"
+            onchange="renderTransactions()">
+
+            <option value="">
+                كل الحركات
+            </option>
+
+            <option value="income">
+                الإيرادات
+            </option>
+
+            <option value="expense">
+                المصروفات
+            </option>
+
+        </select>
+
+    </div>
+
+    <div class="table-wrap">
+
+        <table>
+
+            <thead>
+
+                <tr>
+                    <th>#</th>
+                    <th>التاريخ</th>
+                    <th>البيان</th>
+                    <th>التصنيف</th>
+                    <th>النوع</th>
+                    <th>المبلغ</th>
+                    <th>طريقة الدفع</th>
+                    <th>الإجراءات</th>
+                </tr>
+
+            </thead>
+
+            <tbody id="transactionTable">
+            </tbody>
+
+        </table>
+
+        <div
+            id="emptyMessage"
+            class="empty">
+
+            لا توجد حركات مالية حتى الآن
+
+        </div>
+
+    </div>
+
+</section>
+
+</main>
 </div>
 
-<div class="card expense-card">
-<span>إجمالي المصروفات</span>
-<strong id="totalExpenses">
-0.00 د.إ
-</strong>
-</div>
-
-<div class="card balance-card">
-<span>الرصيد الصافي</span>
-<strong id="balance">
-0.00 د.إ
-</strong>
-</div>
-
-<div class="card transaction-card">
-<span>عدد الحركات المالية</span>
-<strong id="transactionCount">
-0
-</strong>
-</div>
-
-</div>
-
-<!-- قائمة الحركات -->
-
-<div class="panel">
-
-<div class="toolbar">
-
-<input
-  id="search"
-  class="search"
-  placeholder="🔍 ابحث في الحركات المالية"
-  oninput="renderTransactions()"
->
-
-<select
-  id="typeFilter"
-  onchange="renderTransactions()"
->
-<option value="">كل الحركات</option>
-<option value="income">الإيرادات</option>
-<option value="expense">المصروفات</option>
-</select>
-
-<button
-  class="primary"
-  onclick="openTransactionModal()"
->
-+ إضافة حركة مالية
-</button>
-
-</div>
-
-<div class="table-wrap">
-
-<table>
-
-<thead>
-<tr>
-<th>#</th>
-<th>التاريخ</th>
-<th>البيان</th>
-<th>التصنيف</th>
-<th>النوع</th>
-<th>المبلغ</th>
-<th>طريقة الدفع</th>
-<th>الإجراءات</th>
-</tr>
-</thead>
-
-<tbody id="transactionTable">
-</tbody>
-
-</table>
+<!-- =========================
+     MODAL
+========================= -->
 
 <div
-  id="emptyMessage"
-  class="empty"
->
-لا توجد حركات مالية حتى الآن
-</div>
+    class="modal"
+    id="transactionModal">
 
-</div>
-</div>
-</div>
+    <div class="modal-box">
 
-<!-- نافذة إضافة حركة -->
+        <div class="modal-header">
 
-<div class="modal" id="transactionModal">
+            <h2>
+                إضافة حركة مالية
+            </h2>
 
-<div class="modal-box">
+            <span
+                class="close"
+                onclick="closeTransactionModal()">
 
-<span
-  class="close"
-  onclick="closeTransactionModal()"
->
-×
-</span>
+                ×
 
-<h2>إضافة حركة مالية</h2>
+            </span>
 
-<div class="form-grid">
+        </div>
 
-<select id="transactionType">
-<option value="income">إيراد</option>
-<option value="expense">مصروف</option>
-</select>
+        <div class="form-grid">
 
-<input
-  id="transactionDate"
-  type="date"
->
+            <select id="transactionType">
 
-<input
-  id="description"
-  class="full"
-  placeholder="البيان / وصف الحركة"
->
+                <option value="income">
+                    إيراد
+                </option>
 
-<input
-  id="category"
-  placeholder="التصنيف"
->
+                <option value="expense">
+                    مصروف
+                </option>
 
-<input
-  id="amount"
-  type="number"
-  min="0"
-  step="0.01"
-  placeholder="المبلغ"
->
+            </select>
 
-<select id="payment">
-<option value="">طريقة الدفع</option>
-<option value="نقدي">نقدي</option>
-<option value="بطاقة">بطاقة</option>
-<option value="تحويل بنكي">تحويل بنكي</option>
-<option value="شيك">شيك</option>
-<option value="أخرى">أخرى</option>
-</select>
+            <input
+                id="transactionDate"
+                type="date"
+            >
 
-</div>
+            <input
+                id="description"
+                class="full"
+                placeholder="البيان / وصف الحركة"
+            >
 
-<div class="form-actions">
+            <input
+                id="category"
+                placeholder="التصنيف"
+            >
 
-<button
-  class="primary"
-  onclick="saveTransaction()"
->
-حفظ الحركة
-</button>
+            <input
+                id="amount"
+                type="number"
+                min="0"
+                step="0.01"
+                placeholder="المبلغ"
+            >
 
-<button
-  class="secondary"
-  onclick="closeTransactionModal()"
->
-إلغاء
-</button>
+            <select id="payment">
 
-</div>
-</div>
+                <option value="">
+                    طريقة الدفع
+                </option>
+
+                <option value="نقدي">
+                    نقدي
+                </option>
+
+                <option value="بطاقة">
+                    بطاقة
+                </option>
+
+                <option value="تحويل بنكي">
+                    تحويل بنكي
+                </option>
+
+                <option value="شيك">
+                    شيك
+                </option>
+
+                <option value="أخرى">
+                    أخرى
+                </option>
+
+            </select>
+
+        </div>
+
+        <div class="form-actions">
+
+            <button
+                class="save"
+                onclick="saveTransaction()">
+
+                حفظ الحركة
+
+            </button>
+
+            <button
+                class="secondary"
+                onclick="closeTransactionModal()">
+
+                إلغاء
+
+            </button>
+
+        </div>
+
+    </div>
+
 </div>
 
 <script src="varex.js"></script>
@@ -464,375 +1125,432 @@ th{
 <script>
 
 /* =========================
+   CLOCK
+========================= */
+
+function updateClock(){
+
+    const now =
+        new Date();
+
+    document
+        .getElementById("currentDate")
+        .innerText =
+        now.toLocaleDateString(
+            "ar-AE",
+            {
+                year:"numeric",
+                month:"2-digit",
+                day:"2-digit"
+            }
+        );
+
+    document
+        .getElementById("currentTime")
+        .innerText =
+        now.toLocaleTimeString(
+            "ar-AE",
+            {
+                hour:"2-digit",
+                minute:"2-digit",
+                second:"2-digit"
+            }
+        );
+}
+
+updateClock();
+
+setInterval(
+    updateClock,
+    1000
+);
+
+/* =========================
    OPEN MODAL
-   ========================= */
+========================= */
 
 function openTransactionModal(){
 
-  document.getElementById(
-    "transactionType"
-  ).value = "income";
+    document
+        .getElementById("transactionType")
+        .value =
+        "income";
 
-  document.getElementById(
-    "transactionDate"
-  ).value = VAREX.today();
+    document
+        .getElementById("transactionDate")
+        .value =
+        VAREX.today();
 
-  document.getElementById(
-    "description"
-  ).value = "";
+    document
+        .getElementById("description")
+        .value =
+        "";
 
-  document.getElementById(
-    "category"
-  ).value = "";
+    document
+        .getElementById("category")
+        .value =
+        "";
 
-  document.getElementById(
-    "amount"
-  ).value = "";
+    document
+        .getElementById("amount")
+        .value =
+        "";
 
-  document.getElementById(
-    "payment"
-  ).value = "";
+    document
+        .getElementById("payment")
+        .value =
+        "";
 
-  document.getElementById(
-    "transactionModal"
-  ).style.display = "flex";
-
+    document
+        .getElementById("transactionModal")
+        .style.display =
+        "flex";
 }
-
 
 /* =========================
    CLOSE MODAL
-   ========================= */
+========================= */
 
 function closeTransactionModal(){
 
-  document.getElementById(
-    "transactionModal"
-  ).style.display = "none";
-
+    document
+        .getElementById("transactionModal")
+        .style.display =
+        "none";
 }
 
-
 /* =========================
-   SAVE TRANSACTION
-   ========================= */
+   SAVE
+========================= */
 
 function saveTransaction(){
 
-  const description =
-    document.getElementById(
-      "description"
-    ).value.trim();
+    const description =
+        document
+            .getElementById("description")
+            .value
+            .trim();
 
-  const amount =
-    Number(
-      document.getElementById(
-        "amount"
-      ).value
-    );
+    const amount =
+        Number(
+            document
+                .getElementById("amount")
+                .value
+        );
 
-  if(!description){
+    if(!description){
 
-    alert(
-      "يرجى إدخال بيان الحركة المالية"
-    );
+        alert(
+            "يرجى إدخال بيان الحركة المالية"
+        );
 
-    return;
-  }
+        return;
+    }
 
-  if(!amount || amount <= 0){
+    if(!amount || amount <= 0){
 
-    alert(
-      "يرجى إدخال مبلغ صحيح"
-    );
+        alert(
+            "يرجى إدخال مبلغ صحيح"
+        );
 
-    return;
-  }
+        return;
+    }
 
-  VAREX.addTransaction({
+    VAREX.addTransaction({
 
-    type:
-      document.getElementById(
-        "transactionType"
-      ).value,
+        type:
+            document
+                .getElementById("transactionType")
+                .value,
 
-    description,
+        description:
+            description,
 
-    category:
-      document.getElementById(
-        "category"
-      ).value.trim(),
+        category:
+            document
+                .getElementById("category")
+                .value
+                .trim(),
 
-    amount,
+        amount:
+            amount,
 
-    date:
-      document.getElementById(
-        "transactionDate"
-      ).value ||
-      VAREX.today(),
+        date:
+            document
+                .getElementById("transactionDate")
+                .value ||
+            VAREX.today(),
 
-    payment:
-      document.getElementById(
-        "payment"
-      ).value
+        payment:
+            document
+                .getElementById("payment")
+                .value
 
-  });
+    });
 
-  closeTransactionModal();
+    closeTransactionModal();
 
-  renderTransactions();
-
+    renderTransactions();
 }
-
 
 /* =========================
    DELETE
-   ========================= */
+========================= */
 
 function removeTransaction(id){
 
-  if(
-    confirm(
-      "هل تريد حذف هذه الحركة المالية؟"
-    )
-  ){
+    if(
+        confirm(
+            "هل تريد حذف هذه الحركة المالية؟"
+        )
+    ){
 
-    VAREX.deleteTransaction(id);
+        VAREX.deleteTransaction(id);
 
-    renderTransactions();
-
-  }
-
+        renderTransactions();
+    }
 }
 
-
 /* =========================
-   STATISTICS
-   ========================= */
+   STATS
+========================= */
 
 function updateStats(){
 
-  const summary =
-    VAREX.getFinancialSummary();
+    const summary =
+        VAREX.getFinancialSummary();
 
-  document.getElementById(
-    "totalIncome"
-  ).innerText =
-    VAREX.money(
-      summary.income
-    );
+    document
+        .getElementById("totalIncome")
+        .innerText =
+        VAREX.money(
+            summary.income
+        );
 
-  document.getElementById(
-    "totalExpenses"
-  ).innerText =
-    VAREX.money(
-      summary.expenses
-    );
+    document
+        .getElementById("totalExpenses")
+        .innerText =
+        VAREX.money(
+            summary.expenses
+        );
 
-  document.getElementById(
-    "balance"
-  ).innerText =
-    VAREX.money(
-      summary.balance
-    );
+    document
+        .getElementById("balance")
+        .innerText =
+        VAREX.money(
+            summary.balance
+        );
 
-  document.getElementById(
-    "transactionCount"
-  ).innerText =
-    summary.transactions;
-
+    document
+        .getElementById("transactionCount")
+        .innerText =
+        summary.transactions;
 }
-
 
 /* =========================
    RENDER
-   ========================= */
+========================= */
 
 function renderTransactions(){
 
-  const transactions =
-    VAREX.getTransactions();
+    const transactions =
+        VAREX.getTransactions();
 
-  const table =
-    document.getElementById(
-      "transactionTable"
+    const table =
+        document
+            .getElementById(
+                "transactionTable"
+            );
+
+    const search =
+        document
+            .getElementById("search")
+            .value
+            .trim()
+            .toLowerCase();
+
+    const type =
+        document
+            .getElementById("typeFilter")
+            .value;
+
+    table.innerHTML =
+        "";
+
+    let visible =
+        0;
+
+    transactions.forEach(
+        transaction => {
+
+            if(
+                type &&
+                transaction.type !== type
+            ){
+                return;
+            }
+
+            const searchable =
+                (
+                    (transaction.description || "") +
+                    " " +
+                    (transaction.category || "") +
+                    " " +
+                    (transaction.payment || "")
+                )
+                .toLowerCase();
+
+            if(
+                !searchable.includes(
+                    search
+                )
+            ){
+                return;
+            }
+
+            visible++;
+
+            const isIncome =
+                transaction.type ===
+                "income";
+
+            const typeText =
+                isIncome
+                ? "إيراد"
+                : "مصروف";
+
+            const typeClass =
+                isIncome
+                ? "income"
+                : "expense";
+
+            const badgeClass =
+                isIncome
+                ? "income-badge"
+                : "expense-badge";
+
+            const row =
+                document
+                    .createElement(
+                        "tr"
+                    );
+
+            row.innerHTML = `
+
+                <td>
+                    ${visible}
+                </td>
+
+                <td>
+                    ${escapeHTML(
+                        transaction.date ||
+                        "-"
+                    )}
+                </td>
+
+                <td class="description">
+                    ${escapeHTML(
+                        transaction.description ||
+                        "-"
+                    )}
+                </td>
+
+                <td>
+                    ${escapeHTML(
+                        transaction.category ||
+                        "-"
+                    )}
+                </td>
+
+                <td>
+                    <span class="type-badge ${badgeClass}">
+                        ${typeText}
+                    </span>
+                </td>
+
+                <td class="${typeClass}">
+                    ${VAREX.money(
+                        transaction.amount
+                    )}
+                </td>
+
+                <td>
+                    ${escapeHTML(
+                        transaction.payment ||
+                        "-"
+                    )}
+                </td>
+
+                <td>
+
+                    <button
+                        class="delete"
+                        onclick="removeTransaction('${transaction.id}')">
+
+                        حذف
+
+                    </button>
+
+                </td>
+
+            `;
+
+            table.appendChild(
+                row
+            );
+        }
     );
 
-  const search =
-    document.getElementById(
-      "search"
-    ).value
-      .trim()
-      .toLowerCase();
+    document
+        .getElementById("emptyMessage")
+        .style.display =
+        visible === 0
+        ? "block"
+        : "none";
 
-  const type =
-    document.getElementById(
-      "typeFilter"
-    ).value;
-
-  table.innerHTML = "";
-
-  let visible = 0;
-
-  transactions.forEach(
-    transaction => {
-
-      if(
-        type &&
-        transaction.type !== type
-      ){
-        return;
-      }
-
-      const searchable =
-        (
-          (transaction.description || "") +
-          " " +
-          (transaction.category || "") +
-          " " +
-          (transaction.payment || "")
-        ).toLowerCase();
-
-      if(
-        !searchable.includes(search)
-      ){
-        return;
-      }
-
-      visible++;
-
-      const isIncome =
-        transaction.type ===
-        "income";
-
-      const typeText =
-        isIncome
-          ? "إيراد"
-          : "مصروف";
-
-      const typeClass =
-        isIncome
-          ? "income"
-          : "expense";
-
-      const row =
-        document.createElement(
-          "tr"
-        );
-
-      row.innerHTML = `
-
-        <td>${visible}</td>
-
-        <td>
-          ${escapeHTML(
-            transaction.date || "-"
-          )}
-        </td>
-
-        <td>
-          ${escapeHTML(
-            transaction.description || "-"
-          )}
-        </td>
-
-        <td>
-          ${escapeHTML(
-            transaction.category || "-"
-          )}
-        </td>
-
-        <td class="${typeClass}">
-          ${typeText}
-        </td>
-
-        <td class="${typeClass}">
-          ${VAREX.money(
-            transaction.amount
-          )}
-        </td>
-
-        <td>
-          ${escapeHTML(
-            transaction.payment || "-"
-          )}
-        </td>
-
-        <td>
-          <button
-            class="delete"
-            onclick="removeTransaction('${transaction.id}')"
-          >
-            حذف
-          </button>
-        </td>
-
-      `;
-
-      table.appendChild(row);
-
-    }
-  );
-
-  document.getElementById(
-    "emptyMessage"
-  ).style.display =
-    visible === 0
-      ? "block"
-      : "none";
-
-  updateStats();
-
+    updateStats();
 }
-
 
 /* =========================
    ESCAPE HTML
-   ========================= */
+========================= */
 
 function escapeHTML(value){
 
-  const div =
-    document.createElement(
-      "div"
-    );
+    const div =
+        document.createElement(
+            "div"
+        );
 
-  div.textContent =
-    value == null
-      ? ""
-      : String(value);
+    div.textContent =
+        value == null
+        ? ""
+        : String(value);
 
-  return div.innerHTML;
-
+    return div.innerHTML;
 }
 
-
 /* =========================
-   CLOSE FROM OUTSIDE
-   ========================= */
+   CLOSE MODAL OUTSIDE
+========================= */
 
-window.addEventListener(
-  "click",
-  function(event){
+document
+    .getElementById("transactionModal")
+    .addEventListener(
+        "click",
+        function(event){
 
-    const modal =
-      document.getElementById(
-        "transactionModal"
-      );
-
-    if(event.target === modal){
-
-      closeTransactionModal();
-
-    }
-
-  }
-);
-
+            if(
+                event.target === this
+            ){
+                closeTransactionModal();
+            }
+        }
+    );
 
 /* =========================
    START
-   ========================= */
+========================= */
 
 renderTransactions();
 

@@ -2,384 +2,934 @@
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+
 <title>الموردون - VAREX</title>
 
 <style>
-*{box-sizing:border-box}
+
+*{
+  box-sizing:border-box;
+  margin:0;
+  padding:0;
+}
+
+:root{
+  --navy:#172554;
+  --navy-dark:#0f1d43;
+  --blue:#2563eb;
+  --bg:#f4f6fb;
+  --white:#ffffff;
+  --border:#e5eaf2;
+  --text:#172554;
+  --muted:#64748b;
+  --green:#16a34a;
+  --red:#dc2626;
+  --orange:#d97706;
+}
 
 body{
-    margin:0;
-    font-family:Arial,sans-serif;
-    background:#f4f6fb;
-    color:#172554;
+  font-family:Arial,sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  min-height:100vh;
 }
 
-.header{
-    background:#172554;
-    color:white;
-    padding:18px 30px;
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
+/* =========================
+   SIDEBAR
+   ========================= */
+
+.sidebar{
+  position:fixed;
+  right:0;
+  top:0;
+  bottom:0;
+  width:230px;
+  background:linear-gradient(
+    180deg,
+    #172554,
+    #0f1d43
+  );
+  color:white;
+  z-index:100;
+  display:flex;
+  flex-direction:column;
 }
 
-.header h1{
-    margin:0;
-    font-size:25px;
+.brand{
+  padding:28px 22px 20px;
+  border-bottom:
+    1px solid rgba(255,255,255,.10);
 }
 
-.back{
-    color:white;
-    text-decoration:none;
-    font-size:15px;
+.logo{
+  font-size:29px;
+  font-weight:800;
+  letter-spacing:4px;
 }
 
-.container{
-    width:94%;
-    max-width:1400px;
-    margin:25px auto;
+.brand-small{
+  font-size:11px;
+  color:#cbd5e1;
+  margin-top:6px;
 }
 
-.title{
-    margin-bottom:20px;
+.system-status{
+  display:flex;
+  align-items:center;
+  gap:7px;
+  margin-top:12px;
+  font-size:11px;
+  color:#d1fae5;
 }
 
-.title h2{
-    margin:0 0 5px;
+.status-dot{
+  width:8px;
+  height:8px;
+  border-radius:50%;
+  background:#22c55e;
+  box-shadow:
+    0 0 8px rgba(34,197,94,.75);
+  flex-shrink:0;
 }
 
-.title p{
-    margin:0;
-    color:#64748b;
+.nav{
+  padding:18px 12px;
+  flex:1;
 }
+
+.nav a{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  color:#dbeafe;
+  text-decoration:none;
+  padding:12px 14px;
+  border-radius:10px;
+  margin-bottom:5px;
+  font-size:14px;
+  transition:.2s;
+}
+
+.nav a:hover{
+  background:rgba(255,255,255,.08);
+  color:white;
+}
+
+.nav a.active{
+  background:white;
+  color:var(--navy);
+  font-weight:bold;
+  box-shadow:
+    0 5px 15px rgba(0,0,0,.15);
+}
+
+.nav-icon{
+  width:24px;
+  text-align:center;
+}
+
+.sidebar-footer{
+  padding:17px;
+  border-top:
+    1px solid rgba(255,255,255,.10);
+  color:#94a3b8;
+  font-size:11px;
+  text-align:center;
+}
+
+/* =========================
+   MAIN
+   ========================= */
+
+.main{
+  margin-right:230px;
+  min-height:100vh;
+}
+
+/* =========================
+   TOPBAR
+   ========================= */
+
+.topbar{
+  height:76px;
+  background:white;
+  border-bottom:
+    1px solid var(--border);
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:0 28px;
+  position:sticky;
+  top:0;
+  z-index:50;
+}
+
+.page-name{
+  display:flex;
+  align-items:center;
+  gap:12px;
+}
+
+.page-icon{
+  width:43px;
+  height:43px;
+  border-radius:12px;
+  background:#ecfeff;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:21px;
+}
+
+.page-name h2{
+  font-size:18px;
+}
+
+.page-name small{
+  display:block;
+  color:var(--muted);
+  margin-top:4px;
+}
+
+.top-info{
+  display:flex;
+  align-items:center;
+  gap:12px;
+}
+
+.info-chip{
+  background:#f8fafc;
+  border:
+    1px solid var(--border);
+  border-radius:10px;
+  padding:9px 13px;
+  font-size:12px;
+  color:var(--muted);
+}
+
+.info-chip strong{
+  color:var(--navy);
+}
+
+/* =========================
+   CONTENT
+   ========================= */
+
+.content{
+  width:94%;
+  max-width:1400px;
+  margin:26px auto 45px;
+}
+
+.hero{
+  margin-bottom:22px;
+}
+
+.hero h1{
+  font-size:25px;
+  margin-bottom:6px;
+}
+
+.hero p{
+  color:var(--muted);
+  font-size:13px;
+  line-height:1.7;
+}
+
+/* =========================
+   STATS
+   ========================= */
 
 .stats{
-    display:grid;
-    grid-template-columns:repeat(4,1fr);
-    gap:15px;
-    margin-bottom:20px;
+  display:grid;
+  grid-template-columns:
+    repeat(4,1fr);
+  gap:15px;
+  margin-bottom:20px;
 }
 
 .stat{
-    background:white;
-    border-radius:14px;
-    padding:18px;
-    box-shadow:0 3px 15px rgba(0,0,0,.06);
+  background:white;
+  border:
+    1px solid var(--border);
+  border-radius:15px;
+  padding:20px;
+  box-shadow:
+    0 4px 18px rgba(15,23,42,.05);
 }
 
 .stat span{
-    display:block;
-    color:#64748b;
-    margin-bottom:8px;
+  display:block;
+  color:var(--muted);
+  font-size:14px;
+  margin-bottom:9px;
 }
 
 .stat strong{
-    font-size:23px;
+  display:block;
+  font-size:23px;
 }
 
+.supplier-card{
+  border-top:4px solid #2563eb;
+}
+
+.purchase-card{
+  border-top:4px solid #7c3aed;
+}
+
+.paid-card{
+  border-top:4px solid #16a34a;
+}
+
+.due-card{
+  border-top:4px solid #f59e0b;
+}
+
+/* =========================
+   PANEL
+   ========================= */
+
 .panel{
-    background:white;
-    border-radius:15px;
-    padding:20px;
-    margin-bottom:20px;
-    box-shadow:0 3px 15px rgba(0,0,0,.06);
+  background:white;
+  border:
+    1px solid var(--border);
+  border-radius:15px;
+  padding:21px;
+  margin-bottom:20px;
+  box-shadow:
+    0 4px 18px rgba(15,23,42,.05);
 }
 
 .panel h3{
-    margin-top:0;
+  margin:0 0 18px;
+  padding-bottom:13px;
+  border-bottom:
+    1px solid #edf0f5;
+  font-size:17px;
 }
 
+/* =========================
+   FORM
+   ========================= */
+
 .form-grid{
-    display:grid;
-    grid-template-columns:repeat(3,1fr);
-    gap:12px;
+  display:grid;
+  grid-template-columns:
+    repeat(3,1fr);
+  gap:12px;
 }
 
 input,
 select,
 textarea{
-    width:100%;
-    padding:12px;
-    border:1px solid #dbe1ea;
-    border-radius:8px;
-    font-size:14px;
-    font-family:inherit;
+  width:100%;
+  padding:12px;
+  border:
+    1px solid #dbe1ea;
+  border-radius:9px;
+  font-size:14px;
+  font-family:inherit;
+  background:white;
+  outline:none;
+}
+
+input:focus,
+select:focus,
+textarea:focus{
+  border-color:#94a3b8;
+  box-shadow:
+    0 0 0 3px rgba(37,99,235,.05);
 }
 
 textarea{
-    min-height:75px;
-    resize:vertical;
+  min-height:80px;
+  resize:vertical;
 }
 
 .full{
-    grid-column:1 / -1;
-}
-
-button{
-    border:0;
-    border-radius:8px;
-    padding:11px 18px;
-    cursor:pointer;
-    font-family:inherit;
-}
-
-.save{
-    background:#172554;
-    color:white;
-}
-
-.cancel{
-    background:#e5e7eb;
-    color:#111827;
-    display:none;
+  grid-column:1/-1;
 }
 
 .actions-form{
-    margin-top:15px;
-    display:flex;
-    gap:8px;
+  margin-top:15px;
+  display:flex;
+  gap:8px;
 }
 
+button{
+  border:0;
+  border-radius:9px;
+  padding:11px 18px;
+  cursor:pointer;
+  font-family:inherit;
+  font-weight:bold;
+}
+
+.save{
+  background:
+    linear-gradient(
+      135deg,
+      #172554,
+      #1e3a8a
+    );
+  color:white;
+}
+
+.cancel{
+  background:#e5e7eb;
+  color:#111827;
+  display:none;
+}
+
+/* =========================
+   TOOLBAR
+   ========================= */
+
 .toolbar{
-    display:flex;
-    gap:10px;
-    margin-bottom:15px;
+  display:flex;
+  gap:10px;
+  margin-bottom:15px;
 }
 
 .search{
-    flex:1;
+  flex:1;
 }
 
+/* =========================
+   TABLE
+   ========================= */
+
 .table-wrap{
-    overflow-x:auto;
+  overflow-x:auto;
 }
 
 table{
-    width:100%;
-    border-collapse:collapse;
-    min-width:1000px;
+  width:100%;
+  border-collapse:collapse;
+  min-width:1000px;
 }
 
 th,
 td{
-    padding:12px 9px;
-    border-bottom:1px solid #e5e7eb;
-    text-align:right;
-    font-size:14px;
+  padding:12px 9px;
+  border-bottom:
+    1px solid #e5e7eb;
+  text-align:right;
+  font-size:14px;
 }
 
 th{
-    background:#f8fafc;
-    color:#475569;
+  background:#f8fafc;
+  color:#475569;
+  font-weight:bold;
+}
+
+tbody tr:hover{
+  background:#fafcff;
 }
 
 .edit{
-    background:#e0e7ff;
-    color:#172554;
-    padding:7px 10px;
+  background:#e0e7ff;
+  color:#172554;
+  padding:7px 10px;
 }
 
 .delete{
-    background:#fee2e2;
-    color:#991b1b;
-    padding:7px 10px;
+  background:#fee2e2;
+  color:#991b1b;
+  padding:7px 10px;
 }
 
 .status-paid{
-    color:#15803d;
-    font-weight:bold;
+  display:inline-block;
+  background:#dcfce7;
+  color:#15803d;
+  font-weight:bold;
+  padding:5px 9px;
+  border-radius:20px;
+  font-size:12px;
 }
 
 .status-due{
-    color:#b45309;
-    font-weight:bold;
+  display:inline-block;
+  background:#fef3c7;
+  color:#b45309;
+  font-weight:bold;
+  padding:5px 9px;
+  border-radius:20px;
+  font-size:12px;
 }
 
 .empty{
-    text-align:center;
-    padding:30px;
-    color:#64748b;
+  text-align:center;
+  padding:30px;
+  color:var(--muted);
+}
+
+/* =========================
+   RESPONSIVE
+   ========================= */
+
+@media(max-width:1100px){
+
+  .sidebar{
+    width:200px;
+  }
+
+  .main{
+    margin-right:200px;
+  }
+
+  .form-grid{
+    grid-template-columns:
+      1fr 1fr;
+  }
 }
 
 @media(max-width:850px){
-    .stats{
-        grid-template-columns:repeat(2,1fr);
-    }
 
-    .form-grid{
-        grid-template-columns:1fr;
-    }
+  .sidebar{
+    position:relative;
+    width:100%;
+    height:auto;
+  }
 
-    .full{
-        grid-column:auto;
-    }
+  .brand{
+    padding:17px 20px;
+  }
+
+  .nav{
+    display:flex;
+    overflow-x:auto;
+    padding:8px 10px 12px;
+  }
+
+  .nav a{
+    white-space:nowrap;
+    margin:0 3px;
+  }
+
+  .sidebar-footer{
+    display:none;
+  }
+
+  .main{
+    margin-right:0;
+  }
+
+  .topbar{
+    position:relative;
+    padding:0 16px;
+  }
+
+  .stats{
+    grid-template-columns:
+      repeat(2,1fr);
+  }
+}
+
+@media(max-width:650px){
+
+  .form-grid{
+    grid-template-columns:1fr;
+  }
+
+  .full{
+    grid-column:auto;
+  }
+
+  .top-info{
+    display:none;
+  }
 }
 
 @media(max-width:500px){
-    .stats{
-        grid-template-columns:1fr;
-    }
 
-    .header{
-        padding:15px;
-    }
+  .stats{
+    grid-template-columns:1fr;
+  }
+
 }
+
 </style>
 </head>
 
 <body>
 
-<div class="header">
-    <h1>VAREX</h1>
-    <a href="index.html" class="back">← العودة للرئيسية</a>
-</div>
+<!-- =========================
+     SIDEBAR
+     ========================= -->
 
-<div class="container">
+<aside class="sidebar">
 
-    <div class="title">
-        <h2>🚚 إدارة الموردين</h2>
-        <p>إضافة الموردين ومتابعة الحسابات والمبالغ المستحقة</p>
-    </div>
+<div class="brand">
 
-    <div class="stats">
+  <div class="logo">
+    VAREX
+  </div>
 
-        <div class="stat">
-            <span>عدد الموردين</span>
-            <strong id="supplierCount">0</strong>
-        </div>
+  <div class="brand-small">
+    BUSINESS MANAGEMENT SYSTEM
+  </div>
 
-        <div class="stat">
-            <span>إجمالي المشتريات</span>
-            <strong id="totalPurchases">0.00 د.إ</strong>
-        </div>
-
-        <div class="stat">
-            <span>إجمالي المدفوع</span>
-            <strong id="totalPaid">0.00 د.إ</strong>
-        </div>
-
-        <div class="stat">
-            <span>إجمالي المستحق</span>
-            <strong id="totalDue">0.00 د.إ</strong>
-        </div>
-
-    </div>
-
-    <div class="panel">
-
-        <h3 id="formTitle">إضافة مورد جديد</h3>
-
-        <div class="form-grid">
-
-            <input id="supplierName" placeholder="اسم المورد">
-
-            <input id="companyName" placeholder="اسم الشركة">
-
-            <input id="phone" placeholder="رقم الهاتف">
-
-            <input id="email" type="email" placeholder="البريد الإلكتروني">
-
-            <input id="taxNumber" placeholder="الرقم الضريبي">
-
-            <select id="supplierType">
-                <option value="">نوع المورد</option>
-                <option>مورد منتجات</option>
-                <option>مورد خدمات</option>
-                <option>مورد منتجات وخدمات</option>
-            </select>
-
-            <input
-                id="purchases"
-                type="number"
-                min="0"
-                step="0.01"
-                placeholder="إجمالي المشتريات"
-            >
-
-            <input
-                id="paid"
-                type="number"
-                min="0"
-                step="0.01"
-                placeholder="المبلغ المدفوع"
-            >
-
-            <input id="address" placeholder="العنوان">
-
-            <textarea
-                id="notes"
-                class="full"
-                placeholder="ملاحظات"
-            ></textarea>
-
-        </div>
-
-        <div class="actions-form">
-
-            <button class="save" onclick="saveSupplier()">
-                حفظ المورد
-            </button>
-
-            <button
-                class="cancel"
-                id="cancelBtn"
-                onclick="cancelEdit()"
-            >
-                إلغاء التعديل
-            </button>
-
-        </div>
-
-    </div>
-
-    <div class="panel">
-
-        <h3>قائمة الموردين</h3>
-
-        <div class="toolbar">
-
-            <input
-                class="search"
-                id="search"
-                placeholder="🔍 ابحث باسم المورد أو الشركة أو الهاتف..."
-                oninput="renderSuppliers()"
-            >
-
-        </div>
-
-        <div class="table-wrap">
-
-            <table>
-
-                <thead>
-                    <tr>
-                        <th>#</th>
-                        <th>اسم المورد</th>
-                        <th>الشركة</th>
-                        <th>الهاتف</th>
-                        <th>نوع المورد</th>
-                        <th>المشتريات</th>
-                        <th>المدفوع</th>
-                        <th>المتبقي</th>
-                        <th>الحالة</th>
-                        <th>الإجراءات</th>
-                    </tr>
-                </thead>
-
-                <tbody id="supplierTable"></tbody>
-
-            </table>
-
-            <div id="emptyMessage" class="empty">
-                لا يوجد موردون حتى الآن
-            </div>
-
-        </div>
-
-    </div>
+  <div class="system-status">
+    <span class="status-dot"></span>
+    <span>
+      النظام متصل وجاهز للبيع
+    </span>
+  </div>
 
 </div>
+
+<nav class="nav">
+
+  <a href="index.html">
+    <span class="nav-icon">▦</span>
+    لوحة التحكم
+  </a>
+
+  <a href="pos.html">
+    <span class="nav-icon">🛒</span>
+    نقطة البيع
+  </a>
+
+  <a href="products.html">
+    <span class="nav-icon">📦</span>
+    المنتجات والمخزون
+  </a>
+
+  <a href="customers.html">
+    <span class="nav-icon">👥</span>
+    العملاء
+  </a>
+
+  <a
+    href="suppliers.html"
+    class="active"
+  >
+    <span class="nav-icon">🚚</span>
+    الموردون
+  </a>
+
+  <a href="accounts.html">
+    <span class="nav-icon">💰</span>
+    الحسابات
+  </a>
+
+  <a href="employees.html">
+    <span class="nav-icon">👤</span>
+    الموظفون
+  </a>
+
+  <a href="reports.html">
+    <span class="nav-icon">📊</span>
+    التقارير
+  </a>
+
+  <a href="setting.html">
+    <span class="nav-icon">⚙️</span>
+    الإعدادات
+  </a>
+
+</nav>
+
+<div class="sidebar-footer">
+  VAREX BUSINESS SYSTEM
+</div>
+
+</aside>
+
+<!-- =========================
+     MAIN
+     ========================= -->
+
+<div class="main">
+
+<header class="topbar">
+
+<div class="page-name">
+
+  <div class="page-icon">
+    🚚
+  </div>
+
+  <div>
+    <h2>
+      الموردون
+    </h2>
+    <small>
+      SUPPLIERS MANAGEMENT
+    </small>
+  </div>
+
+</div>
+
+<div class="top-info">
+
+  <div class="info-chip">
+    المستخدم:
+    <strong>
+      المستخدم الحالي
+    </strong>
+  </div>
+
+  <div
+    class="info-chip"
+    id="currentDate"
+  >
+    —
+  </div>
+
+  <div
+    class="info-chip"
+    id="currentTime"
+  >
+    —
+  </div>
+
+</div>
+
+</header>
+
+<main class="content">
+
+<!-- =========================
+     TITLE
+     ========================= -->
+
+<section class="hero">
+
+<h1>
+🚚 إدارة الموردين
+</h1>
+
+<p>
+إضافة الموردين وإدارة بياناتهم
+ومتابعة المشتريات والمدفوعات
+والمبالغ المستحقة.
+</p>
+
+</section>
+
+<!-- =========================
+     STATS
+     ========================= -->
+
+<div class="stats">
+
+<div class="stat supplier-card">
+  <span>
+    عدد الموردين
+  </span>
+  <strong id="supplierCount">
+    0
+  </strong>
+</div>
+
+<div class="stat purchase-card">
+  <span>
+    إجمالي المشتريات
+  </span>
+  <strong id="totalPurchases">
+    0.00 د.إ
+  </strong>
+</div>
+
+<div class="stat paid-card">
+  <span>
+    إجمالي المدفوع
+  </span>
+  <strong id="totalPaid">
+    0.00 د.إ
+  </strong>
+</div>
+
+<div class="stat due-card">
+  <span>
+    إجمالي المستحق
+  </span>
+  <strong id="totalDue">
+    0.00 د.إ
+  </strong>
+</div>
+
+</div>
+
+<!-- =========================
+     ADD SUPPLIER
+     ========================= -->
+
+<div class="panel">
+
+<h3 id="formTitle">
+إضافة مورد جديد
+</h3>
+
+<div class="form-grid">
+
+<input
+  id="supplierName"
+  placeholder="اسم المورد"
+>
+
+<input
+  id="companyName"
+  placeholder="اسم الشركة"
+>
+
+<input
+  id="phone"
+  placeholder="رقم الهاتف"
+>
+
+<input
+  id="email"
+  type="email"
+  placeholder="البريد الإلكتروني"
+>
+
+<input
+  id="taxNumber"
+  placeholder="الرقم الضريبي"
+>
+
+<select id="supplierType">
+
+<option value="">
+نوع المورد
+</option>
+
+<option value="مورد منتجات">
+مورد منتجات
+</option>
+
+<option value="مورد خدمات">
+مورد خدمات
+</option>
+
+<option value="مورد منتجات وخدمات">
+مورد منتجات وخدمات
+</option>
+
+</select>
+
+<input
+  id="purchases"
+  type="number"
+  min="0"
+  step="0.01"
+  placeholder="إجمالي المشتريات"
+>
+
+<input
+  id="paid"
+  type="number"
+  min="0"
+  step="0.01"
+  placeholder="المبلغ المدفوع"
+>
+
+<input
+  id="address"
+  placeholder="العنوان"
+>
+
+<textarea
+  id="notes"
+  class="full"
+  placeholder="ملاحظات عن المورد"
+></textarea>
+
+</div>
+
+<div class="actions-form">
+
+<button
+  class="save"
+  onclick="saveSupplier()"
+>
+حفظ المورد
+</button>
+
+<button
+  class="cancel"
+  id="cancelBtn"
+  onclick="cancelEdit()"
+>
+إلغاء التعديل
+</button>
+
+</div>
+
+</div>
+
+<!-- =========================
+     SUPPLIERS LIST
+     ========================= -->
+
+<div class="panel">
+
+<h3>
+قائمة الموردين
+</h3>
+
+<div class="toolbar">
+
+<input
+  class="search"
+  id="search"
+  placeholder="🔍 ابحث باسم المورد أو الشركة أو الهاتف..."
+  oninput="renderSuppliers()"
+>
+
+</div>
+
+<div class="table-wrap">
+
+<table>
+
+<thead>
+
+<tr>
+  <th>#</th>
+  <th>اسم المورد</th>
+  <th>الشركة</th>
+  <th>الهاتف</th>
+  <th>نوع المورد</th>
+  <th>المشتريات</th>
+  <th>المدفوع</th>
+  <th>المتبقي</th>
+  <th>الحالة</th>
+  <th>الإجراءات</th>
+</tr>
+
+</thead>
+
+<tbody id="supplierTable">
+</tbody>
+
+</table>
+
+<div
+  id="emptyMessage"
+  class="empty"
+>
+لا يوجد موردون حتى الآن
+</div>
+
+</div>
+
+</div>
+
+</main>
+
+</div>
+
+<!-- =========================
+     VAREX CORE
+     ========================= -->
 
 <script src="varex.js"></script>
 
@@ -387,530 +937,700 @@ th{
 
 let editingSupplierId = null;
 
-function number(value){
-    return Number(value) || 0;
+/* =========================
+   CLOCK
+   ========================= */
+
+function updateClock(){
+
+  const now =
+    new Date();
+
+  document.getElementById(
+    "currentDate"
+  ).innerText =
+    now.toLocaleDateString(
+      "ar-AE",
+      {
+        year:"numeric",
+        month:"2-digit",
+        day:"2-digit"
+      }
+    );
+
+  document.getElementById(
+    "currentTime"
+  ).innerText =
+    now.toLocaleTimeString(
+      "ar-AE",
+      {
+        hour:"2-digit",
+        minute:"2-digit",
+        second:"2-digit"
+      }
+    );
+
 }
+
+updateClock();
+
+setInterval(
+  updateClock,
+  1000
+);
+
+/* =========================
+   NUMBER
+   ========================= */
+
+function number(value){
+
+  return Number(value) || 0;
+
+}
+
+/* =========================
+   SAVE SUPPLIER
+   ========================= */
 
 function saveSupplier(){
 
-    const name =
-        document
-        .getElementById("supplierName")
+  const name =
+    document
+      .getElementById(
+        "supplierName"
+      )
+      .value
+      .trim();
+
+  if(!name){
+
+    alert(
+      "يرجى إدخال اسم المورد"
+    );
+
+    return;
+
+  }
+
+  const purchases =
+    number(
+      document
+        .getElementById(
+          "purchases"
+        )
         .value
-        .trim();
+    );
 
-    if(!name){
-        alert("يرجى إدخال اسم المورد");
-        return;
+  const paid =
+    number(
+      document
+        .getElementById(
+          "paid"
+        )
+        .value
+    );
+
+  if(paid > purchases){
+
+    alert(
+      "المبلغ المدفوع لا يمكن أن يكون أكبر من إجمالي المشتريات"
+    );
+
+    return;
+
+  }
+
+  const supplierData = {
+
+    name:name,
+
+    company:
+      document
+        .getElementById(
+          "companyName"
+        )
+        .value
+        .trim(),
+
+    phone:
+      document
+        .getElementById(
+          "phone"
+        )
+        .value
+        .trim(),
+
+    email:
+      document
+        .getElementById(
+          "email"
+        )
+        .value
+        .trim(),
+
+    taxNumber:
+      document
+        .getElementById(
+          "taxNumber"
+        )
+        .value
+        .trim(),
+
+    type:
+      document
+        .getElementById(
+          "supplierType"
+        )
+        .value,
+
+    purchases:purchases,
+
+    paid:paid,
+
+    address:
+      document
+        .getElementById(
+          "address"
+        )
+        .value
+        .trim(),
+
+    notes:
+      document
+        .getElementById(
+          "notes"
+        )
+        .value
+        .trim()
+
+  };
+
+  if(
+    editingSupplierId === null
+  ){
+
+    VAREX.addSupplier(
+      supplierData
+    );
+
+  }else{
+
+    const suppliers =
+      VAREX.getSuppliers();
+
+    const index =
+      suppliers.findIndex(
+        supplier =>
+          String(
+            supplier.id
+          ) ===
+          String(
+            editingSupplierId
+          )
+      );
+
+    if(index !== -1){
+
+      suppliers[index] = {
+        ...suppliers[index],
+        ...supplierData
+      };
+
+      VAREX.saveData(
+        VAREX.keys.suppliers,
+        suppliers
+      );
+
     }
 
-    const supplierData = {
+  }
 
-        name:name,
+  editingSupplierId = null;
 
-        company:
-            document
-            .getElementById("companyName")
-            .value
-            .trim(),
+  clearForm();
 
-        phone:
-            document
-            .getElementById("phone")
-            .value
-            .trim(),
+  renderSuppliers();
 
-        email:
-            document
-            .getElementById("email")
-            .value
-            .trim(),
-
-        taxNumber:
-            document
-            .getElementById("taxNumber")
-            .value
-            .trim(),
-
-        type:
-            document
-            .getElementById("supplierType")
-            .value,
-
-        purchases:
-            number(
-                document
-                .getElementById("purchases")
-                .value
-            ),
-
-        paid:
-            number(
-                document
-                .getElementById("paid")
-                .value
-            ),
-
-        address:
-            document
-            .getElementById("address")
-            .value
-            .trim(),
-
-        notes:
-            document
-            .getElementById("notes")
-            .value
-            .trim()
-    };
-
-
-    if(editingSupplierId === null){
-
-        VAREX.addSupplier(
-            supplierData
-        );
-
-    }else{
-
-        const suppliers =
-            VAREX.getSuppliers();
-
-        const index =
-            suppliers.findIndex(
-                supplier =>
-                    String(supplier.id) ===
-                    String(editingSupplierId)
-            );
-
-        if(index !== -1){
-
-            suppliers[index] = {
-                ...suppliers[index],
-                ...supplierData
-            };
-
-            VAREX.saveData(
-                VAREX.keys.suppliers,
-                suppliers
-            );
-        }
-    }
-
-    editingSupplierId = null;
-
-    clearForm();
-
-    renderSuppliers();
 }
 
+/* =========================
+   RENDER
+   ========================= */
 
 function renderSuppliers(){
 
-    const suppliers =
-        VAREX.getSuppliers();
+  const suppliers =
+    VAREX.getSuppliers();
 
-    const table =
-        document.getElementById(
-            "supplierTable"
+  const table =
+    document.getElementById(
+      "supplierTable"
+    );
+
+  const search =
+    document
+      .getElementById(
+        "search"
+      )
+      .value
+      .trim()
+      .toLowerCase();
+
+  table.innerHTML = "";
+
+  let visible = 0;
+
+  suppliers.forEach(
+    supplier => {
+
+      const searchable =
+        (
+          (supplier.name || "") +
+          " " +
+          (supplier.company || "") +
+          " " +
+          (supplier.phone || "") +
+          " " +
+          (supplier.email || "") +
+          " " +
+          (supplier.type || "")
+        ).toLowerCase();
+
+      if(
+        !searchable.includes(
+          search
+        )
+      ){
+        return;
+      }
+
+      visible++;
+
+      const due =
+        Math.max(
+          0,
+          number(
+            supplier.purchases
+          ) -
+          number(
+            supplier.paid
+          )
         );
 
-    const search =
-        document
-        .getElementById("search")
-        .value
-        .trim()
-        .toLowerCase();
+      const status =
+        due <= 0
+          ? `
+            <span class="status-paid">
+              مسدد
+            </span>
+          `
+          : `
+            <span class="status-due">
+              مستحق
+            </span>
+          `;
 
-    table.innerHTML = "";
+      const row =
+        document.createElement(
+          "tr"
+        );
 
-    let visible = 0;
+      row.innerHTML = `
 
+        <td>
+          ${visible}
+        </td>
 
-    suppliers.forEach(
-        (supplier,index) => {
+        <td>
+          ${escapeHTML(
+            supplier.name || "-"
+          )}
+        </td>
 
-        const searchable =
-            (
-                (supplier.name || "") +
-                " " +
-                (supplier.company || "") +
-                " " +
-                (supplier.phone || "")
-            ).toLowerCase();
+        <td>
+          ${escapeHTML(
+            supplier.company || "-"
+          )}
+        </td>
 
-        if(
-            !searchable.includes(search)
-        ){
-            return;
-        }
+        <td>
+          ${escapeHTML(
+            supplier.phone || "-"
+          )}
+        </td>
 
-        visible++;
+        <td>
+          ${escapeHTML(
+            supplier.type || "-"
+          )}
+        </td>
 
-        const due =
-            Math.max(
-                0,
-                number(
-                    supplier.purchases
-                ) -
-                number(
-                    supplier.paid
-                )
-            );
+        <td>
+          ${VAREX.money(
+            supplier.purchases
+          )}
+        </td>
 
-        const status =
-            due <= 0
-            ? '<span class="status-paid">مسدد</span>'
-            : '<span class="status-due">مستحق</span>';
+        <td>
+          ${VAREX.money(
+            supplier.paid
+          )}
+        </td>
 
+        <td>
+          ${VAREX.money(
+            due
+          )}
+        </td>
 
-        const row =
-            document.createElement("tr");
+        <td>
+          ${status}
+        </td>
 
+        <td>
 
-        row.innerHTML = `
+          <button
+            class="edit"
+            onclick="editSupplier('${supplier.id}')"
+          >
+            تعديل
+          </button>
 
-            <td>${index + 1}</td>
+          <button
+            class="delete"
+            onclick="deleteSupplier('${supplier.id}')"
+          >
+            حذف
+          </button>
 
-            <td>
-                ${escapeHTML(supplier.name)}
-            </td>
+        </td>
 
-            <td>
-                ${escapeHTML(supplier.company || "-")}
-            </td>
+      `;
 
-            <td>
-                ${escapeHTML(supplier.phone || "-")}
-            </td>
+      table.appendChild(
+        row
+      );
 
-            <td>
-                ${escapeHTML(supplier.type || "-")}
-            </td>
+    }
+  );
 
-            <td>
-                ${VAREX.money(supplier.purchases)}
-            </td>
+  document.getElementById(
+    "emptyMessage"
+  ).style.display =
+    visible === 0
+      ? "block"
+      : "none";
 
-            <td>
-                ${VAREX.money(supplier.paid)}
-            </td>
+  updateStats();
 
-            <td>
-                ${VAREX.money(due)}
-            </td>
-
-            <td>
-                ${status}
-            </td>
-
-            <td>
-
-                <button
-                    class="edit"
-                    onclick="editSupplier('${supplier.id}')"
-                >
-                    تعديل
-                </button>
-
-                <button
-                    class="delete"
-                    onclick="deleteSupplier('${supplier.id}')"
-                >
-                    حذف
-                </button>
-
-            </td>
-        `;
-
-        table.appendChild(row);
-
-    });
-
-
-    document.getElementById(
-        "emptyMessage"
-    ).style.display =
-        visible === 0
-        ? "block"
-        : "none";
-
-
-    updateStats();
 }
 
+/* =========================
+   STATS
+   ========================= */
 
 function updateStats(){
 
-    const suppliers =
-        VAREX.getSuppliers();
+  const suppliers =
+    VAREX.getSuppliers();
 
-    let purchases = 0;
-    let paid = 0;
+  let purchases = 0;
+  let paid = 0;
 
+  suppliers.forEach(
+    supplier => {
 
-    suppliers.forEach(
-        supplier => {
-
-        purchases +=
-            number(
-                supplier.purchases
-            );
-
-        paid +=
-            number(
-                supplier.paid
-            );
-
-    });
-
-
-    const due =
-        Math.max(
-            0,
-            purchases - paid
+      purchases +=
+        number(
+          supplier.purchases
         );
 
+      paid +=
+        number(
+          supplier.paid
+        );
 
-    document.getElementById(
-        "supplierCount"
-    ).innerText =
-        suppliers.length;
+    }
+  );
 
+  const due =
+    Math.max(
+      0,
+      purchases - paid
+    );
 
-    document.getElementById(
-        "totalPurchases"
-    ).innerText =
-        VAREX.money(purchases);
+  document.getElementById(
+    "supplierCount"
+  ).innerText =
+    suppliers.length;
 
+  document.getElementById(
+    "totalPurchases"
+  ).innerText =
+    VAREX.money(
+      purchases
+    );
 
-    document.getElementById(
-        "totalPaid"
-    ).innerText =
-        VAREX.money(paid);
+  document.getElementById(
+    "totalPaid"
+  ).innerText =
+    VAREX.money(
+      paid
+    );
 
+  document.getElementById(
+    "totalDue"
+  ).innerText =
+    VAREX.money(
+      due
+    );
 
-    document.getElementById(
-        "totalDue"
-    ).innerText =
-        VAREX.money(due);
 }
 
+/* =========================
+   EDIT
+   ========================= */
 
 function editSupplier(id){
 
-    const supplier =
-        VAREX
-        .getSuppliers()
-        .find(
-            supplier =>
-                String(supplier.id) ===
-                String(id)
-        );
+  const supplier =
+    VAREX
+      .getSuppliers()
+      .find(
+        supplier =>
+          String(
+            supplier.id
+          ) ===
+          String(id)
+      );
 
-    if(!supplier){
-        return;
-    }
+  if(!supplier){
+    return;
+  }
 
+  editingSupplierId =
+    supplier.id;
 
-    editingSupplierId =
-        supplier.id;
+  document.getElementById(
+    "supplierName"
+  ).value =
+    supplier.name || "";
 
+  document.getElementById(
+    "companyName"
+  ).value =
+    supplier.company || "";
 
-    document.getElementById(
-        "supplierName"
-    ).value =
-        supplier.name || "";
+  document.getElementById(
+    "phone"
+  ).value =
+    supplier.phone || "";
 
+  document.getElementById(
+    "email"
+  ).value =
+    supplier.email || "";
 
-    document.getElementById(
-        "companyName"
-    ).value =
-        supplier.company || "";
+  document.getElementById(
+    "taxNumber"
+  ).value =
+    supplier.taxNumber || "";
 
+  document.getElementById(
+    "supplierType"
+  ).value =
+    supplier.type || "";
 
-    document.getElementById(
-        "phone"
-    ).value =
-        supplier.phone || "";
+  document.getElementById(
+    "purchases"
+  ).value =
+    supplier.purchases ?? "";
 
+  document.getElementById(
+    "paid"
+  ).value =
+    supplier.paid ?? "";
 
-    document.getElementById(
-        "email"
-    ).value =
-        supplier.email || "";
+  document.getElementById(
+    "address"
+  ).value =
+    supplier.address || "";
 
+  document.getElementById(
+    "notes"
+  ).value =
+    supplier.notes || "";
 
-    document.getElementById(
-        "taxNumber"
-    ).value =
-        supplier.taxNumber || "";
+  document.getElementById(
+    "formTitle"
+  ).innerText =
+    "تعديل بيانات المورد";
 
+  document.getElementById(
+    "cancelBtn"
+  ).style.display =
+    "inline-block";
 
-    document.getElementById(
-        "supplierType"
-    ).value =
-        supplier.type || "";
+  window.scrollTo({
+    top:0,
+    behavior:"smooth"
+  });
 
-
-    document.getElementById(
-        "purchases"
-    ).value =
-        supplier.purchases || "";
-
-
-    document.getElementById(
-        "paid"
-    ).value =
-        supplier.paid || "";
-
-
-    document.getElementById(
-        "address"
-    ).value =
-        supplier.address || "";
-
-
-    document.getElementById(
-        "notes"
-    ).value =
-        supplier.notes || "";
-
-
-    document.getElementById(
-        "formTitle"
-    ).innerText =
-        "تعديل بيانات المورد";
-
-
-    document.getElementById(
-        "cancelBtn"
-    ).style.display =
-        "inline-block";
-
-
-    window.scrollTo({
-        top:0,
-        behavior:"smooth"
-    });
 }
 
+/* =========================
+   DELETE
+   ========================= */
 
 function deleteSupplier(id){
 
-    const suppliers =
-        VAREX.getSuppliers();
+  const suppliers =
+    VAREX.getSuppliers();
 
-    const supplier =
-        suppliers.find(
-            supplier =>
-                String(supplier.id) ===
-                String(id)
-        );
+  const supplier =
+    suppliers.find(
+      supplier =>
+        String(
+          supplier.id
+        ) ===
+        String(id)
+    );
 
-    if(!supplier){
-        return;
-    }
+  if(!supplier){
+    return;
+  }
 
+  const confirmed =
+    confirm(
+      "هل تريد حذف المورد: " +
+      supplier.name +
+      "؟"
+    );
 
-    if(
-        confirm(
-            "هل تريد حذف المورد: " +
-            supplier.name +
-            "؟"
-        )
-    ){
+  if(!confirmed){
+    return;
+  }
 
-        const updated =
-            suppliers.filter(
-                supplier =>
-                    String(supplier.id) !==
-                    String(id)
-            );
+  const updated =
+    suppliers.filter(
+      supplier =>
+        String(
+          supplier.id
+        ) !==
+        String(id)
+    );
 
-        VAREX.saveData(
-            VAREX.keys.suppliers,
-            updated
-        );
+  VAREX.saveData(
+    VAREX.keys.suppliers,
+    updated
+  );
 
-        renderSuppliers();
-    }
+  if(
+    String(editingSupplierId) ===
+    String(id)
+  ){
+    editingSupplierId = null;
+    clearForm();
+  }
+
+  renderSuppliers();
+
 }
 
+/* =========================
+   CANCEL EDIT
+   ========================= */
 
 function cancelEdit(){
 
-    editingSupplierId = null;
+  editingSupplierId = null;
 
-    clearForm();
+  clearForm();
+
 }
 
+/* =========================
+   CLEAR FORM
+   ========================= */
 
 function clearForm(){
 
-    document.getElementById(
-        "supplierName"
-    ).value = "";
+  document.getElementById(
+    "supplierName"
+  ).value = "";
 
-    document.getElementById(
-        "companyName"
-    ).value = "";
+  document.getElementById(
+    "companyName"
+  ).value = "";
 
-    document.getElementById(
-        "phone"
-    ).value = "";
+  document.getElementById(
+    "phone"
+  ).value = "";
 
-    document.getElementById(
-        "email"
-    ).value = "";
+  document.getElementById(
+    "email"
+  ).value = "";
 
-    document.getElementById(
-        "taxNumber"
-    ).value = "";
+  document.getElementById(
+    "taxNumber"
+  ).value = "";
 
-    document.getElementById(
-        "supplierType"
-    ).value = "";
+  document.getElementById(
+    "supplierType"
+  ).value = "";
 
-    document.getElementById(
-        "purchases"
-    ).value = "";
+  document.getElementById(
+    "purchases"
+  ).value = "";
 
-    document.getElementById(
-        "paid"
-    ).value = "";
+  document.getElementById(
+    "paid"
+  ).value = "";
 
-    document.getElementById(
-        "address"
-    ).value = "";
+  document.getElementById(
+    "address"
+  ).value = "";
 
-    document.getElementById(
-        "notes"
-    ).value = "";
+  document.getElementById(
+    "notes"
+  ).value = "";
 
-    document.getElementById(
-        "formTitle"
-    ).innerText =
-        "إضافة مورد جديد";
+  document.getElementById(
+    "formTitle"
+  ).innerText =
+    "إضافة مورد جديد";
 
-    document.getElementById(
-        "cancelBtn"
-    ).style.display =
-        "none";
+  document.getElementById(
+    "cancelBtn"
+  ).style.display =
+    "none";
+
 }
 
+/* =========================
+   ESCAPE HTML
+   ========================= */
 
 function escapeHTML(value){
 
-    const div =
-        document.createElement("div");
+  const div =
+    document.createElement(
+      "div"
+    );
 
-    div.textContent =
-        value || "";
+  div.textContent =
+    value == null
+      ? ""
+      : String(value);
 
-    return div.innerHTML;
+  return div.innerHTML;
+
 }
 
+/* =========================
+   START
+   ========================= */
 
 renderSuppliers();
 
