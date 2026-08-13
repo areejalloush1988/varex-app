@@ -6,15 +6,11 @@
 
 <title>VAREX | لوحة التحكم</title>
 
-<!-- ==========================================
-     PWA
-========================================== -->
 <link rel="manifest" href="./manifest.json">
 
 <meta name="theme-color" content="#172554">
 <meta name="application-name" content="VAREX">
 <meta name="mobile-web-app-capable" content="yes">
-
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="VAREX">
@@ -59,17 +55,13 @@ body{
     line-height:1.5;
 }
 
-
-/* ==========================================
-   SIDEBAR
-========================================== */
+/* SIDEBAR */
 
 .sidebar{
     position:fixed;
     right:0;
     top:0;
     bottom:0;
-
     width:var(--sidebar-width);
 
     background:linear-gradient(
@@ -80,20 +72,13 @@ body{
     );
 
     color:#ffffff;
-
     z-index:100;
 
     display:flex;
     flex-direction:column;
 
-    box-shadow:
-        -4px 0 18px rgba(15,29,67,.08);
+    box-shadow:-4px 0 18px rgba(15,29,67,.08);
 }
-
-
-/* ==========================================
-   FIXED BRAND AREA
-========================================== */
 
 .brand{
     height:170px;
@@ -101,112 +86,72 @@ body{
 
     padding:24px 14px 20px;
 
-    border-bottom:
-        1px solid rgba(255,255,255,.10);
+    border-bottom:1px solid rgba(255,255,255,.10);
 
     display:flex;
     flex-direction:column;
-
     align-items:center;
     justify-content:center;
 
     text-align:center;
-
     flex-shrink:0;
 }
 
 .logo{
     width:100%;
-
-    font-family:Arial,Tahoma,sans-serif;
-
     font-size:30px;
     line-height:1;
-
     font-weight:800;
-
     letter-spacing:4px;
-
     color:#ffffff;
-
     text-align:center;
-
     direction:ltr;
 }
 
 .brand-small{
     width:100%;
-
     margin-top:11px;
-
-    font-family:Arial,Tahoma,sans-serif;
-
     font-size:10px;
     line-height:1.4;
-
     font-weight:600;
-
     letter-spacing:.8px;
-
     color:#e2e8f0;
-
     text-align:center;
-
     direction:ltr;
-
     white-space:nowrap;
 }
 
 .brand-status{
     width:100%;
-
     margin-top:16px;
 
     display:flex;
-
     align-items:center;
     justify-content:center;
 
     gap:7px;
 
-    font-family:Arial,Tahoma,sans-serif;
-
     font-size:10px;
-    line-height:1.4;
-
-    font-weight:500;
-
     color:#d1fae5;
-
-    text-align:center;
-
     white-space:nowrap;
 }
 
 .brand-status-dot{
     width:7px;
     height:7px;
-
     min-width:7px;
 
     background:#22c55e;
-
     border-radius:50%;
 
-    box-shadow:
-        0 0 8px rgba(34,197,94,.75);
+    box-shadow:0 0 8px rgba(34,197,94,.75);
 }
 
-
-/* ==========================================
-   SIDEBAR NAVIGATION
-========================================== */
+/* NAVIGATION */
 
 .nav{
     padding:16px 12px;
-
     flex:1;
-
     overflow-y:auto;
 }
 
@@ -218,14 +163,12 @@ body{
     min-height:48px;
 
     display:flex;
-
     align-items:center;
     justify-content:flex-start;
 
     gap:11px;
 
     color:#dbeafe;
-
     text-decoration:none;
 
     padding:0 14px;
@@ -237,160 +180,97 @@ body{
 
     background:transparent;
 
-    font-family:Arial,Tahoma,sans-serif;
-
+    font-family:inherit;
     font-size:13px;
-    line-height:1;
-
     font-weight:600;
 
     text-align:right;
-
     cursor:pointer;
 
-    transition:
-        background .2s,
-        color .2s;
+    transition:.2s;
 }
 
 .nav a:hover,
 .nav button:hover{
-    background:
-        rgba(255,255,255,.08);
-
+    background:rgba(255,255,255,.08);
     color:#ffffff;
 }
 
-
-/*
-   IMPORTANT:
-   Active item keeps exactly
-   the same font size and weight.
-*/
-
 .nav a.active{
     background:#ffffff;
-
     color:var(--navy);
-
-    font-family:Arial,Tahoma,sans-serif;
-
-    font-size:13px;
-    line-height:1;
-
-    font-weight:600;
-
-    box-shadow:
-        0 5px 15px rgba(0,0,0,.14);
+    box-shadow:0 5px 15px rgba(0,0,0,.14);
 }
 
 .nav-icon{
     width:25px;
     min-width:25px;
-
     height:25px;
 
     display:flex;
-
     align-items:center;
     justify-content:center;
 
-    text-align:center;
-
     font-size:16px;
-    line-height:1;
 }
-
-
-/* ==========================================
-   LOGOUT
-========================================== */
 
 .logout-item{
     margin-top:9px !important;
-
     color:#fecaca !important;
 
-    border-top:
-        1px solid rgba(255,255,255,.10) !important;
-
+    border-top:1px solid rgba(255,255,255,.10) !important;
     border-radius:8px !important;
 }
 
 .logout-item:hover{
-    background:
-        rgba(239,68,68,.13) !important;
-
+    background:rgba(239,68,68,.13) !important;
     color:#ffffff !important;
 }
 
-
-/* ==========================================
-   SIDEBAR FOOTER
-========================================== */
-
 .sidebar-footer{
     min-height:54px;
-
     padding:16px 10px;
 
-    border-top:
-        1px solid rgba(255,255,255,.10);
+    border-top:1px solid rgba(255,255,255,.10);
 
     color:#94a3b8;
-
-    font-family:Arial,Tahoma,sans-serif;
-
     font-size:9px;
-
     letter-spacing:.5px;
 
     text-align:center;
 
     display:flex;
-
     align-items:center;
     justify-content:center;
 
     direction:ltr;
 }
 
-
-/* ==========================================
-   MAIN
-========================================== */
+/* MAIN */
 
 .main{
     margin-right:var(--sidebar-width);
     min-height:100vh;
 }
 
-
-/* ==========================================
-   TOP BAR
-========================================== */
+/* TOPBAR */
 
 .topbar{
     min-height:78px;
 
     background:#ffffff;
 
-    border-bottom:
-        1px solid var(--border);
+    border-bottom:1px solid var(--border);
 
     display:flex;
-
     align-items:center;
     justify-content:space-between;
 
     gap:20px;
-
     padding:0 28px;
 
     position:sticky;
-
     top:0;
-
     z-index:50;
 }
 
@@ -406,11 +286,9 @@ body{
     height:44px;
 
     border-radius:11px;
-
     background:#eef2ff;
 
     display:flex;
-
     align-items:center;
     justify-content:center;
 
@@ -419,35 +297,23 @@ body{
 
 .page-name h2{
     font-size:19px;
-
     font-weight:700;
-
     color:var(--navy);
-
-    line-height:1.3;
 }
 
 .page-name small{
     display:block;
-
     color:var(--muted);
-
     margin-top:4px;
-
     font-size:11px;
-
     direction:ltr;
-
     text-align:right;
 }
 
 .top-info{
     display:flex;
-
     align-items:center;
-
     justify-content:flex-end;
-
     gap:9px;
 }
 
@@ -456,21 +322,16 @@ body{
 
     background:#f8fafc;
 
-    border:
-        1px solid var(--border);
-
+    border:1px solid var(--border);
     border-radius:9px;
 
     padding:8px 12px;
 
     font-size:11px;
-
     color:var(--muted);
 
     display:flex;
-
     align-items:center;
-
     justify-content:center;
 
     white-space:nowrap;
@@ -478,14 +339,10 @@ body{
 
 .info-chip strong{
     color:var(--navy);
-
     margin-right:4px;
 }
 
-
-/* ==========================================
-   LANGUAGE
-========================================== */
+/* LANGUAGE */
 
 .language-selector{
     position:relative;
@@ -493,52 +350,34 @@ body{
 
 .language-button{
     height:38px;
-
     min-width:120px;
 
     display:flex;
-
     align-items:center;
-
     justify-content:center;
 
     gap:7px;
 
-    border:
-        1px solid #dbe3ef;
-
+    border:1px solid #dbe3ef;
     background:#ffffff;
-
     color:var(--navy);
 
     border-radius:9px;
-
     padding:0 11px;
 
     font-size:11px;
-
     font-weight:bold;
 
     cursor:pointer;
-
-    transition:.2s;
 }
 
 .language-button:hover{
     background:#f8fafc;
-
-    border-color:#cbd5e1;
-}
-
-.language-globe{
-    font-size:14px;
 }
 
 .language-arrow{
     font-size:8px;
-
     color:#64748b;
-
     transition:.2s;
 }
 
@@ -550,7 +389,6 @@ body{
     display:none;
 
     position:absolute;
-
     top:45px;
     left:0;
 
@@ -558,15 +396,12 @@ body{
 
     background:#ffffff;
 
-    border:
-        1px solid var(--border);
-
+    border:1px solid var(--border);
     border-radius:11px;
 
     padding:7px;
 
-    box-shadow:
-        0 14px 35px rgba(15,23,42,.14);
+    box-shadow:0 14px 35px rgba(15,23,42,.14);
 
     z-index:500;
 }
@@ -579,7 +414,6 @@ body{
     width:100%;
 
     border:0;
-
     background:#ffffff;
 
     border-radius:8px;
@@ -587,73 +421,42 @@ body{
     padding:10px 11px;
 
     display:flex;
-
     align-items:center;
-
     justify-content:space-between;
-
-    gap:10px;
 
     cursor:pointer;
 
     font-family:inherit;
-
     font-size:12px;
 
     color:#334155;
-
-    text-align:right;
-
-    transition:.15s;
 }
 
 .language-option:hover{
     background:#f1f5f9;
-
-    color:var(--navy);
 }
 
 .language-option.active{
     background:#eef2ff;
-
     color:var(--navy);
-
     font-weight:bold;
-}
-
-.language-name{
-    display:flex;
-
-    align-items:center;
-
-    gap:9px;
 }
 
 .language-code{
     color:#94a3b8;
-
     font-size:9px;
-
     direction:ltr;
 }
 
-
-/* ==========================================
-   CONTENT
-========================================== */
+/* CONTENT */
 
 .content{
     width:calc(100% - 48px);
-
     max-width:1450px;
-
     margin:24px auto 40px;
 }
 
-
-/* ==========================================
-   HERO
-========================================== */
+/* HERO */
 
 .hero{
     min-height:145px;
@@ -671,17 +474,14 @@ body{
     padding:26px 29px;
 
     display:flex;
-
     justify-content:space-between;
-
     align-items:center;
 
     gap:25px;
 
     margin-bottom:18px;
 
-    box-shadow:
-        0 8px 25px rgba(23,37,84,.14);
+    box-shadow:0 8px 25px rgba(23,37,84,.14);
 }
 
 .hero > div:first-child{
@@ -690,79 +490,54 @@ body{
 
 .hero h1{
     font-size:25px;
-
-    line-height:1.4;
-
     margin-bottom:8px;
-
-    font-weight:700;
 }
 
 .hero p{
     color:#dbeafe;
-
     font-size:13px;
-
     line-height:1.8;
-
     max-width:760px;
 }
 
 .hero-status{
     min-width:185px;
-
     min-height:44px;
 
     display:flex;
-
     align-items:center;
-
     justify-content:center;
 
     gap:8px;
 
-    background:
-        rgba(255,255,255,.10);
+    background:rgba(255,255,255,.10);
 
-    border:
-        1px solid rgba(255,255,255,.15);
+    border:1px solid rgba(255,255,255,.15);
 
     padding:10px 14px;
 
     border-radius:11px;
 
     font-size:11px;
-
-    text-align:center;
 }
 
 .status-dot{
     width:9px;
     height:9px;
-
     min-width:9px;
 
     background:#4ade80;
-
     border-radius:50%;
 
-    box-shadow:
-        0 0 0 4px rgba(74,222,128,.15);
+    box-shadow:0 0 0 4px rgba(74,222,128,.15);
 }
 
-
-/* ==========================================
-   QUICK STATS
-========================================== */
+/* STATS */
 
 .quick-stats{
     display:grid;
-
-    grid-template-columns:
-        repeat(4,minmax(0,1fr));
-
+    grid-template-columns:repeat(4,minmax(0,1fr));
     gap:14px;
-
     margin-bottom:22px;
 }
 
@@ -771,22 +546,16 @@ body{
 
     background:#ffffff;
 
-    border:
-        1px solid var(--border);
-
+    border:1px solid var(--border);
     border-radius:14px;
 
     padding:17px 18px;
 
-    box-shadow:
-        0 3px 12px rgba(15,23,42,.04);
+    box-shadow:0 3px 12px rgba(15,23,42,.04);
 
     display:flex;
-
     flex-direction:column;
-
     align-items:center;
-
     justify-content:center;
 
     text-align:center;
@@ -796,11 +565,9 @@ body{
     width:100%;
 
     display:flex;
-
     flex-direction:column-reverse;
 
     justify-content:center;
-
     align-items:center;
 
     gap:8px;
@@ -815,9 +582,7 @@ body{
     border-radius:10px;
 
     display:flex;
-
     align-items:center;
-
     justify-content:center;
 
     background:#eef2ff;
@@ -827,50 +592,29 @@ body{
 
 .stat-label{
     font-size:12px;
-
     color:var(--muted);
-
     font-weight:600;
-
-    text-align:center;
 }
 
 .stat-value{
     width:100%;
-
     font-size:21px;
-
     font-weight:700;
-
     color:var(--navy);
-
-    text-align:center;
-
-    direction:rtl;
 }
 
 .stat-small{
     width:100%;
-
     margin-top:6px;
-
     color:#94a3b8;
-
     font-size:10px;
-
-    text-align:center;
 }
 
-
-/* ==========================================
-   SECTION HEADER
-========================================== */
+/* SECTION HEADER */
 
 .section-header{
     display:flex;
-
     justify-content:space-between;
-
     align-items:center;
 
     gap:15px;
@@ -880,59 +624,44 @@ body{
 
 .section-header h3{
     font-size:17px;
-
     color:var(--navy);
 }
 
 .section-header span{
     font-size:11px;
-
     color:var(--muted);
 }
 
-
-/* ==========================================
-   MODULES
-========================================== */
+/* MODULES */
 
 .modules{
     display:grid;
-
-    grid-template-columns:
-        repeat(4,minmax(0,1fr));
-
+    grid-template-columns:repeat(4,minmax(0,1fr));
     gap:14px;
-
     margin-bottom:22px;
 }
 
 .module{
     text-decoration:none;
-
     color:inherit;
 
     background:#ffffff;
 
-    border:
-        1px solid var(--border);
-
+    border:1px solid var(--border);
     border-radius:14px;
 
     padding:18px 16px 40px;
 
     min-height:165px;
 
-    box-shadow:
-        0 3px 12px rgba(15,23,42,.04);
+    box-shadow:0 3px 12px rgba(15,23,42,.04);
 
     transition:.2s;
 
     position:relative;
 
     display:flex;
-
     flex-direction:column;
-
     align-items:center;
 
     text-align:center;
@@ -940,27 +669,19 @@ body{
 
 .module:hover{
     transform:translateY(-3px);
-
     border-color:#c7d2fe;
-
-    box-shadow:
-        0 8px 22px rgba(15,23,42,.08);
+    box-shadow:0 8px 22px rgba(15,23,42,.08);
 }
 
 .module-icon{
     width:43px;
     height:43px;
 
-    min-height:43px;
-
     background:#eef2ff;
-
     border-radius:11px;
 
     display:flex;
-
     align-items:center;
-
     justify-content:center;
 
     font-size:20px;
@@ -969,34 +690,21 @@ body{
 }
 
 .module h3{
-    width:100%;
-
     color:var(--navy);
-
     font-size:14px;
-
     margin-bottom:6px;
-
-    text-align:center;
 }
 
 .module p{
-    width:100%;
-
     color:var(--muted);
-
     font-size:11px;
-
     line-height:1.65;
-
-    text-align:center;
 }
 
 .module-arrow{
     position:absolute;
 
     left:50%;
-
     transform:translateX(-50%);
 
     bottom:11px;
@@ -1005,9 +713,7 @@ body{
     height:27px;
 
     display:flex;
-
     align-items:center;
-
     justify-content:center;
 
     border-radius:7px;
@@ -1015,14 +721,9 @@ body{
     background:#f8fafc;
 
     color:var(--navy);
-
-    font-size:13px;
 }
 
-
-/* ==========================================
-   LOWER GRID
-========================================== */
+/* LOWER */
 
 .lower-grid{
     display:grid;
@@ -1034,29 +735,16 @@ body{
     gap:15px;
 }
 
-
-/* ==========================================
-   PANEL
-========================================== */
-
 .panel{
     background:#ffffff;
 
-    border:
-        1px solid var(--border);
-
+    border:1px solid var(--border);
     border-radius:15px;
 
     padding:19px;
 
-    box-shadow:
-        0 3px 12px rgba(15,23,42,.04);
+    box-shadow:0 3px 12px rgba(15,23,42,.04);
 }
-
-
-/* ==========================================
-   ACTIVITY
-========================================== */
 
 .activity-list{
     margin-top:8px;
@@ -1066,15 +754,13 @@ body{
     min-height:66px;
 
     display:flex;
-
     align-items:center;
 
     gap:12px;
 
     padding:12px 0;
 
-    border-bottom:
-        1px solid #edf0f5;
+    border-bottom:1px solid #edf0f5;
 }
 
 .activity:last-child{
@@ -1083,19 +769,14 @@ body{
 
 .activity-icon{
     width:36px;
-
     min-width:36px;
-
     height:36px;
 
     border-radius:9px;
-
     background:#f1f5f9;
 
     display:flex;
-
     align-items:center;
-
     justify-content:center;
 }
 
@@ -1105,49 +786,28 @@ body{
 
 .activity-text strong{
     display:block;
-
     font-size:12px;
-
     margin-bottom:3px;
-
     color:var(--navy);
 }
 
 .activity-text span{
     color:var(--muted);
-
     font-size:10px;
-
-    line-height:1.6;
 }
 
 .activity-time{
     min-width:45px;
-
     color:#94a3b8;
-
     font-size:9px;
-
     direction:ltr;
-
     text-align:center;
 }
 
-
-/* ==========================================
-   SYSTEM INFO
-========================================== */
-
 .system-box{
-    background:linear-gradient(
-        145deg,
-        #f8fafc,
-        #ffffff
-    );
+    background:linear-gradient(145deg,#f8fafc,#ffffff);
 
-    border:
-        1px solid var(--border);
-
+    border:1px solid var(--border);
     border-radius:12px;
 
     padding:14px 16px;
@@ -1159,17 +819,14 @@ body{
     min-height:42px;
 
     display:flex;
-
     justify-content:space-between;
-
     align-items:center;
 
     gap:15px;
 
     padding:9px 0;
 
-    border-bottom:
-        1px solid #edf0f5;
+    border-bottom:1px solid #edf0f5;
 
     font-size:11px;
 }
@@ -1184,18 +841,11 @@ body{
 
 .system-row strong{
     color:var(--navy);
-
-    text-align:left;
 }
 
 .online{
     color:var(--green) !important;
 }
-
-
-/* ==========================================
-   BOTTOM STATUS
-========================================== */
 
 .bottom-status{
     margin-top:18px;
@@ -1204,17 +854,13 @@ body{
 
     color:#166534;
 
-    border:
-        1px solid #bbf7d0;
-
+    border:1px solid #bbf7d0;
     border-radius:11px;
 
     padding:12px 15px;
 
     display:flex;
-
     justify-content:space-between;
-
     align-items:center;
 
     gap:15px;
@@ -1224,25 +870,19 @@ body{
 
 .bottom-status small{
     color:#64748b;
-
     direction:ltr;
 }
 
-
-/* ==========================================
-   RESPONSIVE
-========================================== */
+/* RESPONSIVE */
 
 @media(max-width:1200px){
 
     .quick-stats{
-        grid-template-columns:
-            repeat(2,1fr);
+        grid-template-columns:repeat(2,1fr);
     }
 
     .modules{
-        grid-template-columns:
-            repeat(3,1fr);
+        grid-template-columns:repeat(3,1fr);
     }
 }
 
@@ -1253,21 +893,11 @@ body{
     }
 
     .modules{
-        grid-template-columns:
-            repeat(2,1fr);
+        grid-template-columns:repeat(2,1fr);
     }
 
     .topbar{
         padding:0 18px;
-    }
-
-    .brand-small{
-        font-size:9px;
-        letter-spacing:.4px;
-    }
-
-    .brand-status{
-        font-size:9px;
     }
 }
 
@@ -1279,46 +909,33 @@ body{
 
     .sidebar{
         position:relative;
-
         width:100%;
-
         height:auto;
     }
 
     .brand{
         height:auto;
-
         min-height:145px;
-
         padding:22px 20px;
     }
 
     .nav{
         display:flex;
-
         overflow-x:auto;
-
         overflow-y:hidden;
-
         padding:8px 10px 12px;
     }
 
     .nav a,
     .nav button{
         width:auto;
-
         min-width:max-content;
-
         white-space:nowrap;
-
         margin:0 3px;
-
-        padding:0 14px;
     }
 
     .logout-item{
         margin-top:0 !important;
-
         border-top:0 !important;
     }
 
@@ -1347,61 +964,31 @@ body{
 
     .hero{
         flex-direction:column;
-
-        align-items:center;
-
-        text-align:center;
-
-        gap:16px;
-    }
-
-    .hero p{
         text-align:center;
     }
 
     .quick-stats{
-        grid-template-columns:
-            1fr 1fr;
+        grid-template-columns:1fr 1fr;
     }
 
     .modules{
-        grid-template-columns:
-            1fr 1fr;
+        grid-template-columns:1fr 1fr;
     }
 
     .top-info .info-chip{
         display:none;
     }
-
-    .language-button{
-        min-width:auto;
-
-        padding:0 10px;
-    }
-
-    .language-menu{
-        width:180px;
-
-        left:0;
-    }
 }
 
 @media(max-width:450px){
 
-    .quick-stats{
-        grid-template-columns:1fr;
-    }
-
+    .quick-stats,
     .modules{
         grid-template-columns:1fr;
     }
 
     .page-name small{
         display:none;
-    }
-
-    .language-button{
-        font-size:10px;
     }
 
     .hero h1{
@@ -1414,373 +1001,250 @@ body{
 
 <body>
 
-
-<!-- ==========================================
-     SIDEBAR
-========================================== -->
-
 <aside class="sidebar">
 
 <div class="brand">
 
-    <div class="logo">
-        VAREX
-    </div>
+<div class="logo">VAREX</div>
 
-    <div class="brand-small">
-        BUSINESS MANAGEMENT SYSTEM
-    </div>
+<div class="brand-small">
+BUSINESS MANAGEMENT SYSTEM
+</div>
 
-    <div class="brand-status">
-
-        <span class="brand-status-dot"></span>
-
-        <span>
-            النظام متصل وجاهز للعمل
-        </span>
-
-    </div>
+<div class="brand-status">
+<span class="brand-status-dot"></span>
+<span>النظام متصل وجاهز للعمل</span>
+</div>
 
 </div>
 
-
 <nav class="nav">
 
-<a
-    href="index.html"
-    class="active"
->
-    <span class="nav-icon">▦</span>
-    <span>لوحة التحكم</span>
+<a href="./index.html" class="active">
+<span class="nav-icon">▦</span>
+<span>لوحة التحكم</span>
 </a>
 
-
-<a href="pos.html">
-    <span class="nav-icon">🛒</span>
-    <span>شاشة المبيعات</span>
+<a href="./pos.html">
+<span class="nav-icon">🛒</span>
+<span>شاشة المبيعات</span>
 </a>
 
-
-<a href="products.html">
-    <span class="nav-icon">📦</span>
-    <span>المنتجات والمخزون</span>
+<a href="./products.html">
+<span class="nav-icon">📦</span>
+<span>المنتجات والمخزون</span>
 </a>
 
-
-<a href="customers.html">
-    <span class="nav-icon">👥</span>
-    <span>العملاء</span>
+<a href="./customers.html">
+<span class="nav-icon">👥</span>
+<span>العملاء</span>
 </a>
 
-
-<a href="suppliers.html">
-    <span class="nav-icon">🚚</span>
-    <span>الموردون</span>
+<a href="./suppliers.html">
+<span class="nav-icon">🚚</span>
+<span>الموردون</span>
 </a>
 
-
-<a href="accounts.html">
-    <span class="nav-icon">💰</span>
-    <span>الحسابات</span>
+<a href="./accounts.html">
+<span class="nav-icon">💰</span>
+<span>الحسابات</span>
 </a>
 
-
-<a href="employees.html">
-    <span class="nav-icon">👤</span>
-    <span>الموظفون</span>
+<a href="./employees.html">
+<span class="nav-icon">👤</span>
+<span>الموظفون</span>
 </a>
 
-
-<a href="reports.html">
-    <span class="nav-icon">📊</span>
-    <span>التقارير</span>
+<a href="./reports.html">
+<span class="nav-icon">📊</span>
+<span>التقارير</span>
 </a>
 
-
-<a href="setting.html">
-    <span class="nav-icon">⚙️</span>
-    <span>الإعدادات</span>
+<a href="./setting.html">
+<span class="nav-icon">⚙️</span>
+<span>الإعدادات</span>
 </a>
-
 
 <button
-    type="button"
-    class="logout-item"
-    onclick="logoutVarex()"
+type="button"
+class="logout-item"
+onclick="logoutVarex()"
 >
-    <span class="nav-icon">🚪</span>
-    <span>تسجيل الخروج</span>
+<span class="nav-icon">🚪</span>
+<span>تسجيل الخروج</span>
 </button>
 
 </nav>
 
-
 <div class="sidebar-footer">
-    VAREX MANAGEMENT SYSTEM
+VAREX MANAGEMENT SYSTEM
 </div>
 
 </aside>
 
 
-<!-- ==========================================
-     MAIN
-========================================== -->
-
 <div class="main">
-
 
 <header class="topbar">
 
 <div class="page-name">
 
-    <div class="page-icon">
-        ▦
-    </div>
+<div class="page-icon">▦</div>
 
-    <div>
-
-        <h2>
-            لوحة التحكم
-        </h2>
-
-        <small>
-            VAREX DASHBOARD
-        </small>
-
-    </div>
+<div>
+<h2>لوحة التحكم</h2>
+<small>VAREX DASHBOARD</small>
+</div>
 
 </div>
 
 
 <div class="top-info">
 
-
 <div
-    class="language-selector"
-    id="languageSelector"
+class="language-selector"
+id="languageSelector"
 >
 
 <button
-    type="button"
-    class="language-button"
-    onclick="toggleLanguageMenu(event)"
+type="button"
+class="language-button"
+onclick="toggleLanguageMenu(event)"
 >
-
-<span class="language-globe">
-    🌐
-</span>
-
-<span id="currentLanguage">
-    العربية
-</span>
-
-<span class="language-arrow">
-    ▼
-</span>
-
+<span>🌐</span>
+<span id="currentLanguage">العربية</span>
+<span class="language-arrow">▼</span>
 </button>
 
-
-<div
-    class="language-menu"
-    id="languageMenu"
->
-
+<div class="language-menu">
 
 <button
-    type="button"
-    class="language-option"
-    data-language="ar"
-    onclick="selectLanguage('ar')"
+type="button"
+class="language-option"
+data-language="ar"
+onclick="selectLanguage('ar')"
 >
-<span class="language-name">
-🇦🇪 العربية
-</span>
+<span>🇦🇪 العربية</span>
 <span class="language-code">AR</span>
 </button>
 
-
 <button
-    type="button"
-    class="language-option"
-    data-language="en"
-    onclick="selectLanguage('en')"
+type="button"
+class="language-option"
+data-language="en"
+onclick="selectLanguage('en')"
 >
-<span class="language-name">
-🇬🇧 English
-</span>
+<span>🇬🇧 English</span>
 <span class="language-code">EN</span>
 </button>
 
-
 <button
-    type="button"
-    class="language-option"
-    data-language="fr"
-    onclick="selectLanguage('fr')"
+type="button"
+class="language-option"
+data-language="fr"
+onclick="selectLanguage('fr')"
 >
-<span class="language-name">
-🇫🇷 Français
-</span>
+<span>🇫🇷 Français</span>
 <span class="language-code">FR</span>
 </button>
 
-
 <button
-    type="button"
-    class="language-option"
-    data-language="fa"
-    onclick="selectLanguage('fa')"
+type="button"
+class="language-option"
+data-language="fa"
+onclick="selectLanguage('fa')"
 >
-<span class="language-name">
-🇮🇷 فارسی
-</span>
+<span>🇮🇷 فارسی</span>
 <span class="language-code">FA</span>
 </button>
 
-
 <button
-    type="button"
-    class="language-option"
-    data-language="ur"
-    onclick="selectLanguage('ur')"
+type="button"
+class="language-option"
+data-language="ur"
+onclick="selectLanguage('ur')"
 >
-<span class="language-name">
-🇵🇰 اردو
-</span>
+<span>🇵🇰 اردو</span>
 <span class="language-code">UR</span>
 </button>
 
-
 <button
-    type="button"
-    class="language-option"
-    data-language="zh"
-    onclick="selectLanguage('zh')"
+type="button"
+class="language-option"
+data-language="zh"
+onclick="selectLanguage('zh')"
 >
-<span class="language-name">
-🇨🇳 中文
-</span>
+<span>🇨🇳 中文</span>
 <span class="language-code">ZH</span>
 </button>
 
-
 <button
-    type="button"
-    class="language-option"
-    data-language="ko"
-    onclick="selectLanguage('ko')"
+type="button"
+class="language-option"
+data-language="ko"
+onclick="selectLanguage('ko')"
 >
-<span class="language-name">
-🇰🇷 한국어
-</span>
+<span>🇰🇷 한국어</span>
 <span class="language-code">KO</span>
 </button>
 
-
 </div>
 </div>
-
 
 <div class="info-chip">
-
-    المستخدم:
-
-    <strong id="currentUserName">
-        المستخدم الحالي
-    </strong>
-
+المستخدم:
+<strong id="currentUserName">—</strong>
 </div>
 
-
-<div
-    class="info-chip"
-    id="currentDate"
->
-—
-</div>
-
-
-<div
-    class="info-chip"
-    id="currentTime"
->
-—
-</div>
-
+<div class="info-chip" id="currentDate">—</div>
+<div class="info-chip" id="currentTime">—</div>
 
 </div>
 
 </header>
 
 
-<!-- ==========================================
-     CONTENT
-========================================== -->
-
 <main class="content">
-
 
 <section class="hero">
 
 <div>
 
-<h1>
-    مرحباً بك في VAREX
+<h1 id="welcomeTitle">
+مرحباً بك في VAREX
 </h1>
 
 <p>
-    مركز إدارة أعمالك من مكان واحد —
-    المبيعات والمخزون والعملاء والموردون
-    والحسابات والموظفون والتقارير.
+مركز إدارة أعمالك من مكان واحد —
+المبيعات والمخزون والعملاء والموردون
+والحسابات والموظفون والتقارير.
 </p>
 
 </div>
 
-
 <div class="hero-status">
-
 <span class="status-dot"></span>
-
-<span>
-    النظام يعمل بشكل طبيعي
-</span>
-
+<span>النظام يعمل بشكل طبيعي</span>
 </div>
 
 </section>
 
 
-<!-- ==========================================
-     QUICK STATS
-========================================== -->
-
 <section class="quick-stats">
-
 
 <div class="stat">
 
 <div class="stat-top">
-
-<div class="stat-label">
-    مبيعات اليوم
+<div class="stat-label">مبيعات اليوم</div>
+<div class="stat-icon">💰</div>
 </div>
 
-<div class="stat-icon">
-    💰
-</div>
-
-</div>
-
-<div
-    class="stat-value"
-    id="todaySales"
->
+<div class="stat-value" id="todaySales">
 0.00 د.إ
 </div>
 
 <div class="stat-small">
-    إجمالي عمليات البيع اليوم
+إجمالي عمليات البيع اليوم
 </div>
 
 </div>
@@ -1789,26 +1253,16 @@ body{
 <div class="stat">
 
 <div class="stat-top">
-
-<div class="stat-label">
-    فواتير اليوم
+<div class="stat-label">فواتير اليوم</div>
+<div class="stat-icon">🧾</div>
 </div>
 
-<div class="stat-icon">
-    🧾
-</div>
-
-</div>
-
-<div
-    class="stat-value"
-    id="todayInvoices"
->
+<div class="stat-value" id="todayInvoices">
 0
 </div>
 
 <div class="stat-small">
-    عدد الفواتير المسجلة اليوم
+عدد الفواتير المسجلة اليوم
 </div>
 
 </div>
@@ -1817,26 +1271,16 @@ body{
 <div class="stat">
 
 <div class="stat-top">
-
-<div class="stat-label">
-    إجمالي المنتجات
+<div class="stat-label">إجمالي المنتجات</div>
+<div class="stat-icon">📦</div>
 </div>
 
-<div class="stat-icon">
-    📦
-</div>
-
-</div>
-
-<div
-    class="stat-value"
-    id="totalProducts"
->
+<div class="stat-value" id="totalProducts">
 0
 </div>
 
 <div class="stat-small">
-    المنتجات المسجلة بالنظام
+المنتجات المسجلة بالنظام
 </div>
 
 </div>
@@ -1845,26 +1289,16 @@ body{
 <div class="stat">
 
 <div class="stat-top">
-
-<div class="stat-label">
-    تنبيهات المخزون
+<div class="stat-label">تنبيهات المخزون</div>
+<div class="stat-icon">⚠️</div>
 </div>
 
-<div class="stat-icon">
-    ⚠️
-</div>
-
-</div>
-
-<div
-    class="stat-value"
-    id="stockAlerts"
->
+<div class="stat-value" id="stockAlerts">
 0
 </div>
 
 <div class="stat-small">
-    المنتجات المنخفضة أو النافدة
+المنتجات المنخفضة أو النافدة
 </div>
 
 </div>
@@ -1873,328 +1307,109 @@ body{
 
 
 <div class="section-header">
-
-<h3>
-    أقسام النظام
-</h3>
-
-<span>
-    اختر القسم الذي تريد إدارته
-</span>
-
+<h3>أقسام النظام</h3>
+<span>اختر القسم الذي تريد إدارته</span>
 </div>
 
-
-<!-- ==========================================
-     MODULES
-========================================== -->
 
 <section class="modules">
 
-
-<a
-    class="module"
-    href="pos.html"
->
-
-<div class="module-icon">
-    🛒
-</div>
-
-<h3>
-    شاشة المبيعات
-</h3>
-
-<p>
-    تنفيذ عمليات البيع وإنشاء
-    الفواتير وإدارة عمليات الكاشير.
-</p>
-
-<span class="module-arrow">
-    ←
-</span>
-
+<a class="module" href="./pos.html">
+<div class="module-icon">🛒</div>
+<h3>شاشة المبيعات</h3>
+<p>تنفيذ عمليات البيع وإنشاء الفواتير وإدارة عمليات الكاشير.</p>
+<span class="module-arrow">←</span>
 </a>
 
-
-<a
-    class="module"
-    href="products.html"
->
-
-<div class="module-icon">
-    📦
-</div>
-
-<h3>
-    المنتجات والمخزون
-</h3>
-
-<p>
-    إدارة المنتجات والكميات
-    والأسعار وحركة المخزون.
-</p>
-
-<span class="module-arrow">
-    ←
-</span>
-
+<a class="module" href="./products.html">
+<div class="module-icon">📦</div>
+<h3>المنتجات والمخزون</h3>
+<p>إدارة المنتجات والكميات والأسعار وحركة المخزون.</p>
+<span class="module-arrow">←</span>
 </a>
 
-
-<a
-    class="module"
-    href="customers.html"
->
-
-<div class="module-icon">
-    👥
-</div>
-
-<h3>
-    العملاء
-</h3>
-
-<p>
-    إدارة بيانات العملاء
-    ومتابعة سجل المشتريات.
-</p>
-
-<span class="module-arrow">
-    ←
-</span>
-
+<a class="module" href="./customers.html">
+<div class="module-icon">👥</div>
+<h3>العملاء</h3>
+<p>إدارة بيانات العملاء ومتابعة سجل المشتريات.</p>
+<span class="module-arrow">←</span>
 </a>
 
-
-<a
-    class="module"
-    href="suppliers.html"
->
-
-<div class="module-icon">
-    🚚
-</div>
-
-<h3>
-    الموردون
-</h3>
-
-<p>
-    إدارة الموردين والمشتريات
-    وعمليات التوريد.
-</p>
-
-<span class="module-arrow">
-    ←
-</span>
-
+<a class="module" href="./suppliers.html">
+<div class="module-icon">🚚</div>
+<h3>الموردون</h3>
+<p>إدارة الموردين والمشتريات وعمليات التوريد.</p>
+<span class="module-arrow">←</span>
 </a>
 
-
-<a
-    class="module"
-    href="accounts.html"
->
-
-<div class="module-icon">
-    💰
-</div>
-
-<h3>
-    الحسابات
-</h3>
-
-<p>
-    متابعة الإيرادات والمصروفات
-    والحركة المالية.
-</p>
-
-<span class="module-arrow">
-    ←
-</span>
-
+<a class="module" href="./accounts.html">
+<div class="module-icon">💰</div>
+<h3>الحسابات</h3>
+<p>متابعة الإيرادات والمصروفات والحركة المالية.</p>
+<span class="module-arrow">←</span>
 </a>
 
-
-<a
-    class="module"
-    href="employees.html"
->
-
-<div class="module-icon">
-    👤
-</div>
-
-<h3>
-    الموظفون
-</h3>
-
-<p>
-    إدارة الموظفين والصلاحيات
-    والوثائق والرواتب.
-</p>
-
-<span class="module-arrow">
-    ←
-</span>
-
+<a class="module" href="./employees.html">
+<div class="module-icon">👤</div>
+<h3>الموظفون</h3>
+<p>إدارة الموظفين والصلاحيات والوثائق والرواتب.</p>
+<span class="module-arrow">←</span>
 </a>
 
-
-<a
-    class="module"
-    href="reports.html"
->
-
-<div class="module-icon">
-    📊
-</div>
-
-<h3>
-    التقارير
-</h3>
-
-<p>
-    تقارير المبيعات والأرباح
-    والمخزون وأداء العمل.
-</p>
-
-<span class="module-arrow">
-    ←
-</span>
-
+<a class="module" href="./reports.html">
+<div class="module-icon">📊</div>
+<h3>التقارير</h3>
+<p>تقارير المبيعات والأرباح والمخزون وأداء العمل.</p>
+<span class="module-arrow">←</span>
 </a>
 
-
-<a
-    class="module"
-    href="setting.html"
->
-
-<div class="module-icon">
-    ⚙️
-</div>
-
-<h3>
-    الإعدادات
-</h3>
-
-<p>
-    إعدادات النشاط والفواتير
-    والضريبة والمخزون والمبيعات.
-</p>
-
-<span class="module-arrow">
-    ←
-</span>
-
+<a class="module" href="./setting.html">
+<div class="module-icon">⚙️</div>
+<h3>الإعدادات</h3>
+<p>إعدادات النشاط والفواتير والضريبة والمخزون والمبيعات.</p>
+<span class="module-arrow">←</span>
 </a>
-
 
 </section>
 
 
-<!-- ==========================================
-     LOWER GRID
-========================================== -->
-
 <section class="lower-grid">
-
 
 <div class="panel">
 
-
 <div class="section-header">
-
-<h3>
-    نشاط النظام
-</h3>
-
-<span>
-    حالة الوحدات الرئيسية
-</span>
-
+<h3>نشاط النظام</h3>
+<span>حالة الوحدات الرئيسية</span>
 </div>
-
 
 <div class="activity-list">
 
+<div class="activity">
+<div class="activity-icon">🛒</div>
+<div class="activity-text">
+<strong>شاشة المبيعات جاهزة</strong>
+<span>يمكنك بدء عمليات البيع وإنشاء الفواتير.</span>
+</div>
+<div class="activity-time">SALES</div>
+</div>
 
 <div class="activity">
-
-<div class="activity-icon">
-    🛒
-</div>
-
+<div class="activity-icon">📦</div>
 <div class="activity-text">
-
-<strong>
-    شاشة المبيعات جاهزة
-</strong>
-
-<span>
-    يمكنك بدء عمليات البيع وإنشاء الفواتير.
-</span>
-
+<strong>المخزون متصل بالنظام</strong>
+<span>الكميات مرتبطة بعمليات البيع وحركة المخزون.</span>
 </div>
-
-<div class="activity-time">
-    SALES
+<div class="activity-time">STOCK</div>
 </div>
-
-</div>
-
 
 <div class="activity">
-
-<div class="activity-icon">
-    📦
-</div>
-
+<div class="activity-icon">💾</div>
 <div class="activity-text">
-
-<strong>
-    المخزون متصل بالنظام
-</strong>
-
-<span>
-    الكميات مرتبطة بعمليات البيع وحركة المخزون.
-</span>
-
+<strong>البيانات محفوظة محلياً</strong>
+<span>بيانات النسخة الحالية محفوظة على هذا الجهاز.</span>
 </div>
-
-<div class="activity-time">
-    STOCK
+<div class="activity-time">DATA</div>
 </div>
-
-</div>
-
-
-<div class="activity">
-
-<div class="activity-icon">
-    💾
-</div>
-
-<div class="activity-text">
-
-<strong>
-    البيانات محفوظة محلياً
-</strong>
-
-<span>
-    بيانات النسخة الحالية محفوظة على هذا الجهاز.
-</span>
-
-</div>
-
-<div class="activity-time">
-    DATA
-</div>
-
-</div>
-
 
 </div>
 
@@ -2203,100 +1418,42 @@ body{
 
 <div class="panel">
 
-
 <div class="section-header">
-
-<h3>
-    حالة النظام
-</h3>
-
-<span>
-    VAREX
-</span>
-
+<h3>حالة النظام</h3>
+<span>VAREX</span>
 </div>
-
 
 <div class="system-box">
 
-
 <div class="system-row">
-
-<span>
-    النظام
-</span>
-
-<strong class="online">
-    ● متصل
-</strong>
-
+<span>النظام</span>
+<strong class="online">● متصل</strong>
 </div>
 
-
 <div class="system-row">
-
-<span>
-    شاشة المبيعات
-</span>
-
-<strong>
-    جاهزة
-</strong>
-
+<span>شاشة المبيعات</span>
+<strong>جاهزة</strong>
 </div>
 
-
 <div class="system-row">
-
-<span>
-    المخزون
-</span>
-
-<strong>
-    نشط
-</strong>
-
+<span>المخزون</span>
+<strong>نشط</strong>
 </div>
 
-
 <div class="system-row">
-
-<span>
-    العملة
-</span>
-
-<strong id="systemCurrency">
-    AED
-</strong>
-
+<span>العملة</span>
+<strong id="systemCurrency">AED</strong>
 </div>
 
-
 <div class="system-row">
-
-<span>
-    الضريبة
-</span>
-
-<strong id="systemTax">
-    5%
-</strong>
-
+<span>الضريبة</span>
+<strong id="systemTax">5%</strong>
 </div>
 
-
 <div class="system-row">
-
-<span>
-    إصدار النظام
-</span>
-
-<strong>
-    VAREX 1.0
-</strong>
-
+<span>إصدار النظام</span>
+<strong>VAREX 1.0</strong>
 </div>
-
 
 </div>
 
@@ -2308,54 +1465,111 @@ body{
 <div class="bottom-status">
 
 <strong>
-    ✓ نظام VAREX يعمل بنجاح
+✓ نظام VAREX يعمل بنجاح
 </strong>
 
 <small>
-    BUSINESS MANAGEMENT SYSTEM
+BUSINESS MANAGEMENT SYSTEM
 </small>
 
 </div>
-
 
 </main>
 
 </div>
 
 
-<!-- ==========================================
-     VAREX CORE
-========================================== -->
-
+<!-- مهم: varex.js يجب أن يُحمّل أولاً -->
 <script src="./varex.js"></script>
-
 
 <script>
 
-/* ==========================================
-   AUTH PROTECTION
-========================================== */
+/* =========================================
+   AUTH
+========================================= */
 
-(function(){
+(function protectDashboard(){
 
-    if(
-        typeof VAREX === "undefined" ||
-        typeof VAREX.isLoggedIn !== "function" ||
-        !VAREX.isLoggedIn()
-    ){
+    try{
 
-        window.location.replace(
-            "./login.html"
+        if(
+            typeof VAREX === "undefined" ||
+            typeof VAREX.requireLogin !== "function"
+        ){
+            window.location.replace("./login.html");
+            return;
+        }
+
+        VAREX.requireLogin();
+
+    }catch(error){
+
+        console.error(
+            "VAREX authentication error:",
+            error
         );
 
+        window.location.replace("./login.html");
     }
 
 })();
 
 
-/* ==========================================
+/* =========================================
+   CURRENT USER
+========================================= */
+
+function updateCurrentUser(){
+
+    const nameElement =
+        document.getElementById(
+            "currentUserName"
+        );
+
+    const welcomeElement =
+        document.getElementById(
+            "welcomeTitle"
+        );
+
+    if(
+        typeof VAREX === "undefined" ||
+        typeof VAREX.getCurrentUser !== "function"
+    ){
+        return;
+    }
+
+    const user =
+        VAREX.getCurrentUser();
+
+    if(!user){
+        return;
+    }
+
+    const displayName =
+        user.name ||
+        user.username ||
+        user.email ||
+        "المستخدم";
+
+    if(nameElement){
+        nameElement.textContent =
+            displayName;
+    }
+
+    if(welcomeElement){
+        welcomeElement.textContent =
+            "مرحباً " +
+            displayName +
+            " في VAREX";
+    }
+}
+
+updateCurrentUser();
+
+
+/* =========================================
    LOGOUT
-========================================== */
+========================================= */
 
 function logoutVarex(){
 
@@ -2363,13 +1577,10 @@ function logoutVarex(){
         typeof VAREX !== "undefined" &&
         typeof VAREX.logout === "function"
     ){
-
         VAREX.logout(true);
-
         return;
     }
 
-
     sessionStorage.removeItem(
         "varex_session"
     );
@@ -2377,15 +1588,6 @@ function logoutVarex(){
     localStorage.removeItem(
         "varex_session"
     );
-
-    sessionStorage.removeItem(
-        "varex_authenticated"
-    );
-
-    localStorage.removeItem(
-        "varex_authenticated"
-    );
-
 
     window.location.replace(
         "./login.html"
@@ -2393,90 +1595,21 @@ function logoutVarex(){
 }
 
 
-/* ==========================================
-   CURRENT USER
-========================================== */
-
-function updateCurrentUser(){
-
-    const element =
-        document.getElementById(
-            "currentUserName"
-        );
-
-
-    if(!element){
-        return;
-    }
-
-
-    if(
-        typeof VAREX !== "undefined" &&
-        typeof VAREX.getCurrentUser === "function"
-    ){
-
-        const user =
-            VAREX.getCurrentUser();
-
-
-        if(user){
-
-            element.textContent =
-                user.name ||
-                user.username ||
-                user.email ||
-                "المستخدم الحالي";
-
-            return;
-        }
-
-    }
-
-
-    element.textContent =
-        "المستخدم الحالي";
-}
-
-
-updateCurrentUser();
-
-
-/* ==========================================
-   LANGUAGE SELECTOR
-========================================== */
+/* =========================================
+   LANGUAGE
+========================================= */
 
 const varexLanguages = {
 
-    ar:{
-        name:"العربية"
-    },
-
-    en:{
-        name:"English"
-    },
-
-    fr:{
-        name:"Français"
-    },
-
-    fa:{
-        name:"فارسی"
-    },
-
-    ur:{
-        name:"اردو"
-    },
-
-    zh:{
-        name:"中文"
-    },
-
-    ko:{
-        name:"한국어"
-    }
+    ar:"العربية",
+    en:"English",
+    fr:"Français",
+    fa:"فارسی",
+    ur:"اردو",
+    zh:"中文",
+    ko:"한국어"
 
 };
-
 
 function getSavedLanguage(){
 
@@ -2485,45 +1618,28 @@ function getSavedLanguage(){
             "varex_language"
         );
 
-
-    if(
-        saved &&
-        varexLanguages[saved]
-    ){
-
-        return saved;
-
-    }
-
-
-    return "ar";
+    return varexLanguages[saved]
+        ? saved
+        : "ar";
 }
-
 
 function toggleLanguageMenu(event){
 
     if(event){
-
         event.stopPropagation();
-
     }
-
 
     const selector =
         document.getElementById(
             "languageSelector"
         );
 
-
     if(selector){
-
         selector.classList.toggle(
             "open"
         );
-
     }
 }
-
 
 function closeLanguageMenu(){
 
@@ -2532,68 +1648,50 @@ function closeLanguageMenu(){
             "languageSelector"
         );
 
-
     if(selector){
-
         selector.classList.remove(
             "open"
         );
-
     }
 }
 
-
 function selectLanguage(language){
 
-    if(
-        !varexLanguages[language]
-    ){
-
+    if(!varexLanguages[language]){
         return;
-
     }
-
 
     localStorage.setItem(
         "varex_language",
         language
     );
 
-
     updateLanguageButton();
 
     closeLanguageMenu();
 }
-
 
 function updateLanguageButton(){
 
     const language =
         getSavedLanguage();
 
-
     const current =
         document.getElementById(
             "currentLanguage"
         );
 
-
     if(current){
-
         current.textContent =
-            varexLanguages[
-                language
-            ].name;
-
+            varexLanguages[language];
     }
-
 
     document
         .querySelectorAll(
             ".language-option"
         )
         .forEach(
-            option => {
+            function(option){
 
                 option.classList.toggle(
                     "active",
@@ -2605,7 +1703,6 @@ function updateLanguageButton(){
         );
 }
 
-
 document.addEventListener(
     "click",
     function(event){
@@ -2615,50 +1712,42 @@ document.addEventListener(
                 "languageSelector"
             );
 
-
         if(
             selector &&
             !selector.contains(
                 event.target
             )
         ){
-
             closeLanguageMenu();
-
         }
-
     }
 );
-
 
 updateLanguageButton();
 
 
-/* ==========================================
+/* =========================================
    CLOCK
-========================================== */
+========================================= */
 
 function updateClock(){
 
     const now =
         new Date();
 
-
     const dateElement =
         document.getElementById(
             "currentDate"
         );
-
 
     const timeElement =
         document.getElementById(
             "currentTime"
         );
 
-
     if(dateElement){
 
-        dateElement.innerText =
+        dateElement.textContent =
             now.toLocaleDateString(
                 "ar-AE",
                 {
@@ -2667,13 +1756,11 @@ function updateClock(){
                     day:"2-digit"
                 }
             );
-
     }
-
 
     if(timeElement){
 
-        timeElement.innerText =
+        timeElement.textContent =
             now.toLocaleTimeString(
                 "ar-AE",
                 {
@@ -2682,13 +1769,10 @@ function updateClock(){
                     second:"2-digit"
                 }
             );
-
     }
 }
 
-
 updateClock();
-
 
 setInterval(
     updateClock,
@@ -2696,287 +1780,223 @@ setInterval(
 );
 
 
-/* ==========================================
+/* =========================================
    SETTINGS
-========================================== */
+========================================= */
 
 function getDashboardSettings(){
 
     try{
 
-        return JSON.parse(
-            localStorage.getItem(
-                "varexSettings"
-            ) || "{}"
-        );
+        if(
+            typeof VAREX !== "undefined" &&
+            typeof VAREX.getSettings === "function"
+        ){
+            return VAREX.getSettings() || {};
+        }
+
+        if(
+            typeof VAREX !== "undefined" &&
+            VAREX.keys &&
+            VAREX.keys.settings &&
+            typeof VAREX.getObject === "function"
+        ){
+            return VAREX.getObject(
+                VAREX.keys.settings,
+                {}
+            );
+        }
 
     }catch(error){
 
-        return {};
-
-    }
-}
-
-
-/* ==========================================
-   MONEY
-========================================== */
-
-function formatMoney(value){
-
-    const amount =
-        Number(value) || 0;
-
-
-    if(
-        window.VAREX &&
-        typeof VAREX.money ===
-        "function"
-    ){
-
-        return VAREX.money(
-            amount
+        console.error(
+            "VAREX settings error:",
+            error
         );
-
     }
 
-
-    return (
-        amount.toFixed(2) +
-        " د.إ"
-    );
+    return {};
 }
 
 
-/* ==========================================
-   DATE KEY
-========================================== */
-
-function getLocalDateKey(value){
-
-    if(!value){
-
-        return "";
-
-    }
-
-
-    const date =
-        value instanceof Date
-            ? value
-            : new Date(value);
-
-
-    if(
-        isNaN(
-            date.getTime()
-        )
-    ){
-
-        return "";
-
-    }
-
-
-    return (
-        date.getFullYear() +
-        "-" +
-        String(
-            date.getMonth() + 1
-        ).padStart(
-            2,
-            "0"
-        ) +
-        "-" +
-        String(
-            date.getDate()
-        ).padStart(
-            2,
-            "0"
-        )
-    );
-}
-
-
-/* ==========================================
-   READ PRODUCTS
-========================================== */
+/* =========================================
+   PRODUCTS
+========================================= */
 
 function getDashboardProducts(){
 
     try{
 
         if(
-            window.VAREX &&
-            typeof VAREX.getProducts ===
-            "function"
+            typeof VAREX !== "undefined" &&
+            typeof VAREX.getProducts === "function"
         ){
+            return VAREX.getProducts() || [];
+        }
 
-            return (
-                VAREX.getProducts() ||
-                []
+        if(
+            typeof VAREX !== "undefined" &&
+            VAREX.keys &&
+            VAREX.keys.products &&
+            typeof VAREX.getData === "function"
+        ){
+            return VAREX.getData(
+                VAREX.keys.products
             );
-
         }
 
     }catch(error){
 
         console.error(
-            "تعذر قراءة المنتجات:",
+            "VAREX products error:",
             error
         );
-
     }
-
 
     return [];
 }
 
 
-/* ==========================================
-   READ SALES
-========================================== */
+/* =========================================
+   SALES
+========================================= */
 
 function getDashboardSales(){
 
     try{
 
         if(
-            window.VAREX &&
-            typeof VAREX.getSales ===
-            "function"
+            typeof VAREX !== "undefined" &&
+            typeof VAREX.getSales === "function"
         ){
+            return VAREX.getSales() || [];
+        }
 
-            return (
-                VAREX.getSales() ||
-                []
+        if(
+            typeof VAREX !== "undefined" &&
+            VAREX.keys &&
+            VAREX.keys.sales &&
+            typeof VAREX.getData === "function"
+        ){
+            return VAREX.getData(
+                VAREX.keys.sales
             );
-
         }
 
     }catch(error){
 
         console.error(
-            "تعذر قراءة المبيعات:",
+            "VAREX sales error:",
             error
         );
-
     }
-
-
-    const possibleKeys = [
-
-        "varexSales",
-
-        "sales",
-
-        "varex_sales"
-
-    ];
-
-
-    for(
-        const key of possibleKeys
-    ){
-
-        try{
-
-            const raw =
-                localStorage.getItem(
-                    key
-                );
-
-
-            if(!raw){
-
-                continue;
-
-            }
-
-
-            const data =
-                JSON.parse(raw);
-
-
-            if(
-                Array.isArray(data)
-            ){
-
-                return data;
-
-            }
-
-        }catch(error){
-
-            /* تجاهل */
-
-        }
-
-    }
-
 
     return [];
 }
 
 
-/* ==========================================
-   SALE DATE
-========================================== */
+/* =========================================
+   MONEY
+========================================= */
 
-function getSaleDate(sale){
+function formatMoney(value){
 
-    if(!sale){
+    const amount =
+        Number(value) || 0;
 
-        return "";
+    try{
 
-    }
+        if(
+            typeof VAREX !== "undefined" &&
+            typeof VAREX.money === "function"
+        ){
+            return VAREX.money(
+                amount
+            );
+        }
 
+    }catch(error){}
+
+    const settings =
+        getDashboardSettings();
+
+    const currency =
+        settings.currency ||
+        "AED";
 
     return (
-
-        sale.createdAt ||
-
-        sale.date ||
-
-        sale.saleDate ||
-
-        sale.created_at ||
-
-        sale.invoiceDate ||
-
-        ""
-
+        amount.toFixed(2) +
+        " " +
+        currency
     );
 }
 
 
-/* ==========================================
-   SALE TOTAL
-========================================== */
+/* =========================================
+   DATE
+========================================= */
+
+function getLocalDateKey(value){
+
+    if(!value){
+        return "";
+    }
+
+    const date =
+        value instanceof Date
+            ? value
+            : new Date(value);
+
+    if(
+        Number.isNaN(
+            date.getTime()
+        )
+    ){
+        return "";
+    }
+
+    return (
+        date.getFullYear() +
+        "-" +
+        String(
+            date.getMonth() + 1
+        ).padStart(2,"0") +
+        "-" +
+        String(
+            date.getDate()
+        ).padStart(2,"0")
+    );
+}
+
+function getSaleDate(sale){
+
+    if(!sale){
+        return "";
+    }
+
+    return (
+        sale.createdAt ||
+        sale.date ||
+        sale.saleDate ||
+        sale.created_at ||
+        sale.invoiceDate ||
+        ""
+    );
+}
 
 function getSaleTotal(sale){
 
     if(!sale){
-
         return 0;
-
     }
 
-
     const candidates = [
-
         sale.total,
-
         sale.grandTotal,
-
         sale.finalTotal,
-
         sale.netTotal,
-
         sale.amount
-
     ];
-
 
     for(
         const value of candidates
@@ -2985,246 +2005,219 @@ function getSaleTotal(sale){
         const number =
             Number(value);
 
-
         if(
             Number.isFinite(
                 number
             )
         ){
-
             return number;
-
         }
-
     }
-
 
     return 0;
 }
 
 
-/* ==========================================
-   DASHBOARD
-========================================== */
+/* =========================================
+   DASHBOARD DATA
+========================================= */
 
 function updateDashboard(){
 
     const settings =
         getDashboardSettings();
 
-
     const products =
         getDashboardProducts();
-
 
     const sales =
         getDashboardSales();
 
 
-    const totalProductsElement =
+    /* PRODUCTS */
+
+    const totalProducts =
         document.getElementById(
             "totalProducts"
         );
 
-
-    if(totalProductsElement){
-
-        totalProductsElement.innerText =
+    if(totalProducts){
+        totalProducts.textContent =
             products.length;
-
     }
 
 
-    const defaultLowStock =
+    /* STOCK ALERTS */
+
+    const configuredLimit =
         Number(
             settings.lowStockLimit
         );
 
-
-    const fallbackLimit =
+    const defaultLimit =
         Number.isFinite(
-            defaultLowStock
+            configuredLimit
         )
-            ? defaultLowStock
+            ? configuredLimit
             : 5;
-
 
     let stockAlerts = 0;
 
-
     products.forEach(
-        product => {
+        function(product){
 
             const quantity =
                 Number(
-                    product.quantity ||
+                    product.quantity ??
+                    product.stock ??
                     0
                 );
 
-
             let minimum =
                 Number(
-                    product.minimumStock
+                    product.minimumStock ??
+                    product.minStock
                 );
-
 
             if(
                 !Number.isFinite(
                     minimum
                 )
             ){
-
                 minimum =
-                    fallbackLimit;
-
+                    defaultLimit;
             }
-
 
             if(
                 quantity <= minimum
             ){
-
                 stockAlerts++;
-
             }
-
         }
     );
 
-
-    const stockAlertElement =
+    const stockAlertsElement =
         document.getElementById(
             "stockAlerts"
         );
 
-
-    if(stockAlertElement){
-
-        stockAlertElement.innerText =
+    if(stockAlertsElement){
+        stockAlertsElement.textContent =
             stockAlerts;
-
     }
 
+
+    /* TODAY SALES */
 
     const todayKey =
         getLocalDateKey(
             new Date()
         );
 
-
     const todaySalesList =
         sales.filter(
-            sale => {
+            function(sale){
 
                 return (
                     getLocalDateKey(
                         getSaleDate(
                             sale
                         )
-                    ) ===
-                    todayKey
+                    ) === todayKey
                 );
-
             }
         );
 
-
     const todayTotal =
         todaySalesList.reduce(
-            (sum,sale) => {
+            function(total,sale){
 
                 return (
-                    sum +
+                    total +
                     getSaleTotal(
                         sale
                     )
                 );
-
             },
             0
         );
 
 
-    const todaySalesElement =
+    const todaySales =
         document.getElementById(
             "todaySales"
         );
 
-
-    if(todaySalesElement){
-
-        todaySalesElement.innerText =
+    if(todaySales){
+        todaySales.textContent =
             formatMoney(
                 todayTotal
             );
-
     }
 
 
-    const todayInvoicesElement =
+    const todayInvoices =
         document.getElementById(
             "todayInvoices"
         );
 
-
-    if(todayInvoicesElement){
-
-        todayInvoicesElement.innerText =
+    if(todayInvoices){
+        todayInvoices.textContent =
             todaySalesList.length;
-
     }
 
 
-    const currencyElement =
+    /* CURRENCY */
+
+    const currency =
         document.getElementById(
             "systemCurrency"
         );
 
+    if(currency){
 
-    if(currencyElement){
-
-        currencyElement.innerText =
+        currency.textContent =
             settings.currency ||
             "AED";
-
     }
 
 
-    const taxElement =
+    /* TAX */
+
+    const tax =
         document.getElementById(
             "systemTax"
         );
 
-
-    if(taxElement){
+    if(tax){
 
         if(
-            settings.taxEnabled ===
-            false
+            settings.taxEnabled === false
         ){
-
-            taxElement.innerText =
+            tax.textContent =
                 "غير مفعلة";
-
         }else{
 
-            taxElement.innerText =
+            const rate =
+                Number(
+                    settings.taxRate
+                );
+
+            tax.textContent =
                 (
-                    settings.taxRate ||
-                    5
+                    Number.isFinite(rate)
+                        ? rate
+                        : 5
                 ) +
                 "%";
-
         }
-
     }
-
 }
 
 
-/* ==========================================
-   START DASHBOARD
-========================================== */
+/* =========================================
+   START
+========================================= */
 
 updateDashboard();
 
@@ -3233,12 +2226,21 @@ window.addEventListener(
     "focus",
     function(){
 
+        if(
+            typeof VAREX !== "undefined" &&
+            typeof VAREX.isLoggedIn === "function" &&
+            !VAREX.isLoggedIn()
+        ){
+            window.location.replace(
+                "./login.html"
+            );
+
+            return;
+        }
+
         updateDashboard();
-
-        updateLanguageButton();
-
         updateCurrentUser();
-
+        updateLanguageButton();
     }
 );
 
@@ -3248,18 +2250,15 @@ window.addEventListener(
     function(){
 
         updateDashboard();
-
-        updateLanguageButton();
-
         updateCurrentUser();
-
+        updateLanguageButton();
     }
 );
 
 
-/* ==========================================
-   PWA - SERVICE WORKER
-========================================== */
+/* =========================================
+   SERVICE WORKER
+========================================= */
 
 if(
     "serviceWorker" in navigator
@@ -3270,33 +2269,18 @@ if(
         function(){
 
             navigator.serviceWorker
-                .register(
-                    "./sw.js"
-                )
-                .then(
-                    function(registration){
-
-                        console.log(
-                            "VAREX Service Worker registered:",
-                            registration.scope
-                        );
-
-                    }
-                )
+                .register("./sw.js")
                 .catch(
                     function(error){
 
                         console.error(
-                            "VAREX Service Worker registration failed:",
+                            "Service Worker Error:",
                             error
                         );
-
                     }
                 );
-
         }
     );
-
 }
 
 </script>
