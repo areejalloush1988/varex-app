@@ -10,6 +10,11 @@
 <meta name="application-name" content="VAREX">
 <meta name="mobile-web-app-capable" content="yes">
 
+<link rel="manifest" href="./manifest.json">
+<link rel="icon" type="image/png" sizes="192x192" href="./varex-icon-192.png">
+<link rel="icon" type="image/png" sizes="512x512" href="./varex-icon-512.png">
+<link rel="apple-touch-icon" href="./varex-icon-192.png">
+
 <style>
 *{
     box-sizing:border-box;
@@ -58,10 +63,6 @@ body{
     padding:25px;
 }
 
-/* ==========================================
-   PAGE
-========================================== */
-
 .login-page{
     width:100%;
     max-width:1050px;
@@ -71,14 +72,9 @@ body{
     overflow:hidden;
     display:grid;
     grid-template-columns:1fr 1fr;
-    box-shadow:
-        0 25px 70px rgba(15,29,67,.15);
+    box-shadow:0 25px 70px rgba(15,29,67,.15);
     border:1px solid rgba(226,232,240,.9);
 }
-
-/* ==========================================
-   BRAND SIDE
-========================================== */
 
 .brand-side{
     background:
@@ -195,10 +191,6 @@ body{
     text-align:left;
 }
 
-/* ==========================================
-   LOGIN SIDE
-========================================== */
-
 .login-side{
     padding:42px 52px;
     display:flex;
@@ -214,10 +206,6 @@ body{
     gap:15px;
     margin-bottom:35px;
 }
-
-/* ==========================================
-   LANGUAGE
-========================================== */
 
 .language-selector{
     position:relative;
@@ -302,10 +290,6 @@ body{
     border-radius:8px;
 }
 
-/* ==========================================
-   LOGIN HEADER
-========================================== */
-
 .login-header{
     margin-bottom:28px;
 }
@@ -321,10 +305,6 @@ body{
     font-size:13px;
     line-height:1.7;
 }
-
-/* ==========================================
-   FORM
-========================================== */
 
 .form-group{
     margin-bottom:18px;
@@ -348,7 +328,7 @@ body{
     border:1px solid var(--border);
     background:#ffffff;
     border-radius:10px;
-    padding:0 44px 0 14px;
+    padding:0 44px 0 44px;
     outline:none;
     font-family:inherit;
     font-size:13px;
@@ -384,10 +364,6 @@ body{
     padding:5px;
 }
 
-/* ==========================================
-   OPTIONS
-========================================== */
-
 .login-options{
     display:flex;
     justify-content:space-between;
@@ -422,20 +398,12 @@ body{
     text-decoration:underline;
 }
 
-/* ==========================================
-   BUTTON
-========================================== */
-
 .login-button{
     width:100%;
     height:50px;
     border:0;
     border-radius:10px;
-    background:linear-gradient(
-        135deg,
-        #172554,
-        #1e3a6d
-    );
+    background:linear-gradient(135deg,#172554,#1e3a6d);
     color:#ffffff;
     font-family:inherit;
     font-size:14px;
@@ -449,14 +417,6 @@ body{
     transform:translateY(-1px);
     box-shadow:0 10px 23px rgba(23,37,84,.23);
 }
-
-.login-button:active{
-    transform:translateY(0);
-}
-
-/* ==========================================
-   MESSAGE
-========================================== */
 
 .login-message{
     display:none;
@@ -480,10 +440,6 @@ body{
     border:1px solid #bbf7d0;
     color:#166534;
 }
-
-/* ==========================================
-   CREATE ACCOUNT
-========================================== */
 
 .create-account{
     margin-top:25px;
@@ -509,17 +465,11 @@ body{
     font-size:12px;
     font-weight:700;
     cursor:pointer;
-    transition:.2s;
 }
 
 .create-button:hover{
     background:#f8fafc;
-    border-color:#94a3b8;
 }
-
-/* ==========================================
-   CONTACT
-========================================== */
 
 .contact{
     text-align:center;
@@ -533,14 +483,6 @@ body{
     text-decoration:none;
     font-weight:600;
 }
-
-.contact a:hover{
-    color:var(--blue);
-}
-
-/* ==========================================
-   MODAL
-========================================== */
 
 .modal-overlay{
     position:fixed;
@@ -609,12 +551,7 @@ body{
     cursor:pointer;
 }
 
-/* ==========================================
-   RESPONSIVE
-========================================== */
-
 @media(max-width:850px){
-
     body{
         padding:0;
         background:#ffffff;
@@ -669,7 +606,6 @@ body{
 }
 
 @media(max-width:500px){
-
     .login-side{
         padding:30px 20px 40px;
     }
@@ -701,32 +637,24 @@ body{
 
 <div class="login-page">
 
-<!-- ==========================================
-     BRAND SIDE
-========================================== -->
-
 <section class="brand-side">
 
 <div class="brand-content">
 
-<div class="brand-logo">
-    VAREX
-</div>
+<div class="brand-logo">VAREX</div>
 
 <div class="brand-subtitle">
-    BUSINESS MANAGEMENT SYSTEM
+BUSINESS MANAGEMENT SYSTEM
 </div>
 
 <div class="brand-message">
 
-<h1>
-    إدارة أعمالك تبدأ من هنا
-</h1>
+<h1>إدارة أعمالك تبدأ من هنا</h1>
 
 <p>
-    منصة متكاملة لإدارة المبيعات والمخزون
-    والعملاء والموردين والحسابات والموظفين
-    والتقارير من مكان واحد.
+منصة متكاملة لإدارة المبيعات والمخزون
+والعملاء والموردين والحسابات والموظفين
+والتقارير من مكان واحد.
 </p>
 
 <div class="brand-features">
@@ -747,20 +675,14 @@ body{
 </div>
 
 </div>
-
 </div>
-
 </div>
 
 <div class="brand-footer">
-    VAREX MANAGEMENT SYSTEM
+VAREX MANAGEMENT SYSTEM
 </div>
 
 </section>
-
-<!-- ==========================================
-     LOGIN SIDE
-========================================== -->
 
 <section class="login-side">
 
@@ -769,221 +691,153 @@ body{
 <div class="language-selector" id="languageSelector">
 
 <button
-    type="button"
-    class="language-button"
-    onclick="toggleLanguageMenu(event)"
+type="button"
+class="language-button"
+onclick="toggleLanguageMenu(event)"
 >
 <span>🌐</span>
 <span id="currentLanguage">العربية</span>
 <span>▼</span>
 </button>
 
-<div class="language-menu" id="languageMenu">
+<div class="language-menu">
 
-<button
-    class="language-option"
-    type="button"
-    data-language="ar"
-    onclick="selectLanguage('ar')"
->
+<button class="language-option" type="button" data-language="ar" onclick="selectLanguage('ar')">
 <span>🇦🇪 العربية</span>
 <span class="language-code">AR</span>
 </button>
 
-<button
-    class="language-option"
-    type="button"
-    data-language="en"
-    onclick="selectLanguage('en')"
->
+<button class="language-option" type="button" data-language="en" onclick="selectLanguage('en')">
 <span>🇬🇧 English</span>
 <span class="language-code">EN</span>
 </button>
 
-<button
-    class="language-option"
-    type="button"
-    data-language="fr"
-    onclick="selectLanguage('fr')"
->
+<button class="language-option" type="button" data-language="fr" onclick="selectLanguage('fr')">
 <span>🇫🇷 Français</span>
 <span class="language-code">FR</span>
 </button>
 
-<button
-    class="language-option"
-    type="button"
-    data-language="fa"
-    onclick="selectLanguage('fa')"
->
+<button class="language-option" type="button" data-language="fa" onclick="selectLanguage('fa')">
 <span>🇮🇷 فارسی</span>
 <span class="language-code">FA</span>
 </button>
 
-<button
-    class="language-option"
-    type="button"
-    data-language="ur"
-    onclick="selectLanguage('ur')"
->
+<button class="language-option" type="button" data-language="ur" onclick="selectLanguage('ur')">
 <span>🇵🇰 اردو</span>
 <span class="language-code">UR</span>
 </button>
 
-<button
-    class="language-option"
-    type="button"
-    data-language="zh"
-    onclick="selectLanguage('zh')"
->
+<button class="language-option" type="button" data-language="zh" onclick="selectLanguage('zh')">
 <span>🇨🇳 中文</span>
 <span class="language-code">ZH</span>
 </button>
 
-<button
-    class="language-option"
-    type="button"
-    data-language="ko"
-    onclick="selectLanguage('ko')"
->
+<button class="language-option" type="button" data-language="ko" onclick="selectLanguage('ko')">
 <span>🇰🇷 한국어</span>
 <span class="language-code">KO</span>
 </button>
 
 </div>
-
 </div>
 
 <div class="secure-badge">
-    ● اتصال آمن
+● اتصال آمن
 </div>
 
 </div>
 
 <div class="login-header">
-
-<h2>
-    تسجيل الدخول
-</h2>
-
-<p>
-    أدخل بيانات حسابك للوصول إلى نظام VAREX
-</p>
-
+<h2>تسجيل الدخول</h2>
+<p>أدخل بيانات حسابك للوصول إلى نظام VAREX</p>
 </div>
 
 <form id="loginForm">
 
 <div class="form-group">
-
 <label for="username">
-    اسم المستخدم أو البريد الإلكتروني
+اسم المستخدم أو البريد الإلكتروني
 </label>
 
 <div class="input-wrapper">
-
-<span class="input-icon">
-    👤
-</span>
+<span class="input-icon">👤</span>
 
 <input
-    id="username"
-    class="form-control"
-    type="text"
-    autocomplete="username"
-    placeholder="أدخل اسم المستخدم أو البريد الإلكتروني"
-    required
+id="username"
+class="form-control"
+type="text"
+autocomplete="username"
+placeholder="أدخل اسم المستخدم أو البريد الإلكتروني"
+required
 >
-
 </div>
-
 </div>
 
 <div class="form-group">
 
 <label for="password">
-    كلمة المرور
+كلمة المرور
 </label>
 
 <div class="input-wrapper">
 
-<span class="input-icon">
-    🔒
-</span>
+<span class="input-icon">🔒</span>
 
 <input
-    id="password"
-    class="form-control"
-    type="password"
-    autocomplete="current-password"
-    placeholder="أدخل كلمة المرور"
-    required
+id="password"
+class="form-control"
+type="password"
+autocomplete="current-password"
+placeholder="أدخل كلمة المرور"
+required
 >
 
 <button
-    type="button"
-    class="password-toggle"
-    onclick="togglePassword()"
-    aria-label="إظهار أو إخفاء كلمة المرور"
+type="button"
+class="password-toggle"
+onclick="togglePassword()"
+aria-label="إظهار أو إخفاء كلمة المرور"
 >
-    👁
+👁
 </button>
 
 </div>
-
 </div>
 
 <div class="login-options">
 
 <label class="remember">
-
-<input
-    type="checkbox"
-    id="rememberMe"
->
-
-<span>
-    تذكرني
-</span>
-
+<input type="checkbox" id="rememberMe">
+<span>تذكرني</span>
 </label>
 
 <a
-    href="#"
-    class="forgot"
-    onclick="openForgotPassword(event)"
+href="#"
+class="forgot"
+onclick="openForgotPassword(event)"
 >
-    نسيت كلمة المرور؟
+نسيت كلمة المرور؟
 </a>
 
 </div>
 
-<button
-    type="submit"
-    class="login-button"
->
-    تسجيل الدخول
+<button type="submit" class="login-button">
+تسجيل الدخول
 </button>
 
-<div
-    id="loginMessage"
-    class="login-message"
-></div>
+<div id="loginMessage" class="login-message"></div>
 
 </form>
 
 <div class="create-account">
 
-<p>
-    ليس لديك حساب في VAREX؟
-</p>
+<p>ليس لديك حساب في VAREX؟</p>
 
 <button
-    type="button"
-    class="create-button"
-    onclick="openCreateAccount()"
+type="button"
+class="create-button"
+onclick="openCreateAccount()"
 >
-    إنشاء حساب جديد
+إنشاء حساب جديد
 </button>
 
 </div>
@@ -992,156 +846,108 @@ body{
 
 تحتاج إلى مساعدة؟
 
-<a
-    href="#"
-    onclick="openContact(event)"
->
-    تواصل معنا
+<a href="#" onclick="openContact(event)">
+تواصل معنا
 </a>
 
 </div>
 
 </section>
-
 </div>
 
-<!-- ==========================================
-     CREATE ACCOUNT MODAL
-========================================== -->
-
-<div
-    class="modal-overlay"
-    id="createAccountModal"
->
-
+<div class="modal-overlay" id="createAccountModal">
 <div class="modal">
 
 <div class="modal-header">
-
-<h3>
-    إنشاء حساب جديد
-</h3>
-
+<h3>إنشاء حساب جديد</h3>
 <button
-    type="button"
-    class="modal-close"
-    onclick="closeModal('createAccountModal')"
+type="button"
+class="modal-close"
+onclick="closeModal('createAccountModal')"
 >
-    ×
+×
 </button>
-
 </div>
 
 <p>
-    سيتم تجهيز صفحة إنشاء الحساب وربطها
-    بنظام حسابات VAREX في المرحلة التالية.
+سيتم تجهيز صفحة إنشاء الحساب وربطها
+بنظام حسابات VAREX في المرحلة التالية.
 </p>
 
 <button
-    type="button"
-    class="modal-button"
-    onclick="closeModal('createAccountModal')"
+type="button"
+class="modal-button"
+onclick="closeModal('createAccountModal')"
 >
-    حسناً
+حسناً
 </button>
 
 </div>
-
 </div>
 
-<!-- ==========================================
-     FORGOT PASSWORD MODAL
-========================================== -->
-
-<div
-    class="modal-overlay"
-    id="forgotPasswordModal"
->
-
+<div class="modal-overlay" id="forgotPasswordModal">
 <div class="modal">
 
 <div class="modal-header">
-
-<h3>
-    استعادة كلمة المرور
-</h3>
+<h3>استعادة كلمة المرور</h3>
 
 <button
-    type="button"
-    class="modal-close"
-    onclick="closeModal('forgotPasswordModal')"
+type="button"
+class="modal-close"
+onclick="closeModal('forgotPasswordModal')"
 >
-    ×
+×
 </button>
-
 </div>
 
 <p>
-    سيتم ربط استعادة كلمة المرور بحساب المستخدم
-    عند تجهيز نظام الحسابات.
+سيتم ربط استعادة كلمة المرور بحساب المستخدم
+عند تجهيز نظام الحسابات.
 </p>
 
 <button
-    type="button"
-    class="modal-button"
-    onclick="closeModal('forgotPasswordModal')"
+type="button"
+class="modal-button"
+onclick="closeModal('forgotPasswordModal')"
 >
-    حسناً
+حسناً
 </button>
 
 </div>
-
 </div>
 
-<!-- ==========================================
-     CONTACT MODAL
-========================================== -->
-
-<div
-    class="modal-overlay"
-    id="contactModal"
->
-
+<div class="modal-overlay" id="contactModal">
 <div class="modal">
 
 <div class="modal-header">
-
-<h3>
-    تواصل معنا
-</h3>
+<h3>تواصل معنا</h3>
 
 <button
-    type="button"
-    class="modal-close"
-    onclick="closeModal('contactModal')"
+type="button"
+class="modal-close"
+onclick="closeModal('contactModal')"
 >
-    ×
+×
 </button>
-
 </div>
 
 <p>
-    سيتم إضافة بيانات التواصل الرسمية
-    ودعم عملاء VAREX هنا قبل إطلاق النسخة النهائية.
+سيتم إضافة بيانات التواصل الرسمية
+ودعم عملاء VAREX هنا قبل إطلاق النسخة النهائية.
 </p>
 
 <button
-    type="button"
-    class="modal-button"
-    onclick="closeModal('contactModal')"
+type="button"
+class="modal-button"
+onclick="closeModal('contactModal')"
 >
-    حسناً
+حسناً
 </button>
 
 </div>
-
 </div>
 
 <script>
-
-/* ==========================================
-   LANGUAGE
-========================================== */
 
 const languages = {
     ar:"العربية",
@@ -1154,16 +960,9 @@ const languages = {
 };
 
 function getSavedLanguage(){
+    const saved = localStorage.getItem("varex_language");
 
-    const saved =
-        localStorage.getItem(
-            "varex_language"
-        );
-
-    if(
-        saved &&
-        languages[saved]
-    ){
+    if(saved && languages[saved]){
         return saved;
     }
 
@@ -1171,240 +970,261 @@ function getSavedLanguage(){
 }
 
 function toggleLanguageMenu(event){
-
     if(event){
         event.stopPropagation();
     }
 
-    const selector =
-        document.getElementById(
-            "languageSelector"
-        );
+    const selector = document.getElementById("languageSelector");
 
-    selector.classList.toggle(
-        "open"
-    );
+    if(selector){
+        selector.classList.toggle("open");
+    }
 }
 
 function closeLanguageMenu(){
+    const selector = document.getElementById("languageSelector");
 
-    const selector =
-        document.getElementById(
-            "languageSelector"
-        );
-
-    selector.classList.remove(
-        "open"
-    );
+    if(selector){
+        selector.classList.remove("open");
+    }
 }
 
 function selectLanguage(language){
-
     if(!languages[language]){
         return;
     }
 
-    localStorage.setItem(
-        "varex_language",
-        language
-    );
-
+    localStorage.setItem("varex_language",language);
     updateLanguageButton();
     closeLanguageMenu();
 }
 
 function updateLanguageButton(){
+    const language = getSavedLanguage();
 
-    const language =
-        getSavedLanguage();
+    const currentLanguage =
+        document.getElementById("currentLanguage");
 
-    document.getElementById(
-        "currentLanguage"
-    ).textContent =
-        languages[language];
+    if(currentLanguage){
+        currentLanguage.textContent =
+            languages[language];
+    }
 
     document
-        .querySelectorAll(
-            ".language-option"
-        )
-        .forEach(
-            option => {
+        .querySelectorAll(".language-option")
+        .forEach(function(option){
 
-                option.classList.toggle(
-                    "active",
-                    option.dataset.language ===
-                    language
-                );
-
-            }
-        );
-}
-
-document.addEventListener(
-    "click",
-    function(event){
-
-        const selector =
-            document.getElementById(
-                "languageSelector"
+            option.classList.toggle(
+                "active",
+                option.dataset.language === language
             );
 
-        if(
-            selector &&
-            !selector.contains(
-                event.target
-            )
-        ){
-            closeLanguageMenu();
-        }
+        });
+}
 
+document.addEventListener("click",function(event){
+
+    const selector =
+        document.getElementById("languageSelector");
+
+    if(
+        selector &&
+        !selector.contains(event.target)
+    ){
+        closeLanguageMenu();
     }
-);
+
+});
 
 updateLanguageButton();
-
-/* ==========================================
-   PASSWORD
-========================================== */
 
 function togglePassword(){
 
     const password =
-        document.getElementById(
-            "password"
-        );
+        document.getElementById("password");
 
-    if(
-        password.type ===
-        "password"
-    ){
-        password.type =
-            "text";
-    }else{
-        password.type =
-            "password";
-    }
+    password.type =
+        password.type === "password"
+            ? "text"
+            : "password";
 }
 
-/* ==========================================
-   MODALS
-========================================== */
-
 function openCreateAccount(){
-
-    document.getElementById(
-        "createAccountModal"
-    ).classList.add(
-        "show"
-    );
+    document
+        .getElementById("createAccountModal")
+        .classList.add("show");
 }
 
 function openForgotPassword(event){
 
     event.preventDefault();
 
-    document.getElementById(
-        "forgotPasswordModal"
-    ).classList.add(
-        "show"
-    );
+    document
+        .getElementById("forgotPasswordModal")
+        .classList.add("show");
 }
 
 function openContact(event){
 
     event.preventDefault();
 
-    document.getElementById(
-        "contactModal"
-    ).classList.add(
-        "show"
-    );
+    document
+        .getElementById("contactModal")
+        .classList.add("show");
 }
 
 function closeModal(id){
 
-    document.getElementById(
-        id
-    ).classList.remove(
-        "show"
-    );
+    document
+        .getElementById(id)
+        .classList.remove("show");
 }
 
 document
-    .querySelectorAll(
-        ".modal-overlay"
-    )
-    .forEach(
-        modal => {
+    .querySelectorAll(".modal-overlay")
+    .forEach(function(modal){
 
-            modal.addEventListener(
-                "click",
-                function(event){
+        modal.addEventListener(
+            "click",
+            function(event){
 
-                    if(
-                        event.target ===
-                        modal
-                    ){
-                        modal.classList.remove(
-                            "show"
-                        );
-                    }
-
+                if(event.target === modal){
+                    modal.classList.remove("show");
                 }
-            );
 
+            }
+        );
+
+    });
+
+/* ==========================================
+   LOGIN SESSION
+========================================== */
+
+document
+    .getElementById("loginForm")
+    .addEventListener(
+        "submit",
+        function(event){
+
+            event.preventDefault();
+
+            const username =
+                document
+                    .getElementById("username")
+                    .value
+                    .trim();
+
+            const password =
+                document
+                    .getElementById("password")
+                    .value;
+
+            const rememberMe =
+                document
+                    .getElementById("rememberMe")
+                    .checked;
+
+            const message =
+                document.getElementById("loginMessage");
+
+            if(!username || !password){
+
+                message.className =
+                    "login-message error";
+
+                message.textContent =
+                    "يرجى إدخال اسم المستخدم وكلمة المرور.";
+
+                return;
+            }
+
+            const sessionData = {
+                authenticated:true,
+                username:username,
+                loginTime:new Date().toISOString()
+            };
+
+            if(rememberMe){
+
+                localStorage.setItem(
+                    "varex_authenticated",
+                    "true"
+                );
+
+                localStorage.setItem(
+                    "varex_session",
+                    JSON.stringify(sessionData)
+                );
+
+                sessionStorage.removeItem(
+                    "varex_authenticated"
+                );
+
+                sessionStorage.removeItem(
+                    "varex_session"
+                );
+
+            }else{
+
+                sessionStorage.setItem(
+                    "varex_authenticated",
+                    "true"
+                );
+
+                sessionStorage.setItem(
+                    "varex_session",
+                    JSON.stringify(sessionData)
+                );
+
+                localStorage.removeItem(
+                    "varex_authenticated"
+                );
+
+                localStorage.removeItem(
+                    "varex_session"
+                );
+            }
+
+            message.className =
+                "login-message success";
+
+            message.textContent =
+                "تم تسجيل الدخول بنجاح...";
+
+            setTimeout(
+                function(){
+                    window.location.replace(
+                        "./index.html"
+                    );
+                },
+                300
+            );
         }
     );
 
 /* ==========================================
-   LOGIN FORM
-   واجهة فقط حالياً
+   SERVICE WORKER
 ========================================== */
 
-document.getElementById(
-    "loginForm"
-).addEventListener(
-    "submit",
-    function(event){
+if("serviceWorker" in navigator){
 
-        event.preventDefault();
+    window.addEventListener(
+        "load",
+        function(){
 
-        const username =
-            document.getElementById(
-                "username"
-            ).value.trim();
+            navigator.serviceWorker
+                .register("./sw.js")
+                .catch(function(error){
+                    console.error(
+                        "Service Worker Error:",
+                        error
+                    );
+                });
 
-        const password =
-            document.getElementById(
-                "password"
-            ).value;
-
-        const message =
-            document.getElementById(
-                "loginMessage"
-            );
-
-        if(
-            !username ||
-            !password
-        ){
-
-            message.className =
-                "login-message error";
-
-            message.textContent =
-                "يرجى إدخال اسم المستخدم وكلمة المرور.";
-
-            return;
         }
-
-        message.className =
-            "login-message success";
-
-        message.textContent =
-            "واجهة تسجيل الدخول جاهزة. سيتم ربط الحسابات في الخطوة التالية.";
-    }
-);
+    );
+}
 
 </script>
 
