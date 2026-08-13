@@ -1,0 +1,1277 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta
+  name="viewport"
+  content="width=device-width, initial-scale=1.0"
+>
+
+<title>التقارير - VAREX</title>
+
+<style>
+
+*{
+  box-sizing:border-box;
+}
+
+body{
+  margin:0;
+  font-family:Arial,sans-serif;
+  background:#f4f6fb;
+  color:#172554;
+}
+
+header{
+  background:#172554;
+  color:white;
+  padding:18px 5%;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+
+.logo{
+  font-size:25px;
+  font-weight:bold;
+  letter-spacing:2px;
+}
+
+.back{
+  color:white;
+  text-decoration:none;
+}
+
+.container{
+  width:94%;
+  max-width:1400px;
+  margin:30px auto;
+}
+
+h1{
+  margin-bottom:5px;
+}
+
+.subtitle{
+  color:#64748b;
+  margin-top:0;
+}
+
+/* =========================
+   SECTION
+   ========================= */
+
+.section-title{
+  margin-top:30px;
+  margin-bottom:15px;
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+
+/* =========================
+   CARDS
+   ========================= */
+
+.stats{
+  display:grid;
+  grid-template-columns:
+    repeat(4,1fr);
+  gap:15px;
+  margin-bottom:20px;
+}
+
+.card,
+.panel{
+  background:white;
+  border-radius:15px;
+  padding:20px;
+  box-shadow:
+    0 4px 18px
+    rgba(0,0,0,.06);
+}
+
+.card span{
+  color:#64748b;
+  font-size:14px;
+}
+
+.card strong{
+  display:block;
+  font-size:23px;
+  margin-top:9px;
+}
+
+.sales-card{
+  border-top:4px solid #2563eb;
+}
+
+.profit-card{
+  border-top:4px solid #16a34a;
+}
+
+.expense-card{
+  border-top:4px solid #dc2626;
+}
+
+.balance-card{
+  border-top:4px solid #7c3aed;
+}
+
+.inventory-card{
+  border-top:4px solid #0891b2;
+}
+
+.warning-card{
+  border-top:4px solid #f59e0b;
+}
+
+.employee-card{
+  border-top:4px solid #6366f1;
+}
+
+.alert-card{
+  border-top:4px solid #ef4444;
+}
+
+/* =========================
+   FINANCIAL SUMMARY
+   ========================= */
+
+.summary-grid{
+  display:grid;
+  grid-template-columns:
+    repeat(2,1fr);
+  gap:15px;
+}
+
+.summary-row{
+  background:#f8fafc;
+  border-radius:10px;
+  padding:15px;
+  display:flex;
+  justify-content:
+    space-between;
+  gap:15px;
+}
+
+.summary-row span{
+  color:#64748b;
+}
+
+.summary-row strong{
+  color:#172554;
+}
+
+.positive{
+  color:#15803d !important;
+}
+
+.negative{
+  color:#dc2626 !important;
+}
+
+/* =========================
+   ALERTS
+   ========================= */
+
+.alert-list{
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+}
+
+.alert-item{
+  border-radius:10px;
+  padding:13px 15px;
+  display:flex;
+  justify-content:
+    space-between;
+  align-items:center;
+  gap:15px;
+}
+
+.alert-danger{
+  background:#fef2f2;
+  color:#991b1b;
+  border-right:
+    4px solid #dc2626;
+}
+
+.alert-warning{
+  background:#fff7ed;
+  color:#9a3412;
+  border-right:
+    4px solid #f97316;
+}
+
+.alert-notice{
+  background:#fefce8;
+  color:#854d0e;
+  border-right:
+    4px solid #eab308;
+}
+
+.no-alerts{
+  background:#dcfce7;
+  color:#166534;
+  padding:14px;
+  border-radius:10px;
+  text-align:center;
+}
+
+/* =========================
+   TABLE
+   ========================= */
+
+.table-wrap{
+  overflow-x:auto;
+}
+
+table{
+  width:100%;
+  border-collapse:collapse;
+  min-width:750px;
+}
+
+th,
+td{
+  padding:12px 9px;
+  text-align:right;
+  border-bottom:
+    1px solid #edf0f5;
+}
+
+th{
+  background:#f8fafc;
+  color:#475569;
+}
+
+.empty{
+  text-align:center;
+  color:#64748b;
+  padding:20px;
+}
+
+/* =========================
+   PRINT
+   ========================= */
+
+.actions{
+  display:flex;
+  justify-content:flex-end;
+  margin-bottom:20px;
+}
+
+button{
+  border:0;
+  border-radius:9px;
+  padding:11px 18px;
+  cursor:pointer;
+  font-family:inherit;
+}
+
+.primary{
+  background:#172554;
+  color:white;
+}
+
+/* =========================
+   RESPONSIVE
+   ========================= */
+
+@media(max-width:900px){
+
+  .stats{
+    grid-template-columns:
+      1fr 1fr;
+  }
+
+}
+
+@media(max-width:600px){
+
+  .stats{
+    grid-template-columns:
+      1fr;
+  }
+
+  .summary-grid{
+    grid-template-columns:
+      1fr;
+  }
+
+  .alert-item{
+    flex-direction:column;
+    align-items:flex-start;
+  }
+
+}
+
+@media print{
+
+  header,
+  .actions{
+    display:none;
+  }
+
+  body{
+    background:white;
+  }
+
+  .container{
+    width:100%;
+    margin:0;
+  }
+
+  .card,
+  .panel{
+    box-shadow:none;
+    border:1px solid #e5e7eb;
+  }
+
+}
+
+</style>
+
+</head>
+
+<body>
+
+<header>
+
+<div class="logo">
+VAREX
+</div>
+
+<a
+  class="back"
+  href="index.html"
+>
+← لوحة التحكم
+</a>
+
+</header>
+
+
+<div class="container">
+
+<h1>
+📊 التقارير
+</h1>
+
+<p class="subtitle">
+نظرة شاملة على أداء المبيعات والمخزون والحسابات والعملاء والموردين والموظفين
+</p>
+
+
+<div class="actions">
+
+<button
+  class="primary"
+  onclick="window.print()"
+>
+🖨️ طباعة التقرير
+</button>
+
+</div>
+
+
+<!-- =========================
+     FINANCIAL REPORT
+     ========================= -->
+
+<h2 class="section-title">
+💰 التقرير المالي
+</h2>
+
+<div class="stats">
+
+<div class="card sales-card">
+
+<span>
+إجمالي المبيعات
+</span>
+
+<strong id="salesTotal">
+0.00 د.إ
+</strong>
+
+</div>
+
+
+<div class="card profit-card">
+
+<span>
+أرباح المبيعات
+</span>
+
+<strong id="salesProfit">
+0.00 د.إ
+</strong>
+
+</div>
+
+
+<div class="card expense-card">
+
+<span>
+إجمالي المصروفات
+</span>
+
+<strong id="expenses">
+0.00 د.إ
+</strong>
+
+</div>
+
+
+<div class="card balance-card">
+
+<span>
+الرصيد المالي
+</span>
+
+<strong id="balance">
+0.00 د.إ
+</strong>
+
+</div>
+
+</div>
+
+
+<div class="panel">
+
+<h3>
+الملخص المالي
+</h3>
+
+<div class="summary-grid">
+
+<div class="summary-row">
+
+<span>
+إجمالي الإيرادات
+</span>
+
+<strong
+  id="income"
+  class="positive"
+>
+0.00 د.إ
+</strong>
+
+</div>
+
+
+<div class="summary-row">
+
+<span>
+إجمالي المصروفات
+</span>
+
+<strong
+  id="expensesSummary"
+  class="negative"
+>
+0.00 د.إ
+</strong>
+
+</div>
+
+
+<div class="summary-row">
+
+<span>
+صافي الرصيد
+</span>
+
+<strong id="balanceSummary">
+0.00 د.إ
+</strong>
+
+</div>
+
+
+<div class="summary-row">
+
+<span>
+عدد الفواتير
+</span>
+
+<strong id="invoiceCount">
+0
+</strong>
+
+</div>
+
+</div>
+
+</div>
+
+
+<!-- =========================
+     INVENTORY REPORT
+     ========================= -->
+
+<h2 class="section-title">
+📦 تقرير المنتجات والمخزون
+</h2>
+
+<div class="stats">
+
+<div class="card inventory-card">
+
+<span>
+عدد المنتجات
+</span>
+
+<strong id="productCount">
+0
+</strong>
+
+</div>
+
+
+<div class="card inventory-card">
+
+<span>
+إجمالي وحدات المخزون
+</span>
+
+<strong id="stockQuantity">
+0
+</strong>
+
+</div>
+
+
+<div class="card inventory-card">
+
+<span>
+قيمة المخزون بالتكلفة
+</span>
+
+<strong id="inventoryValue">
+0.00 د.إ
+</strong>
+
+</div>
+
+
+<div class="card warning-card">
+
+<span>
+منتجات منخفضة المخزون
+</span>
+
+<strong id="lowStock">
+0
+</strong>
+
+</div>
+
+</div>
+
+
+<!-- =========================
+     RELATIONSHIPS
+     ========================= -->
+
+<h2 class="section-title">
+👥 العملاء والموردون
+</h2>
+
+<div class="stats">
+
+<div class="card">
+
+<span>
+إجمالي العملاء
+</span>
+
+<strong id="customerCount">
+0
+</strong>
+
+</div>
+
+
+<div class="card">
+
+<span>
+إجمالي الموردين
+</span>
+
+<strong id="supplierCount">
+0
+</strong>
+
+</div>
+
+</div>
+
+
+<!-- =========================
+     EMPLOYEES
+     ========================= -->
+
+<h2 class="section-title">
+👨‍💼 تقرير الموظفين
+</h2>
+
+<div class="stats">
+
+<div class="card employee-card">
+
+<span>
+إجمالي الموظفين
+</span>
+
+<strong id="employeeCount">
+0
+</strong>
+
+</div>
+
+
+<div class="card employee-card">
+
+<span>
+الموظفون النشطون
+</span>
+
+<strong id="activeEmployees">
+0
+</strong>
+
+</div>
+
+
+<div class="card employee-card">
+
+<span>
+إجمالي الرواتب الشهرية
+</span>
+
+<strong id="salaries">
+0.00 د.إ
+</strong>
+
+</div>
+
+
+<div class="card employee-card">
+
+<span>
+مديرو النظام
+</span>
+
+<strong id="adminCount">
+0
+</strong>
+
+</div>
+
+</div>
+
+
+<!-- =========================
+     DOCUMENT ALERTS
+     ========================= -->
+
+<h2 class="section-title">
+🔔 وثائق الموظفين
+</h2>
+
+<div class="stats">
+
+<div class="card alert-card">
+
+<span>
+إجمالي تنبيهات الوثائق
+</span>
+
+<strong id="documentAlerts">
+0
+</strong>
+
+</div>
+
+
+<div class="card alert-card">
+
+<span>
+وثائق منتهية
+</span>
+
+<strong id="expiredDocuments">
+0
+</strong>
+
+</div>
+
+
+<div class="card warning-card">
+
+<span>
+وثائق عاجلة خلال 7 أيام
+</span>
+
+<strong id="urgentDocuments">
+0
+</strong>
+
+</div>
+
+</div>
+
+
+<div class="panel">
+
+<h3>
+تنبيهات انتهاء الوثائق
+</h3>
+
+<div
+  class="alert-list"
+  id="alertsList"
+>
+</div>
+
+</div>
+
+
+<!-- =========================
+     LOW STOCK
+     ========================= -->
+
+<h2 class="section-title">
+⚠️ المنتجات منخفضة المخزون
+</h2>
+
+<div class="panel">
+
+<div class="table-wrap">
+
+<table>
+
+<thead>
+
+<tr>
+
+<th>#</th>
+
+<th>المنتج</th>
+
+<th>الباركود</th>
+
+<th>الكمية الحالية</th>
+
+<th>الحد الأدنى</th>
+
+<th>سعر التكلفة</th>
+
+</tr>
+
+</thead>
+
+<tbody id="lowStockTable">
+</tbody>
+
+</table>
+
+
+<div
+  id="lowStockEmpty"
+  class="empty"
+>
+لا توجد منتجات منخفضة المخزون
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+
+<script src="varex.js"></script>
+
+
+<script>
+
+/* =========================
+   MAIN REPORT
+   ========================= */
+
+function renderReports(){
+
+  const report =
+    VAREX.getReports();
+
+
+  /* المالية */
+
+  setText(
+    "salesTotal",
+    VAREX.money(
+      report.salesTotal
+    )
+  );
+
+  setText(
+    "salesProfit",
+    VAREX.money(
+      report.salesProfit
+    )
+  );
+
+  setText(
+    "income",
+    VAREX.money(
+      report.income
+    )
+  );
+
+  setText(
+    "expenses",
+    VAREX.money(
+      report.expenses
+    )
+  );
+
+  setText(
+    "expensesSummary",
+    VAREX.money(
+      report.expenses
+    )
+  );
+
+  setText(
+    "balance",
+    VAREX.money(
+      report.balance
+    )
+  );
+
+  setText(
+    "balanceSummary",
+    VAREX.money(
+      report.balance
+    )
+  );
+
+  setText(
+    "invoiceCount",
+    report.invoices
+  );
+
+
+  /* المخزون */
+
+  setText(
+    "productCount",
+    report.products
+  );
+
+  setText(
+    "stockQuantity",
+    report.stockQuantity
+  );
+
+  setText(
+    "inventoryValue",
+    VAREX.money(
+      report.inventoryValue
+    )
+  );
+
+  setText(
+    "lowStock",
+    report.lowStock
+  );
+
+
+  /* العملاء والموردون */
+
+  setText(
+    "customerCount",
+    report.customers
+  );
+
+  setText(
+    "supplierCount",
+    report.suppliers
+  );
+
+
+  /* الموظفون */
+
+  setText(
+    "employeeCount",
+    report.employees
+  );
+
+  setText(
+    "activeEmployees",
+    report.activeEmployees
+  );
+
+  setText(
+    "salaries",
+    VAREX.money(
+      report.salaries
+    )
+  );
+
+  setText(
+    "adminCount",
+    report.adminCount
+  );
+
+
+  /* الوثائق */
+
+  setText(
+    "documentAlerts",
+    report.employeeDocumentAlerts
+  );
+
+  setText(
+    "expiredDocuments",
+    report.expiredEmployeeDocuments
+  );
+
+  setText(
+    "urgentDocuments",
+    report.urgentEmployeeDocuments
+  );
+
+
+  /* لون الرصيد */
+
+  const balanceElement =
+    document.getElementById(
+      "balanceSummary"
+    );
+
+  if(
+    Number(report.balance) < 0
+  ){
+
+    balanceElement.className =
+      "negative";
+
+  }else{
+
+    balanceElement.className =
+      "positive";
+
+  }
+
+
+  renderEmployeeAlerts();
+
+  renderLowStock();
+
+}
+
+
+/* =========================
+   EMPLOYEE ALERTS
+   ========================= */
+
+function renderEmployeeAlerts(){
+
+  const alerts =
+    VAREX
+      .getAllEmployeeDocumentAlerts();
+
+  const container =
+    document.getElementById(
+      "alertsList"
+    );
+
+  container.innerHTML = "";
+
+
+  if(!alerts.length){
+
+    container.innerHTML = `
+
+      <div class="no-alerts">
+
+        ✓ لا توجد وثائق موظفين
+        قاربت على الانتهاء حالياً
+
+      </div>
+
+    `;
+
+    return;
+
+  }
+
+
+  alerts.forEach(
+    alert => {
+
+      let className =
+        "alert-notice";
+
+      let icon =
+        "⚠️";
+
+
+      if(
+        alert.level ===
+        "warning"
+      ){
+
+        className =
+          "alert-warning";
+
+      }
+
+
+      if(
+        alert.level ===
+        "danger"
+      ){
+
+        className =
+          "alert-danger";
+
+        icon =
+          "🚨";
+
+      }
+
+
+      const item =
+        document.createElement(
+          "div"
+        );
+
+
+      item.className =
+        "alert-item " +
+        className;
+
+
+      item.innerHTML = `
+
+        <div>
+
+          <strong>
+
+            ${icon}
+
+            ${escapeHTML(
+              alert.employeeName
+            )}
+
+            —
+
+            ${escapeHTML(
+              alert.documentName
+            )}
+
+          </strong>
+
+          <div
+            style="margin-top:5px"
+          >
+
+            ${escapeHTML(
+              alert.text
+            )}
+
+          </div>
+
+        </div>
+
+
+        <div>
+
+          تاريخ الانتهاء:
+
+          <strong>
+
+            ${escapeHTML(
+              alert.expiryDate
+            )}
+
+          </strong>
+
+        </div>
+
+      `;
+
+
+      container.appendChild(
+        item
+      );
+
+    }
+  );
+
+}
+
+
+/* =========================
+   LOW STOCK
+   ========================= */
+
+function renderLowStock(){
+
+  const products =
+    VAREX
+      .getLowStockProducts();
+
+  const table =
+    document.getElementById(
+      "lowStockTable"
+    );
+
+  const empty =
+    document.getElementById(
+      "lowStockEmpty"
+    );
+
+
+  table.innerHTML = "";
+
+
+  if(!products.length){
+
+    empty.style.display =
+      "block";
+
+    return;
+
+  }
+
+
+  empty.style.display =
+    "none";
+
+
+  products.forEach(
+    (product,index) => {
+
+      const row =
+        document.createElement(
+          "tr"
+        );
+
+
+      row.innerHTML = `
+
+        <td>
+          ${index + 1}
+        </td>
+
+        <td>
+          ${escapeHTML(
+            product.name || "-"
+          )}
+        </td>
+
+        <td>
+          ${escapeHTML(
+            product.barcode || "-"
+          )}
+        </td>
+
+        <td>
+          ${Number(
+            product.quantity || 0
+          )}
+        </td>
+
+        <td>
+          ${Number(
+            product.minimumStock || 0
+          )}
+        </td>
+
+        <td>
+          ${VAREX.money(
+            product.cost
+          )}
+        </td>
+
+      `;
+
+
+      table.appendChild(
+        row
+      );
+
+    }
+  );
+
+}
+
+
+/* =========================
+   SET TEXT
+   ========================= */
+
+function setText(
+  id,
+  value
+){
+
+  const element =
+    document.getElementById(
+      id
+    );
+
+  if(element){
+
+    element.innerText =
+      value;
+
+  }
+
+}
+
+
+/* =========================
+   ESCAPE HTML
+   ========================= */
+
+function escapeHTML(value){
+
+  const div =
+    document.createElement(
+      "div"
+    );
+
+  div.textContent =
+    value == null
+      ? ""
+      : String(value);
+
+  return div.innerHTML;
+
+}
+
+
+/* =========================
+   START
+   ========================= */
+
+renderReports();
+
+</script>
+
+</body>
+</html>

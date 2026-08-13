@@ -1,0 +1,842 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>الحسابات - VAREX</title>
+
+<style>
+*{
+  box-sizing:border-box;
+}
+
+body{
+  margin:0;
+  font-family:Arial,sans-serif;
+  background:#f4f6fb;
+  color:#172554;
+}
+
+header{
+  background:#172554;
+  color:white;
+  padding:18px 5%;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+
+.logo{
+  font-size:25px;
+  font-weight:bold;
+  letter-spacing:2px;
+}
+
+.back{
+  color:white;
+  text-decoration:none;
+}
+
+.container{
+  width:94%;
+  max-width:1400px;
+  margin:30px auto;
+}
+
+h1{
+  margin-bottom:5px;
+}
+
+.subtitle{
+  color:#64748b;
+  margin-top:0;
+}
+
+/* =========================
+   STATISTICS
+   ========================= */
+
+.stats{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:15px;
+  margin:25px 0;
+}
+
+.card,
+.panel{
+  background:white;
+  border-radius:15px;
+  padding:20px;
+  box-shadow:0 4px 18px rgba(0,0,0,.06);
+}
+
+.card span{
+  color:#64748b;
+  font-size:14px;
+}
+
+.card strong{
+  display:block;
+  font-size:24px;
+  margin-top:9px;
+}
+
+.income-card{
+  border-top:4px solid #16a34a;
+}
+
+.expense-card{
+  border-top:4px solid #dc2626;
+}
+
+.balance-card{
+  border-top:4px solid #2563eb;
+}
+
+.transaction-card{
+  border-top:4px solid #7c3aed;
+}
+
+/* =========================
+   TOOLBAR
+   ========================= */
+
+.toolbar{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+  margin-bottom:18px;
+}
+
+input,
+select,
+textarea{
+  padding:12px;
+  border:1px solid #dbe1ea;
+  border-radius:9px;
+  font-size:14px;
+  font-family:inherit;
+}
+
+.search{
+  flex:1;
+  min-width:220px;
+}
+
+button{
+  border:0;
+  border-radius:9px;
+  padding:11px 16px;
+  cursor:pointer;
+  font-family:inherit;
+}
+
+.primary{
+  background:#172554;
+  color:white;
+}
+
+.secondary{
+  background:#e5e7eb;
+  color:#111827;
+}
+
+.delete{
+  background:#fee2e2;
+  color:#991b1b;
+  padding:7px 10px;
+}
+
+/* =========================
+   TABLE
+   ========================= */
+
+.table-wrap{
+  overflow-x:auto;
+}
+
+table{
+  width:100%;
+  border-collapse:collapse;
+  min-width:900px;
+}
+
+th,
+td{
+  padding:12px 9px;
+  text-align:right;
+  border-bottom:1px solid #edf0f5;
+}
+
+th{
+  background:#f8fafc;
+  color:#475569;
+}
+
+.income{
+  color:#15803d;
+  font-weight:bold;
+}
+
+.expense{
+  color:#dc2626;
+  font-weight:bold;
+}
+
+.empty{
+  text-align:center;
+  color:#64748b;
+  padding:25px;
+}
+
+/* =========================
+   MODAL
+   ========================= */
+
+.modal{
+  display:none;
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.45);
+  align-items:center;
+  justify-content:center;
+  padding:15px;
+  z-index:1000;
+}
+
+.modal-box{
+  background:white;
+  width:100%;
+  max-width:650px;
+  border-radius:16px;
+  padding:25px;
+  max-height:92vh;
+  overflow-y:auto;
+}
+
+.close{
+  float:left;
+  font-size:25px;
+  cursor:pointer;
+}
+
+.form-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:12px;
+}
+
+.form-grid input,
+.form-grid select,
+.form-grid textarea{
+  width:100%;
+}
+
+.full{
+  grid-column:1/-1;
+}
+
+.form-actions{
+  display:flex;
+  gap:10px;
+  margin-top:18px;
+}
+
+@media(max-width:800px){
+  .stats{
+    grid-template-columns:1fr 1fr;
+  }
+}
+
+@media(max-width:600px){
+  .stats{
+    grid-template-columns:1fr;
+  }
+
+  .form-grid{
+    grid-template-columns:1fr;
+  }
+
+  .full{
+    grid-column:auto;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<header>
+<div class="logo">VAREX</div>
+
+<a class="back" href="index.html">
+← لوحة التحكم
+</a>
+</header>
+
+<div class="container">
+
+<h1>💰 الحسابات</h1>
+
+<p class="subtitle">
+إدارة الإيرادات والمصروفات والحركات المالية
+</p>
+
+<!-- الإحصائيات -->
+
+<div class="stats">
+
+<div class="card income-card">
+<span>إجمالي الإيرادات</span>
+<strong id="totalIncome">
+0.00 د.إ
+</strong>
+</div>
+
+<div class="card expense-card">
+<span>إجمالي المصروفات</span>
+<strong id="totalExpenses">
+0.00 د.إ
+</strong>
+</div>
+
+<div class="card balance-card">
+<span>الرصيد الصافي</span>
+<strong id="balance">
+0.00 د.إ
+</strong>
+</div>
+
+<div class="card transaction-card">
+<span>عدد الحركات المالية</span>
+<strong id="transactionCount">
+0
+</strong>
+</div>
+
+</div>
+
+<!-- قائمة الحركات -->
+
+<div class="panel">
+
+<div class="toolbar">
+
+<input
+  id="search"
+  class="search"
+  placeholder="🔍 ابحث في الحركات المالية"
+  oninput="renderTransactions()"
+>
+
+<select
+  id="typeFilter"
+  onchange="renderTransactions()"
+>
+<option value="">كل الحركات</option>
+<option value="income">الإيرادات</option>
+<option value="expense">المصروفات</option>
+</select>
+
+<button
+  class="primary"
+  onclick="openTransactionModal()"
+>
++ إضافة حركة مالية
+</button>
+
+</div>
+
+<div class="table-wrap">
+
+<table>
+
+<thead>
+<tr>
+<th>#</th>
+<th>التاريخ</th>
+<th>البيان</th>
+<th>التصنيف</th>
+<th>النوع</th>
+<th>المبلغ</th>
+<th>طريقة الدفع</th>
+<th>الإجراءات</th>
+</tr>
+</thead>
+
+<tbody id="transactionTable">
+</tbody>
+
+</table>
+
+<div
+  id="emptyMessage"
+  class="empty"
+>
+لا توجد حركات مالية حتى الآن
+</div>
+
+</div>
+</div>
+</div>
+
+<!-- نافذة إضافة حركة -->
+
+<div class="modal" id="transactionModal">
+
+<div class="modal-box">
+
+<span
+  class="close"
+  onclick="closeTransactionModal()"
+>
+×
+</span>
+
+<h2>إضافة حركة مالية</h2>
+
+<div class="form-grid">
+
+<select id="transactionType">
+<option value="income">إيراد</option>
+<option value="expense">مصروف</option>
+</select>
+
+<input
+  id="transactionDate"
+  type="date"
+>
+
+<input
+  id="description"
+  class="full"
+  placeholder="البيان / وصف الحركة"
+>
+
+<input
+  id="category"
+  placeholder="التصنيف"
+>
+
+<input
+  id="amount"
+  type="number"
+  min="0"
+  step="0.01"
+  placeholder="المبلغ"
+>
+
+<select id="payment">
+<option value="">طريقة الدفع</option>
+<option value="نقدي">نقدي</option>
+<option value="بطاقة">بطاقة</option>
+<option value="تحويل بنكي">تحويل بنكي</option>
+<option value="شيك">شيك</option>
+<option value="أخرى">أخرى</option>
+</select>
+
+</div>
+
+<div class="form-actions">
+
+<button
+  class="primary"
+  onclick="saveTransaction()"
+>
+حفظ الحركة
+</button>
+
+<button
+  class="secondary"
+  onclick="closeTransactionModal()"
+>
+إلغاء
+</button>
+
+</div>
+</div>
+</div>
+
+<script src="varex.js"></script>
+
+<script>
+
+/* =========================
+   OPEN MODAL
+   ========================= */
+
+function openTransactionModal(){
+
+  document.getElementById(
+    "transactionType"
+  ).value = "income";
+
+  document.getElementById(
+    "transactionDate"
+  ).value = VAREX.today();
+
+  document.getElementById(
+    "description"
+  ).value = "";
+
+  document.getElementById(
+    "category"
+  ).value = "";
+
+  document.getElementById(
+    "amount"
+  ).value = "";
+
+  document.getElementById(
+    "payment"
+  ).value = "";
+
+  document.getElementById(
+    "transactionModal"
+  ).style.display = "flex";
+
+}
+
+
+/* =========================
+   CLOSE MODAL
+   ========================= */
+
+function closeTransactionModal(){
+
+  document.getElementById(
+    "transactionModal"
+  ).style.display = "none";
+
+}
+
+
+/* =========================
+   SAVE TRANSACTION
+   ========================= */
+
+function saveTransaction(){
+
+  const description =
+    document.getElementById(
+      "description"
+    ).value.trim();
+
+  const amount =
+    Number(
+      document.getElementById(
+        "amount"
+      ).value
+    );
+
+  if(!description){
+
+    alert(
+      "يرجى إدخال بيان الحركة المالية"
+    );
+
+    return;
+  }
+
+  if(!amount || amount <= 0){
+
+    alert(
+      "يرجى إدخال مبلغ صحيح"
+    );
+
+    return;
+  }
+
+  VAREX.addTransaction({
+
+    type:
+      document.getElementById(
+        "transactionType"
+      ).value,
+
+    description,
+
+    category:
+      document.getElementById(
+        "category"
+      ).value.trim(),
+
+    amount,
+
+    date:
+      document.getElementById(
+        "transactionDate"
+      ).value ||
+      VAREX.today(),
+
+    payment:
+      document.getElementById(
+        "payment"
+      ).value
+
+  });
+
+  closeTransactionModal();
+
+  renderTransactions();
+
+}
+
+
+/* =========================
+   DELETE
+   ========================= */
+
+function removeTransaction(id){
+
+  if(
+    confirm(
+      "هل تريد حذف هذه الحركة المالية؟"
+    )
+  ){
+
+    VAREX.deleteTransaction(id);
+
+    renderTransactions();
+
+  }
+
+}
+
+
+/* =========================
+   STATISTICS
+   ========================= */
+
+function updateStats(){
+
+  const summary =
+    VAREX.getFinancialSummary();
+
+  document.getElementById(
+    "totalIncome"
+  ).innerText =
+    VAREX.money(
+      summary.income
+    );
+
+  document.getElementById(
+    "totalExpenses"
+  ).innerText =
+    VAREX.money(
+      summary.expenses
+    );
+
+  document.getElementById(
+    "balance"
+  ).innerText =
+    VAREX.money(
+      summary.balance
+    );
+
+  document.getElementById(
+    "transactionCount"
+  ).innerText =
+    summary.transactions;
+
+}
+
+
+/* =========================
+   RENDER
+   ========================= */
+
+function renderTransactions(){
+
+  const transactions =
+    VAREX.getTransactions();
+
+  const table =
+    document.getElementById(
+      "transactionTable"
+    );
+
+  const search =
+    document.getElementById(
+      "search"
+    ).value
+      .trim()
+      .toLowerCase();
+
+  const type =
+    document.getElementById(
+      "typeFilter"
+    ).value;
+
+  table.innerHTML = "";
+
+  let visible = 0;
+
+  transactions.forEach(
+    transaction => {
+
+      if(
+        type &&
+        transaction.type !== type
+      ){
+        return;
+      }
+
+      const searchable =
+        (
+          (transaction.description || "") +
+          " " +
+          (transaction.category || "") +
+          " " +
+          (transaction.payment || "")
+        ).toLowerCase();
+
+      if(
+        !searchable.includes(search)
+      ){
+        return;
+      }
+
+      visible++;
+
+      const isIncome =
+        transaction.type ===
+        "income";
+
+      const typeText =
+        isIncome
+          ? "إيراد"
+          : "مصروف";
+
+      const typeClass =
+        isIncome
+          ? "income"
+          : "expense";
+
+      const row =
+        document.createElement(
+          "tr"
+        );
+
+      row.innerHTML = `
+
+        <td>${visible}</td>
+
+        <td>
+          ${escapeHTML(
+            transaction.date || "-"
+          )}
+        </td>
+
+        <td>
+          ${escapeHTML(
+            transaction.description || "-"
+          )}
+        </td>
+
+        <td>
+          ${escapeHTML(
+            transaction.category || "-"
+          )}
+        </td>
+
+        <td class="${typeClass}">
+          ${typeText}
+        </td>
+
+        <td class="${typeClass}">
+          ${VAREX.money(
+            transaction.amount
+          )}
+        </td>
+
+        <td>
+          ${escapeHTML(
+            transaction.payment || "-"
+          )}
+        </td>
+
+        <td>
+          <button
+            class="delete"
+            onclick="removeTransaction('${transaction.id}')"
+          >
+            حذف
+          </button>
+        </td>
+
+      `;
+
+      table.appendChild(row);
+
+    }
+  );
+
+  document.getElementById(
+    "emptyMessage"
+  ).style.display =
+    visible === 0
+      ? "block"
+      : "none";
+
+  updateStats();
+
+}
+
+
+/* =========================
+   ESCAPE HTML
+   ========================= */
+
+function escapeHTML(value){
+
+  const div =
+    document.createElement(
+      "div"
+    );
+
+  div.textContent =
+    value == null
+      ? ""
+      : String(value);
+
+  return div.innerHTML;
+
+}
+
+
+/* =========================
+   CLOSE FROM OUTSIDE
+   ========================= */
+
+window.addEventListener(
+  "click",
+  function(event){
+
+    const modal =
+      document.getElementById(
+        "transactionModal"
+      );
+
+    if(event.target === modal){
+
+      closeTransactionModal();
+
+    }
+
+  }
+);
+
+
+/* =========================
+   START
+   ========================= */
+
+renderTransactions();
+
+</script>
+
+</body>
+</html>
