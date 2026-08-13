@@ -3,7 +3,6 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
   <title>VAREX</title>
 
   <style>
@@ -17,70 +16,181 @@
       font-family: Arial, sans-serif;
       background: #f4f6fb;
       min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      color: #1f2937;
     }
 
-    .welcome {
-      width: 90%;
-      max-width: 700px;
-      background: white;
-      padding: 50px 30px;
-      border-radius: 20px;
-      text-align: center;
-      box-shadow: 0 10px 35px rgba(0,0,0,0.08);
+    .header {
+      background: #172554;
+      color: white;
+      padding: 22px 30px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
     }
 
     .logo {
-      font-size: 52px;
-      font-weight: 800;
-      letter-spacing: 4px;
+      font-size: 30px;
+      font-weight: bold;
+      letter-spacing: 3px;
+    }
+
+    .header-text {
+      font-size: 14px;
+      opacity: 0.8;
+    }
+
+    .container {
+      padding: 30px;
+      max-width: 1200px;
+      margin: auto;
+    }
+
+    .welcome {
+      margin-bottom: 30px;
+    }
+
+    .welcome h1 {
       color: #172554;
+      margin-bottom: 8px;
+    }
+
+    .welcome p {
+      color: #6b7280;
+    }
+
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+      gap: 18px;
+    }
+
+    .card {
+      background: white;
+      border-radius: 16px;
+      padding: 25px;
+      min-height: 145px;
+      box-shadow: 0 4px 18px rgba(0,0,0,0.06);
+      cursor: pointer;
+      transition: 0.2s;
+    }
+
+    .card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 8px 25px rgba(0,0,0,0.10);
+    }
+
+    .icon {
+      font-size: 30px;
       margin-bottom: 15px;
     }
 
-    h1 {
+    .card h3 {
       color: #172554;
-      margin-bottom: 12px;
+      margin-bottom: 8px;
     }
 
-    p {
-      color: #64748b;
-      font-size: 18px;
-      line-height: 1.8;
+    .card p {
+      color: #6b7280;
+      font-size: 14px;
+      line-height: 1.6;
     }
 
     .status {
-      display: inline-block;
-      margin-top: 25px;
-      padding: 10px 20px;
+      margin-top: 30px;
       background: #dcfce7;
       color: #166534;
-      border-radius: 10px;
-      font-weight: bold;
+      padding: 15px 20px;
+      border-radius: 12px;
+      text-align: center;
+    }
+
+    @media (max-width: 600px) {
+      .header {
+        padding: 18px;
+      }
+
+      .header-text {
+        display: none;
+      }
+
+      .container {
+        padding: 20px;
+      }
     }
   </style>
 </head>
 
 <body>
 
-  <div class="welcome">
-
+  <header class="header">
     <div class="logo">VAREX</div>
+    <div class="header-text">منصة إدارة الأعمال</div>
+  </header>
 
-    <h1>منصة إدارة الأعمال</h1>
+  <main class="container">
 
-    <p>
-      نظام متكامل لإدارة المبيعات والمخزون والحسابات
-      والموظفين والتقارير.
-    </p>
+    <section class="welcome">
+      <h1>لوحة التحكم</h1>
+      <p>مرحباً بك في نظام VAREX لإدارة أعمالك من مكان واحد.</p>
+    </section>
+
+    <section class="cards">
+
+      <div class="card">
+        <div class="icon">🛒</div>
+        <h3>نقطة البيع</h3>
+        <p>إدارة عمليات البيع والفواتير والكاشير.</p>
+      </div>
+
+      <div class="card">
+        <div class="icon">📦</div>
+        <h3>المنتجات والمخزون</h3>
+        <p>إدارة المنتجات والكميات وحركة المخزون.</p>
+      </div>
+
+      <div class="card">
+        <div class="icon">👥</div>
+        <h3>العملاء</h3>
+        <p>إدارة بيانات العملاء وسجل المشتريات.</p>
+      </div>
+
+      <div class="card">
+        <div class="icon">🚚</div>
+        <h3>الموردون</h3>
+        <p>إدارة الموردين والمشتريات والتوريد.</p>
+      </div>
+
+      <div class="card">
+        <div class="icon">💰</div>
+        <h3>الحسابات</h3>
+        <p>متابعة الإيرادات والمصروفات والحسابات.</p>
+      </div>
+
+      <div class="card">
+        <div class="icon">👨‍💼</div>
+        <h3>الموظفون</h3>
+        <p>إدارة الموظفين والصلاحيات والحضور.</p>
+      </div>
+
+      <div class="card">
+        <div class="icon">📊</div>
+        <h3>التقارير</h3>
+        <p>تقارير المبيعات والأرباح والمخزون.</p>
+      </div>
+
+      <div class="card">
+        <div class="icon">⚙️</div>
+        <h3>الإعدادات</h3>
+        <p>إعدادات النظام والمتجر والمستخدمين.</p>
+      </div>
+
+    </section>
 
     <div class="status">
-      ✓ تم تشغيل مشروع VAREX بنجاح
+      ✓ نظام VAREX يعمل بنجاح
     </div>
 
-  </div>
+  </main>
 
 </body>
 </html>
