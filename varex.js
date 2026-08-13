@@ -1,7 +1,7 @@
 /* =========================================================
    VAREX CORE
    Shared Data Layer
-   AUTH + POS COMPATIBLE VERSION
+   AUTH + POS + INVENTORY COMPATIBLE VERSION
    ========================================================= */
 
 const VAREX = {
@@ -64,7 +64,11 @@ const VAREX = {
 
       localStorage.setItem(
         key,
-        JSON.stringify(data)
+        JSON.stringify(
+          Array.isArray(data)
+            ? data
+            : []
+        )
       );
 
       return true;
@@ -131,7 +135,9 @@ const VAREX = {
 
       localStorage.setItem(
         key,
-        JSON.stringify(data)
+        JSON.stringify(
+          data || {}
+        )
       );
 
       return true;
@@ -616,7 +622,7 @@ const VAREX = {
     const users =
       this.getUsers();
 
-    const now =
+    const time =
       this.now();
 
 
@@ -633,11 +639,6 @@ const VAREX = {
 
       email,
 
-      /*
-       * هذه مناسبة حالياً للنسخة المحلية فقط.
-       * عند ربط VAREX بخادم حقيقي سنستبدلها
-       * بنظام Authentication آمن على الخادم.
-       */
       password,
 
       role:
@@ -654,10 +655,10 @@ const VAREX = {
         "نشط",
 
       createdAt:
-        now,
+        time,
 
       updatedAt:
-        now,
+        time,
 
       lastLogin:
         ""
@@ -669,13 +670,11 @@ const VAREX = {
     );
 
 
-    const saved =
-      this.saveUsers(
+    if (
+      !this.saveUsers(
         users
-      );
-
-
-    if (!saved) {
+      )
+    ) {
 
       return {
         success: false,
@@ -686,7 +685,9 @@ const VAREX = {
 
 
     return {
+
       success: true,
+
       user:
         this.getSafeUser(
           newUser
@@ -852,11 +853,6 @@ const VAREX = {
     };
 
 
-    /*
-     * localStorage = يبقى المستخدم مسجلاً عند اختيار تذكرني.
-     * sessionStorage = تنتهي الجلسة عند إغلاق جلسة المتصفح.
-     */
-
     if (remember) {
 
       localStorage.setItem(
@@ -890,6 +886,34 @@ const VAREX = {
 
       localStorage.removeItem(
         this.keys.rememberedUser
+      );
+    }
+
+
+    /*
+       Compatibility flags for older VAREX pages.
+    */
+
+    if (remember) {
+
+      localStorage.setItem(
+        "varex_authenticated",
+        "true"
+      );
+
+      sessionStorage.removeItem(
+        "varex_authenticated"
+      );
+
+    } else {
+
+      sessionStorage.setItem(
+        "varex_authenticated",
+        "true"
+      );
+
+      localStorage.removeItem(
+        "varex_authenticated"
       );
     }
 
@@ -998,14 +1022,10 @@ const VAREX = {
     }
 
 
-    const user =
+    return this.getSafeUser(
       this.findUserById(
         session.userId
-      );
-
-
-    return this.getSafeUser(
-      user
+      )
     );
   },
 
@@ -1031,11 +1051,19 @@ const VAREX = {
       this.keys.session
     );
 
+    sessionStorage.removeItem(
+      "varex_authenticated"
+    );
+
+    localStorage.removeItem(
+      "varex_authenticated"
+    );
+
 
     if (redirect) {
 
       window.location.replace(
-        "login.html"
+        "./login.html"
       );
     }
 
@@ -1047,8 +1075,10 @@ const VAREX = {
   requireLogin() {
 
     if (
-      this.isLoginPage()
+      this.isLoginPage() ||
+      this.isRegisterPage()
     ) {
+
       return true;
     }
 
@@ -1058,7 +1088,7 @@ const VAREX = {
     ) {
 
       window.location.replace(
-        "login.html"
+        "./login.html"
       );
 
       return false;
@@ -1076,13 +1106,21 @@ const VAREX = {
         .toLowerCase();
 
 
-    return (
-      path.endsWith(
-        "/login.html"
-      ) ||
-      path.endsWith(
-        "login.html"
-      )
+    return path.endsWith(
+      "login.html"
+    );
+  },
+
+
+  isRegisterPage() {
+
+    const path =
+      window.location.pathname
+        .toLowerCase();
+
+
+    return path.endsWith(
+      "register.html"
     );
   },
 
@@ -1095,7 +1133,7 @@ const VAREX = {
     ) {
 
       window.location.replace(
-        "index.html"
+        "./index.html"
       );
 
       return true;
@@ -1150,15 +1188,31 @@ const VAREX = {
     }
 
 
+    const updated =
+      {
+        ...changes
+      };
+
+
     if (
-      changes.email !==
+      updated.email !==
       undefined
     ) {
 
       const email =
         this.normalizeEmail(
-          changes.email
+          updated.email
         );
+
+
+      if (!email) {
+
+        return {
+          success: false,
+          message:
+            "البريد الإلكتروني مطلوب."
+        };
+      }
 
 
       if (
@@ -1176,20 +1230,30 @@ const VAREX = {
       }
 
 
-      changes.email =
+      updated.email =
         email;
     }
 
 
     if (
-      changes.username !==
+      updated.username !==
       undefined
     ) {
 
       const username =
         this.normalizeUsername(
-          changes.username
+          updated.username
         );
+
+
+      if (!username) {
+
+        return {
+          success: false,
+          message:
+            "اسم المستخدم مطلوب."
+        };
+      }
 
 
       if (
@@ -1207,16 +1271,20 @@ const VAREX = {
       }
 
 
-      changes.username =
+      updated.username =
         username;
     }
+
+
+    delete updated.id;
+    delete updated.password;
 
 
     users[index] = {
 
       ...users[index],
 
-      ...changes,
+      ...updated,
 
       id:
         users[index].id,
@@ -1324,7 +1392,6 @@ const VAREX = {
         newPassword
       );
 
-
     users[index].updatedAt =
       this.now();
 
@@ -1343,5 +1410,1560 @@ const VAREX = {
 
 
   /* =====================================================
+     PRODUCTS
+     ===================================================== */
+
+  getProducts() {
+
+    return this.getData(
+      this.keys.products
+    );
+  },
+
+
+  saveProducts(products) {
+
+    return this.saveData(
+      this.keys.products,
+      products
+    );
+  },
+
+
+  getProductById(id) {
+
+    return (
+      this.getProducts()
+        .find(
+          product =>
+            String(
+              product.id
+            ) ===
+            String(id)
+        ) ||
+      null
+    );
+  },
+
+
+  findProductByBarcode(barcode) {
+
+    const value =
+      this.cleanText(
+        barcode
+      );
+
+
+    if (!value) {
+      return null;
+    }
+
+
+    return (
+      this.getProducts()
+        .find(
+          product =>
+            this.cleanText(
+              product.barcode
+            ) === value
+        ) ||
+      null
+    );
+  },
+
+
+  addProduct(product = {}) {
+
+    const products =
+      this.getProducts();
+
+    const item = {
+
+      ...product,
+
+      id:
+        product.id ||
+        this.generateId(
+          "PRD"
+        ),
+
+      name:
+        this.cleanText(
+          product.name ||
+          product.productName
+        ),
+
+      quantity:
+        this.positiveNumber(
+          product.quantity
+        ),
+
+      price:
+        this.positiveNumber(
+          product.price ||
+          product.salePrice
+        ),
+
+      cost:
+        this.positiveNumber(
+          product.cost ||
+          product.costPrice
+        ),
+
+      createdAt:
+        product.createdAt ||
+        this.now(),
+
+      updatedAt:
+        this.now()
+    };
+
+
+    products.push(
+      item
+    );
+
+
+    this.saveProducts(
+      products
+    );
+
+
+    return item;
+  },
+
+
+  updateProduct(
+    id,
+    changes = {}
+  ) {
+
+    const products =
+      this.getProducts();
+
+    const index =
+      products.findIndex(
+        product =>
+          String(
+            product.id
+          ) ===
+          String(id)
+      );
+
+
+    if (index === -1) {
+      return false;
+    }
+
+
+    products[index] = {
+
+      ...products[index],
+
+      ...changes,
+
+      id:
+        products[index].id,
+
+      updatedAt:
+        this.now()
+    };
+
+
+    this.saveProducts(
+      products
+    );
+
+
+    return products[index];
+  },
+
+
+  deleteProduct(id) {
+
+    const products =
+      this.getProducts();
+
+    const filtered =
+      products.filter(
+        product =>
+          String(
+            product.id
+          ) !==
+          String(id)
+      );
+
+
+    this.saveProducts(
+      filtered
+    );
+
+
+    return (
+      filtered.length !==
+      products.length
+    );
+  },
+
+
+  adjustStock(
+    productId,
+    amount
+  ) {
+
+    const products =
+      this.getProducts();
+
+    const index =
+      products.findIndex(
+        product =>
+          String(
+            product.id
+          ) ===
+          String(
+            productId
+          )
+      );
+
+
+    if (index === -1) {
+      return false;
+    }
+
+
+    const current =
+      this.toNumber(
+        products[index].quantity,
+        0
+      );
+
+
+    products[index].quantity =
+      Math.max(
+        0,
+        current +
+        this.toNumber(
+          amount,
+          0
+        )
+      );
+
+
+    products[index].updatedAt =
+      this.now();
+
+
+    this.saveProducts(
+      products
+    );
+
+
+    return products[index];
+  },
+
+
+  /* =====================================================
+     SALES
+     ===================================================== */
+
+  getSales() {
+
+    return this.getData(
+      this.keys.sales
+    );
+  },
+
+
+  saveSales(sales) {
+
+    return this.saveData(
+      this.keys.sales,
+      sales
+    );
+  },
+
+
+  getSaleById(id) {
+
+    return (
+      this.getSales()
+        .find(
+          sale =>
+            String(
+              sale.id
+            ) ===
+            String(id)
+        ) ||
+      null
+    );
+  },
+
+
+  addSale(sale = {}) {
+
+    const sales =
+      this.getSales();
+
+
+    const newSale = {
+
+      ...sale,
+
+      id:
+        sale.id ||
+        this.generateId(
+          "SAL"
+        ),
+
+      invoiceNumber:
+        sale.invoiceNumber ||
+        (
+          "INV-" +
+          Date.now()
+        ),
+
+      createdAt:
+        sale.createdAt ||
+        this.now(),
+
+      date:
+        sale.date ||
+        this.now(),
+
+      updatedAt:
+        this.now()
+    };
+
+
+    sales.push(
+      newSale
+    );
+
+
+    this.saveSales(
+      sales
+    );
+
+
+    return newSale;
+  },
+
+
+  deleteSale(id) {
+
+    const sales =
+      this.getSales();
+
+    const filtered =
+      sales.filter(
+        sale =>
+          String(
+            sale.id
+          ) !==
+          String(id)
+      );
+
+
+    this.saveSales(
+      filtered
+    );
+
+
+    return (
+      filtered.length !==
+      sales.length
+    );
+  },
+
+
+  /* =====================================================
+     POS SALE
+     ===================================================== */
+
+  completeSale(sale = {}) {
+
+    const items =
+      Array.isArray(
+        sale.items
+      )
+        ? sale.items
+        : [];
+
+
+    if (
+      items.length === 0
+    ) {
+
+      return {
+        success: false,
+        message:
+          "لا توجد منتجات في الفاتورة."
+      };
+    }
+
+
+    const products =
+      this.getProducts();
+
+
+    for (
+      const item of items
+    ) {
+
+      const productId =
+        item.productId ||
+        item.id;
+
+
+      const quantity =
+        this.positiveNumber(
+          item.quantity ||
+          item.qty ||
+          1
+        );
+
+
+      const index =
+        products.findIndex(
+          product =>
+            String(
+              product.id
+            ) ===
+            String(
+              productId
+            )
+        );
+
+
+      if (index === -1) {
+
+        continue;
+      }
+
+
+      const available =
+        this.toNumber(
+          products[index].quantity,
+          0
+        );
+
+
+      if (
+        quantity >
+        available
+      ) {
+
+        return {
+          success: false,
+          message:
+            "الكمية غير متوفرة للمنتج: " +
+            (
+              products[index].name ||
+              ""
+            )
+        };
+      }
+    }
+
+
+    for (
+      const item of items
+    ) {
+
+      const productId =
+        item.productId ||
+        item.id;
+
+
+      const quantity =
+        this.positiveNumber(
+          item.quantity ||
+          item.qty ||
+          1
+        );
+
+
+      const index =
+        products.findIndex(
+          product =>
+            String(
+              product.id
+            ) ===
+            String(
+              productId
+            )
+        );
+
+
+      if (index === -1) {
+        continue;
+      }
+
+
+      products[index].quantity =
+        Math.max(
+          0,
+          this.toNumber(
+            products[index].quantity,
+            0
+          ) -
+          quantity
+        );
+
+
+      products[index].updatedAt =
+        this.now();
+    }
+
+
+    this.saveProducts(
+      products
+    );
+
+
+    const savedSale =
+      this.addSale(
+        sale
+      );
+
+
+    return {
+
+      success: true,
+
+      sale:
+        savedSale
+    };
+  },
+
+
+  /* =====================================================
+     CUSTOMERS
+     ===================================================== */
+
+  getCustomers() {
+
+    return this.getData(
+      this.keys.customers
+    );
+  },
+
+
+  saveCustomers(customers) {
+
+    return this.saveData(
+      this.keys.customers,
+      customers
+    );
+  },
+
+
+  addCustomer(customer = {}) {
+
+    const customers =
+      this.getCustomers();
+
+
+    const item = {
+
+      ...customer,
+
+      id:
+        customer.id ||
+        this.generateId(
+          "CUS"
+        ),
+
+      createdAt:
+        customer.createdAt ||
+        this.now(),
+
+      updatedAt:
+        this.now()
+    };
+
+
+    customers.push(
+      item
+    );
+
+
+    this.saveCustomers(
+      customers
+    );
+
+
+    return item;
+  },
+
+
+  updateCustomer(
+    id,
+    changes = {}
+  ) {
+
+    const customers =
+      this.getCustomers();
+
+    const index =
+      customers.findIndex(
+        customer =>
+          String(
+            customer.id
+          ) ===
+          String(id)
+      );
+
+
+    if (index === -1) {
+      return false;
+    }
+
+
+    customers[index] = {
+
+      ...customers[index],
+
+      ...changes,
+
+      id:
+        customers[index].id,
+
+      updatedAt:
+        this.now()
+    };
+
+
+    this.saveCustomers(
+      customers
+    );
+
+
+    return customers[index];
+  },
+
+
+  deleteCustomer(id) {
+
+    const customers =
+      this.getCustomers();
+
+    const filtered =
+      customers.filter(
+        customer =>
+          String(
+            customer.id
+          ) !==
+          String(id)
+      );
+
+
+    this.saveCustomers(
+      filtered
+    );
+
+
+    return (
+      filtered.length !==
+      customers.length
+    );
+  },
+
+
+  /* =====================================================
+     SUPPLIERS
+     ===================================================== */
+
+  getSuppliers() {
+
+    return this.getData(
+      this.keys.suppliers
+    );
+  },
+
+
+  saveSuppliers(suppliers) {
+
+    return this.saveData(
+      this.keys.suppliers,
+      suppliers
+    );
+  },
+
+
+  addSupplier(supplier = {}) {
+
+    const suppliers =
+      this.getSuppliers();
+
+
+    const item = {
+
+      ...supplier,
+
+      id:
+        supplier.id ||
+        this.generateId(
+          "SUP"
+        ),
+
+      createdAt:
+        supplier.createdAt ||
+        this.now(),
+
+      updatedAt:
+        this.now()
+    };
+
+
+    suppliers.push(
+      item
+    );
+
+
+    this.saveSuppliers(
+      suppliers
+    );
+
+
+    return item;
+  },
+
+
+  updateSupplier(
+    id,
+    changes = {}
+  ) {
+
+    const suppliers =
+      this.getSuppliers();
+
+    const index =
+      suppliers.findIndex(
+        supplier =>
+          String(
+            supplier.id
+          ) ===
+          String(id)
+      );
+
+
+    if (index === -1) {
+      return false;
+    }
+
+
+    suppliers[index] = {
+
+      ...suppliers[index],
+
+      ...changes,
+
+      id:
+        suppliers[index].id,
+
+      updatedAt:
+        this.now()
+    };
+
+
+    this.saveSuppliers(
+      suppliers
+    );
+
+
+    return suppliers[index];
+  },
+
+
+  deleteSupplier(id) {
+
+    const suppliers =
+      this.getSuppliers();
+
+    const filtered =
+      suppliers.filter(
+        supplier =>
+          String(
+            supplier.id
+          ) !==
+          String(id)
+      );
+
+
+    this.saveSuppliers(
+      filtered
+    );
+
+
+    return (
+      filtered.length !==
+      suppliers.length
+    );
+  },
+
+
+  /* =====================================================
+     EMPLOYEES
+     ===================================================== */
+
+  getEmployees() {
+
+    return this.getData(
+      this.keys.employees
+    );
+  },
+
+
+  saveEmployees(employees) {
+
+    return this.saveData(
+      this.keys.employees,
+      employees
+    );
+  },
+
+
+  addEmployee(employee = {}) {
+
+    const employees =
+      this.getEmployees();
+
+
+    const item = {
+
+      ...employee,
+
+      id:
+        employee.id ||
+        this.generateId(
+          "EMP"
+        ),
+
+      createdAt:
+        employee.createdAt ||
+        this.now(),
+
+      updatedAt:
+        this.now()
+    };
+
+
+    employees.push(
+      item
+    );
+
+
+    this.saveEmployees(
+      employees
+    );
+
+
+    return item;
+  },
+
+
+  updateEmployee(
+    id,
+    changes = {}
+  ) {
+
+    const employees =
+      this.getEmployees();
+
+    const index =
+      employees.findIndex(
+        employee =>
+          String(
+            employee.id
+          ) ===
+          String(id)
+      );
+
+
+    if (index === -1) {
+      return false;
+    }
+
+
+    employees[index] = {
+
+      ...employees[index],
+
+      ...changes,
+
+      id:
+        employees[index].id,
+
+      updatedAt:
+        this.now()
+    };
+
+
+    this.saveEmployees(
+      employees
+    );
+
+
+    return employees[index];
+  },
+
+
+  deleteEmployee(id) {
+
+    const employees =
+      this.getEmployees();
+
+    const filtered =
+      employees.filter(
+        employee =>
+          String(
+            employee.id
+          ) !==
+          String(id)
+      );
+
+
+    this.saveEmployees(
+      filtered
+    );
+
+
+    return (
+      filtered.length !==
+      employees.length
+    );
+  },
+
+
+  /* =====================================================
+     TRANSACTIONS / ACCOUNTS
+     ===================================================== */
+
+  getTransactions() {
+
+    return this.getData(
+      this.keys.transactions
+    );
+  },
+
+
+  saveTransactions(transactions) {
+
+    return this.saveData(
+      this.keys.transactions,
+      transactions
+    );
+  },
+
+
+  addTransaction(
+    transaction = {}
+  ) {
+
+    const transactions =
+      this.getTransactions();
+
+
+    const item = {
+
+      ...transaction,
+
+      id:
+        transaction.id ||
+        this.generateId(
+          "TRX"
+        ),
+
+      amount:
+        this.positiveNumber(
+          transaction.amount
+        ),
+
+      createdAt:
+        transaction.createdAt ||
+        this.now(),
+
+      date:
+        transaction.date ||
+        this.today(),
+
+      updatedAt:
+        this.now()
+    };
+
+
+    transactions.push(
+      item
+    );
+
+
+    this.saveTransactions(
+      transactions
+    );
+
+
+    return item;
+  },
+
+
+  updateTransaction(
+    id,
+    changes = {}
+  ) {
+
+    const transactions =
+      this.getTransactions();
+
+    const index =
+      transactions.findIndex(
+        transaction =>
+          String(
+            transaction.id
+          ) ===
+          String(id)
+      );
+
+
+    if (index === -1) {
+      return false;
+    }
+
+
+    transactions[index] = {
+
+      ...transactions[index],
+
+      ...changes,
+
+      id:
+        transactions[index].id,
+
+      updatedAt:
+        this.now()
+    };
+
+
+    this.saveTransactions(
+      transactions
+    );
+
+
+    return transactions[index];
+  },
+
+
+  deleteTransaction(id) {
+
+    const transactions =
+      this.getTransactions();
+
+    const filtered =
+      transactions.filter(
+        transaction =>
+          String(
+            transaction.id
+          ) !==
+          String(id)
+      );
+
+
+    this.saveTransactions(
+      filtered
+    );
+
+
+    return (
+      filtered.length !==
+      transactions.length
+    );
+  },
+
+
+  /* =====================================================
+     HELD SALES
+     ===================================================== */
+
+  getHeldSales() {
+
+    return this.getData(
+      this.keys.heldSales
+    );
+  },
+
+
+  saveHeldSales(sales) {
+
+    return this.saveData(
+      this.keys.heldSales,
+      sales
+    );
+  },
+
+
+  holdSale(sale = {}) {
+
+    const sales =
+      this.getHeldSales();
+
+
+    const item = {
+
+      ...sale,
+
+      id:
+        sale.id ||
+        this.generateId(
+          "HOLD"
+        ),
+
+      createdAt:
+        sale.createdAt ||
+        this.now(),
+
+      updatedAt:
+        this.now()
+    };
+
+
+    sales.push(
+      item
+    );
+
+
+    this.saveHeldSales(
+      sales
+    );
+
+
+    return item;
+  },
+
+
+  removeHeldSale(id) {
+
+    const sales =
+      this.getHeldSales();
+
+
+    const filtered =
+      sales.filter(
+        sale =>
+          String(
+            sale.id
+          ) !==
+          String(id)
+      );
+
+
+    this.saveHeldSales(
+      filtered
+    );
+
+
+    return (
+      filtered.length !==
+      sales.length
+    );
+  },
+
+
+  getHeldSaleById(id) {
+
+    return (
+      this.getHeldSales()
+        .find(
+          sale =>
+            String(
+              sale.id
+            ) ===
+            String(id)
+        ) ||
+      null
+    );
+  },
+
+
+  /* =====================================================
      SETTINGS
      ===================================================== */
+
+  getSettings() {
+
+    const defaults = {
+
+      businessName:
+        "VAREX",
+
+      currency:
+        "AED",
+
+      currencySymbol:
+        "د.إ",
+
+      taxEnabled:
+        true,
+
+      taxRate:
+        5,
+
+      lowStockLimit:
+        5,
+
+      language:
+        "ar"
+    };
+
+
+    const primary =
+      this.getObject(
+        this.keys.settings,
+        {}
+      );
+
+
+    /*
+       Compatibility with the older dashboard key.
+    */
+
+    let legacy = {};
+
+
+    try {
+
+      const raw =
+        localStorage.getItem(
+          "varexSettings"
+        );
+
+
+      if (raw) {
+
+        const parsed =
+          JSON.parse(raw);
+
+
+        if (
+          parsed &&
+          typeof parsed === "object" &&
+          !Array.isArray(parsed)
+        ) {
+
+          legacy =
+            parsed;
+        }
+      }
+
+    } catch (error) {
+
+      legacy = {};
+    }
+
+
+    return {
+
+      ...defaults,
+
+      ...legacy,
+
+      ...primary
+    };
+  },
+
+
+  saveSettings(settings = {}) {
+
+    const current =
+      this.getSettings();
+
+
+    const data = {
+
+      ...current,
+
+      ...settings,
+
+      updatedAt:
+        this.now()
+    };
+
+
+    const saved =
+      this.saveObject(
+        this.keys.settings,
+        data
+      );
+
+
+    /*
+       Keep compatibility with existing setting.html/index.html.
+    */
+
+    try {
+
+      localStorage.setItem(
+        "varexSettings",
+        JSON.stringify(
+          data
+        )
+      );
+
+    } catch (error) {
+
+      console.error(
+        "VAREX legacy settings error:",
+        error
+      );
+    }
+
+
+    return saved;
+  },
+
+
+  /* =====================================================
+     MONEY
+     ===================================================== */
+
+  money(value) {
+
+    const settings =
+      this.getSettings();
+
+
+    const amount =
+      this.toNumber(
+        value,
+        0
+      );
+
+
+    const symbol =
+      this.cleanText(
+        settings.currencySymbol
+      ) ||
+      (
+        settings.currency === "AED"
+          ? "د.إ"
+          : settings.currency
+      );
+
+
+    return (
+      amount.toFixed(2) +
+      " " +
+      symbol
+    );
+  },
+
+
+  /* =====================================================
+     TAX
+     ===================================================== */
+
+  calculateTax(amount) {
+
+    const settings =
+      this.getSettings();
+
+
+    if (
+      settings.taxEnabled ===
+      false
+    ) {
+
+      return 0;
+    }
+
+
+    const rate =
+      this.toNumber(
+        settings.taxRate,
+        5
+      );
+
+
+    return (
+      this.positiveNumber(
+        amount
+      ) *
+      rate /
+      100
+    );
+  },
+
+
+  /* =====================================================
+     DASHBOARD HELPERS
+     ===================================================== */
+
+  getTodaySales() {
+
+    const today =
+      this.today();
+
+
+    return this
+      .getSales()
+      .filter(
+        sale => {
+
+          const date =
+            sale.createdAt ||
+            sale.date ||
+            sale.saleDate ||
+            sale.invoiceDate ||
+            "";
+
+
+          return (
+            this.normalizeDate(
+              date
+            ) ===
+            today
+          );
+        }
+      );
+  },
+
+
+  getTodaySalesTotal() {
+
+    return this
+      .getTodaySales()
+      .reduce(
+        (total, sale) => {
+
+          const value =
+            sale.total ??
+            sale.grandTotal ??
+            sale.finalTotal ??
+            sale.netTotal ??
+            sale.amount ??
+            0;
+
+
+          return (
+            total +
+            this.toNumber(
+              value,
+              0
+            )
+          );
+
+        },
+        0
+      );
+  },
+
+
+  getStockAlerts() {
+
+    const settings =
+      this.getSettings();
+
+
+    const defaultLimit =
+      this.toNumber(
+        settings.lowStockLimit,
+        5
+      );
+
+
+    return this
+      .getProducts()
+      .filter(
+        product => {
+
+          const quantity =
+            this.toNumber(
+              product.quantity,
+              0
+            );
+
+
+          const productLimit =
+            this.toNumber(
+              product.minimumStock,
+              defaultLimit
+            );
+
+
+          return (
+            quantity <=
+            productLimit
+          );
+        }
+      );
+  },
+
+
+  /* =====================================================
+     INITIALIZE STORAGE
+     ===================================================== */
+
+  initialize() {
+
+    const arrayKeys = [
+
+      this.keys.products,
+      this.keys.sales,
+      this.keys.customers,
+      this.keys.suppliers,
+      this.keys.employees,
+      this.keys.transactions,
+      this.keys.heldSales,
+      this.keys.users
+
+    ];
+
+
+    arrayKeys.forEach(
+      key => {
+
+        if (
+          localStorage.getItem(
+            key
+          ) === null
+        ) {
+
+          localStorage.setItem(
+            key,
+            "[]"
+          );
+        }
+      }
+    );
+
+
+    if (
+      localStorage.getItem(
+        this.keys.settings
+      ) === null
+    ) {
+
+      this.saveSettings(
+        this.getSettings()
+      );
+    }
+
+
+    return true;
+  }
+
+};
+
+
+/* =========================================================
+   START VAREX
+   ========================================================= */
+
+VAREX.initialize();
+
+
+/* =========================================================
+   MAKE VAREX AVAILABLE GLOBALLY
+   ========================================================= */
+
+window.VAREX =
+  VAREX;
