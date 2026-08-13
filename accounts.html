@@ -15,6 +15,7 @@
 :root{
     --navy:#172554;
     --navy-dark:#0f1d43;
+    --navy-mid:#13234f;
     --blue:#2563eb;
     --bg:#f4f6fb;
     --white:#ffffff;
@@ -24,133 +25,269 @@
     --green:#15803d;
     --red:#b91c1c;
     --purple:#7c3aed;
+
+    /* قياسات VAREX الموحدة */
+    --sidebar-width:240px;
+    --brand-height:170px;
+}
+
+html{
+    scroll-behavior:smooth;
 }
 
 body{
-    font-family:Arial,sans-serif;
+    font-family:Arial,Tahoma,sans-serif;
     background:var(--bg);
     color:var(--text);
     min-height:100vh;
+    line-height:1.5;
 }
 
-/* =========================
-   SIDEBAR
-========================= */
+/* =====================================================
+   SIDEBAR - VAREX STANDARD
+===================================================== */
 
 .sidebar{
     position:fixed;
     right:0;
     top:0;
-    bottom:0;
-    width:230px;
-    background:linear-gradient(180deg,#172554,#0f1d43);
-    color:white;
-    z-index:100;
+    width:var(--sidebar-width);
+    height:100vh;
+    min-height:100vh;
+    background:linear-gradient(
+        180deg,
+        #172554 0%,
+        #13234f 48%,
+        #0f1d43 100%
+    );
+    color:#ffffff;
+    z-index:1000;
     display:flex;
     flex-direction:column;
+    overflow:hidden;
+    box-shadow:-4px 0 18px rgba(15,29,67,.08);
 }
 
+/* =====================================================
+   BRAND
+===================================================== */
+
 .brand{
-    padding:26px 22px 18px;
+    width:100%;
+    height:var(--brand-height);
+    min-height:var(--brand-height);
+    max-height:var(--brand-height);
+    flex:0 0 var(--brand-height);
+
+    padding:24px 14px 20px;
+
     border-bottom:1px solid rgba(255,255,255,.10);
+
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+
+    text-align:center;
+    overflow:hidden;
 }
 
 .logo{
-    font-size:29px;
+    width:100%;
+    font-size:30px;
+    line-height:30px;
     font-weight:800;
     letter-spacing:4px;
+    color:#ffffff;
+    text-align:center;
+    direction:ltr;
+    white-space:nowrap;
 }
 
 .brand-small{
-    font-size:11px;
-    color:#cbd5e1;
-    margin-top:6px;
+    width:100%;
+    margin-top:11px;
+    font-size:10px;
+    line-height:14px;
+    font-weight:600;
+    letter-spacing:.8px;
+    color:#e2e8f0;
+    text-align:center;
+    direction:ltr;
+    white-space:nowrap;
 }
 
 .system-status{
-    margin-top:13px;
+    width:100%;
+    margin-top:16px;
+
     display:flex;
     align-items:center;
+    justify-content:center;
+
     gap:7px;
-    font-size:11px;
+
+    font-size:10px;
+    line-height:14px;
+
     color:#d1fae5;
+    white-space:nowrap;
 }
 
 .status-dot{
-    width:8px;
-    height:8px;
+    width:7px;
+    height:7px;
+    min-width:7px;
+    min-height:7px;
+
     border-radius:50%;
+
     background:#22c55e;
-    box-shadow:0 0 8px rgba(34,197,94,.8);
+
+    box-shadow:0 0 8px rgba(34,197,94,.75);
+
     flex-shrink:0;
 }
 
+/* =====================================================
+   NAVIGATION
+===================================================== */
+
 .nav{
-    padding:18px 12px;
-    flex:1;
+    width:100%;
+    padding:16px 12px;
+
+    flex:1 1 auto;
+
+    overflow-y:auto;
+    overflow-x:hidden;
+
+    scrollbar-width:thin;
 }
 
 .nav a{
+    width:100%;
+
+    height:48px;
+    min-height:48px;
+    max-height:48px;
+
     display:flex;
     align-items:center;
-    gap:12px;
+    justify-content:flex-start;
+
+    gap:11px;
+
+    padding:0 14px;
+
+    margin:0 0 5px;
+
+    border-radius:10px;
+
     color:#dbeafe;
     text-decoration:none;
-    padding:12px 14px;
-    border-radius:10px;
-    margin-bottom:5px;
-    font-size:14px;
-    transition:.2s;
+
+    font-family:inherit;
+    font-size:13px;
+    font-weight:600;
+
+    white-space:nowrap;
+
+    transition:
+        background .2s,
+        color .2s,
+        box-shadow .2s;
 }
 
 .nav a:hover{
     background:rgba(255,255,255,.08);
-    color:white;
+    color:#ffffff;
 }
 
 .nav a.active{
-    background:white;
+    background:#ffffff;
     color:var(--navy);
-    font-weight:bold;
-    box-shadow:0 5px 15px rgba(0,0,0,.15);
+    font-weight:700;
+    box-shadow:0 5px 15px rgba(0,0,0,.14);
 }
 
 .nav-icon{
-    width:24px;
-    text-align:center;
+    width:25px;
+    min-width:25px;
+
+    height:25px;
+    min-height:25px;
+
+    display:flex;
+    align-items:center;
+    justify-content:center;
+
+    font-size:16px;
+
+    flex-shrink:0;
+}
+
+.nav a.active .nav-icon{
+    color:var(--navy);
 }
 
 .sidebar-footer{
-    padding:17px;
+    width:100%;
+
+    height:54px;
+    min-height:54px;
+    max-height:54px;
+
+    flex:0 0 54px;
+
+    padding:0 10px;
+
     border-top:1px solid rgba(255,255,255,.10);
+
     color:#94a3b8;
-    font-size:11px;
+
+    font-size:9px;
+    letter-spacing:.5px;
+
     text-align:center;
+    direction:ltr;
+
+    display:flex;
+    align-items:center;
+    justify-content:center;
 }
 
-/* =========================
+/* =====================================================
    MAIN
-========================= */
+===================================================== */
 
 .main{
-    margin-right:230px;
+    margin-right:var(--sidebar-width);
     min-height:100vh;
 }
 
-/* =========================
+/* =====================================================
    TOPBAR
-========================= */
+===================================================== */
 
 .topbar{
-    height:76px;
-    background:white;
+    min-height:78px;
+
+    background:#ffffff;
+
     border-bottom:1px solid var(--border);
+
     display:flex;
     align-items:center;
     justify-content:space-between;
+
+    gap:20px;
+
     padding:0 28px;
+
     position:sticky;
     top:0;
+
     z-index:50;
 }
 
@@ -161,52 +298,81 @@ body{
 }
 
 .page-icon{
-    width:43px;
-    height:43px;
-    border-radius:12px;
+    width:44px;
+    min-width:44px;
+    height:44px;
+
+    border-radius:11px;
+
     background:#eef2ff;
+
     display:flex;
     align-items:center;
     justify-content:center;
-    font-size:21px;
+
+    font-size:20px;
 }
 
 .page-name h2{
-    font-size:18px;
+    font-size:19px;
+    font-weight:700;
+    color:var(--navy);
 }
 
 .page-name small{
     display:block;
+
     color:var(--muted);
+
     margin-top:4px;
+
+    font-size:11px;
+
+    direction:ltr;
+    text-align:right;
 }
 
 .top-info{
     display:flex;
     align-items:center;
-    gap:12px;
+    justify-content:flex-end;
+
+    gap:9px;
 }
 
 .info-chip{
+    min-height:38px;
+
     background:#f8fafc;
+
     border:1px solid var(--border);
-    border-radius:10px;
-    padding:9px 13px;
-    font-size:12px;
+    border-radius:9px;
+
+    padding:8px 12px;
+
+    font-size:11px;
     color:var(--muted);
+
+    display:flex;
+    align-items:center;
+    justify-content:center;
+
+    white-space:nowrap;
 }
 
 .info-chip strong{
     color:var(--navy);
+    margin-right:4px;
 }
 
-/* =========================
+/* =====================================================
    CONTENT
-========================= */
+===================================================== */
 
 .content{
-    width:95%;
-    max-width:1500px;
+    width:calc(100% - 48px);
+    max-width:1450px;
+
     margin:24px auto 40px;
 }
 
@@ -214,48 +380,77 @@ body{
     display:flex;
     align-items:center;
     justify-content:space-between;
+
     gap:15px;
-    margin-bottom:18px;
+
+    margin-bottom:20px;
 }
 
 .hero h1{
     font-size:25px;
+    font-weight:700;
+
     margin-bottom:6px;
 }
 
 .hero p{
     color:var(--muted);
+
     font-size:13px;
+
+    line-height:1.7;
 }
 
 .primary{
     border:0;
-    background:linear-gradient(135deg,#172554,#1e3a8a);
-    color:white;
+
+    background:linear-gradient(
+        135deg,
+        #172554,
+        #1e3a8a
+    );
+
+    color:#ffffff;
+
     padding:12px 18px;
+
+    min-height:42px;
+
     border-radius:10px;
+
     cursor:pointer;
+
     font-weight:bold;
     font-family:inherit;
+
     box-shadow:0 5px 14px rgba(23,37,84,.16);
+
+    white-space:nowrap;
 }
 
-/* =========================
+/* =====================================================
    STATS
-========================= */
+===================================================== */
 
 .stats{
     display:grid;
     grid-template-columns:repeat(4,1fr);
+
     gap:14px;
-    margin-bottom:18px;
+
+    margin-bottom:20px;
 }
 
 .stat{
-    background:white;
+    background:#ffffff;
+
     border:1px solid var(--border);
     border-radius:14px;
+
+    min-height:126px;
+
     padding:17px 18px;
+
     box-shadow:0 3px 12px rgba(15,23,42,.04);
 }
 
@@ -263,6 +458,9 @@ body{
     display:flex;
     align-items:center;
     justify-content:space-between;
+
+    gap:10px;
+
     margin-bottom:10px;
 }
 
@@ -273,11 +471,16 @@ body{
 
 .stat-icon{
     width:36px;
+    min-width:36px;
+
     height:36px;
+
     border-radius:10px;
+
     display:flex;
     align-items:center;
     justify-content:center;
+
     font-size:17px;
 }
 
@@ -320,28 +523,39 @@ body{
 
 .stat-small{
     color:#94a3b8;
+
     font-size:11px;
+
     margin-top:5px;
 }
 
-/* =========================
+/* =====================================================
    PANEL
-========================= */
+===================================================== */
 
 .panel{
-    background:white;
+    background:#ffffff;
+
     border:1px solid var(--border);
     border-radius:16px;
+
     box-shadow:0 4px 18px rgba(15,23,42,.05);
+
     overflow:hidden;
 }
 
 .panel-head{
+    min-height:65px;
+
     padding:18px 20px;
+
     border-bottom:1px solid var(--border);
+
     display:flex;
     justify-content:space-between;
     align-items:center;
+
+    gap:15px;
 }
 
 .panel-head h3{
@@ -355,27 +569,40 @@ body{
 
 .toolbar{
     padding:15px 20px;
+
     background:#fbfdff;
+
     border-bottom:1px solid var(--border);
+
     display:flex;
+
     gap:9px;
+
     flex-wrap:wrap;
 }
 
 input,
 select{
     padding:11px;
+
+    min-height:42px;
+
     border:1px solid #dbe1ea;
     border-radius:9px;
+
     font-size:13px;
+
     outline:none;
-    background:white;
+
+    background:#ffffff;
+
     font-family:inherit;
 }
 
 input:focus,
 select:focus{
     border-color:#94a3b8;
+
     box-shadow:0 0 0 3px rgba(37,99,235,.05);
 }
 
@@ -384,9 +611,9 @@ select:focus{
     min-width:250px;
 }
 
-/* =========================
+/* =====================================================
    TABLE
-========================= */
+===================================================== */
 
 .table-wrap{
     overflow-x:auto;
@@ -394,23 +621,32 @@ select:focus{
 
 table{
     width:100%;
+
     border-collapse:collapse;
+
     min-width:950px;
 }
 
 th,
 td{
     padding:13px 10px;
+
     text-align:right;
+
     border-bottom:1px solid #edf0f5;
+
     vertical-align:middle;
+
     font-size:12px;
 }
 
 th{
     background:#f8fafc;
+
     color:#475569;
+
     white-space:nowrap;
+
     font-weight:bold;
 }
 
@@ -435,10 +671,15 @@ tbody tr:hover{
 
 .type-badge{
     display:inline-block;
+
     padding:5px 10px;
+
     border-radius:20px;
+
     font-size:10px;
     font-weight:bold;
+
+    white-space:nowrap;
 }
 
 .type-badge.income-badge{
@@ -453,43 +694,64 @@ tbody tr:hover{
 
 .delete{
     border:0;
+
     background:#fee2e2;
     color:#b91c1c;
+
     border-radius:7px;
+
     padding:7px 10px;
+
     cursor:pointer;
+
     font-family:inherit;
 }
 
 .empty{
     text-align:center;
+
     color:var(--muted);
+
     padding:35px;
+
+    font-size:12px;
 }
 
-/* =========================
+/* =====================================================
    MODAL
-========================= */
+===================================================== */
 
 .modal{
     display:none;
+
     position:fixed;
+
     inset:0;
+
     background:rgba(15,23,42,.55);
+
     align-items:center;
     justify-content:center;
-    z-index:1000;
+
+    z-index:5000;
+
     padding:15px;
 }
 
 .modal-box{
-    background:white;
+    background:#ffffff;
+
     width:100%;
     max-width:650px;
+
     border-radius:16px;
+
     padding:24px;
+
     max-height:90vh;
+
     overflow:auto;
+
     box-shadow:0 20px 50px rgba(0,0,0,.2);
 }
 
@@ -497,6 +759,7 @@ tbody tr:hover{
     display:flex;
     justify-content:space-between;
     align-items:center;
+
     margin-bottom:18px;
 }
 
@@ -506,13 +769,17 @@ tbody tr:hover{
 
 .close{
     cursor:pointer;
+
     font-size:24px;
+
     color:#64748b;
 }
 
 .form-grid{
     display:grid;
+
     grid-template-columns:1fr 1fr;
+
     gap:11px;
 }
 
@@ -527,89 +794,85 @@ tbody tr:hover{
 
 .form-actions{
     display:flex;
+
     gap:10px;
+
     margin-top:17px;
 }
 
 .save{
     border:0;
-    background:linear-gradient(135deg,#172554,#1e3a8a);
-    color:white;
+
+    background:linear-gradient(
+        135deg,
+        #172554,
+        #1e3a8a
+    );
+
+    color:#ffffff;
+
     padding:12px 18px;
+
     border-radius:9px;
+
     cursor:pointer;
+
     font-weight:bold;
     font-family:inherit;
 }
 
 .secondary{
     border:0;
+
     background:#e5e7eb;
     color:#111827;
+
     padding:12px 18px;
+
     border-radius:9px;
+
     cursor:pointer;
+
     font-family:inherit;
 }
 
-/* =========================
+/* =====================================================
    RESPONSIVE
-========================= */
+===================================================== */
 
-@media(max-width:1100px){
-    .sidebar{
-        width:200px;
-    }
-
-    .main{
-        margin-right:200px;
-    }
+@media(max-width:1200px){
 
     .stats{
         grid-template-columns:repeat(2,1fr);
     }
 }
 
-@media(max-width:850px){
-    .sidebar{
-        position:relative;
-        width:100%;
-        height:auto;
-    }
-
-    .brand{
-        padding:17px 20px;
-    }
-
-    .nav{
-        display:flex;
-        overflow-x:auto;
-        padding:8px 10px 12px;
-    }
-
-    .nav a{
-        white-space:nowrap;
-        margin:0 3px;
-    }
-
-    .sidebar-footer{
-        display:none;
-    }
-
-    .main{
-        margin-right:0;
-    }
+@media(max-width:1000px){
 
     .topbar{
-        position:relative;
-        padding:0 16px;
+        padding:0 18px;
     }
 }
 
-@media(max-width:600px){
+/*
+   مهم:
+   القائمة الجانبية لا يتغير حجمها
+   ولا تتحول إلى قائمة أفقية.
+   تبقى مطابقة للوحة التحكم.
+*/
+
+@media(max-width:850px){
+
     .content{
         width:94%;
     }
+
+    .topbar{
+        padding:0 14px;
+    }
+}
+
+@media(max-width:650px){
 
     .top-info{
         display:none;
@@ -620,10 +883,6 @@ tbody tr:hover{
         flex-direction:column;
     }
 
-    .stats{
-        grid-template-columns:1fr 1fr;
-    }
-
     .form-grid{
         grid-template-columns:1fr;
     }
@@ -631,99 +890,188 @@ tbody tr:hover{
     .full{
         grid-column:auto;
     }
+
+    .stats{
+        grid-template-columns:1fr 1fr;
+    }
 }
 
-@media(max-width:420px){
+@media(max-width:500px){
+
     .stats{
         grid-template-columns:1fr;
     }
+
+    .page-name small{
+        display:none;
+    }
 }
+
 </style>
 </head>
 
 <body>
 
-<!-- =========================
+<!-- =====================================================
      SIDEBAR
-========================= -->
+===================================================== -->
 
 <aside class="sidebar">
 
-    <div class="brand">
+<div class="brand">
 
-        <div class="logo">
-            VAREX
-        </div>
+    <div class="logo">
+        VAREX
+    </div>
 
-        <div class="brand-small">
-            BUSINESS MANAGEMENT SYSTEM
-        </div>
+    <div class="brand-small">
+        BUSINESS MANAGEMENT SYSTEM
+    </div>
 
-        <div class="system-status">
-            <span class="status-dot"></span>
-            <span>النظام متصل وجاهز للعمل</span>
-        </div>
+    <div class="system-status">
+
+        <span class="status-dot"></span>
+
+        <span>
+            النظام متصل وجاهز للعمل
+        </span>
 
     </div>
 
-    <nav class="nav">
+</div>
 
-        <a href="index.html">
-            <span class="nav-icon">▦</span>
+
+<nav class="nav">
+
+    <a href="./index.html">
+
+        <span class="nav-icon">
+            ▦
+        </span>
+
+        <span>
             لوحة التحكم
-        </a>
+        </span>
 
-        <a href="pos.html">
-            <span class="nav-icon">🛒</span>
-            نقطة البيع
-        </a>
+    </a>
 
-        <a href="products.html">
-            <span class="nav-icon">📦</span>
+
+    <a href="./pos.html">
+
+        <span class="nav-icon">
+            🛒
+        </span>
+
+        <span>
+            شاشة المبيعات
+        </span>
+
+    </a>
+
+
+    <a href="./products.html">
+
+        <span class="nav-icon">
+            📦
+        </span>
+
+        <span>
             المنتجات والمخزون
-        </a>
+        </span>
 
-        <a href="customers.html">
-            <span class="nav-icon">👥</span>
+    </a>
+
+
+    <a href="./customers.html">
+
+        <span class="nav-icon">
+            👥
+        </span>
+
+        <span>
             العملاء
-        </a>
+        </span>
 
-        <a href="suppliers.html">
-            <span class="nav-icon">🚚</span>
+    </a>
+
+
+    <a href="./suppliers.html">
+
+        <span class="nav-icon">
+            🚚
+        </span>
+
+        <span>
             الموردون
-        </a>
+        </span>
 
-        <a href="accounts.html" class="active">
-            <span class="nav-icon">💰</span>
+    </a>
+
+
+    <a href="./accounts.html" class="active">
+
+        <span class="nav-icon">
+            💰
+        </span>
+
+        <span>
             الحسابات
-        </a>
+        </span>
 
-        <a href="employees.html">
-            <span class="nav-icon">👤</span>
+    </a>
+
+
+    <a href="./employees.html">
+
+        <span class="nav-icon">
+            👤
+        </span>
+
+        <span>
             الموظفون
-        </a>
+        </span>
 
-        <a href="reports.html">
-            <span class="nav-icon">📊</span>
+    </a>
+
+
+    <a href="./reports.html">
+
+        <span class="nav-icon">
+            📊
+        </span>
+
+        <span>
             التقارير
-        </a>
+        </span>
 
-        <a href="setting.html">
-            <span class="nav-icon">⚙️</span>
+    </a>
+
+
+    <a href="./setting.html">
+
+        <span class="nav-icon">
+            ⚙️
+        </span>
+
+        <span>
             الإعدادات
-        </a>
+        </span>
 
-    </nav>
+    </a>
 
-    <div class="sidebar-footer">
-        VAREX BUSINESS SYSTEM
-    </div>
+</nav>
+
+
+<div class="sidebar-footer">
+    VAREX BUSINESS SYSTEM
+</div>
 
 </aside>
 
-<!-- =========================
+
+<!-- =====================================================
      MAIN
-========================= -->
+===================================================== -->
 
 <div class="main">
 
@@ -736,40 +1084,60 @@ tbody tr:hover{
         </div>
 
         <div>
-            <h2>الحسابات</h2>
-            <small>VAREX ACCOUNTS</small>
+
+            <h2>
+                الحسابات
+            </h2>
+
+            <small>
+                VAREX ACCOUNTS
+            </small>
+
         </div>
 
     </div>
 
+
     <div class="top-info">
 
         <div class="info-chip">
+
             المستخدم:
-            <strong>المستخدم الحالي</strong>
+
+            <strong>
+                المستخدم الحالي
+            </strong>
+
         </div>
+
 
         <div
             class="info-chip"
             id="currentDate">
+
             —
+
         </div>
+
 
         <div
             class="info-chip"
             id="currentTime">
+
             —
+
         </div>
 
     </div>
 
 </header>
 
+
 <main class="content">
 
-<!-- =========================
+<!-- =====================================================
      HERO
-========================= -->
+===================================================== -->
 
 <section class="hero">
 
@@ -780,11 +1148,11 @@ tbody tr:hover{
         </h1>
 
         <p>
-            متابعة الإيرادات والمصروفات
-            والرصيد والحركات المالية من مكان واحد
+            متابعة الإيرادات والمصروفات والرصيد والحركات المالية من مكان واحد
         </p>
 
     </div>
+
 
     <button
         class="primary"
@@ -796,337 +1164,384 @@ tbody tr:hover{
 
 </section>
 
-<!-- =========================
+
+<!-- =====================================================
      STATS
-========================= -->
+===================================================== -->
 
 <section class="stats">
 
-    <div class="stat income-stat">
 
-        <div class="stat-top">
+<div class="stat income-stat">
 
-            <div class="stat-label">
-                إجمالي الإيرادات
-            </div>
+    <div class="stat-top">
 
-            <div class="stat-icon">
-                ↗
-            </div>
-
+        <div class="stat-label">
+            إجمالي الإيرادات
         </div>
 
-        <div
-            class="stat-value"
-            id="totalIncome">
-
-            0.00 د.إ
-
-        </div>
-
-        <div class="stat-small">
-            جميع الإيرادات المسجلة
+        <div class="stat-icon">
+            ↗
         </div>
 
     </div>
 
-    <div class="stat expense-stat">
+    <div
+        class="stat-value"
+        id="totalIncome">
 
-        <div class="stat-top">
+        0.00 د.إ
 
-            <div class="stat-label">
-                إجمالي المصروفات
-            </div>
+    </div>
 
-            <div class="stat-icon">
-                ↘
-            </div>
+    <div class="stat-small">
+        جميع الإيرادات المسجلة
+    </div>
 
+</div>
+
+
+<div class="stat expense-stat">
+
+    <div class="stat-top">
+
+        <div class="stat-label">
+            إجمالي المصروفات
         </div>
 
-        <div
-            class="stat-value"
-            id="totalExpenses">
-
-            0.00 د.إ
-
-        </div>
-
-        <div class="stat-small">
-            جميع المصروفات المسجلة
+        <div class="stat-icon">
+            ↘
         </div>
 
     </div>
 
-    <div class="stat balance-stat">
+    <div
+        class="stat-value"
+        id="totalExpenses">
 
-        <div class="stat-top">
+        0.00 د.إ
 
-            <div class="stat-label">
-                الرصيد الصافي
-            </div>
+    </div>
 
-            <div class="stat-icon">
-                💳
-            </div>
+    <div class="stat-small">
+        جميع المصروفات المسجلة
+    </div>
 
+</div>
+
+
+<div class="stat balance-stat">
+
+    <div class="stat-top">
+
+        <div class="stat-label">
+            الرصيد الصافي
         </div>
 
-        <div
-            class="stat-value"
-            id="balance">
-
-            0.00 د.إ
-
-        </div>
-
-        <div class="stat-small">
-            الإيرادات ناقص المصروفات
+        <div class="stat-icon">
+            💳
         </div>
 
     </div>
 
-    <div class="stat transactions-stat">
+    <div
+        class="stat-value"
+        id="balance">
 
-        <div class="stat-top">
+        0.00 د.إ
 
-            <div class="stat-label">
-                عدد الحركات المالية
-            </div>
+    </div>
 
-            <div class="stat-icon">
-                ≡
-            </div>
+    <div class="stat-small">
+        الإيرادات ناقص المصروفات
+    </div>
 
+</div>
+
+
+<div class="stat transactions-stat">
+
+    <div class="stat-top">
+
+        <div class="stat-label">
+            عدد الحركات المالية
         </div>
 
-        <div
-            class="stat-value"
-            id="transactionCount">
-
-            0
-
-        </div>
-
-        <div class="stat-small">
-            إجمالي الحركات المسجلة
+        <div class="stat-icon">
+            ≡
         </div>
 
     </div>
+
+    <div
+        class="stat-value"
+        id="transactionCount">
+
+        0
+
+    </div>
+
+    <div class="stat-small">
+        إجمالي الحركات المسجلة
+    </div>
+
+</div>
 
 </section>
 
-<!-- =========================
+
+<!-- =====================================================
      TRANSACTIONS
-========================= -->
+===================================================== -->
 
 <section class="panel">
 
-    <div class="panel-head">
+<div class="panel-head">
 
-        <h3>
-            سجل الحركات المالية
-        </h3>
+    <h3>
+        سجل الحركات المالية
+    </h3>
 
-        <span>
-            الإيرادات والمصروفات وطرق الدفع
-        </span>
+    <span>
+        الإيرادات والمصروفات وطرق الدفع
+    </span>
 
-    </div>
+</div>
 
-    <div class="toolbar">
 
-        <input
-            id="search"
-            class="search"
-            placeholder="🔍 ابحث في الحركات المالية"
-            oninput="renderTransactions()"
-        >
+<div class="toolbar">
 
-        <select
-            id="typeFilter"
-            onchange="renderTransactions()">
+    <input
+        id="search"
+        class="search"
+        placeholder="🔍 ابحث في الحركات المالية"
+        oninput="renderTransactions()"
+    >
 
-            <option value="">
-                كل الحركات
-            </option>
 
-            <option value="income">
-                الإيرادات
-            </option>
+    <select
+        id="typeFilter"
+        onchange="renderTransactions()">
 
-            <option value="expense">
-                المصروفات
-            </option>
+        <option value="">
+            كل الحركات
+        </option>
 
-        </select>
+        <option value="income">
+            الإيرادات
+        </option>
 
-    </div>
+        <option value="expense">
+            المصروفات
+        </option>
 
-    <div class="table-wrap">
+    </select>
 
-        <table>
+</div>
 
-            <thead>
 
-                <tr>
-                    <th>#</th>
-                    <th>التاريخ</th>
-                    <th>البيان</th>
-                    <th>التصنيف</th>
-                    <th>النوع</th>
-                    <th>المبلغ</th>
-                    <th>طريقة الدفع</th>
-                    <th>الإجراءات</th>
-                </tr>
+<div class="table-wrap">
 
-            </thead>
+<table>
 
-            <tbody id="transactionTable">
-            </tbody>
+<thead>
 
-        </table>
+<tr>
 
-        <div
-            id="emptyMessage"
-            class="empty">
+    <th>#</th>
 
-            لا توجد حركات مالية حتى الآن
+    <th>
+        التاريخ
+    </th>
 
-        </div>
+    <th>
+        البيان
+    </th>
 
-    </div>
+    <th>
+        التصنيف
+    </th>
+
+    <th>
+        النوع
+    </th>
+
+    <th>
+        المبلغ
+    </th>
+
+    <th>
+        طريقة الدفع
+    </th>
+
+    <th>
+        الإجراءات
+    </th>
+
+</tr>
+
+</thead>
+
+
+<tbody id="transactionTable">
+</tbody>
+
+</table>
+
+
+<div
+    id="emptyMessage"
+    class="empty">
+
+    لا توجد حركات مالية حتى الآن
+
+</div>
+
+</div>
 
 </section>
 
 </main>
+
 </div>
 
-<!-- =========================
+
+<!-- =====================================================
      MODAL
-========================= -->
+===================================================== -->
 
 <div
     class="modal"
     id="transactionModal">
 
-    <div class="modal-box">
+<div class="modal-box">
 
-        <div class="modal-header">
 
-            <h2>
-                إضافة حركة مالية
-            </h2>
+<div class="modal-header">
 
-            <span
-                class="close"
-                onclick="closeTransactionModal()">
+    <h2>
+        إضافة حركة مالية
+    </h2>
 
-                ×
+    <span
+        class="close"
+        onclick="closeTransactionModal()">
 
-            </span>
+        ×
 
-        </div>
-
-        <div class="form-grid">
-
-            <select id="transactionType">
-
-                <option value="income">
-                    إيراد
-                </option>
-
-                <option value="expense">
-                    مصروف
-                </option>
-
-            </select>
-
-            <input
-                id="transactionDate"
-                type="date"
-            >
-
-            <input
-                id="description"
-                class="full"
-                placeholder="البيان / وصف الحركة"
-            >
-
-            <input
-                id="category"
-                placeholder="التصنيف"
-            >
-
-            <input
-                id="amount"
-                type="number"
-                min="0"
-                step="0.01"
-                placeholder="المبلغ"
-            >
-
-            <select id="payment">
-
-                <option value="">
-                    طريقة الدفع
-                </option>
-
-                <option value="نقدي">
-                    نقدي
-                </option>
-
-                <option value="بطاقة">
-                    بطاقة
-                </option>
-
-                <option value="تحويل بنكي">
-                    تحويل بنكي
-                </option>
-
-                <option value="شيك">
-                    شيك
-                </option>
-
-                <option value="أخرى">
-                    أخرى
-                </option>
-
-            </select>
-
-        </div>
-
-        <div class="form-actions">
-
-            <button
-                class="save"
-                onclick="saveTransaction()">
-
-                حفظ الحركة
-
-            </button>
-
-            <button
-                class="secondary"
-                onclick="closeTransactionModal()">
-
-                إلغاء
-
-            </button>
-
-        </div>
-
-    </div>
+    </span>
 
 </div>
 
-<script src="varex.js"></script>
+
+<div class="form-grid">
+
+
+<select id="transactionType">
+
+    <option value="income">
+        إيراد
+    </option>
+
+    <option value="expense">
+        مصروف
+    </option>
+
+</select>
+
+
+<input
+    id="transactionDate"
+    type="date"
+>
+
+
+<input
+    id="description"
+    class="full"
+    placeholder="البيان / وصف الحركة"
+>
+
+
+<input
+    id="category"
+    placeholder="التصنيف"
+>
+
+
+<input
+    id="amount"
+    type="number"
+    min="0"
+    step="0.01"
+    placeholder="المبلغ"
+>
+
+
+<select id="payment">
+
+    <option value="">
+        طريقة الدفع
+    </option>
+
+    <option value="نقدي">
+        نقدي
+    </option>
+
+    <option value="بطاقة">
+        بطاقة
+    </option>
+
+    <option value="تحويل بنكي">
+        تحويل بنكي
+    </option>
+
+    <option value="شيك">
+        شيك
+    </option>
+
+    <option value="أخرى">
+        أخرى
+    </option>
+
+</select>
+
+</div>
+
+
+<div class="form-actions">
+
+    <button
+        class="save"
+        onclick="saveTransaction()">
+
+        حفظ الحركة
+
+    </button>
+
+
+    <button
+        class="secondary"
+        onclick="closeTransactionModal()">
+
+        إلغاء
+
+    </button>
+
+</div>
+
+</div>
+
+</div>
+
+
+<script src="./varex.js"></script>
 
 <script>
 
-/* =========================
+/* =====================================================
    CLOCK
-========================= */
+===================================================== */
 
 function updateClock(){
 
@@ -1165,9 +1580,10 @@ setInterval(
     1000
 );
 
-/* =========================
+
+/* =====================================================
    OPEN MODAL
-========================= */
+===================================================== */
 
 function openTransactionModal(){
 
@@ -1207,9 +1623,10 @@ function openTransactionModal(){
         "flex";
 }
 
-/* =========================
+
+/* =====================================================
    CLOSE MODAL
-========================= */
+===================================================== */
 
 function closeTransactionModal(){
 
@@ -1219,9 +1636,10 @@ function closeTransactionModal(){
         "none";
 }
 
-/* =========================
-   SAVE
-========================= */
+
+/* =====================================================
+   SAVE TRANSACTION
+===================================================== */
 
 function saveTransaction(){
 
@@ -1238,6 +1656,7 @@ function saveTransaction(){
                 .value
         );
 
+
     if(!description){
 
         alert(
@@ -1247,6 +1666,7 @@ function saveTransaction(){
         return;
     }
 
+
     if(!amount || amount <= 0){
 
         alert(
@@ -1255,6 +1675,7 @@ function saveTransaction(){
 
         return;
     }
+
 
     VAREX.addTransaction({
 
@@ -1288,14 +1709,16 @@ function saveTransaction(){
 
     });
 
+
     closeTransactionModal();
 
     renderTransactions();
 }
 
-/* =========================
-   DELETE
-========================= */
+
+/* =====================================================
+   DELETE TRANSACTION
+===================================================== */
 
 function removeTransaction(id){
 
@@ -1311,14 +1734,16 @@ function removeTransaction(id){
     }
 }
 
-/* =========================
-   STATS
-========================= */
+
+/* =====================================================
+   UPDATE STATS
+===================================================== */
 
 function updateStats(){
 
     const summary =
         VAREX.getFinancialSummary();
+
 
     document
         .getElementById("totalIncome")
@@ -1327,12 +1752,14 @@ function updateStats(){
             summary.income
         );
 
+
     document
         .getElementById("totalExpenses")
         .innerText =
         VAREX.money(
             summary.expenses
         );
+
 
     document
         .getElementById("balance")
@@ -1341,26 +1768,30 @@ function updateStats(){
             summary.balance
         );
 
+
     document
         .getElementById("transactionCount")
         .innerText =
         summary.transactions;
 }
 
-/* =========================
-   RENDER
-========================= */
+
+/* =====================================================
+   RENDER TRANSACTIONS
+===================================================== */
 
 function renderTransactions(){
 
     const transactions =
         VAREX.getTransactions();
 
+
     const table =
         document
             .getElementById(
                 "transactionTable"
             );
+
 
     const search =
         document
@@ -1369,19 +1800,24 @@ function renderTransactions(){
             .trim()
             .toLowerCase();
 
+
     const type =
         document
             .getElementById("typeFilter")
             .value;
 
+
     table.innerHTML =
         "";
+
 
     let visible =
         0;
 
+
     transactions.forEach(
         transaction => {
+
 
             if(
                 type &&
@@ -1389,6 +1825,7 @@ function renderTransactions(){
             ){
                 return;
             }
+
 
             const searchable =
                 (
@@ -1400,6 +1837,7 @@ function renderTransactions(){
                 )
                 .toLowerCase();
 
+
             if(
                 !searchable.includes(
                     search
@@ -1408,32 +1846,39 @@ function renderTransactions(){
                 return;
             }
 
+
             visible++;
+
 
             const isIncome =
                 transaction.type ===
                 "income";
+
 
             const typeText =
                 isIncome
                 ? "إيراد"
                 : "مصروف";
 
+
             const typeClass =
                 isIncome
                 ? "income"
                 : "expense";
+
 
             const badgeClass =
                 isIncome
                 ? "income-badge"
                 : "expense-badge";
 
+
             const row =
                 document
                     .createElement(
                         "tr"
                     );
+
 
             row.innerHTML = `
 
@@ -1463,22 +1908,28 @@ function renderTransactions(){
                 </td>
 
                 <td>
+
                     <span class="type-badge ${badgeClass}">
                         ${typeText}
                     </span>
+
                 </td>
 
                 <td class="${typeClass}">
+
                     ${VAREX.money(
                         transaction.amount
                     )}
+
                 </td>
 
                 <td>
+
                     ${escapeHTML(
                         transaction.payment ||
                         "-"
                     )}
+
                 </td>
 
                 <td>
@@ -1495,11 +1946,13 @@ function renderTransactions(){
 
             `;
 
+
             table.appendChild(
                 row
             );
         }
     );
+
 
     document
         .getElementById("emptyMessage")
@@ -1508,12 +1961,14 @@ function renderTransactions(){
         ? "block"
         : "none";
 
+
     updateStats();
 }
 
-/* =========================
+
+/* =====================================================
    ESCAPE HTML
-========================= */
+===================================================== */
 
 function escapeHTML(value){
 
@@ -1522,17 +1977,20 @@ function escapeHTML(value){
             "div"
         );
 
+
     div.textContent =
         value == null
         ? ""
         : String(value);
 
+
     return div.innerHTML;
 }
 
-/* =========================
+
+/* =====================================================
    CLOSE MODAL OUTSIDE
-========================= */
+===================================================== */
 
 document
     .getElementById("transactionModal")
@@ -1543,14 +2001,16 @@ document
             if(
                 event.target === this
             ){
+
                 closeTransactionModal();
             }
         }
     );
 
-/* =========================
+
+/* =====================================================
    START
-========================= */
+===================================================== */
 
 renderTransactions();
 
