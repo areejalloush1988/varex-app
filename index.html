@@ -7,6 +7,29 @@
 <title>VAREX | لوحة التحكم</title>
 
 <!-- ==========================================
+     LOGIN PROTECTION
+========================================== -->
+<script>
+(function(){
+
+    const localAuth =
+        localStorage.getItem("varex_authenticated");
+
+    const sessionAuth =
+        sessionStorage.getItem("varex_authenticated");
+
+    const isAuthenticated =
+        localAuth === "true" ||
+        sessionAuth === "true";
+
+    if(!isAuthenticated){
+        window.location.replace("./login.html");
+    }
+
+})();
+</script>
+
+<!-- ==========================================
      PWA
 ========================================== -->
 <link rel="manifest" href="./manifest.json">
@@ -981,7 +1004,7 @@ body{
 
 <div class="info-chip">
     المستخدم:
-    <strong>المستخدم الحالي</strong>
+    <strong id="currentUserName">المستخدم الحالي</strong>
 </div>
 
 <div class="info-chip" id="currentDate">—</div>
@@ -1237,6 +1260,53 @@ body{
 <script>
 
 /* ==========================================
+   CURRENT USER
+========================================== */
+
+function getCurrentSession(){
+
+    const localSession =
+        localStorage.getItem("varex_session");
+
+    const temporarySession =
+        sessionStorage.getItem("varex_session");
+
+    const raw =
+        localSession ||
+        temporarySession;
+
+    if(!raw){
+        return null;
+    }
+
+    try{
+        return JSON.parse(raw);
+    }catch(error){
+        return null;
+    }
+}
+
+function updateCurrentUser(){
+
+    const session =
+        getCurrentSession();
+
+    const element =
+        document.getElementById("currentUserName");
+
+    if(
+        element &&
+        session &&
+        session.username
+    ){
+        element.textContent =
+            session.username;
+    }
+}
+
+updateCurrentUser();
+
+/* ==========================================
    LANGUAGE SELECTOR
 ========================================== */
 
@@ -1251,6 +1321,7 @@ const varexLanguages = {
 };
 
 function getSavedLanguage(){
+
     const saved =
         localStorage.getItem(
             "varex_language"
@@ -1868,6 +1939,7 @@ window.addEventListener(
 
         updateDashboard();
         updateLanguageButton();
+        updateCurrentUser();
 
     }
 );
@@ -1878,6 +1950,7 @@ window.addEventListener(
 
         updateDashboard();
         updateLanguageButton();
+        updateCurrentUser();
 
     }
 );
