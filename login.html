@@ -418,6 +418,12 @@ body{
     box-shadow:0 10px 23px rgba(23,37,84,.23);
 }
 
+.login-button:disabled{
+    opacity:.65;
+    cursor:not-allowed;
+    transform:none;
+}
+
 .login-message{
     display:none;
     margin-top:13px;
@@ -826,6 +832,7 @@ onclick="openForgotPassword(event)"
 <button
 type="submit"
 class="login-button"
+id="loginButton"
 >
 تسجيل الدخول
 </button>
@@ -958,6 +965,13 @@ onclick="closeModal('contactModal')"
 </div>
 
 
+<!-- ==========================================
+     VAREX CORE
+========================================== -->
+
+<script src="./varex.js"></script>
+
+
 <script>
 
 /* ==========================================
@@ -1035,7 +1049,6 @@ function selectLanguage(language){
     );
 
     updateLanguageButton();
-
     closeLanguageMenu();
 }
 
@@ -1050,7 +1063,6 @@ function updateLanguageButton(){
         );
 
     if(currentLanguage){
-
         currentLanguage.textContent =
             languages[language];
     }
@@ -1064,7 +1076,8 @@ function updateLanguageButton(){
 
                 option.classList.toggle(
                     "active",
-                    option.dataset.language === language
+                    option.dataset.language ===
+                    language
                 );
 
             }
@@ -1088,6 +1101,7 @@ document.addEventListener(
         ){
             closeLanguageMenu();
         }
+
     }
 );
 
@@ -1197,16 +1211,93 @@ document
                             "show"
                         );
                     }
+
                 }
             );
+
         }
     );
 
 
 /* ==========================================
-   LOGIN
-   سيتم ربط التحقق الفعلي بالحسابات
-   في الخطوة التالية
+   CHECK VAREX CORE
+========================================== */
+
+function isVarexReady(){
+
+    return (
+        typeof VAREX !== "undefined" &&
+        typeof VAREX.login === "function"
+    );
+}
+
+
+/* ==========================================
+   REDIRECT USER IF ALREADY LOGGED IN
+========================================== */
+
+if(
+    isVarexReady() &&
+    typeof VAREX.isLoggedIn === "function" &&
+    VAREX.isLoggedIn()
+){
+
+    window.location.replace(
+        "./index.html"
+    );
+}
+
+
+/* ==========================================
+   REMEMBERED USER
+========================================== */
+
+function loadRememberedUser(){
+
+    if(!isVarexReady()){
+        return;
+    }
+
+    if(
+        typeof VAREX.getRememberedUser !==
+        "function"
+    ){
+        return;
+    }
+
+    const remembered =
+        VAREX.getRememberedUser();
+
+    if(!remembered){
+        return;
+    }
+
+    const usernameInput =
+        document.getElementById(
+            "username"
+        );
+
+    const rememberInput =
+        document.getElementById(
+            "rememberMe"
+        );
+
+    if(usernameInput){
+        usernameInput.value =
+            remembered;
+    }
+
+    if(rememberInput){
+        rememberInput.checked =
+            true;
+    }
+}
+
+loadRememberedUser();
+
+
+/* ==========================================
+   REAL VAREX LOGIN
 ========================================== */
 
 document
@@ -1246,6 +1337,18 @@ document
                     "loginMessage"
                 );
 
+            const loginButton =
+                document.getElementById(
+                    "loginButton"
+                );
+
+
+            message.className =
+                "login-message";
+
+            message.textContent =
+                "";
+
 
             if(
                 !username ||
@@ -1256,88 +1359,130 @@ document
                     "login-message error";
 
                 message.textContent =
-                    "يرجى إدخال اسم المستخدم وكلمة المرور.";
+                    "يرجى إدخال اسم المستخدم أو البريد الإلكتروني وكلمة المرور.";
 
                 return;
             }
 
 
-            const sessionData = {
+            if(!isVarexReady()){
 
-                authenticated:true,
+                message.className =
+                    "login-message error";
 
-                username:
-                    username,
+                message.textContent =
+                    "تعذر تحميل نظام VAREX. يرجى تحديث الصفحة والمحاولة مرة أخرى.";
 
-                loginTime:
-                    new Date()
-                        .toISOString()
-            };
-
-
-            if(rememberMe){
-
-                localStorage.setItem(
-                    "varex_authenticated",
-                    "true"
-                );
-
-                localStorage.setItem(
-                    "varex_session",
-                    JSON.stringify(
-                        sessionData
-                    )
-                );
-
-                sessionStorage.removeItem(
-                    "varex_authenticated"
-                );
-
-                sessionStorage.removeItem(
-                    "varex_session"
-                );
-
-            }else{
-
-                sessionStorage.setItem(
-                    "varex_authenticated",
-                    "true"
-                );
-
-                sessionStorage.setItem(
-                    "varex_session",
-                    JSON.stringify(
-                        sessionData
-                    )
-                );
-
-                localStorage.removeItem(
-                    "varex_authenticated"
-                );
-
-                localStorage.removeItem(
-                    "varex_session"
-                );
+                return;
             }
 
 
-            message.className =
-                "login-message success";
+            loginButton.disabled =
+                true;
 
-            message.textContent =
-                "تم تسجيل الدخول بنجاح...";
+            loginButton.textContent =
+                "جارٍ تسجيل الدخول...";
 
 
-            setTimeout(
-                function(){
+            try{
 
-                    window.location.replace(
-                        "./index.html"
+                /*
+                 * هذا هو التغيير الأساسي:
+                 * لم نعد ننشئ جلسة وهمية هنا.
+                 * VAREX.login يتحقق من الحساب الحقيقي
+                 * المحفوظ بواسطة register.html.
+                 */
+
+                const result =
+                    VAREX.login(
+                        username,
+                        password,
+                        rememberMe
                     );
 
-                },
-                300
-            );
+
+                if(
+                    !result ||
+                    result.success !== true
+                ){
+
+                    message.className =
+                        "login-message error";
+
+                    message.textContent =
+                        (
+                            result &&
+                            result.message
+                        )
+                            ?
+                            result.message
+                            :
+                            "تعذر تسجيل الدخول.";
+
+                    loginButton.disabled =
+                        false;
+
+                    loginButton.textContent =
+                        "تسجيل الدخول";
+
+                    return;
+                }
+
+
+                /*
+                 * تنظيف مفاتيح نظام الدخول القديم.
+                 * لا نحذف varex_session لأن النظام الجديد
+                 * يستخدمه أيضاً.
+                 */
+
+                localStorage.removeItem(
+                    "varex_authenticated"
+                );
+
+                sessionStorage.removeItem(
+                    "varex_authenticated"
+                );
+
+
+                message.className =
+                    "login-message success";
+
+                message.textContent =
+                    "تم تسجيل الدخول بنجاح...";
+
+
+                setTimeout(
+                    function(){
+
+                        window.location.replace(
+                            "./index.html"
+                        );
+
+                    },
+                    300
+                );
+
+
+            }catch(error){
+
+                console.error(
+                    "VAREX Login Error:",
+                    error
+                );
+
+                message.className =
+                    "login-message error";
+
+                message.textContent =
+                    "حدث خطأ أثناء تسجيل الدخول. يرجى المحاولة مرة أخرى.";
+
+                loginButton.disabled =
+                    false;
+
+                loginButton.textContent =
+                    "تسجيل الدخول";
+            }
+
         }
     );
 
@@ -1366,8 +1511,10 @@ if(
                             "Service Worker Error:",
                             error
                         );
+
                     }
                 );
+
         }
     );
 }
