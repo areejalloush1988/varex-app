@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ورديات الكاشير - VAREX</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}:root{--navy:#172554;--dark:#0f1d43;--bg:#f4f6fb;--border:#e5eaf2;--text:#172554;--muted:#64748b;--green:#16a34a;--red:#dc2626;--orange:#ea580c;--blue:#2563eb;--sidebar:240px;--brand:170px}
+body{font-family:Arial,Tahoma,sans-serif;background:var(--bg);color:var(--text);min-height:100vh}.sidebar{position:fixed;right:0;top:0;width:var(--sidebar);height:100vh;background:linear-gradient(180deg,#172554,#13234f 48%,#0f1d43);color:#fff;z-index:1000;display:flex;flex-direction:column;overflow:hidden}.brand{height:var(--brand);min-height:var(--brand);padding:24px 14px 20px;border-bottom:1px solid rgba(255,255,255,.1);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}.logo{font-size:30px;font-weight:800;letter-spacing:4px;direction:ltr}.brand-small{margin-top:11px;font-size:10px;font-weight:600;letter-spacing:.8px;color:#e2e8f0;direction:ltr}.system-status{margin-top:16px;display:flex;align-items:center;gap:7px;font-size:10px;color:#d1fae5}.dot{width:7px;height:7px;border-radius:50%;background:#22c55e;box-shadow:0 0 8px rgba(34,197,94,.75)}
+.nav{padding:16px 12px;flex:1;overflow-y:auto}.nav a{height:48px;display:flex;align-items:center;gap:11px;padding:0 14px;margin-bottom:5px;border-radius:10px;color:#dbeafe;text-decoration:none;font-size:13px;font-weight:600;white-space:nowrap}.nav a:hover{background:rgba(255,255,255,.08);color:#fff}.nav a.active{background:#fff;color:var(--navy);font-weight:700}.nav-icon{width:25px;text-align:center;font-size:16px}.sidebar-footer{height:54px;min-height:54px;border-top:1px solid rgba(255,255,255,.1);color:#94a3b8;font-size:9px;letter-spacing:.5px;direction:ltr;display:flex;align-items:center;justify-content:center}
+.main{margin-right:var(--sidebar);min-height:100vh}.topbar{height:78px;background:#fff;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 28px;position:sticky;top:0;z-index:50}.page-name{display:flex;align-items:center;gap:12px}.page-icon{width:44px;height:44px;border-radius:11px;background:#eef2ff;display:flex;align-items:center;justify-content:center;font-size:20px}.page-name h2{font-size:19px}.page-name small{display:block;color:var(--muted);margin-top:4px;font-size:11px;direction:ltr}.top-info{display:flex;gap:9px}.chip{min-height:38px;background:#f8fafc;border:1px solid var(--border);border-radius:9px;padding:8px 12px;font-size:11px;color:var(--muted)}.chip strong{color:var(--navy);margin-right:4px}
+.content{width:calc(100% - 48px);max-width:1450px;margin:24px auto 40px}.hero{display:flex;justify-content:space-between;align-items:center;gap:15px;margin-bottom:20px}.hero h1{font-size:25px;margin-bottom:6px}.hero p{font-size:13px;color:var(--muted)}button{border:0;border-radius:9px;min-height:40px;padding:9px 14px;font-family:inherit;font-size:11px;font-weight:bold;cursor:pointer}.primary{background:linear-gradient(135deg,#172554,#1e3a8a);color:#fff}.secondary{background:#f8fafc;color:#475569;border:1px solid var(--border)}.danger{background:#fff;color:#b91c1c;border:1px solid #fecaca}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:18px}.stat{background:#fff;border:1px solid var(--border);border-radius:14px;padding:15px;box-shadow:0 4px 15px rgba(15,23,42,.04)}.stat span{font-size:10px;color:var(--muted)}.stat strong{display:block;font-size:20px;margin-top:5px}.green strong{color:var(--green)}.red strong{color:var(--red)}.orange strong{color:var(--orange)}.blue strong{color:var(--blue)}
+.panel{background:#fff;border:1px solid var(--border);border-radius:16px;padding:18px;box-shadow:0 4px 18px rgba(15,23,42,.05)}.filters{display:grid;grid-template-columns:2fr 1fr 1fr;gap:9px;padding-bottom:16px;border-bottom:1px solid #edf0f5;margin-bottom:10px}input,select,textarea{width:100%;min-height:40px;padding:9px 11px;border:1px solid #dbe1ea;border-radius:9px;background:#fff;color:#172554;font-family:inherit;font-size:11px;outline:none}textarea{min-height:70px;resize:vertical}
+.table-wrap{overflow-x:auto}table{width:100%;border-collapse:collapse;min-width:1100px}th{background:#f8fafc;color:#64748b;font-size:10px;text-align:right;padding:12px;border-bottom:1px solid var(--border);white-space:nowrap}td{padding:13px 12px;border-bottom:1px solid #edf0f5;font-size:11px;color:#475569}.code{font-weight:bold;color:#172554;direction:ltr;text-align:right}.badge{display:inline-flex;padding:5px 9px;border-radius:20px;font-size:9px;font-weight:bold}.open{background:#dcfce7;color:#15803d}.closed{background:#f1f5f9;color:#475569}.matched{background:#dcfce7;color:#15803d}.shortage{background:#fef2f2;color:#b91c1c}.surplus{background:#fff7ed;color:#c2410c}.mini{min-height:30px;padding:6px 9px;background:#f8fafc;border:1px solid var(--border);color:#475569;margin:2px}.empty{text-align:center;padding:45px;color:#94a3b8;font-size:12px;display:none}
+.modal-bg{position:fixed;inset:0;background:rgba(15,23,42,.58);z-index:3000;display:none;align-items:flex-start;justify-content:center;padding:25px;overflow:auto}.modal{width:min(780px,100%);background:#fff;border-radius:17px;padding:22px;margin:auto;box-shadow:0 20px 60px rgba(0,0,0,.25)}.modal-head{display:flex;justify-content:space-between;align-items:center;padding-bottom:14px;margin-bottom:17px;border-bottom:1px solid var(--border)}.modal-head h3{font-size:17px}.close{width:34px;min-height:34px;padding:0;background:#f1f5f9;font-size:18px}.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:11px}.field{margin-bottom:11px}.field label{display:block;font-size:10px;font-weight:bold;color:#475569;margin-bottom:5px}.full{grid-column:1/-1}.summary{background:#f8fafc;border:1px solid var(--border);border-radius:12px;padding:14px;margin-top:10px}.sumrow{display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid #e5e7eb;font-size:11px;color:#475569}.sumrow:last-child{border:0}.sumrow.final{font-size:14px;font-weight:bold;color:#172554}.difference{font-size:15px!important}.modal-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px}.note{margin-top:15px;padding:12px 14px;border:1px solid var(--border);background:#f8fafc;border-radius:10px;color:#64748b;font-size:10px;line-height:1.7}.toast{position:fixed;left:25px;bottom:25px;background:#172554;color:#fff;padding:12px 17px;border-radius:10px;font-size:11px;display:none;z-index:5000}
+@media(max-width:900px){.stats{grid-template-columns:1fr 1fr}.filters{grid-template-columns:1fr 1fr}}@media(max-width:750px){.top-info{display:none}.hero{flex-direction:column;align-items:flex-start}}@media(max-width:600px){.content{width:94%}.topbar{padding:0 14px}.form-grid,.filters{grid-template-columns:1fr}.stats{grid-template-columns:1fr 1fr}.hero button{width:100%}}
+</style>
+</head>
+<body>
+<aside class="sidebar">
+<div class="brand"><div class="logo">VAREX</div><div class="brand-small">BUSINESS MANAGEMENT SYSTEM</div><div class="system-status"><span class="dot"></span><span>النظام متصل وجاهز للعمل</span></div></div>
+<nav class="nav">
+<a href="./index.html"><span class="nav-icon">▦</span><span>لوحة التحكم</span></a>
+<a href="./pos.html"><span class="nav-icon">🛒</span><span>شاشة المبيعات</span></a>
+<a href="./products.html"><span class="nav-icon">📦</span><span>المنتجات والمخزون</span></a>
+<a href="./purchases.html"><span class="nav-icon">🧾</span><span>المشتريات</span></a>
+<a href="./transfers.html"><span class="nav-icon">🔄</span><span>تحويلات المخزون</span></a>
+<a href="./customers.html"><span class="nav-icon">👥</span><span>العملاء</span></a>
+<a href="./suppliers.html"><span class="nav-icon">🚚</span><span>الموردون</span></a>
+<a href="./accounts.html"><span class="nav-icon">💰</span><span>الحسابات</span></a>
+<a href="./expenses.html"><span class="nav-icon">💸</span><span>المصروفات</span></a>
+<a href="./shifts.html" class="active"><span class="nav-icon">🕘</span><span>ورديات الكاشير</span></a>
+<a href="./employees.html"><span class="nav-icon">👤</span><span>الموظفون</span></a>
+<a href="./reports.html"><span class="nav-icon">📊</span><span>التقارير</span></a>
+<a href="./branches.html"><span class="nav-icon">🏢</span><span>الفروع</span></a>
+<a href="./notifications.html"><span class="nav-icon">🔔</span><span>مركز التنبيهات</span></a>
+<a href="./activity.html"><span class="nav-icon">📋</span><span>سجل النشاط</span></a>
+<a href="./users.html"><span class="nav-icon">🔐</span><span>المستخدمون والصلاحيات</span></a>
+<a href="./setting.html"><span class="nav-icon">⚙️</span><span>الإعدادات</span></a>
+</nav>
+<div class="sidebar-footer">VAREX BUSINESS SYSTEM</div>
+</aside>
+
+<div class="main">
+<header class="topbar">
+<div class="page-name"><div class="page-icon">🕘</div><div><h2>ورديات الكاشير</h2><small>VAREX CASHIER SHIFTS</small></div></div>
+<div class="top-info"><div class="chip">المستخدم:<strong>Owner</strong></div><div class="chip" id="currentDate">—</div><div class="chip" id="currentTime">—</div></div>
+</header>
+
+<main class="content">
+<section class="hero"><div><h1>إدارة ورديات الكاشير</h1><p>فتح وإغلاق الورديات ومطابقة النقد الفعلي مع الرصيد المتوقع في الصندوق.</p></div><button class="primary" onclick="openNewShift()">＋ فتح وردية جديدة</button></section>
+
+<div class="stats">
+<div class="stat green"><span>الورديات المفتوحة</span><strong id="openCount">0</strong></div>
+<div class="stat blue"><span>إجمالي مبيعات اليوم</span><strong id="salesToday">0.00 AED</strong></div>
+<div class="stat red"><span>إجمالي العجز</span><strong id="shortageTotal">0.00 AED</strong></div>
+<div class="stat orange"><span>إجمالي الزيادة</span><strong id="surplusTotal">0.00 AED</strong></div>
+</div>
+
+<section class="panel">
+<div class="filters">
+<input id="search" placeholder="🔎 البحث برقم الوردية أو الكاشير أو الفرع..." oninput="render()">
+<select id="statusFilter" onchange="render()"><option value="all">كل الورديات</option><option value="open">مفتوحة</option><option value="closed">مغلقة</option></select>
+<input id="dateFilter" type="date" onchange="render()">
+</div>
+<div class="table-wrap"><table>
+<thead><tr><th>رقم الوردية</th><th>الكاشير</th><th>الفرع</th><th>تاريخ الفتح</th><th>وقت الفتح</th><th>الرصيد الافتتاحي</th><th>إجمالي المبيعات</th><th>النقد المتوقع</th><th>الفرق</th><th>الحالة</th><th>الإجراءات</th></tr></thead>
+<tbody id="shiftBody"></tbody>
+</table></div>
+<div class="empty" id="empty">لا توجد ورديات.</div>
+<div class="note">🔒 في الربط النهائي سيتم جلب المبيعات والمرتجعات والمصروفات تلقائياً من عمليات الكاشير خلال فترة الوردية، ولن يستطيع الكاشير تعديل هذه الأرقام يدوياً.</div>
+</section>
+</main>
+</div>
+
+<!-- OPEN SHIFT -->
+<div class="modal-bg" id="openModal"><div class="modal">
+<div class="modal-head"><h3>فتح وردية جديدة</h3><button class="close" onclick="closeOpen()">×</button></div>
+<div class="form-grid">
+<div class="field"><label>الكاشير *</label><input id="cashierName" placeholder="اسم الكاشير"></div>
+<div class="field"><label>الفرع *</label><select id="branch"></select></div>
+<div class="field"><label>الرصيد الافتتاحي للصندوق *</label><input id="openingBalance" type="number" min="0" step=".01" value="0"></div>
+<div class="field"><label>رقم/اسم صندوق الكاشير</label><input id="registerName" value="POS-01"></div>
+<div class="field full"><label>ملاحظات فتح الوردية</label><textarea id="openingNotes" placeholder="اختياري"></textarea></div>
+</div>
+<div class="modal-actions"><button class="primary" onclick="saveNewShift()">✓ فتح الوردية</button><button class="secondary" onclick="closeOpen()">إلغاء</button></div>
+</div></div>
+
+<!-- CLOSE SHIFT -->
+<div class="modal-bg" id="closeModal"><div class="modal">
+<div class="modal-head"><h3>إغلاق الوردية</h3><button class="close" onclick="closeCloseModal()">×</button></div>
+<input id="closingId" type="hidden">
+
+<div class="form-grid">
+<div class="field"><label>مبيعات نقدية</label><input id="cashSales" type="number" min="0" step=".01" value="0" oninput="calculateClosing()"></div>
+<div class="field"><label>مبيعات بطاقة</label><input id="cardSales" type="number" min="0" step=".01" value="0" oninput="calculateClosing()"></div>
+<div class="field"><label>تحويلات بنكية</label><input id="bankSales" type="number" min="0" step=".01" value="0" oninput="calculateClosing()"></div>
+<div class="field"><label>مبيعات آجلة</label><input id="creditSales" type="number" min="0" step=".01" value="0" oninput="calculateClosing()"></div>
+<div class="field"><label>مرتجعات نقدية</label><input id="cashReturns" type="number" min="0" step=".01" value="0" oninput="calculateClosing()"></div>
+<div class="field"><label>مصروفات نقدية من الصندوق</label><input id="cashExpenses" type="number" min="0" step=".01" value="0" oninput="calculateClosing()"></div>
+<div class="field full"><label>النقد الفعلي الموجود في الصندوق *</label><input id="actualCash" type="number" min="0" step=".01" value="0" oninput="calculateClosing()"></div>
+</div>
+
+<div class="summary">
+<div class="sumrow"><span>الرصيد الافتتاحي</span><strong id="openingView">0.00 AED</strong></div>
+<div class="sumrow"><span>إجمالي المبيعات</span><strong id="totalSalesView">0.00 AED</strong></div>
+<div class="sumrow"><span>النقد المتوقع في الصندوق</span><strong id="expectedView">0.00 AED</strong></div>
+<div class="sumrow"><span>النقد الفعلي</span><strong id="actualView">0.00 AED</strong></div>
+<div class="sumrow final difference"><span>الفرق</span><strong id="differenceView">0.00 AED</strong></div>
+</div>
+
+<div class="field full" style="margin-top:13px"><label>ملاحظات الإغلاق</label><textarea id="closingNotes" placeholder="مثال: سبب العجز أو الزيادة إن وجد"></textarea></div>
+<div class="modal-actions"><button class="primary" onclick="finishShift()">✓ إغلاق واعتماد الوردية</button><button class="secondary" onclick="closeCloseModal()">إلغاء</button></div>
+</div></div>
+
+<div class="toast" id="toast"></div>
+
+<script src="./varex.js"></script>
+<script>
+let shifts=[],branches=[];
+function load(){
+loadBranches();
+try{shifts=JSON.parse(localStorage.getItem("varexShifts")||"[]")}catch(e){shifts=[]}
+if(!Array.isArray(shifts))shifts=[];
+render()
+}
+function saveStore(){localStorage.setItem("varexShifts",JSON.stringify(shifts))}
+function loadBranches(){
+try{branches=JSON.parse(localStorage.getItem("varexBranches")||"[]")}catch(e){branches=[]}
+branches=Array.isArray(branches)?branches.filter(x=>x.status==="active"):[];
+if(!branches.length)branches=[{name:"الفرع الرئيسي"}];
+branch.innerHTML="";branches.forEach(b=>branch.add(new Option(b.name,b.name)))
+}
+
+function openNewShift(){
+cashierName.value="";openingBalance.value="0";registerName.value="POS-01";openingNotes.value="";
+openModal.style.display="flex"
+}
+function closeOpen(){openModal.style.display="none"}
+
+function saveNewShift(){
+if(!cashierName.value.trim()){alert("يرجى إدخال اسم الكاشير.");return}
+const now=new Date(),opening=Math.max(0,Number(openingBalance.value||0));
+const id="SHF-"+String(1001+shifts.length);
+shifts.unshift({id,cashier:cashierName.value.trim(),branch:branch.value,register:registerName.value.trim()||"POS-01",date:localDate(now),openTime:timeNow(now),opening,status:"open",openingNotes:openingNotes.value.trim(),cashSales:0,cardSales:0,bankSales:0,creditSales:0,cashReturns:0,cashExpenses:0,totalSales:0,expectedCash:opening,actualCash:null,difference:null});
+saveStore();render();closeOpen();showToast("تم فتح الوردية بنجاح")
+}
+
+function openClosing(id){
+const x=shifts.find(s=>s.id===id);if(!x||x.status!=="open")return;
+closingId.value=id;
+cashSales.value=x.cashSales||0;cardSales.value=x.cardSales||0;bankSales.value=x.bankSales||0;creditSales.value=x.creditSales||0;cashReturns.value=x.cashReturns||0;cashExpenses.value=x.cashExpenses||0;actualCash.value=x.expectedCash||x.opening||0;closingNotes.value="";
+calculateClosing();closeModal.style.display="flex"
+}
+function closeCloseModal(){closeModal.style.display="none"}
+
+function calculateClosing(){
+const x=shifts.find(s=>s.id===closingId.value);if(!x)return null;
+const cash=num(cashSales),card=num(cardSales),bank=num(bankSales),credit=num(creditSales),returns=num(cashReturns),expenses=num(cashExpenses),actual=num(actualCash);
+const total=cash+card+bank+credit;
+const expected=Math.max(0,Number(x.opening||0)+cash-returns-expenses);
+const diff=actual-expected;
+openingView.innerText=money(x.opening);totalSalesView.innerText=money(total);expectedView.innerText=money(expected);actualView.innerText=money(actual);
+differenceView.innerText=(diff>0?"+":"")+money(diff);
+differenceView.style.color=Math.abs(diff)<.005?"#16a34a":diff<0?"#dc2626":"#ea580c";
+return{cash,card,bank,credit,returns,expenses,actual,total,expected,diff}
+}
+
+function finishShift(){
+const x=shifts.find(s=>s.id===closingId.value);if(!x)return;
+const c=calculateClosing();if(!c)return;
+if(!confirm("هل تريد إغلاق واعتماد هذه الوردية؟"))return;
+const now=new Date();
+Object.assign(x,{cashSales:c.cash,cardSales:c.card,bankSales:c.bank,creditSales:c.credit,cashReturns:c.returns,cashExpenses:c.expenses,totalSales:c.total,expectedCash:c.expected,actualCash:c.actual,difference:c.diff,status:"closed",closeDate:localDate(now),closeTime:timeNow(now),closingNotes:closingNotes.value.trim(),closedBy:"Owner"});
+saveStore();render();closeCloseModal();showToast("تم إغلاق الوردية واعتماد المطابقة")
+}
+
+function render(){
+const q=search.value.trim().toLowerCase(),s=statusFilter.value,d=dateFilter.value;
+const data=shifts.filter(x=>(!q||`${x.id} ${x.cashier} ${x.branch}`.toLowerCase().includes(q))&&(s==="all"||x.status===s)&&(!d||x.date===d));
+shiftBody.innerHTML="";
+data.forEach(x=>{
+const diff=x.difference;
+let diffText="—",diffClass="";
+if(x.status==="closed"){diffText=(diff>0?"+":"")+money(diff);diffClass=Math.abs(diff)<.005?"matched":diff<0?"shortage":"surplus"}
+const tr=document.createElement("tr");
+tr.innerHTML=`<td class="code">${esc(x.id)}</td><td>${esc(x.cashier)}</td><td>${esc(x.branch)}</td><td>${formatDate(x.date)}</td><td>${esc(x.openTime)}</td><td>${money(x.opening)}</td><td>${money(x.totalSales||0)}</td><td>${money(x.expectedCash||x.opening)}</td><td>${x.status==="closed"?`<span class="badge ${diffClass}">${diffText}</span>`:"—"}</td><td><span class="badge ${x.status}">${x.status==="open"?"مفتوحة":"مغلقة"}</span></td><td>${x.status==="open"?`<button class="mini" onclick="openClosing('${x.id}')">إغلاق الوردية</button>`:`<button class="mini" onclick="viewShift('${x.id}')">عرض</button>`}</td>`;
+shiftBody.appendChild(tr)
+});
+empty.style.display=data.length?"none":"block";updateStats()
+}
+
+function updateStats(){
+const today=localDate(new Date()),todayShifts=shifts.filter(x=>x.date===today);
+openCount.innerText=shifts.filter(x=>x.status==="open").length;
+salesToday.innerText=money(todayShifts.reduce((a,x)=>a+Number(x.totalSales||0),0));
+shortageTotal.innerText=money(shifts.filter(x=>x.status==="closed"&&Number(x.difference)<0).reduce((a,x)=>a+Math.abs(Number(x.difference)),0));
+surplusTotal.innerText=money(shifts.filter(x=>x.status==="closed"&&Number(x.difference)>0).reduce((a,x)=>a+Number(x.difference),0))
+}
+
+function viewShift(id){
+const x=shifts.find(s=>s.id===id);if(!x)return;
+const state=Math.abs(Number(x.difference||0))<.005?"مطابق":x.difference<0?"عجز":"زيادة";
+alert(`الوردية: ${x.id}\nالكاشير: ${x.cashier}\nالفرع: ${x.branch}\n\nالرصيد الافتتاحي: ${money(x.opening)}\nإجمالي المبيعات: ${money(x.totalSales)}\nالنقد المتوقع: ${money(x.expectedCash)}\nالنقد الفعلي: ${money(x.actualCash)}\nالنتيجة: ${state}\nالفرق: ${money(x.difference)}`)
+}
+
+function num(el){return Math.max(0,Number(el.value||0))}
+function money(n){return Number(n||0).toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2})+" AED"}
+function localDate(d){return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`}
+function timeNow(d){return d.toLocaleTimeString("ar-AE",{hour:"2-digit",minute:"2-digit"})}
+function formatDate(d){if(!d)return"—";const p=d.split("-");return `${p[2]}/${p[1]}/${p[0]}`}
+function esc(v){return String(v??"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#039;")}
+function showToast(t){toast.innerText=t;toast.style.display="block";clearTimeout(window.tt);window.tt=setTimeout(()=>toast.style.display="none",2200)}
+function clock(){const n=new Date();currentDate.innerText=n.toLocaleDateString("ar-AE",{year:"numeric",month:"2-digit",day:"2-digit"});currentTime.innerText=n.toLocaleTimeString("ar-AE",{hour:"2-digit",minute:"2-digit",second:"2-digit"})}
+openModal.addEventListener("click",e=>{if(e.target===openModal)closeOpen()});
+closeModal.addEventListener("click",e=>{if(e.target===closeModal)closeCloseModal()});
+clock();setInterval(clock,1000);load();
+</script>
+</body>
+</html>
