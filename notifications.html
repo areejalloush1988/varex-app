@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>مركز التنبيهات - VAREX</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--navy:#172554;--navy-dark:#0f1d43;--bg:#f4f6fb;--card:#fff;--border:#e5eaf2;--text:#172554;--body:#475569;--muted:#64748b;--soft:#f8fafc;--green:#16a34a;--red:#dc2626;--orange:#ea580c;--blue:#2563eb;--sidebar:240px;--brand:170px}
+html{scroll-behavior:smooth}body{font-family:Arial,Tahoma,sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+.sidebar{position:fixed;right:0;top:0;width:var(--sidebar);height:100vh;background:linear-gradient(180deg,#172554,#13234f 48%,#0f1d43);color:#fff;z-index:1000;display:flex;flex-direction:column;overflow:hidden}
+.brand{height:var(--brand);min-height:var(--brand);padding:24px 14px 20px;border-bottom:1px solid rgba(255,255,255,.1);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
+.logo{font-size:30px;font-weight:800;letter-spacing:4px;direction:ltr}.brand-small{margin-top:11px;font-size:10px;font-weight:600;letter-spacing:.8px;color:#e2e8f0;direction:ltr}.system-status{margin-top:16px;display:flex;align-items:center;gap:7px;font-size:10px;color:#d1fae5}.status-dot{width:7px;height:7px;border-radius:50%;background:#22c55e;box-shadow:0 0 8px rgba(34,197,94,.75)}
+.nav{padding:16px 12px;flex:1;overflow-y:auto}.nav a{height:48px;display:flex;align-items:center;gap:11px;padding:0 14px;margin-bottom:5px;border-radius:10px;color:#dbeafe;text-decoration:none;font-size:13px;font-weight:600;white-space:nowrap}.nav a:hover{background:rgba(255,255,255,.08);color:#fff}.nav a.active{background:#fff;color:var(--navy);font-weight:700}.nav-icon{width:25px;text-align:center;font-size:16px}.sidebar-footer{height:54px;min-height:54px;border-top:1px solid rgba(255,255,255,.1);color:#94a3b8;font-size:9px;letter-spacing:.5px;direction:ltr;display:flex;align-items:center;justify-content:center}
+.main{margin-right:var(--sidebar);min-height:100vh}.topbar{height:78px;background:#fff;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 28px;position:sticky;top:0;z-index:50}.page-name{display:flex;align-items:center;gap:12px}.page-icon{width:44px;height:44px;border-radius:11px;background:#eef2ff;display:flex;align-items:center;justify-content:center;font-size:20px;position:relative}.page-name h2{font-size:19px}.page-name small{display:block;color:var(--muted);margin-top:4px;font-size:11px;direction:ltr}.badge{position:absolute;top:-5px;left:-5px;min-width:19px;height:19px;padding:0 5px;border-radius:10px;background:var(--red);color:#fff;font-size:10px;font-weight:bold;display:flex;align-items:center;justify-content:center}.top-info{display:flex;gap:9px}.chip{min-height:38px;background:#f8fafc;border:1px solid var(--border);border-radius:9px;padding:8px 12px;font-size:11px;color:var(--muted);display:flex;align-items:center}.chip strong{color:var(--navy);margin-right:4px}
+.content{width:calc(100% - 48px);max-width:1450px;margin:24px auto 40px}.hero{display:flex;align-items:center;justify-content:space-between;gap:15px;margin-bottom:20px}.hero h1{font-size:25px;margin-bottom:6px}.hero p{color:var(--muted);font-size:13px}.hero-actions{display:flex;gap:8px;flex-wrap:wrap}
+button{border:0;border-radius:9px;min-height:40px;padding:9px 14px;font-family:inherit;font-size:11px;font-weight:bold;cursor:pointer}.primary{background:var(--navy);color:#fff}.secondary{background:#fff;border:1px solid var(--border);color:#475569}
+.stats{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:18px}.stat{background:#fff;border:1px solid var(--border);border-radius:14px;padding:15px;box-shadow:0 4px 15px rgba(15,23,42,.04)}.stat span{font-size:10px;color:var(--muted)}.stat strong{display:block;font-size:24px;margin-top:5px}.stat.red strong{color:var(--red)}.stat.orange strong{color:var(--orange)}.stat.green strong{color:var(--green)}.stat.blue strong{color:var(--blue)}
+.panel{background:#fff;border:1px solid var(--border);border-radius:16px;padding:18px;box-shadow:0 4px 18px rgba(15,23,42,.05)}.filters{display:flex;gap:8px;flex-wrap:wrap;padding-bottom:16px;border-bottom:1px solid #edf0f5;margin-bottom:10px}.filter{background:#f8fafc;border:1px solid var(--border);color:#64748b}.filter.active{background:var(--navy);color:#fff;border-color:var(--navy)}
+.notification{display:grid;grid-template-columns:50px 1fr auto;gap:13px;align-items:center;padding:16px 10px;border-bottom:1px solid #edf0f5;transition:.2s}.notification:last-child{border-bottom:0}.notification.unread{background:#f8faff;border-radius:10px}.n-icon{width:44px;height:44px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:20px}.stock{background:#fff7ed}.expiry{background:#fef2f2}.employee{background:#eff6ff}.debt{background:#fefce8}.system{background:#f0fdf4}.n-title{font-size:13px;font-weight:bold;color:var(--navy);margin-bottom:4px}.n-text{font-size:11px;color:#64748b;line-height:1.6}.n-meta{font-size:10px;color:#94a3b8;margin-top:5px}.new-dot{display:inline-block;width:7px;height:7px;background:#2563eb;border-radius:50%;margin-left:5px}
+.n-actions{display:flex;gap:5px;flex-wrap:wrap;justify-content:flex-end}.mini{padding:7px 9px;min-height:32px;background:#f8fafc;border:1px solid var(--border);color:#475569}.mini.danger{color:#dc2626;border-color:#fecaca;background:#fff}.empty{text-align:center;padding:50px 20px;color:#94a3b8;font-size:13px}
+.toast{position:fixed;left:25px;bottom:25px;background:#172554;color:#fff;padding:12px 17px;border-radius:10px;font-size:12px;display:none;z-index:5000}
+@media(max-width:1000px){.stats{grid-template-columns:repeat(3,1fr)}}@media(max-width:750px){.top-info{display:none}.hero{align-items:flex-start;flex-direction:column}.stats{grid-template-columns:repeat(2,1fr)}.notification{grid-template-columns:45px 1fr}.n-actions{grid-column:1/-1;justify-content:flex-start}}@media(max-width:600px){.content{width:94%}.topbar{padding:0 14px}.stats{grid-template-columns:1fr 1fr}.hero-actions{width:100%}.hero-actions button{flex:1}}
+</style>
+</head>
+<body>
+<aside class="sidebar">
+<div class="brand"><div class="logo">VAREX</div><div class="brand-small">BUSINESS MANAGEMENT SYSTEM</div><div class="system-status"><span class="status-dot"></span><span>النظام متصل وجاهز للعمل</span></div></div>
+<nav class="nav">
+<a href="./index.html"><span class="nav-icon">▦</span><span>لوحة التحكم</span></a>
+<a href="./pos.html"><span class="nav-icon">🛒</span><span>شاشة المبيعات</span></a>
+<a href="./products.html"><span class="nav-icon">📦</span><span>المنتجات والمخزون</span></a>
+<a href="./customers.html"><span class="nav-icon">👥</span><span>العملاء</span></a>
+<a href="./suppliers.html"><span class="nav-icon">🚚</span><span>الموردون</span></a>
+<a href="./accounts.html"><span class="nav-icon">💰</span><span>الحسابات</span></a>
+<a href="./employees.html"><span class="nav-icon">👤</span><span>الموظفون</span></a>
+<a href="./reports.html"><span class="nav-icon">📊</span><span>التقارير</span></a>
+<a href="./notifications.html" class="active"><span class="nav-icon">🔔</span><span>مركز التنبيهات</span></a>
+<a href="./users.html"><span class="nav-icon">🔐</span><span>المستخدمون والصلاحيات</span></a>
+<a href="./setting.html"><span class="nav-icon">⚙️</span><span>الإعدادات</span></a>
+</nav>
+<div class="sidebar-footer">VAREX BUSINESS SYSTEM</div>
+</aside>
+
+<div class="main">
+<header class="topbar">
+<div class="page-name"><div class="page-icon">🔔<span class="badge" id="topBadge">0</span></div><div><h2>مركز التنبيهات</h2><small>VAREX NOTIFICATIONS</small></div></div>
+<div class="top-info"><div class="chip">المستخدم:<strong>Owner</strong></div><div class="chip" id="currentDate">—</div><div class="chip" id="currentTime">—</div></div>
+</header>
+
+<main class="content">
+<section class="hero">
+<div><h1>التنبيهات</h1><p>متابعة تنبيهات المخزون والصلاحية والموظفين والديون والنظام من مكان واحد.</p></div>
+<div class="hero-actions"><button class="secondary" onclick="markAllRead()">✓ تحديد الكل كمقروء</button><button class="secondary" onclick="clearRead()">🗑 حذف المقروء</button></div>
+</section>
+
+<div class="stats">
+<div class="stat"><span>جميع التنبيهات</span><strong id="totalCount">0</strong></div>
+<div class="stat red"><span>غير مقروء</span><strong id="unreadCount">0</strong></div>
+<div class="stat orange"><span>المخزون والصلاحية</span><strong id="stockCount">0</strong></div>
+<div class="stat blue"><span>الموظفون</span><strong id="employeeCount">0</strong></div>
+<div class="stat green"><span>الديون والنظام</span><strong id="otherCount">0</strong></div>
+</div>
+
+<section class="panel">
+<div class="filters">
+<button class="filter active" data-filter="all" onclick="setFilter('all',this)">الكل</button>
+<button class="filter" data-filter="unread" onclick="setFilter('unread',this)">غير مقروء</button>
+<button class="filter" data-filter="stock" onclick="setFilter('stock',this)">📦 المخزون</button>
+<button class="filter" data-filter="expiry" onclick="setFilter('expiry',this)">⏳ الصلاحية</button>
+<button class="filter" data-filter="employee" onclick="setFilter('employee',this)">👤 الموظفون</button>
+<button class="filter" data-filter="debt" onclick="setFilter('debt',this)">💰 الديون</button>
+<button class="filter" data-filter="system" onclick="setFilter('system',this)">⚙️ النظام</button>
+</div>
+<div id="notificationsList"></div>
+<div class="empty" id="emptyState" style="display:none">✓ لا توجد تنبيهات في هذا القسم.</div>
+</section>
+</main>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="./varex.js"></script>
+<script>
+const demoNotifications=[
+{id:"n1",type:"stock",icon:"📦",title:"مخزون منخفض",text:"وصل مخزون منتج تونة 185 غرام إلى 8 قطع فقط.",time:"اليوم - 10:35",read:false,link:"./products.html"},
+{id:"n2",type:"expiry",icon:"⏳",title:"منتج يقترب من انتهاء الصلاحية",text:"يوجد منتج ستنتهي صلاحيته خلال أقل من شهرين. يرجى مراجعة المخزون.",time:"اليوم - 09:20",read:false,link:"./products.html"},
+{id:"n3",type:"employee",icon:"👤",title:"إقامة موظف تقترب من الانتهاء",text:"تبقى 30 يوماً على انتهاء إقامة أحد الموظفين. يرجى مراجعة بيانات الموظفين.",time:"أمس - 16:40",read:false,link:"./employees.html"},
+{id:"n4",type:"debt",icon:"💰",title:"دفعة مستحقة",text:"يوجد مبلغ مستحق لم يتم تسديده حتى الآن.",time:"أمس - 12:15",read:true,link:"./accounts.html"},
+{id:"n5",type:"system",icon:"⚙️",title:"إعدادات النظام",text:"تم حفظ إعدادات VAREX بنجاح.",time:"12 أغسطس - 18:10",read:true,link:"./setting.html"}
+];
+
+let currentFilter="all";
+let notifications=[];
+
+function loadNotifications(){
+try{
+const saved=JSON.parse(localStorage.getItem("varexNotifications")||"null");
+notifications=Array.isArray(saved)?saved:demoNotifications;
+}catch(e){notifications=demoNotifications}
+saveStorage();render();
+}
+
+function saveStorage(){localStorage.setItem("varexNotifications",JSON.stringify(notifications))}
+
+function setFilter(filter,button){
+currentFilter=filter;
+document.querySelectorAll(".filter").forEach(x=>x.classList.remove("active"));
+button.classList.add("active");render();
+}
+
+function render(){
+const list=document.getElementById("notificationsList"),empty=document.getElementById("emptyState");
+let data=notifications.filter(n=>currentFilter==="all"?true:currentFilter==="unread"?!n.read:n.type===currentFilter);
+list.innerHTML="";empty.style.display=data.length?"none":"block";
+
+data.forEach(n=>{
+const item=document.createElement("div");item.className="notification"+(!n.read?" unread":"");
+item.innerHTML=`<div class="n-icon ${n.type}">${n.icon}</div>
+<div><div class="n-title">${!n.read?'<span class="new-dot"></span>':""}${escapeHtml(n.title)}</div><div class="n-text">${escapeHtml(n.text)}</div><div class="n-meta">${escapeHtml(n.time)}</div></div>
+<div class="n-actions">
+<button class="mini" onclick="openNotification('${n.id}')">فتح</button>
+<button class="mini" onclick="toggleRead('${n.id}')">${n.read?"غير مقروء":"تمت القراءة"}</button>
+<button class="mini danger" onclick="deleteNotification('${n.id}')">حذف</button>
+</div>`;
+list.appendChild(item);
+});
+updateCounts();
+}
+
+function openNotification(id){
+const n=notifications.find(x=>x.id===id);if(!n)return;
+n.read=true;saveStorage();render();
+if(n.link)location.href=n.link;
+}
+
+function toggleRead(id){
+const n=notifications.find(x=>x.id===id);if(!n)return;
+n.read=!n.read;saveStorage();render();
+}
+
+function deleteNotification(id){
+if(!confirm("هل تريد حذف هذا التنبيه؟"))return;
+notifications=notifications.filter(x=>x.id!==id);saveStorage();render();showToast("تم حذف التنبيه");
+}
+
+function markAllRead(){
+notifications.forEach(n=>n.read=true);saveStorage();render();showToast("تم تحديد جميع التنبيهات كمقروءة");
+}
+
+function clearRead(){
+const count=notifications.filter(n=>n.read).length;
+if(!count){showToast("لا توجد تنبيهات مقروءة للحذف");return}
+if(!confirm("هل تريد حذف جميع التنبيهات المقروءة؟"))return;
+notifications=notifications.filter(n=>!n.read);saveStorage();render();showToast("تم حذف التنبيهات المقروءة");
+}
+
+function updateCounts(){
+const unread=notifications.filter(n=>!n.read).length;
+totalCount.innerText=notifications.length;unreadCount.innerText=unread;
+stockCount.innerText=notifications.filter(n=>n.type==="stock"||n.type==="expiry").length;
+employeeCount.innerText=notifications.filter(n=>n.type==="employee").length;
+otherCount.innerText=notifications.filter(n=>n.type==="debt"||n.type==="system").length;
+topBadge.innerText=unread;topBadge.style.display=unread?"flex":"none";
+}
+
+function escapeHtml(v){return String(v??"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#039;")}
+function showToast(t){toast.innerText=t;toast.style.display="block";clearTimeout(window.tt);window.tt=setTimeout(()=>toast.style.display="none",2200)}
+function updateClock(){const n=new Date();currentDate.innerText=n.toLocaleDateString("ar-AE",{year:"numeric",month:"2-digit",day:"2-digit"});currentTime.innerText=n.toLocaleTimeString("ar-AE",{hour:"2-digit",minute:"2-digit",second:"2-digit"})}
+updateClock();setInterval(updateClock,1000);loadNotifications();
+</script>
+</body>
+</html>
