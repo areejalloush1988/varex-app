@@ -11,7 +11,6 @@
 <link rel="icon" type="image/png" sizes="192x192" href="./varex-icon-192.png">
 <link rel="icon" type="image/png" sizes="512x512" href="./varex-icon-512.png">
 <link rel="apple-touch-icon" href="./varex-icon-192.png">
-
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 :root{--navy:#172554;--navy-dark:#0f1d43;--navy-light:#1e3a6d;--blue:#2563eb;--bg:#f4f6fb;--white:#fff;--border:#dfe5ee;--text:#172554;--muted:#64748b;--green:#15803d;--red:#b91c1c}
@@ -35,7 +34,6 @@ body{min-height:100vh;font-family:Arial,Tahoma,sans-serif;background:radial-grad
 .login-top{display:flex;justify-content:space-between;align-items:center;gap:15px;margin-bottom:35px}
 .language-selector{position:relative}
 .language-button{min-width:120px;height:40px;border:1px solid var(--border);background:#fff;border-radius:9px;padding:0 12px;display:flex;align-items:center;justify-content:center;gap:7px;color:var(--navy);font-family:inherit;font-size:11px;cursor:pointer}
-.language-button:hover{background:#f8fafc}
 .language-menu{display:none;position:absolute;top:47px;left:0;width:185px;background:#fff;border:1px solid var(--border);border-radius:11px;padding:7px;box-shadow:0 15px 35px rgba(15,23,42,.15);z-index:100}
 .language-selector.open .language-menu{display:block}
 .language-option{width:100%;border:0;background:#fff;border-radius:8px;padding:10px;display:flex;justify-content:space-between;align-items:center;font-family:inherit;font-size:12px;color:#334155;cursor:pointer}
@@ -53,25 +51,41 @@ body{min-height:100vh;font-family:Arial,Tahoma,sans-serif;background:radial-grad
 .form-control:focus{border-color:#94a3b8;box-shadow:0 0 0 3px rgba(148,163,184,.12)}
 .input-icon{position:absolute;right:15px;top:50%;transform:translateY(-50%);color:#94a3b8;font-size:16px;pointer-events:none}
 .password-toggle{position:absolute;left:13px;top:50%;transform:translateY(-50%);border:0;background:transparent;color:#64748b;cursor:pointer;font-size:15px;padding:5px}
+
+/* PASSWORD STRENGTH */
+.password-strength{margin-top:9px}
+.strength-track{width:100%;height:5px;background:#e2e8f0;border-radius:20px;overflow:hidden}
+.strength-bar{height:100%;width:0;border-radius:20px;transition:width .3s ease,background .3s ease}
+.strength-info{display:flex;justify-content:space-between;gap:10px;margin-top:6px;font-size:9px;color:#94a3b8}
+.strength-text{font-weight:700}
+.strength-hint{font-size:9px;color:#94a3b8;line-height:1.5;margin-top:4px}
+.strength-weak .strength-bar{width:25%;background:#dc2626}
+.strength-weak .strength-text{color:#dc2626}
+.strength-medium .strength-bar{width:50%;background:#f59e0b}
+.strength-medium .strength-text{color:#d97706}
+.strength-good .strength-bar{width:75%;background:#2563eb}
+.strength-good .strength-text{color:#2563eb}
+.strength-strong .strength-bar{width:100%;background:#16a34a}
+.strength-strong .strength-text{color:#15803d}
+
 .login-options{display:flex;justify-content:space-between;align-items:center;gap:15px;margin:2px 0 22px;font-size:11px}
 .remember{display:flex;align-items:center;gap:7px;color:#475569;cursor:pointer}
 .remember input{width:15px;height:15px;accent-color:var(--navy)}
 .forgot{color:var(--blue);text-decoration:none;font-weight:600}
 .login-button{width:100%;height:50px;border:0;border-radius:10px;background:linear-gradient(135deg,#172554,#1e3a6d);color:#fff;font-family:inherit;font-size:14px;font-weight:700;cursor:pointer;transition:.2s;box-shadow:0 7px 18px rgba(23,37,84,.18)}
 .login-button:hover{transform:translateY(-1px)}
-.login-button:disabled{opacity:.65;cursor:not-allowed;transform:none}
+.login-button:disabled{opacity:.68;cursor:not-allowed;transform:none}
 .login-message{display:none;margin-top:13px;border-radius:9px;padding:10px 12px;font-size:11px;line-height:1.6}
 .login-message.error{display:block;background:#fef2f2;border:1px solid #fecaca;color:#991b1b}
 .login-message.success{display:block;background:#f0fdf4;border:1px solid #bbf7d0;color:#166534}
 .create-account{margin-top:25px;padding-top:22px;border-top:1px solid #edf0f5;text-align:center}
 .create-account p{color:var(--muted);font-size:11px;margin-bottom:11px}
 .create-button{width:100%;height:46px;border:1px solid #cbd5e1;border-radius:10px;background:#fff;color:var(--navy);font-family:inherit;font-size:12px;font-weight:700;cursor:pointer}
-.create-button:hover{background:#f8fafc}
 .contact{text-align:center;margin-top:22px;font-size:10px;color:#94a3b8}
 .contact a{color:#475569;text-decoration:none;font-weight:600}
 
-/* LOADING SCREEN */
-.login-loader{position:fixed;inset:0;z-index:10000;background:linear-gradient(145deg,#172554,#0f1d43);display:flex;align-items:center;justify-content:center;opacity:0;visibility:hidden;transition:opacity .35s ease,visibility .35s ease}
+/* LOGIN LOADER */
+.login-loader{position:fixed;inset:0;z-index:10000;background:linear-gradient(145deg,#172554,#0f1d43);display:flex;align-items:center;justify-content:center;opacity:0;visibility:hidden;transition:opacity .4s ease,visibility .4s ease}
 .login-loader.show{opacity:1;visibility:visible}
 .loader-content{width:90%;max-width:430px;text-align:center;color:#fff}
 .loader-logo{font-size:44px;font-weight:800;letter-spacing:8px;direction:ltr;margin-bottom:8px}
@@ -81,7 +95,7 @@ body{min-height:100vh;font-family:Arial,Tahoma,sans-serif;background:radial-grad
 .loader-status{font-size:15px;font-weight:700;min-height:25px;margin-bottom:9px}
 .loader-detail{font-size:11px;color:#cbd5e1;min-height:20px}
 .loader-progress{width:100%;height:4px;background:rgba(255,255,255,.12);border-radius:10px;overflow:hidden;margin-top:28px}
-.loader-progress-bar{width:0;height:100%;background:#fff;border-radius:10px;transition:width .55s ease}
+.loader-progress-bar{width:0;height:100%;background:#fff;border-radius:10px;transition:width .65s ease}
 .loader-security{margin-top:25px;font-size:10px;color:#86efac}
 .loader-success .loader-ring{animation:none;border-color:#22c55e;position:relative}
 .loader-success .loader-ring:after{content:"✓";position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:28px;color:#86efac}
@@ -97,10 +111,25 @@ body{min-height:100vh;font-family:Arial,Tahoma,sans-serif;background:radial-grad
 .modal-button{width:100%;height:45px;border:0;border-radius:9px;background:var(--navy);color:#fff;font-family:inherit;font-weight:700;cursor:pointer}
 
 @media(max-width:850px){
-body{padding:0;background:#fff}.login-page{min-height:100vh;border-radius:0;grid-template-columns:1fr;box-shadow:none;border:0}.brand-side{min-height:230px;padding:32px 28px}.brand-logo{text-align:center;font-size:35px}.brand-subtitle{text-align:center}.brand-message{margin-top:30px;text-align:center}.brand-message h1{font-size:22px}.brand-message p{margin:auto}.brand-features,.brand-footer{display:none}.login-side{padding:35px 28px 45px}
+body{padding:0;background:#fff}
+.login-page{min-height:100vh;border-radius:0;grid-template-columns:1fr;box-shadow:none;border:0}
+.brand-side{min-height:230px;padding:32px 28px}
+.brand-logo{text-align:center;font-size:35px}
+.brand-subtitle{text-align:center}
+.brand-message{margin-top:30px;text-align:center}
+.brand-message h1{font-size:22px}
+.brand-message p{margin:auto}
+.brand-features,.brand-footer{display:none}
+.login-side{padding:35px 28px 45px}
 }
 @media(max-width:500px){
-.login-side{padding:30px 20px 40px}.login-top{margin-bottom:28px}.secure-badge{display:none}.language-button{min-width:115px}.login-header h2{font-size:23px}.brand-side{min-height:210px}.loader-logo{font-size:37px}
+.login-side{padding:30px 20px 40px}
+.login-top{margin-bottom:28px}
+.secure-badge{display:none}
+.language-button{min-width:115px}
+.login-header h2{font-size:23px}
+.brand-side{min-height:210px}
+.loader-logo{font-size:37px}
 }
 </style>
 </head>
@@ -108,13 +137,16 @@ body{padding:0;background:#fff}.login-page{min-height:100vh;border-radius:0;grid
 <body>
 
 <div class="login-page">
+
 <section class="brand-side">
 <div class="brand-content">
 <div class="brand-logo">VAREX</div>
 <div class="brand-subtitle">BUSINESS MANAGEMENT SYSTEM</div>
+
 <div class="brand-message">
 <h1>إدارة أعمالك تبدأ من هنا</h1>
 <p>منصة متكاملة لإدارة المبيعات والمخزون والعملاء والموردين والحسابات والموظفين والتقارير من مكان واحد.</p>
+
 <div class="brand-features">
 <div class="brand-feature"><span class="feature-icon">✓</span><span>إدارة متكاملة لأعمالك</span></div>
 <div class="brand-feature"><span class="feature-icon">✓</span><span>واجهة سهلة وسريعة الاستخدام</span></div>
@@ -122,13 +154,21 @@ body{padding:0;background:#fff}.login-page{min-height:100vh;border-radius:0;grid
 </div>
 </div>
 </div>
+
 <div class="brand-footer">VAREX MANAGEMENT SYSTEM</div>
 </section>
 
 <section class="login-side">
+
 <div class="login-top">
 <div class="language-selector" id="languageSelector">
-<button type="button" class="language-button" onclick="toggleLanguageMenu(event)"><span>🌐</span><span id="currentLanguage">العربية</span><span>▼</span></button>
+
+<button type="button" class="language-button" onclick="toggleLanguageMenu(event)">
+<span>🌐</span>
+<span id="currentLanguage">العربية</span>
+<span>▼</span>
+</button>
+
 <div class="language-menu">
 <button class="language-option" type="button" data-language="ar" onclick="selectLanguage('ar')"><span>🇦🇪 العربية</span><span class="language-code">AR</span></button>
 <button class="language-option" type="button" data-language="en" onclick="selectLanguage('en')"><span>🇬🇧 English</span><span class="language-code">EN</span></button>
@@ -139,6 +179,7 @@ body{padding:0;background:#fff}.login-page{min-height:100vh;border-radius:0;grid
 <button class="language-option" type="button" data-language="ko" onclick="selectLanguage('ko')"><span>🇰🇷 한국어</span><span class="language-code">KO</span></button>
 </div>
 </div>
+
 <div class="secure-badge">● اتصال آمن</div>
 </div>
 
@@ -148,6 +189,7 @@ body{padding:0;background:#fff}.login-page{min-height:100vh;border-radius:0;grid
 </div>
 
 <form id="loginForm">
+
 <div class="form-group">
 <label for="username">اسم المستخدم أو البريد الإلكتروني</label>
 <div class="input-wrapper">
@@ -158,20 +200,43 @@ body{padding:0;background:#fff}.login-page{min-height:100vh;border-radius:0;grid
 
 <div class="form-group">
 <label for="password">كلمة المرور</label>
+
 <div class="input-wrapper">
 <span class="input-icon">🔒</span>
 <input id="password" class="form-control" type="password" autocomplete="current-password" placeholder="أدخل كلمة المرور" required>
 <button type="button" class="password-toggle" onclick="togglePassword()" aria-label="إظهار أو إخفاء كلمة المرور">👁</button>
 </div>
+
+<div class="password-strength" id="passwordStrength">
+<div class="strength-track">
+<div class="strength-bar"></div>
+</div>
+
+<div class="strength-info">
+<span>قوة كلمة المرور</span>
+<span class="strength-text" id="strengthText">—</span>
+</div>
+
+<div class="strength-hint" id="strengthHint">
+استخدم 8 أحرف أو أكثر مع حرف كبير وصغير ورقم ورمز.
+</div>
+</div>
+
 </div>
 
 <div class="login-options">
-<label class="remember"><input type="checkbox" id="rememberMe"><span>تذكرني</span></label>
+<label class="remember">
+<input type="checkbox" id="rememberMe">
+<span>تذكرني</span>
+</label>
+
 <a href="#" class="forgot" onclick="openForgotPassword(event)">نسيت كلمة المرور؟</a>
 </div>
 
 <button type="submit" class="login-button" id="loginButton">تسجيل الدخول</button>
+
 <div id="loginMessage" class="login-message"></div>
+
 </form>
 
 <div class="create-account">
@@ -179,81 +244,337 @@ body{padding:0;background:#fff}.login-page{min-height:100vh;border-radius:0;grid
 <button type="button" class="create-button" onclick="goToRegister()">إنشاء حساب جديد</button>
 </div>
 
-<div class="contact">تحتاج إلى مساعدة؟ <a href="#" onclick="openContact(event)">تواصل معنا</a></div>
+<div class="contact">
+تحتاج إلى مساعدة؟
+<a href="#" onclick="openContact(event)">تواصل معنا</a>
+</div>
+
 </section>
 </div>
 
-<!-- PROFESSIONAL LOGIN LOADER -->
+<!-- LOGIN LOADER -->
 <div class="login-loader" id="loginLoader">
 <div class="loader-content" id="loaderContent">
+
 <div class="loader-logo">VAREX</div>
 <div class="loader-subtitle">BUSINESS MANAGEMENT SYSTEM</div>
+
 <div class="loader-ring"></div>
-<div class="loader-status" id="loaderStatus">جاري تسجيل الدخول...</div>
-<div class="loader-detail" id="loaderDetail">يرجى الانتظار</div>
-<div class="loader-progress"><div class="loader-progress-bar" id="loaderProgress"></div></div>
-<div class="loader-security">● اتصال آمن ومشفّر</div>
+
+<div class="loader-status" id="loaderStatus">
+جاري تسجيل الدخول...
+</div>
+
+<div class="loader-detail" id="loaderDetail">
+يرجى الانتظار
+</div>
+
+<div class="loader-progress">
+<div class="loader-progress-bar" id="loaderProgress"></div>
+</div>
+
+<div class="loader-security">
+● اتصال آمن ومشفّر
+</div>
+
 </div>
 </div>
 
+<!-- FORGOT PASSWORD -->
 <div class="modal-overlay" id="forgotPasswordModal">
 <div class="modal">
-<div class="modal-header"><h3>استعادة كلمة المرور</h3><button type="button" class="modal-close" onclick="closeModal('forgotPasswordModal')">×</button></div>
+
+<div class="modal-header">
+<h3>استعادة كلمة المرور</h3>
+<button type="button" class="modal-close" onclick="closeModal('forgotPasswordModal')">×</button>
+</div>
+
 <p>سيتم تجهيز نظام استعادة كلمة المرور في النسخة القادمة.</p>
+
 <button type="button" class="modal-button" onclick="closeModal('forgotPasswordModal')">حسناً</button>
+
 </div>
 </div>
 
+<!-- CONTACT -->
 <div class="modal-overlay" id="contactModal">
 <div class="modal">
-<div class="modal-header"><h3>تواصل معنا</h3><button type="button" class="modal-close" onclick="closeModal('contactModal')">×</button></div>
+
+<div class="modal-header">
+<h3>تواصل معنا</h3>
+<button type="button" class="modal-close" onclick="closeModal('contactModal')">×</button>
+</div>
+
 <p>سيتم إضافة بيانات التواصل الرسمية ودعم عملاء VAREX هنا.</p>
+
 <button type="button" class="modal-button" onclick="closeModal('contactModal')">حسناً</button>
+
 </div>
 </div>
 
 <script src="./varex.js"></script>
+
 <script>
+
+/* SESSION CHECK */
 (function(){
 try{
-if(typeof VAREX!=="undefined"&&typeof VAREX.isLoggedIn==="function"&&VAREX.isLoggedIn())window.location.replace("./index.html");
-}catch(error){console.error("VAREX session check error:",error)}
+if(
+typeof VAREX!=="undefined" &&
+typeof VAREX.isLoggedIn==="function" &&
+VAREX.isLoggedIn()
+){
+window.location.replace("./index.html");
+}
+}catch(error){
+console.error("VAREX session check error:",error);
+}
 })();
 
-const languages={ar:"العربية",en:"English",fr:"Français",fa:"فارسی",ur:"اردو",zh:"中文",ko:"한국어"};
 
-function getSavedLanguage(){const saved=localStorage.getItem("varex_language");return saved&&languages[saved]?saved:"ar"}
-function toggleLanguageMenu(event){if(event)event.stopPropagation();const selector=document.getElementById("languageSelector");if(selector)selector.classList.toggle("open")}
-function closeLanguageMenu(){const selector=document.getElementById("languageSelector");if(selector)selector.classList.remove("open")}
-function selectLanguage(language){if(!languages[language])return;localStorage.setItem("varex_language",language);updateLanguageButton();closeLanguageMenu()}
-function updateLanguageButton(){
-const language=getSavedLanguage(),currentLanguage=document.getElementById("currentLanguage");
-if(currentLanguage)currentLanguage.textContent=languages[language];
-document.querySelectorAll(".language-option").forEach(option=>option.classList.toggle("active",option.dataset.language===language));
+/* LANGUAGES */
+
+const languages={
+ar:"العربية",
+en:"English",
+fr:"Français",
+fa:"فارسی",
+ur:"اردو",
+zh:"中文",
+ko:"한국어"
+};
+
+function getSavedLanguage(){
+const saved=localStorage.getItem("varex_language");
+return saved&&languages[saved]?saved:"ar";
 }
-document.addEventListener("click",event=>{const selector=document.getElementById("languageSelector");if(selector&&!selector.contains(event.target))closeLanguageMenu()});
+
+function toggleLanguageMenu(event){
+if(event)event.stopPropagation();
+const selector=document.getElementById("languageSelector");
+if(selector)selector.classList.toggle("open");
+}
+
+function closeLanguageMenu(){
+const selector=document.getElementById("languageSelector");
+if(selector)selector.classList.remove("open");
+}
+
+function selectLanguage(language){
+if(!languages[language])return;
+localStorage.setItem("varex_language",language);
+updateLanguageButton();
+closeLanguageMenu();
+}
+
+function updateLanguageButton(){
+const language=getSavedLanguage();
+const currentLanguage=document.getElementById("currentLanguage");
+
+if(currentLanguage){
+currentLanguage.textContent=languages[language];
+}
+
+document.querySelectorAll(".language-option").forEach(function(option){
+option.classList.toggle(
+"active",
+option.dataset.language===language
+);
+});
+}
+
+document.addEventListener("click",function(event){
+const selector=document.getElementById("languageSelector");
+
+if(selector&&!selector.contains(event.target)){
+closeLanguageMenu();
+}
+});
+
 updateLanguageButton();
 
-function togglePassword(){const password=document.getElementById("password");if(password)password.type=password.type==="password"?"text":"password"}
-function goToRegister(){window.location.href="./register.html"}
-function openForgotPassword(event){event.preventDefault();document.getElementById("forgotPasswordModal").classList.add("show")}
-function openContact(event){event.preventDefault();document.getElementById("contactModal").classList.add("show")}
-function closeModal(id){const modal=document.getElementById(id);if(modal)modal.classList.remove("show")}
-document.querySelectorAll(".modal-overlay").forEach(modal=>modal.addEventListener("click",event=>{if(event.target===modal)modal.classList.remove("show")}));
+
+/* PASSWORD VISIBILITY */
+
+function togglePassword(){
+const password=document.getElementById("password");
+
+if(!password)return;
+
+password.type=
+password.type==="password"
+?"text"
+:"password";
+}
+
+
+/* PASSWORD STRENGTH */
+
+const passwordInput=document.getElementById("password");
+const passwordStrength=document.getElementById("passwordStrength");
+const strengthText=document.getElementById("strengthText");
+const strengthHint=document.getElementById("strengthHint");
+
+function updatePasswordStrength(){
+
+const value=passwordInput.value;
+
+passwordStrength.classList.remove(
+"strength-weak",
+"strength-medium",
+"strength-good",
+"strength-strong"
+);
+
+if(!value){
+strengthText.textContent="—";
+strengthHint.textContent=
+"استخدم 8 أحرف أو أكثر مع حرف كبير وصغير ورقم ورمز.";
+return;
+}
+
+let score=0;
+
+const hasLower=/[a-z]/.test(value);
+const hasUpper=/[A-Z]/.test(value);
+const hasNumber=/[0-9]/.test(value);
+const hasSymbol=/[^A-Za-z0-9]/.test(value);
+const longEnough=value.length>=8;
+const veryLong=value.length>=12;
+
+if(value.length>=6)score++;
+if(longEnough)score++;
+if(hasLower&&hasUpper)score++;
+if(hasNumber)score++;
+if(hasSymbol)score++;
+if(veryLong)score++;
+
+if(score<=2){
+
+passwordStrength.classList.add("strength-weak");
+strengthText.textContent="ضعيفة";
+strengthHint.textContent=
+"أضف أحرفاً أكبر وأصغر وأرقاماً ورمزاً.";
+
+}else if(score<=3){
+
+passwordStrength.classList.add("strength-medium");
+strengthText.textContent="متوسطة";
+strengthHint.textContent=
+"جيدة، ويمكن تقويتها بإضافة رقم أو رمز وطول أكبر.";
+
+}else if(score<=4){
+
+passwordStrength.classList.add("strength-good");
+strengthText.textContent="قوية";
+strengthHint.textContent=
+"كلمة المرور تتمتع بمستوى حماية جيد.";
+
+}else{
+
+passwordStrength.classList.add("strength-strong");
+strengthText.textContent="قوية جداً";
+strengthHint.textContent=
+"مستوى قوة ممتاز لكلمة المرور.";
+
+}
+}
+
+passwordInput.addEventListener(
+"input",
+updatePasswordStrength
+);
+
+
+/* REGISTER */
+
+function goToRegister(){
+window.location.href="./register.html";
+}
+
+
+/* MODALS */
+
+function openForgotPassword(event){
+event.preventDefault();
+document.getElementById("forgotPasswordModal").classList.add("show");
+}
+
+function openContact(event){
+event.preventDefault();
+document.getElementById("contactModal").classList.add("show");
+}
+
+function closeModal(id){
+const modal=document.getElementById(id);
+if(modal)modal.classList.remove("show");
+}
+
+document.querySelectorAll(".modal-overlay").forEach(function(modal){
+
+modal.addEventListener("click",function(event){
+
+if(event.target===modal){
+modal.classList.remove("show");
+}
+
+});
+
+});
+
+
+/* REMEMBER USER */
 
 (function(){
+
 try{
-if(typeof VAREX!=="undefined"&&typeof VAREX.getRememberedUser==="function"){
-const remembered=VAREX.getRememberedUser(),username=document.getElementById("username"),rememberMe=document.getElementById("rememberMe");
-if(remembered&&username){username.value=remembered;if(rememberMe)rememberMe.checked=true}
+
+if(
+typeof VAREX!=="undefined" &&
+typeof VAREX.getRememberedUser==="function"
+){
+
+const remembered=VAREX.getRememberedUser();
+const username=document.getElementById("username");
+const rememberMe=document.getElementById("rememberMe");
+
+if(remembered&&username){
+
+username.value=remembered;
+
+if(rememberMe){
+rememberMe.checked=true;
 }
-}catch(error){console.error("Remembered user error:",error)}
+
+}
+
+}
+
+}catch(error){
+
+console.error(
+"Remembered user error:",
+error
+);
+
+}
+
 })();
 
-/* LOGIN TRANSITION */
-function wait(ms){return new Promise(resolve=>setTimeout(resolve,ms))}
+
+/* WAIT */
+
+function wait(ms){
+return new Promise(function(resolve){
+setTimeout(resolve,ms);
+});
+}
+
+
+/* PROFESSIONAL LOGIN TRANSITION */
 
 async function runLoginTransition(){
+
 const loader=document.getElementById("loginLoader");
 const content=document.getElementById("loaderContent");
 const status=document.getElementById("loaderStatus");
@@ -263,107 +584,249 @@ const progress=document.getElementById("loaderProgress");
 loader.classList.add("show");
 content.classList.remove("loader-success");
 
+progress.style.width="8%";
+
 status.textContent="جاري تسجيل الدخول...";
-detail.textContent="بدء جلسة المستخدم الآمنة";
+detail.textContent="إنشاء جلسة مستخدم آمنة";
 progress.style.width="18%";
-await wait(550);
+
+await wait(2000);
+
 
 status.textContent="التحقق من بيانات الحساب...";
-detail.textContent="يتم التحقق من هوية المستخدم والصلاحيات";
-progress.style.width="45%";
-await wait(650);
+detail.textContent="التحقق من هوية المستخدم والصلاحيات";
+progress.style.width="38%";
+
+await wait(2000);
+
 
 status.textContent="جاري تحميل بيانات النظام...";
-detail.textContent="تجهيز المبيعات والمخزون والحسابات والتقارير";
-progress.style.width="75%";
-await wait(700);
+detail.textContent="تحميل المبيعات والمخزون والحسابات والتقارير";
+progress.style.width="60%";
 
-status.textContent="جاري تجهيز لوحة التحكم...";
-detail.textContent="يتم الآن إعداد مساحة العمل";
+await wait(2000);
+
+
+status.textContent="جاري تجهيز مساحة العمل...";
+detail.textContent="إعداد بيانات المنشأة وإعدادات المستخدم";
+progress.style.width="80%";
+
+await wait(2000);
+
+
+status.textContent="جاري فتح لوحة التحكم...";
+detail.textContent="إتمام تهيئة نظام VAREX";
 progress.style.width="94%";
-await wait(550);
+
+await wait(2000);
+
 
 content.classList.add("loader-success");
+
 status.textContent="تم تسجيل الدخول بنجاح";
 detail.textContent="مرحباً بك في VAREX";
+
 progress.style.width="100%";
-await wait(500);
+
+await wait(1500);
 
 window.location.replace("./index.html");
+
 }
 
-document.getElementById("loginForm").addEventListener("submit",async function(event){
+
+/* LOGIN */
+
+document
+.getElementById("loginForm")
+.addEventListener(
+"submit",
+async function(event){
+
 event.preventDefault();
 
-const identifier=document.getElementById("username").value.trim();
-const password=document.getElementById("password").value;
-const remember=document.getElementById("rememberMe").checked;
-const message=document.getElementById("loginMessage");
-const loginButton=document.getElementById("loginButton");
+const identifier=
+document
+.getElementById("username")
+.value
+.trim();
+
+const password=
+document
+.getElementById("password")
+.value;
+
+const remember=
+document
+.getElementById("rememberMe")
+.checked;
+
+const message=
+document.getElementById("loginMessage");
+
+const loginButton=
+document.getElementById("loginButton");
+
 
 message.className="login-message";
 message.textContent="";
 
+
 if(!identifier||!password){
+
 message.className="login-message error";
-message.textContent="يرجى إدخال اسم المستخدم أو البريد الإلكتروني وكلمة المرور.";
+
+message.textContent=
+"يرجى إدخال اسم المستخدم أو البريد الإلكتروني وكلمة المرور.";
+
 return;
+
 }
+
 
 if(typeof VAREX==="undefined"){
+
 message.className="login-message error";
-message.textContent="تعذر تحميل نظام VAREX. تأكد من وجود ملف varex.js.";
+
+message.textContent=
+"تعذر تحميل نظام VAREX. تأكد من وجود ملف varex.js.";
+
 return;
+
 }
+
 
 if(typeof VAREX.login!=="function"){
+
 message.className="login-message error";
-message.textContent="وظيفة تسجيل الدخول غير متوفرة في varex.js.";
+
+message.textContent=
+"وظيفة تسجيل الدخول غير متوفرة في varex.js.";
+
 return;
+
 }
+
 
 loginButton.disabled=true;
-loginButton.textContent="جاري التحقق...";
+loginButton.textContent="جاري تسجيل الدخول...";
+
 
 try{
-const result=VAREX.login(identifier,password,remember);
+
+/*
+يبقى المستخدم على صفحة الدخول
+ثانيتين قبل بدء شاشة النظام.
+*/
+
+await wait(2000);
+
+
+const result=
+VAREX.login(
+identifier,
+password,
+remember
+);
+
 
 if(!result||result.success!==true){
-message.className="login-message error";
-message.textContent=result&&result.message?result.message:"تعذر تسجيل الدخول.";
+
+message.className=
+"login-message error";
+
+message.textContent=
+result&&result.message
+?result.message
+:"تعذر تسجيل الدخول.";
+
 loginButton.disabled=false;
 loginButton.textContent="تسجيل الدخول";
+
 return;
+
 }
 
-const session=typeof VAREX.getSession==="function"?VAREX.getSession():null;
+
+const session=
+typeof VAREX.getSession==="function"
+?VAREX.getSession()
+:null;
+
 
 if(!session||!session.userId){
-message.className="login-message error";
-message.textContent="تعذر إنشاء جلسة المستخدم.";
+
+message.className=
+"login-message error";
+
+message.textContent=
+"تعذر إنشاء جلسة المستخدم.";
+
 loginButton.disabled=false;
 loginButton.textContent="تسجيل الدخول";
+
 return;
+
 }
 
-/* لا يتم فتح لوحة التحكم مباشرة.
-   تبدأ شاشة التحقق والتحميل أولاً. */
+
+/*
+بعد نجاح التحقق الحقيقي من VAREX
+تبدأ شاشة التحميل.
+*/
+
 await runLoginTransition();
 
+
 }catch(error){
-console.error("VAREX login error:",error);
-message.className="login-message error";
-message.textContent="حدث خطأ أثناء تسجيل الدخول.";
+
+console.error(
+"VAREX login error:",
+error
+);
+
+message.className=
+"login-message error";
+
+message.textContent=
+"حدث خطأ أثناء تسجيل الدخول.";
+
 loginButton.disabled=false;
-loginButton.textContent="تسجيل الدخول";
+loginButton.textContent=
+"تسجيل الدخول";
+
 }
-});
+
+}
+);
+
+
+/* SERVICE WORKER */
 
 if("serviceWorker" in navigator){
-window.addEventListener("load",function(){
-navigator.serviceWorker.register("./sw.js").catch(error=>console.error("Service Worker Error:",error));
+
+window.addEventListener(
+"load",
+function(){
+
+navigator
+.serviceWorker
+.register("./sw.js")
+.catch(function(error){
+
+console.error(
+"Service Worker Error:",
+error
+);
+
 });
+
 }
+);
+
+}
+
 </script>
+
 </body>
 </html>
