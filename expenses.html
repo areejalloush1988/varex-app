@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>المصروفات - VAREX</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--navy:#172554;--dark:#0f1d43;--bg:#f4f6fb;--border:#e5eaf2;--text:#172554;--muted:#64748b;--green:#16a34a;--red:#dc2626;--blue:#2563eb;--orange:#ea580c;--sidebar:240px;--brand:170px}
+body{font-family:Arial,Tahoma,sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+.sidebar{position:fixed;right:0;top:0;width:var(--sidebar);height:100vh;background:linear-gradient(180deg,#172554,#13234f 48%,#0f1d43);color:#fff;z-index:1000;display:flex;flex-direction:column;overflow:hidden}
+.brand{height:var(--brand);min-height:var(--brand);padding:24px 14px 20px;border-bottom:1px solid rgba(255,255,255,.1);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
+.logo{font-size:30px;font-weight:800;letter-spacing:4px;direction:ltr}.brand-small{margin-top:11px;font-size:10px;font-weight:600;letter-spacing:.8px;color:#e2e8f0;direction:ltr}.system-status{margin-top:16px;display:flex;align-items:center;gap:7px;font-size:10px;color:#d1fae5}.dot{width:7px;height:7px;border-radius:50%;background:#22c55e;box-shadow:0 0 8px rgba(34,197,94,.75)}
+.nav{padding:16px 12px;flex:1;overflow-y:auto}.nav a{height:48px;display:flex;align-items:center;gap:11px;padding:0 14px;margin-bottom:5px;border-radius:10px;color:#dbeafe;text-decoration:none;font-size:13px;font-weight:600;white-space:nowrap}.nav a:hover{background:rgba(255,255,255,.08);color:#fff}.nav a.active{background:#fff;color:var(--navy);font-weight:700}.nav-icon{width:25px;text-align:center;font-size:16px}.sidebar-footer{height:54px;min-height:54px;border-top:1px solid rgba(255,255,255,.1);color:#94a3b8;font-size:9px;letter-spacing:.5px;direction:ltr;display:flex;align-items:center;justify-content:center}
+.main{margin-right:var(--sidebar);min-height:100vh}.topbar{height:78px;background:#fff;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 28px;position:sticky;top:0;z-index:50}.page-name{display:flex;align-items:center;gap:12px}.page-icon{width:44px;height:44px;border-radius:11px;background:#eef2ff;display:flex;align-items:center;justify-content:center;font-size:20px}.page-name h2{font-size:19px}.page-name small{display:block;color:var(--muted);margin-top:4px;font-size:11px;direction:ltr}.top-info{display:flex;gap:9px}.chip{min-height:38px;background:#f8fafc;border:1px solid var(--border);border-radius:9px;padding:8px 12px;font-size:11px;color:var(--muted)}.chip strong{color:var(--navy);margin-right:4px}
+.content{width:calc(100% - 48px);max-width:1450px;margin:24px auto 40px}.hero{display:flex;justify-content:space-between;align-items:center;gap:15px;margin-bottom:20px}.hero h1{font-size:25px;margin-bottom:6px}.hero p{font-size:13px;color:var(--muted)}
+button{border:0;border-radius:9px;min-height:40px;padding:9px 14px;font-family:inherit;font-size:11px;font-weight:bold;cursor:pointer}.primary{background:linear-gradient(135deg,#172554,#1e3a8a);color:#fff}.secondary{background:#f8fafc;color:#475569;border:1px solid var(--border)}.danger{background:#fff;color:#b91c1c;border:1px solid #fecaca}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:18px}.stat{background:#fff;border:1px solid var(--border);border-radius:14px;padding:15px;box-shadow:0 4px 15px rgba(15,23,42,.04)}.stat span{font-size:10px;color:var(--muted)}.stat strong{display:block;font-size:20px;margin-top:5px}.red strong{color:var(--red)}.orange strong{color:var(--orange)}.blue strong{color:var(--blue)}
+.panel{background:#fff;border:1px solid var(--border);border-radius:16px;padding:18px;box-shadow:0 4px 18px rgba(15,23,42,.05)}.filters{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:9px;padding-bottom:16px;border-bottom:1px solid #edf0f5;margin-bottom:10px}
+input,select,textarea{width:100%;min-height:40px;padding:9px 11px;border:1px solid #dbe1ea;border-radius:9px;background:#fff;color:#172554;font-family:inherit;font-size:11px;outline:none}textarea{min-height:70px;resize:vertical}
+.table-wrap{overflow-x:auto}table{width:100%;border-collapse:collapse;min-width:1050px}th{background:#f8fafc;color:#64748b;font-size:10px;text-align:right;padding:12px;border-bottom:1px solid var(--border);white-space:nowrap}td{padding:13px 12px;border-bottom:1px solid #edf0f5;font-size:11px;color:#475569}.code{font-weight:bold;color:#172554;direction:ltr;text-align:right}.amount{font-weight:bold;color:#b91c1c}.badge{display:inline-flex;padding:5px 9px;border-radius:20px;font-size:9px;font-weight:bold;background:#f1f5f9;color:#475569}.mini{min-height:30px;padding:6px 9px;background:#f8fafc;border:1px solid var(--border);color:#475569;margin:2px}.empty{text-align:center;padding:45px;color:#94a3b8;font-size:12px;display:none}
+.modal-bg{position:fixed;inset:0;background:rgba(15,23,42,.58);z-index:3000;display:none;align-items:flex-start;justify-content:center;padding:25px;overflow:auto}.modal{width:min(750px,100%);background:#fff;border-radius:17px;padding:22px;margin:auto;box-shadow:0 20px 60px rgba(0,0,0,.25)}.modal-head{display:flex;justify-content:space-between;align-items:center;padding-bottom:14px;margin-bottom:17px;border-bottom:1px solid var(--border)}.modal-head h3{font-size:17px}.close{width:34px;min-height:34px;padding:0;background:#f1f5f9;font-size:18px}.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:11px}.field{margin-bottom:11px}.field label{display:block;font-size:10px;font-weight:bold;color:#475569;margin-bottom:5px}.full{grid-column:1/-1}.summary{background:#f8fafc;border:1px solid var(--border);border-radius:11px;padding:13px;margin-top:5px}.sumrow{display:flex;justify-content:space-between;padding:5px 0;font-size:11px;color:#475569}.sumrow.final{font-size:14px;font-weight:bold;color:#172554;border-top:1px solid var(--border);margin-top:5px;padding-top:9px}.modal-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:15px}.note{margin-top:15px;padding:12px 14px;border:1px solid var(--border);background:#f8fafc;border-radius:10px;color:#64748b;font-size:10px;line-height:1.7}.toast{position:fixed;left:25px;bottom:25px;background:#172554;color:#fff;padding:12px 17px;border-radius:10px;font-size:11px;display:none;z-index:5000}
+@media(max-width:900px){.stats{grid-template-columns:1fr 1fr}.filters{grid-template-columns:1fr 1fr}}@media(max-width:750px){.top-info{display:none}.hero{flex-direction:column;align-items:flex-start}}@media(max-width:600px){.content{width:94%}.topbar{padding:0 14px}.form-grid,.filters{grid-template-columns:1fr}.stats{grid-template-columns:1fr 1fr}.hero button{width:100%}}
+</style>
+</head>
+<body>
+
+<aside class="sidebar">
+<div class="brand"><div class="logo">VAREX</div><div class="brand-small">BUSINESS MANAGEMENT SYSTEM</div><div class="system-status"><span class="dot"></span><span>النظام متصل وجاهز للعمل</span></div></div>
+<nav class="nav">
+<a href="./index.html"><span class="nav-icon">▦</span><span>لوحة التحكم</span></a>
+<a href="./pos.html"><span class="nav-icon">🛒</span><span>شاشة المبيعات</span></a>
+<a href="./products.html"><span class="nav-icon">📦</span><span>المنتجات والمخزون</span></a>
+<a href="./purchases.html"><span class="nav-icon">🧾</span><span>المشتريات</span></a>
+<a href="./transfers.html"><span class="nav-icon">🔄</span><span>تحويلات المخزون</span></a>
+<a href="./customers.html"><span class="nav-icon">👥</span><span>العملاء</span></a>
+<a href="./suppliers.html"><span class="nav-icon">🚚</span><span>الموردون</span></a>
+<a href="./accounts.html"><span class="nav-icon">💰</span><span>الحسابات</span></a>
+<a href="./expenses.html" class="active"><span class="nav-icon">💸</span><span>المصروفات</span></a>
+<a href="./employees.html"><span class="nav-icon">👤</span><span>الموظفون</span></a>
+<a href="./reports.html"><span class="nav-icon">📊</span><span>التقارير</span></a>
+<a href="./branches.html"><span class="nav-icon">🏢</span><span>الفروع</span></a>
+<a href="./notifications.html"><span class="nav-icon">🔔</span><span>مركز التنبيهات</span></a>
+<a href="./activity.html"><span class="nav-icon">📋</span><span>سجل النشاط</span></a>
+<a href="./users.html"><span class="nav-icon">🔐</span><span>المستخدمون والصلاحيات</span></a>
+<a href="./setting.html"><span class="nav-icon">⚙️</span><span>الإعدادات</span></a>
+</nav>
+<div class="sidebar-footer">VAREX BUSINESS SYSTEM</div>
+</aside>
+
+<div class="main">
+<header class="topbar">
+<div class="page-name"><div class="page-icon">💸</div><div><h2>المصروفات</h2><small>VAREX EXPENSES</small></div></div>
+<div class="top-info"><div class="chip">المستخدم:<strong>Owner</strong></div><div class="chip" id="currentDate">—</div><div class="chip" id="currentTime">—</div></div>
+</header>
+
+<main class="content">
+<section class="hero"><div><h1>إدارة المصروفات</h1><p>تسجيل ومتابعة المصروفات التشغيلية والإدارية لجميع فروع المنشأة.</p></div><button class="primary" onclick="openExpense()">＋ تسجيل مصروف جديد</button></section>
+
+<div class="stats">
+<div class="stat"><span>مصروفات اليوم</span><strong id="todayTotal">0.00 AED</strong></div>
+<div class="stat orange"><span>مصروفات هذا الشهر</span><strong id="monthTotal">0.00 AED</strong></div>
+<div class="stat blue"><span>مصروفات هذه السنة</span><strong id="yearTotal">0.00 AED</strong></div>
+<div class="stat red"><span>إجمالي المصروفات</span><strong id="allTotal">0.00 AED</strong></div>
+</div>
+
+<section class="panel">
+<div class="filters">
+<input id="search" placeholder="🔎 البحث بالوصف أو المرجع أو المستفيد..." oninput="render()">
+<select id="categoryFilter" onchange="render()"><option value="all">كل التصنيفات</option></select>
+<select id="branchFilter" onchange="render()"><option value="all">كل الفروع</option></select>
+<input id="dateFilter" type="date" onchange="render()">
+</div>
+
+<div class="table-wrap"><table>
+<thead><tr><th>رقم المصروف</th><th>التاريخ</th><th>التصنيف</th><th>الوصف</th><th>الفرع</th><th>طريقة الدفع</th><th>المبلغ</th><th>VAT</th><th>الإجمالي</th><th>سجله</th><th>الإجراءات</th></tr></thead>
+<tbody id="expenseBody"></tbody>
+</table></div>
+<div class="empty" id="empty">لا توجد مصروفات مطابقة.</div>
+
+<div class="note">💡 عند الربط النهائي، ستنتقل المصروفات تلقائياً إلى الحسابات والتقارير والأرباح والخسائر، وسيتم تسجيل أي إضافة أو تعديل أو حذف في سجل النشاط.</div>
+</section>
+</main>
+</div>
+
+<div class="modal-bg" id="expenseModal">
+<div class="modal">
+<div class="modal-head"><h3 id="modalTitle">تسجيل مصروف جديد</h3><button class="close" onclick="closeExpense()">×</button></div>
+<input id="editId" type="hidden">
+
+<div class="form-grid">
+<div class="field"><label>التصنيف *</label><select id="category"><option>إيجار</option><option>رواتب وأجور</option><option>كهرباء وماء</option><option>إنترنت واتصالات</option><option>تسويق وإعلانات</option><option>نقل وشحن</option><option>صيانة</option><option>اشتراكات وبرامج</option><option>مصروفات إدارية</option><option>ضيافة ونظافة</option><option>مصروفات أخرى</option></select></div>
+<div class="field"><label>تاريخ المصروف *</label><input id="expenseDate" type="date"></div>
+
+<div class="field"><label>الفرع *</label><select id="branch"></select></div>
+<div class="field"><label>طريقة الدفع</label><select id="paymentMethod"><option value="cash">نقدي</option><option value="card">بطاقة</option><option value="bank">تحويل بنكي</option><option value="other">أخرى</option></select></div>
+
+<div class="field"><label>المبلغ قبل الضريبة *</label><input id="amount" type="number" min="0" step=".01" value="0" oninput="calculate()"></div>
+<div class="field"><label>نسبة VAT %</label><input id="vatRate" type="number" min="0" step=".01" value="5" oninput="calculate()"></div>
+
+<div class="field"><label>المستفيد / الجهة</label><input id="beneficiary" placeholder="اسم الجهة أو المستفيد"></div>
+<div class="field"><label>رقم المرجع / الإيصال</label><input id="reference" placeholder="اختياري"></div>
+
+<div class="field full"><label>وصف المصروف *</label><input id="description" placeholder="مثال: فاتورة كهرباء شهر أغسطس"></div>
+<div class="field full"><label>ملاحظات</label><textarea id="notes" placeholder="ملاحظات إضافية"></textarea></div>
+</div>
+
+<div class="summary">
+<div class="sumrow"><span>المبلغ قبل الضريبة</span><strong id="baseView">0.00 AED</strong></div>
+<div class="sumrow"><span>قيمة VAT</span><strong id="vatView">0.00 AED</strong></div>
+<div class="sumrow final"><span>إجمالي المصروف</span><strong id="totalView">0.00 AED</strong></div>
+</div>
+
+<div class="modal-actions"><button class="primary" onclick="saveExpense()">✓ حفظ المصروف</button><button class="secondary" onclick="closeExpense()">إلغاء</button></div>
+</div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="./varex.js"></script>
+<script>
+let expenses=[],branches=[];
+const demo=[{id:"EXP-1001",date:"2026-08-15",category:"كهرباء وماء",description:"فاتورة كهرباء الفرع",branch:"الفرع الرئيسي",method:"bank",amount:500,vatRate:5,vat:25,total:525,beneficiary:"شركة الكهرباء",reference:"BILL-1001",notes:"",createdBy:"Owner"}];
+
+function load(){
+loadBranches();
+try{const x=JSON.parse(localStorage.getItem("varexExpenses")||"null");expenses=Array.isArray(x)?x:demo}catch(e){expenses=demo}
+saveStore();fillFilters();render()
+}
+function saveStore(){localStorage.setItem("varexExpenses",JSON.stringify(expenses))}
+
+function loadBranches(){
+try{branches=JSON.parse(localStorage.getItem("varexBranches")||"[]")}catch(e){branches=[]}
+branches=Array.isArray(branches)?branches.filter(x=>x.status==="active"):[];
+if(!branches.length)branches=[{name:"الفرع الرئيسي"}];
+branch.innerHTML="";
+branches.forEach(b=>{const o=document.createElement("option");o.value=b.name;o.textContent=b.name;branch.appendChild(o)})
+}
+
+function fillFilters(){
+const cats=["إيجار","رواتب وأجور","كهرباء وماء","إنترنت واتصالات","تسويق وإعلانات","نقل وشحن","صيانة","اشتراكات وبرامج","مصروفات إدارية","ضيافة ونظافة","مصروفات أخرى"];
+categoryFilter.innerHTML='<option value="all">كل التصنيفات</option>';
+cats.forEach(x=>categoryFilter.add(new Option(x,x)));
+branchFilter.innerHTML='<option value="all">كل الفروع</option>';
+branches.forEach(x=>branchFilter.add(new Option(x.name,x.name)))
+}
+
+function render(){
+const q=search.value.trim().toLowerCase(),c=categoryFilter.value,b=branchFilter.value,d=dateFilter.value;
+const data=expenses.filter(x=>(!q||`${x.description} ${x.reference||""} ${x.beneficiary||""}`.toLowerCase().includes(q))&&(c==="all"||x.category===c)&&(b==="all"||x.branch===b)&&(!d||x.date===d));
+expenseBody.innerHTML="";
+data.forEach(x=>{
+const tr=document.createElement("tr");
+tr.innerHTML=`<td class="code">${esc(x.id)}</td><td>${formatDate(x.date)}</td><td><span class="badge">${esc(x.category)}</span></td><td>${esc(x.description)}</td><td>${esc(x.branch)}</td><td>${methodName(x.method)}</td><td>${money(x.amount)}</td><td>${money(x.vat)}</td><td class="amount">${money(x.total)}</td><td>${esc(x.createdBy||"Owner")}</td><td><button class="mini" onclick="editExpense('${x.id}')">تعديل</button><button class="mini danger" onclick="deleteExpense('${x.id}')">حذف</button></td>`;
+expenseBody.appendChild(tr)
+});
+empty.style.display=data.length?"none":"block";
+updateStats()
+}
+
+function updateStats(){
+const n=new Date(),today=localDate(n),month=today.slice(0,7),year=today.slice(0,4);
+todayTotal.innerText=money(sum(expenses.filter(x=>x.date===today)));
+monthTotal.innerText=money(sum(expenses.filter(x=>(x.date||"").slice(0,7)===month)));
+yearTotal.innerText=money(sum(expenses.filter(x=>(x.date||"").slice(0,4)===year)));
+allTotal.innerText=money(sum(expenses))
+}
+function sum(a){return a.reduce((s,x)=>s+Number(x.total||0),0)}
+
+function openExpense(){
+editId.value="";modalTitle.innerText="تسجيل مصروف جديد";expenseDate.value=localDate(new Date());category.selectedIndex=0;paymentMethod.value="cash";amount.value="0";vatRate.value="5";beneficiary.value="";reference.value="";description.value="";notes.value="";calculate();expenseModal.style.display="flex"
+}
+function closeExpense(){expenseModal.style.display="none"}
+
+function calculate(){
+const a=Math.max(0,Number(amount.value||0)),r=Math.max(0,Number(vatRate.value||0)),v=a*r/100,t=a+v;
+baseView.innerText=money(a);vatView.innerText=money(v);totalView.innerText=money(t);
+return{amount:a,vatRate:r,vat:v,total:t}
+}
+
+function saveExpense(){
+if(!description.value.trim()){alert("يرجى إدخال وصف المصروف.");return}
+const c=calculate();if(c.amount<=0){alert("يرجى إدخال مبلغ المصروف.");return}
+const data={date:expenseDate.value,category:category.value,description:description.value.trim(),branch:branch.value,method:paymentMethod.value,...c,beneficiary:beneficiary.value.trim(),reference:reference.value.trim(),notes:notes.value.trim(),createdBy:"Owner"};
+if(editId.value){
+const i=expenses.findIndex(x=>x.id===editId.value);if(i>-1)expenses[i]={...expenses[i],...data}
+}else{
+const id="EXP-"+String(1001+expenses.length);
+expenses.unshift({id,...data})
+}
+saveStore();render();closeExpense();showToast("تم حفظ المصروف بنجاح")
+}
+
+function editExpense(id){
+const x=expenses.find(v=>v.id===id);if(!x)return;
+editId.value=x.id;modalTitle.innerText="تعديل المصروف";expenseDate.value=x.date;category.value=x.category;branch.value=x.branch;paymentMethod.value=x.method;amount.value=x.amount;vatRate.value=x.vatRate;beneficiary.value=x.beneficiary||"";reference.value=x.reference||"";description.value=x.description;notes.value=x.notes||"";calculate();expenseModal.style.display="flex"
+}
+
+function deleteExpense(id){
+if(!confirm("هل تريد حذف هذا المصروف؟"))return;
+expenses=expenses.filter(x=>x.id!==id);saveStore();render();showToast("تم حذف المصروف")
+}
+
+function methodName(x){return x==="cash"?"نقدي":x==="card"?"بطاقة":x==="bank"?"تحويل بنكي":"أخرى"}
+function money(n){return Number(n||0).toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2})+" AED"}
+function formatDate(d){if(!d)return"—";const p=d.split("-");return `${p[2]}/${p[1]}/${p[0]}`}
+function localDate(d){const y=d.getFullYear(),m=String(d.getMonth()+1).padStart(2,"0"),day=String(d.getDate()).padStart(2,"0");return `${y}-${m}-${day}`}
+function esc(v){return String(v??"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#039;")}
+function showToast(t){toast.innerText=t;toast.style.display="block";clearTimeout(window.tt);window.tt=setTimeout(()=>toast.style.display="none",2200)}
+function clock(){const n=new Date();currentDate.innerText=n.toLocaleDateString("ar-AE",{year:"numeric",month:"2-digit",day:"2-digit"});currentTime.innerText=n.toLocaleTimeString("ar-AE",{hour:"2-digit",minute:"2-digit",second:"2-digit"})}
+expenseModal.addEventListener("click",e=>{if(e.target===expenseModal)closeExpense()});
+clock();setInterval(clock,1000);load();
+</script>
+</body>
+</html>
