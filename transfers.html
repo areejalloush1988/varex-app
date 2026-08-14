@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>تحويلات المخزون - VAREX</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--navy:#172554;--dark:#0f1d43;--bg:#f4f6fb;--border:#e5eaf2;--text:#172554;--muted:#64748b;--green:#16a34a;--red:#dc2626;--blue:#2563eb;--orange:#ea580c;--sidebar:240px;--brand:170px}
+body{font-family:Arial,Tahoma,sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+.sidebar{position:fixed;right:0;top:0;width:var(--sidebar);height:100vh;background:linear-gradient(180deg,#172554,#13234f 48%,#0f1d43);color:#fff;z-index:1000;display:flex;flex-direction:column;overflow:hidden}
+.brand{height:var(--brand);min-height:var(--brand);padding:24px 14px 20px;border-bottom:1px solid rgba(255,255,255,.1);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
+.logo{font-size:30px;font-weight:800;letter-spacing:4px;direction:ltr}.brand-small{margin-top:11px;font-size:10px;font-weight:600;letter-spacing:.8px;color:#e2e8f0;direction:ltr}
+.system-status{margin-top:16px;display:flex;align-items:center;gap:7px;font-size:10px;color:#d1fae5}.dot{width:7px;height:7px;border-radius:50%;background:#22c55e;box-shadow:0 0 8px rgba(34,197,94,.75)}
+.nav{padding:16px 12px;flex:1;overflow-y:auto}.nav a{height:48px;display:flex;align-items:center;gap:11px;padding:0 14px;margin-bottom:5px;border-radius:10px;color:#dbeafe;text-decoration:none;font-size:13px;font-weight:600;white-space:nowrap}.nav a:hover{background:rgba(255,255,255,.08);color:#fff}.nav a.active{background:#fff;color:var(--navy);font-weight:700}.nav-icon{width:25px;text-align:center;font-size:16px}
+.sidebar-footer{height:54px;min-height:54px;border-top:1px solid rgba(255,255,255,.1);color:#94a3b8;font-size:9px;letter-spacing:.5px;direction:ltr;display:flex;align-items:center;justify-content:center}
+.main{margin-right:var(--sidebar);min-height:100vh}.topbar{height:78px;background:#fff;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 28px;position:sticky;top:0;z-index:50}
+.page-name{display:flex;align-items:center;gap:12px}.page-icon{width:44px;height:44px;border-radius:11px;background:#eef2ff;display:flex;align-items:center;justify-content:center;font-size:20px}.page-name h2{font-size:19px}.page-name small{display:block;color:var(--muted);margin-top:4px;font-size:11px;direction:ltr}.top-info{display:flex;gap:9px}.chip{min-height:38px;background:#f8fafc;border:1px solid var(--border);border-radius:9px;padding:8px 12px;font-size:11px;color:var(--muted)}.chip strong{color:var(--navy);margin-right:4px}
+.content{width:calc(100% - 48px);max-width:1450px;margin:24px auto 40px}.hero{display:flex;justify-content:space-between;align-items:center;gap:15px;margin-bottom:20px}.hero h1{font-size:25px;margin-bottom:6px}.hero p{font-size:13px;color:var(--muted)}
+button{border:0;border-radius:9px;min-height:40px;padding:9px 14px;font-family:inherit;font-size:11px;font-weight:bold;cursor:pointer}.primary{background:linear-gradient(135deg,#172554,#1e3a8a);color:#fff}.secondary{background:#f8fafc;color:#475569;border:1px solid var(--border)}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:18px}.stat{background:#fff;border:1px solid var(--border);border-radius:14px;padding:15px;box-shadow:0 4px 15px rgba(15,23,42,.04)}.stat span{font-size:10px;color:var(--muted)}.stat strong{display:block;font-size:23px;margin-top:5px}.blue strong{color:var(--blue)}.green strong{color:var(--green)}.orange strong{color:var(--orange)}
+.panel{background:#fff;border:1px solid var(--border);border-radius:16px;padding:18px;box-shadow:0 4px 18px rgba(15,23,42,.05)}.filters{display:grid;grid-template-columns:2fr 1fr 1fr;gap:9px;padding-bottom:16px;border-bottom:1px solid #edf0f5;margin-bottom:10px}
+input,select,textarea{width:100%;min-height:40px;padding:9px 11px;border:1px solid #dbe1ea;border-radius:9px;background:#fff;color:#172554;font-family:inherit;font-size:11px;outline:none}textarea{min-height:70px;resize:vertical}
+.table-wrap{overflow-x:auto}table{width:100%;border-collapse:collapse;min-width:950px}th{background:#f8fafc;color:#64748b;font-size:10px;text-align:right;padding:12px;border-bottom:1px solid var(--border);white-space:nowrap}td{padding:13px 12px;border-bottom:1px solid #edf0f5;font-size:11px;color:#475569}.code{font-weight:bold;color:#172554;direction:ltr;text-align:right}.badge{display:inline-flex;padding:5px 9px;border-radius:20px;font-size:9px;font-weight:bold}.draft{background:#f8fafc;color:#475569}.transit{background:#fff7ed;color:#c2410c}.received{background:#dcfce7;color:#15803d}.cancelled{background:#fef2f2;color:#b91c1c}.mini{min-height:30px;padding:6px 9px;background:#f8fafc;border:1px solid var(--border);color:#475569;margin:2px}.danger{color:#b91c1c;border-color:#fecaca;background:#fff}.empty{text-align:center;padding:45px;color:#94a3b8;font-size:12px;display:none}
+.modal-bg{position:fixed;inset:0;background:rgba(15,23,42,.58);z-index:3000;display:none;align-items:flex-start;justify-content:center;padding:25px;overflow:auto}.modal{width:min(900px,100%);background:#fff;border-radius:17px;padding:22px;margin:auto;box-shadow:0 20px 60px rgba(0,0,0,.25)}.modal-head{display:flex;justify-content:space-between;align-items:center;padding-bottom:14px;margin-bottom:17px;border-bottom:1px solid var(--border)}.modal-head h3{font-size:17px}.close{width:34px;min-height:34px;padding:0;background:#f1f5f9;font-size:18px}
+.form-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:11px}.field{margin-bottom:11px}.field label{display:block;font-size:10px;font-weight:bold;color:#475569;margin-bottom:5px}.full{grid-column:1/-1}.items-title{display:flex;align-items:center;justify-content:space-between;margin:15px 0 9px}.items-title h4{font-size:13px}.items-table input{min-width:90px}.items-table select{min-width:180px}.remove{min-height:30px;padding:5px 10px;background:#fff;color:#b91c1c;border:1px solid #fecaca}.modal-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px}.note{margin-top:15px;background:#f8fafc;border:1px solid var(--border);border-radius:10px;padding:12px;font-size:10px;color:#64748b;line-height:1.7}.toast{position:fixed;left:25px;bottom:25px;background:#172554;color:#fff;padding:12px 17px;border-radius:10px;font-size:11px;display:none;z-index:5000}
+@media(max-width:900px){.stats{grid-template-columns:1fr 1fr}.form-grid{grid-template-columns:1fr 1fr}}@media(max-width:750px){.top-info{display:none}.hero{flex-direction:column;align-items:flex-start}.filters{grid-template-columns:1fr}}@media(max-width:600px){.content{width:94%}.topbar{padding:0 14px}.form-grid{grid-template-columns:1fr}.stats{grid-template-columns:1fr 1fr}.hero button{width:100%}}
+</style>
+</head>
+<body>
+
+<aside class="sidebar">
+<div class="brand"><div class="logo">VAREX</div><div class="brand-small">BUSINESS MANAGEMENT SYSTEM</div><div class="system-status"><span class="dot"></span><span>النظام متصل وجاهز للعمل</span></div></div>
+<nav class="nav">
+<a href="./index.html"><span class="nav-icon">▦</span><span>لوحة التحكم</span></a>
+<a href="./pos.html"><span class="nav-icon">🛒</span><span>شاشة المبيعات</span></a>
+<a href="./products.html"><span class="nav-icon">📦</span><span>المنتجات والمخزون</span></a>
+<a href="./purchases.html"><span class="nav-icon">🧾</span><span>المشتريات</span></a>
+<a href="./transfers.html" class="active"><span class="nav-icon">🔄</span><span>تحويلات المخزون</span></a>
+<a href="./customers.html"><span class="nav-icon">👥</span><span>العملاء</span></a>
+<a href="./suppliers.html"><span class="nav-icon">🚚</span><span>الموردون</span></a>
+<a href="./accounts.html"><span class="nav-icon">💰</span><span>الحسابات</span></a>
+<a href="./employees.html"><span class="nav-icon">👤</span><span>الموظفون</span></a>
+<a href="./reports.html"><span class="nav-icon">📊</span><span>التقارير</span></a>
+<a href="./branches.html"><span class="nav-icon">🏢</span><span>الفروع</span></a>
+<a href="./notifications.html"><span class="nav-icon">🔔</span><span>مركز التنبيهات</span></a>
+<a href="./activity.html"><span class="nav-icon">📋</span><span>سجل النشاط</span></a>
+<a href="./users.html"><span class="nav-icon">🔐</span><span>المستخدمون والصلاحيات</span></a>
+<a href="./setting.html"><span class="nav-icon">⚙️</span><span>الإعدادات</span></a>
+</nav>
+<div class="sidebar-footer">VAREX BUSINESS SYSTEM</div>
+</aside>
+
+<div class="main">
+<header class="topbar">
+<div class="page-name"><div class="page-icon">🔄</div><div><h2>تحويلات المخزون</h2><small>VAREX STOCK TRANSFERS</small></div></div>
+<div class="top-info"><div class="chip">المستخدم:<strong>Owner</strong></div><div class="chip" id="currentDate">—</div><div class="chip" id="currentTime">—</div></div>
+</header>
+
+<main class="content">
+<section class="hero"><div><h1>تحويلات المخزون</h1><p>إدارة نقل المنتجات والكميات بين فروع المنشأة ومتابعة حالة كل تحويل.</p></div><button class="primary" onclick="openTransfer()">＋ تحويل مخزون جديد</button></section>
+
+<div class="stats">
+<div class="stat"><span>إجمالي التحويلات</span><strong id="totalCount">0</strong></div>
+<div class="stat orange"><span>قيد النقل</span><strong id="transitCount">0</strong></div>
+<div class="stat green"><span>تم الاستلام</span><strong id="receivedCount">0</strong></div>
+<div class="stat blue"><span>إجمالي القطع المحولة</span><strong id="itemsCount">0</strong></div>
+</div>
+
+<section class="panel">
+<div class="filters">
+<input id="search" placeholder="🔎 البحث برقم التحويل أو اسم الفرع..." oninput="render()">
+<select id="statusFilter" onchange="render()"><option value="all">كل الحالات</option><option value="draft">مسودة</option><option value="transit">قيد النقل</option><option value="received">تم الاستلام</option><option value="cancelled">ملغي</option></select>
+<input id="dateFilter" type="date" onchange="render()">
+</div>
+
+<div class="table-wrap"><table>
+<thead><tr><th>رقم التحويل</th><th>من فرع</th><th>إلى فرع</th><th>التاريخ</th><th>عدد الأصناف</th><th>إجمالي القطع</th><th>أنشأ بواسطة</th><th>الحالة</th><th>الإجراءات</th></tr></thead>
+<tbody id="transferBody"></tbody>
+</table></div>
+<div class="empty" id="empty">لا توجد تحويلات مخزون.</div>
+
+<div class="note">📦 عند الربط النهائي بقاعدة البيانات، لن يتم تعديل المخزون عند حفظ المسودة. عند إرسال التحويل سيتم تسجيل الكمية كـ«قيد النقل»، وعند تأكيد الاستلام ستضاف الكمية إلى مخزون الفرع المستلم مع تسجيل العملية في سجل النشاط.</div>
+</section>
+</main>
+</div>
+
+<div class="modal-bg" id="transferModal">
+<div class="modal">
+<div class="modal-head"><h3>تحويل مخزون جديد</h3><button class="close" onclick="closeTransfer()">×</button></div>
+
+<div class="form-grid">
+<div class="field"><label>من فرع *</label><select id="fromBranch"></select></div>
+<div class="field"><label>إلى فرع *</label><select id="toBranch"></select></div>
+<div class="field"><label>تاريخ التحويل</label><input id="transferDate" type="date"></div>
+</div>
+
+<div class="items-title"><h4>📦 المنتجات المراد تحويلها</h4><button class="secondary" onclick="addItem()">＋ إضافة منتج</button></div>
+
+<div class="table-wrap"><table class="items-table">
+<thead><tr><th>المنتج</th><th>الكمية</th><th>ملاحظات</th><th></th></tr></thead>
+<tbody id="itemsBody"></tbody>
+</table></div>
+
+<div class="field full" style="margin-top:14px"><label>ملاحظات التحويل</label><textarea id="notes" placeholder="ملاحظات إضافية..."></textarea></div>
+
+<div class="modal-actions">
+<button class="primary" onclick="saveTransfer('transit')">↗ حفظ وإرسال التحويل</button>
+<button class="secondary" onclick="saveTransfer('draft')">حفظ كمسودة</button>
+<button class="secondary" onclick="closeTransfer()">إلغاء</button>
+</div>
+</div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="./varex.js"></script>
+<script>
+let transfers=[],branches=[],rowNo=0;
+const demo=[{id:"TRF-1001",from:"الفرع الرئيسي",to:"فرع دبي",date:"2026-08-15",status:"transit",createdBy:"Owner",items:[{product:"تونة 185 غرام",qty:20,note:""},{product:"مياه معدنية",qty:30,note:""}],notes:""}];
+
+function load(){
+loadBranches();
+try{const x=JSON.parse(localStorage.getItem("varexTransfers")||"null");transfers=Array.isArray(x)?x:demo}catch(e){transfers=demo}
+saveStore();render()
+}
+function loadBranches(){
+try{branches=JSON.parse(localStorage.getItem("varexBranches")||"[]")}catch(e){branches=[]}
+branches=Array.isArray(branches)?branches.filter(x=>x.status==="active"):[];
+if(branches.length<2)branches=[{name:"الفرع الرئيسي"},{name:"فرع دبي"}];
+[fromBranch,toBranch].forEach(s=>{s.innerHTML="";branches.forEach(b=>{const o=document.createElement("option");o.value=b.name;o.textContent=b.name;s.appendChild(o)})});
+if(toBranch.options.length>1)toBranch.selectedIndex=1;
+}
+function saveStore(){localStorage.setItem("varexTransfers",JSON.stringify(transfers))}
+
+function render(){
+const q=search.value.trim().toLowerCase(),s=statusFilter.value,d=dateFilter.value;
+const data=transfers.filter(x=>(!q||`${x.id} ${x.from} ${x.to}`.toLowerCase().includes(q))&&(s==="all"||x.status===s)&&(!d||x.date===d));
+transferBody.innerHTML="";
+data.forEach(x=>{
+const pieces=(x.items||[]).reduce((a,i)=>a+Number(i.qty||0),0);
+const tr=document.createElement("tr");
+tr.innerHTML=`<td class="code">${esc(x.id)}</td><td>${esc(x.from)}</td><td>${esc(x.to)}</td><td>${formatDate(x.date)}</td><td>${(x.items||[]).length}</td><td>${pieces}</td><td>${esc(x.createdBy||"Owner")}</td><td><span class="badge ${x.status}">${statusName(x.status)}</span></td><td><button class="mini" onclick="viewTransfer('${x.id}')">عرض</button>${x.status==="draft"?`<button class="mini" onclick="sendTransfer('${x.id}')">إرسال</button><button class="mini danger" onclick="cancelTransfer('${x.id}')">إلغاء</button>`:""}${x.status==="transit"?`<button class="mini" onclick="receiveTransfer('${x.id}')">تأكيد الاستلام</button><button class="mini danger" onclick="cancelTransfer('${x.id}')">إلغاء</button>`:""}</td>`;
+transferBody.appendChild(tr)
+});
+empty.style.display=data.length?"none":"block";
+totalCount.innerText=transfers.length;
+transitCount.innerText=transfers.filter(x=>x.status==="transit").length;
+receivedCount.innerText=transfers.filter(x=>x.status==="received").length;
+itemsCount.innerText=transfers.filter(x=>x.status!=="cancelled").reduce((a,x)=>a+(x.items||[]).reduce((b,i)=>b+Number(i.qty||0),0),0)
+}
+
+function openTransfer(){
+loadBranches();transferDate.value=new Date().toISOString().slice(0,10);notes.value="";itemsBody.innerHTML="";rowNo=0;addItem();transferModal.style.display="flex"
+}
+function closeTransfer(){transferModal.style.display="none"}
+
+function addItem(){
+rowNo++;const tr=document.createElement("tr");
+tr.innerHTML=`<td><select class="product"><option value="">اختر المنتج</option><option>تونة 185 غرام</option><option>مياه معدنية</option><option>أرز 5 كغ</option><option>سكر 2 كغ</option><option>منتج آخر</option></select></td><td><input class="qty" type="number" min="1" value="1"></td><td><input class="item-note" placeholder="اختياري"></td><td><button class="remove" onclick="removeItem(this)">×</button></td>`;
+itemsBody.appendChild(tr)
+}
+function removeItem(btn){
+if(itemsBody.children.length<=1){alert("يجب أن يحتوي التحويل على منتج واحد على الأقل.");return}
+btn.closest("tr").remove()
+}
+
+function saveTransfer(status){
+if(fromBranch.value===toBranch.value){alert("يجب أن يكون الفرع المستلم مختلفاً عن الفرع المرسل.");return}
+const items=[...itemsBody.querySelectorAll("tr")].map(r=>({product:r.querySelector(".product").value,qty:Number(r.querySelector(".qty").value||0),note:r.querySelector(".item-note").value.trim()})).filter(x=>x.product&&x.qty>0);
+if(!items.length){alert("يرجى إضافة منتج واحد على الأقل.");return}
+const id="TRF-"+String(1001+transfers.length);
+transfers.unshift({id,from:fromBranch.value,to:toBranch.value,date:transferDate.value,status,createdBy:"Owner",items,notes:notes.value.trim()});
+saveStore();render();closeTransfer();showToast(status==="transit"?"تم إنشاء وإرسال التحويل":"تم حفظ التحويل كمسودة")
+}
+
+function sendTransfer(id){
+const x=transfers.find(v=>v.id===id);if(!x)return;
+if(!confirm("هل تريد إرسال هذا التحويل إلى الفرع المستلم؟"))return;
+x.status="transit";saveStore();render();showToast("أصبح التحويل قيد النقل")
+}
+function receiveTransfer(id){
+const x=transfers.find(v=>v.id===id);if(!x)return;
+if(!confirm("تأكيد استلام المنتجات في الفرع المستلم؟"))return;
+x.status="received";x.receivedAt=new Date().toISOString();saveStore();render();showToast("تم تأكيد استلام التحويل")
+}
+function cancelTransfer(id){
+const x=transfers.find(v=>v.id===id);if(!x||x.status==="received")return;
+if(!confirm("هل تريد إلغاء هذا التحويل؟"))return;
+x.status="cancelled";saveStore();render();showToast("تم إلغاء التحويل")
+}
+function viewTransfer(id){
+const x=transfers.find(v=>v.id===id);if(!x)return;
+const products=(x.items||[]).map(i=>`• ${i.product} × ${i.qty}`).join("\n");
+alert(`التحويل: ${x.id}\nمن: ${x.from}\nإلى: ${x.to}\nالحالة: ${statusName(x.status)}\n\nالمنتجات:\n${products}`)
+}
+function statusName(x){return x==="draft"?"مسودة":x==="transit"?"قيد النقل":x==="received"?"تم الاستلام":"ملغي"}
+function formatDate(d){if(!d)return"—";const p=d.split("-");return `${p[2]}/${p[1]}/${p[0]}`}
+function esc(v){return String(v??"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#039;")}
+function showToast(t){toast.innerText=t;toast.style.display="block";clearTimeout(window.tt);window.tt=setTimeout(()=>toast.style.display="none",2200)}
+function clock(){const n=new Date();currentDate.innerText=n.toLocaleDateString("ar-AE",{year:"numeric",month:"2-digit",day:"2-digit"});currentTime.innerText=n.toLocaleTimeString("ar-AE",{hour:"2-digit",minute:"2-digit",second:"2-digit"})}
+transferModal.addEventListener("click",e=>{if(e.target===transferModal)closeTransfer()});
+clock();setInterval(clock,1000);load();
+</script>
+</body>
+</html>
