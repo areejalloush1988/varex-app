@@ -671,6 +671,7 @@ class="register-message"
 
 function togglePassword(id){
 const x=document.getElementById(id);
+
 if(x){
 x.type=x.type==="password"?"text":"password";
 }
@@ -678,6 +679,7 @@ x.type=x.type==="password"?"text":"password";
 
 function showMessage(type,text){
 const x=document.getElementById("registerMessage");
+
 if(!x)return;
 
 x.className=type
@@ -689,13 +691,23 @@ x.textContent=text||"";
 
 function resetButton(){
 const b=document.getElementById("registerButton");
+
 b.disabled=false;
 b.textContent="إنشاء الحساب";
 }
 
+function wait(ms){
+return new Promise(function(resolve){
+setTimeout(resolve,ms);
+});
+}
+
 /* إذا كان المستخدم مسجلاً بالفعل */
+
 (function(){
+
 try{
+
 if(
 typeof VAREX!=="undefined" &&
 typeof VAREX.isLoggedIn==="function" &&
@@ -703,12 +715,15 @@ VAREX.isLoggedIn()
 ){
 window.location.replace("./index.html");
 }
+
 }catch(e){
 console.error(e);
 }
+
 })();
 
 /* إنشاء الحساب */
+
 document
 .getElementById("registerForm")
 .addEventListener("submit",async function(event){
@@ -804,10 +819,14 @@ showMessage(
 return;
 }
 
-/* تعطيل الزر أثناء الاتصال */
+/* منع الضغط مرتين */
 
 button.disabled=true;
-button.textContent="جاري إنشاء الحساب...";
+
+/*
+لا نغير النص الموجود على الزر.
+يبقى شكله كما هو أثناء تنفيذ الطلب.
+*/
 
 try{
 
@@ -838,8 +857,8 @@ return;
 }
 
 /*
-إذا كان الحساب يحتاج إلى تأكيد البريد:
-نحفظ البريد ثم ننتقل إلى صفحة رمز التحقق.
+إذا كان الحساب يحتاج تأكيد البريد الإلكتروني
+نضمن حفظ بيانات الحساب المطلوبة لصفحة التحقق.
 */
 
 if(result.needsEmailConfirmation===true){
@@ -847,12 +866,15 @@ if(result.needsEmailConfirmation===true){
 if(
 typeof VAREX.setPendingVerification==="function"
 ){
+
 VAREX.setPendingVerification({
 email:email,
 name:name,
 username:username
 });
+
 }else{
+
 localStorage.setItem(
 "varex_pending_verification",
 JSON.stringify({
@@ -861,37 +883,37 @@ name:name,
 username:username
 })
 );
+
 }
 
-showMessage(
-"success",
-"تم إنشاء الحساب وإرسال رمز التحقق إلى بريدك الإلكتروني. جارٍ فتح صفحة التأكيد..."
-);
+/*
+التوقف الهادئ لمدة ثانيتين.
+لا رسالة.
+لا سبينر.
+لا تغيير للنص.
+ثم الانتقال إلى صفحة رمز التحقق.
+*/
 
-button.textContent="تم إرسال رمز التحقق";
+showMessage("","");
 
-setTimeout(function(){
+await wait(2000);
+
 window.location.replace("./verify-email.html");
-},1000);
 
 return;
 }
 
 /*
-في حال Supabase أعاد جلسة مباشرة
-ولم يكن تأكيد البريد مطلوباً.
+إذا كان Supabase يؤكد البريد مباشرة
+ولا يحتاج إلى OTP.
+نعطي أيضاً مهلة هادئة قبل فتح النظام.
 */
 
-showMessage(
-"success",
-"تم إنشاء الحساب بنجاح. جارٍ فتح النظام..."
-);
+showMessage("","");
 
-button.textContent="تم إنشاء الحساب";
+await wait(2000);
 
-setTimeout(function(){
 window.location.replace("./index.html");
-},1000);
 
 }catch(error){
 
@@ -924,10 +946,12 @@ function(){
 navigator.serviceWorker
 .register("./sw.js")
 .catch(function(error){
+
 console.error(
 "Service Worker:",
 error
 );
+
 });
 
 }
