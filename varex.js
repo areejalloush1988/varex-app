@@ -321,8 +321,6 @@ return true
 },
 
 requireSubscription(){
-
-/* القفل يبقى غير فعال حتى ننتهي من صفحة الاشتراك والدفع */
 if(!this.isSubscriptionGateEnabled())return true;
 
 if(
@@ -523,7 +521,6 @@ if(localStorage.getItem(k)===null)localStorage.setItem(k,"[]")
 });
 if(localStorage.getItem(this.keys.settings)===null)this.saveSettings(this.getSettings());
 
-/* الاشتراك غير مقفول أثناء التطوير */
 if(localStorage.getItem(this.keys.subscriptionGate)===null){
 localStorage.setItem(this.keys.subscriptionGate,"false")
 }
@@ -558,6 +555,7 @@ const VAREX_MENU=[
 ["notifications.html","🔔","مركز التنبيهات"],
 ["activity.html","📋","سجل النشاط"],
 ["users.html","🔐","المستخدمون والصلاحيات"],
+["subscription.html","💎","الاشتراك والترخيص"],
 ["setting.html","⚙️","الإعدادات"]
 ];
 
@@ -684,8 +682,6 @@ width:100%!important;height:auto!important;min-height:0!important;max-height:non
 display:block!important;overflow:visible!important;padding:16px 14px 0!important;touch-action:auto!important
 }
 
-/* MENU CARDS — 3D WITHOUT SHADOW */
-
 .sidebar .nav a{
 width:100%!important;height:50px!important;min-height:50px!important;max-height:50px!important;
 display:flex!important;align-items:center!important;justify-content:flex-start!important;
@@ -743,8 +739,6 @@ font-weight:700;cursor:pointer;white-space:nowrap;box-shadow:none!important;tran
 transition:transform .10s ease,background .16s ease,color .16s ease,border-color .16s ease
 }
 
-/* THEME — LIGHT = WHITE */
-
 .varex-theme-button{
 background:#fff!important;color:#172554!important;
 border-top:1px solid #fff!important;border-left:1px solid #f8fafc!important;
@@ -753,8 +747,6 @@ border-right:1px solid #cbd5e1!important;border-bottom:3px solid #94a3b8!importa
 
 .varex-theme-button:hover{background:#f1f5f9!important;color:#172554!important;transform:translateY(-1px)}
 .varex-theme-button:active{transform:translateY(2px);border-bottom-width:1px!important;margin-bottom:11px}
-
-/* LOGOUT */
 
 .varex-logout-button{
 background:#fff!important;color:#172554!important;
@@ -907,7 +899,6 @@ body.varex-dark thead,body.varex-dark th{background:#0e2039!important;color:#dbe
 body.varex-dark td{background:#132641!important;color:#e2e8f0!important;border-color:#29415f!important}
 body.varex-dark tbody tr:hover td{background:#182e4c!important}
 
-/* بطاقات المستخدم والتاريخ والوقت — أبيض في الليلي */
 body.varex-dark .chip,
 body.varex-dark .info-chip{
 background:#fff!important;background-image:none!important;border-color:#fff!important;
@@ -949,8 +940,6 @@ body.varex-dark .modal-overlay{background-color:rgba(2,8,23,.76)!important}
 
 body.varex-dark .empty{color:#94a3b8!important}
 
-/* SIDEBAR DARK */
-
 body.varex-dark .sidebar{
 background:linear-gradient(180deg,#172554 0%,#13234f 48%,#0f1d43 100%)!important;color:#fff!important
 }
@@ -959,8 +948,6 @@ body.varex-dark .sidebar .brand{border-color:rgba(255,255,255,.10)!important}
 body.varex-dark .sidebar .logo{color:#fff!important}
 body.varex-dark .sidebar .brand-small{color:#e2e8f0!important}
 body.varex-dark .sidebar .system-status,body.varex-dark .sidebar .store-status{color:#d1fae5!important}
-
-/* MENU CARDS DARK */
 
 body.varex-dark .sidebar .nav a{
 background:rgba(255,255,255,.05)!important;color:#dbeafe!important;
@@ -987,8 +974,6 @@ body.varex-dark .sidebar .nav a.active .nav-label{color:#172554!important}
 body.varex-dark .sidebar-footer{color:#94a3b8!important;border-color:rgba(255,255,255,.10)!important}
 body.varex-dark .varex-sidebar-actions{border-color:rgba(255,255,255,.12)!important}
 
-/* THEME BUTTON DARK = NAVY */
-
 body.varex-dark .varex-theme-button{
 background:#172554!important;color:#fff!important;
 border-top:1px solid #324675!important;border-left:1px solid #293d6c!important;
@@ -998,8 +983,6 @@ box-shadow:none!important
 
 body.varex-dark .varex-theme-button:hover{background:#1e3362!important;color:#fff!important}
 body.varex-dark .varex-theme-button:active{background:#203765!important;border-bottom-width:1px!important}
-
-/* LOGOUT WHITE */
 
 body.varex-dark .varex-logout-button{
 background:#fff!important;color:#172554!important;
@@ -1063,10 +1046,8 @@ VAREX.isVerifyEmailPage();
 
 if(publicPage)return;
 
-/* فحص الاشتراك */
 if(!VAREX.requireSubscription())return;
 
-/* صفحة الاشتراك لا تحتاج القائمة الجانبية */
 if(VAREX.isSubscriptionPage()||VAREX.isSubscriptionSuccessPage()){
 varexApplyTheme(varexGetTheme());
 varexShowCurrentUser();
