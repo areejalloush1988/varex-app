@@ -6,1715 +6,360 @@
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 :root{--navy:#172554;--navy2:#243b70;--navy3:#1e3568;--dark:#0f1d43;--bg:#f4f6fb;--card:#fff;--card2:#f8fafc;--card3:#eef2f7;--field:#fff;--border:#e3e8f1;--line:#edf0f5;--text:#172554;--body:#334155;--muted:#64748b;--soft:#94a3b8;--green:#15803d;--red:#b91c1c;--orange:#c2410c;--shadow:0 5px 18px rgba(15,23,42,.055);--sidebar:240px;--brand:170px}
-
 body.varex-dark{--bg:#0b1120;--card:#111c33;--card2:#162139;--card3:#1c2945;--field:#17233d;--border:#263550;--line:#263550;--text:#f1f5f9;--body:#cbd5e1;--muted:#94a3b8;--soft:#8293aa;--green:#4ade80;--red:#f87171;--orange:#fb923c;--shadow:0 7px 24px rgba(0,0,0,.18)}
-
 html{scroll-behavior:smooth}
+body{font-family:Arial,Tahoma,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;line-height:1.5;transition:background .25s,color .25s}
+.sidebar{position:fixed;right:0;top:0;width:var(--sidebar);height:100vh;background:linear-gradient(180deg,#172554,#13234f 48%,#0f1d43);color:#fff;z-index:1000;display:flex;flex-direction:column;overflow:hidden;box-shadow:-4px 0 18px rgba(15,29,67,.08)}
+body.varex-dark .sidebar{background:linear-gradient(180deg,#101b38,#0d1730 50%,#080f20)}
+.brand{height:var(--brand);min-height:var(--brand);padding:24px 14px 20px;border-bottom:1px solid rgba(255,255,255,.1);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
+.logo{font-size:30px;font-weight:800;letter-spacing:4px;direction:ltr}
+.brand-small{margin-top:11px;font-size:10px;font-weight:600;letter-spacing:.8px;color:#e2e8f0;direction:ltr}
+.system-status{margin-top:16px;display:flex;align-items:center;gap:7px;font-size:10px;color:#d1fae5}
+.dot{width:7px;height:7px;border-radius:50%;background:#22c55e;box-shadow:0 0 8px rgba(34,197,94,.75)}
+.nav{padding:16px 12px;flex:1;overflow-y:auto}
+.nav a{height:48px;display:flex;align-items:center;gap:11px;padding:0 14px;margin-bottom:5px;border-radius:10px;color:#dbeafe;text-decoration:none;font-size:13px;font-weight:600;white-space:nowrap}
+.nav a:hover{background:rgba(255,255,255,.08);color:#fff}
+.nav a.active{background:#fff;color:var(--navy);font-weight:700;box-shadow:0 5px 15px rgba(0,0,0,.13)}
+body.varex-dark .nav a.active{background:#e2e8f0;color:#0f1d43}
+.nav-icon{width:25px;text-align:center;font-size:16px}
+.sidebar-footer{height:54px;min-height:54px;border-top:1px solid rgba(255,255,255,.1);color:#94a3b8;font-size:9px;letter-spacing:.5px;direction:ltr;display:flex;align-items:center;justify-content:center}
+.main{margin-right:var(--sidebar);min-height:100vh;background:var(--bg);transition:background .25s}
+.topbar{height:78px;background:var(--card);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 28px;position:sticky;top:0;z-index:50;transition:.25s}
+.page-name{display:flex;align-items:center;gap:12px}
+.page-icon{width:44px;height:44px;border-radius:11px;background:var(--card3);display:flex;align-items:center;justify-content:center;font-size:20px}
+.page-name h2{font-size:19px;color:var(--text);font-weight:800}
+.page-name small{display:block;color:var(--muted);margin-top:4px;font-size:11px;direction:ltr}
+.top-info{display:flex;gap:10px;align-items:center}
 
-body{
-font-family:Arial,Tahoma,sans-serif;
-background:var(--bg);
-color:var(--text);
-min-height:100vh;
-line-height:1.5;
-transition:background .25s,color .25s
-}
+/* الوضع النهاري: البطاقات كحلي 3D */
+.chip{min-height:40px;background:#172554!important;border:1px solid #172554!important;border-radius:9px;padding:8px 13px;font-size:11px;font-weight:700;color:#fff!important;display:flex;align-items:center;box-shadow:0 4px 0 #0f1d43,0 9px 17px rgba(23,37,84,.24);transform:translateY(0);transition:transform .12s ease,box-shadow .12s ease,background .18s ease}
+.chip strong{color:#fff!important;margin-right:4px;font-weight:800}
+.chip:hover{background:#1e3362!important;transform:translateY(-1px);box-shadow:0 5px 0 #0f1d43,0 11px 19px rgba(23,37,84,.28)}
 
-.sidebar{
-position:fixed;
-right:0;
-top:0;
-width:var(--sidebar);
-height:100vh;
-background:linear-gradient(180deg,#172554,#13234f 48%,#0f1d43);
-color:#fff;
-z-index:1000;
-display:flex;
-flex-direction:column;
-overflow:hidden;
-box-shadow:-4px 0 18px rgba(15,29,67,.08)
-}
-
-body.varex-dark .sidebar{
-background:linear-gradient(180deg,#101b38,#0d1730 50%,#080f20)
-}
-
-.brand{
-height:var(--brand);
-min-height:var(--brand);
-padding:24px 14px 20px;
-border-bottom:1px solid rgba(255,255,255,.1);
-display:flex;
-flex-direction:column;
-align-items:center;
-justify-content:center;
-text-align:center
-}
-
-.logo{
-font-size:30px;
-font-weight:800;
-letter-spacing:4px;
-direction:ltr
-}
-
-.brand-small{
-margin-top:11px;
-font-size:10px;
-font-weight:600;
-letter-spacing:.8px;
-color:#e2e8f0;
-direction:ltr
-}
-
-.system-status{
-margin-top:16px;
-display:flex;
-align-items:center;
-gap:7px;
-font-size:10px;
-color:#d1fae5
-}
-
-.dot{
-width:7px;
-height:7px;
-border-radius:50%;
-background:#22c55e;
-box-shadow:0 0 8px rgba(34,197,94,.75)
-}
-
-.nav{
-padding:16px 12px;
-flex:1;
-overflow-y:auto
-}
-
-.nav a{
-height:48px;
-display:flex;
-align-items:center;
-gap:11px;
-padding:0 14px;
-margin-bottom:5px;
-border-radius:10px;
-color:#dbeafe;
-text-decoration:none;
-font-size:13px;
-font-weight:600;
-white-space:nowrap
-}
-
-.nav a:hover{
-background:rgba(255,255,255,.08);
-color:#fff
-}
-
-.nav a.active{
-background:#fff;
-color:var(--navy);
-font-weight:700;
-box-shadow:0 5px 15px rgba(0,0,0,.13)
-}
-
-body.varex-dark .nav a.active{
-background:#e2e8f0;
-color:#0f1d43
-}
-
-.nav-icon{
-width:25px;
-text-align:center;
-font-size:16px
-}
-
-.sidebar-footer{
-height:54px;
-min-height:54px;
-border-top:1px solid rgba(255,255,255,.1);
-color:#94a3b8;
-font-size:9px;
-letter-spacing:.5px;
-direction:ltr;
-display:flex;
-align-items:center;
-justify-content:center
-}
-
-.main{
-margin-right:var(--sidebar);
-min-height:100vh;
-background:var(--bg);
-transition:background .25s
-}
-
-.topbar{
-height:78px;
-background:var(--card);
-border-bottom:1px solid var(--border);
-display:flex;
-align-items:center;
-justify-content:space-between;
-padding:0 28px;
-position:sticky;
-top:0;
-z-index:50;
-transition:.25s
-}
-
-.page-name{
-display:flex;
-align-items:center;
-gap:12px
-}
-
-.page-icon{
-width:44px;
-height:44px;
-border-radius:11px;
-background:var(--card3);
-display:flex;
-align-items:center;
-justify-content:center;
-font-size:20px
-}
-
-.page-name h2{
-font-size:19px;
-color:var(--text);
-font-weight:800
-}
-
-.page-name small{
-display:block;
-color:var(--muted);
-margin-top:4px;
-font-size:11px;
-direction:ltr
-}
-
-.top-info{
-display:flex;
-gap:10px;
-align-items:center
-}
-
-/* =========================================
-   TOP INFO CARDS - LIGHT MODE NAVY 3D
-========================================= */
-
-.chip{
-min-height:40px;
-background:#172554;
-border:1px solid #172554;
-border-radius:9px;
-padding:8px 13px;
-font-size:11px;
-font-weight:700;
-color:#fff;
-display:flex;
-align-items:center;
-box-shadow:
-0 4px 0 #0f1d43,
-0 9px 17px rgba(23,37,84,.24);
-transform:translateY(0);
-transition:
-transform .12s ease,
-box-shadow .12s ease,
-background .18s ease
-}
-
-.chip strong{
-color:#fff;
-margin-right:4px;
-font-weight:800
-}
-
-.chip:hover{
-background:#1e3362;
-transform:translateY(-1px);
-box-shadow:
-0 5px 0 #0f1d43,
-0 11px 19px rgba(23,37,84,.28)
-}
-
-/* =========================================
-   TOP INFO CARDS - DARK MODE WHITE 3D
-========================================= */
-
-body.varex-dark .chip{
-background:#fff!important;
+/* الوضع الليلي: المستخدم + التاريخ + الوقت أبيض 3D */
+body.varex-dark .top-info .chip,
+body.varex-dark header.topbar .top-info .chip{
+background:#ffffff!important;
 background-image:none!important;
-border-color:#fff!important;
+border:1px solid #ffffff!important;
 color:#172554!important;
-box-shadow:
-0 4px 0 #94a3b8,
-0 10px 20px rgba(0,0,0,.32)!important
-}
-
-body.varex-dark .chip strong{
-color:#172554!important
-}
-
-body.varex-dark .chip:hover{
-background:#f1f5f9!important;
-color:#172554!important;
-transform:translateY(-1px);
-box-shadow:
-0 5px 0 #94a3b8,
-0 12px 22px rgba(0,0,0,.35)!important
-}
-
-.content{
-width:calc(100% - 48px);
-max-width:1450px;
-margin:24px auto 40px
-}
-
-.hero{
-display:flex;
-align-items:center;
-justify-content:space-between;
-gap:15px;
-margin-bottom:20px;
-padding:21px 23px;
-border:1px solid rgba(255,255,255,.10);
-border-radius:15px;
-background:linear-gradient(135deg,#172554,#243b70);
-box-shadow:0 7px 22px rgba(23,37,84,.14)
-}
-
-body.varex-dark .hero{
-background:linear-gradient(135deg,#172554,#1e3568);
-border-color:rgba(255,255,255,.10)
-}
-
-.hero h1{
-font-size:25px;
-margin-bottom:6px;
-color:#fff
-}
-
-.hero p{
-color:#dbeafe;
-font-size:13px;
-font-weight:500
-}
-
-button{
-border:0;
-border-radius:9px;
-min-height:40px;
-padding:9px 14px;
-font-family:inherit;
-font-size:11px;
-font-weight:bold;
-cursor:pointer
-}
-
-.primary{
-background:linear-gradient(135deg,#172554,#243b70);
-color:#fff;
-box-shadow:0 4px 12px rgba(23,37,84,.12)
-}
-
-.primary:hover{
-filter:brightness(1.08)
-}
-
-.hero .primary{
-background:#fff!important;
-background-image:none!important;
-color:#172554!important;
-border:1px solid #fff!important;
-box-shadow:
-0 5px 0 #cbd5e1,
-0 11px 19px rgba(0,0,0,.20)!important;
-transform:translateY(0);
-transition:
-transform .12s ease,
-box-shadow .12s ease,
-background .18s ease!important
-}
-
-.hero .primary:hover{
-background:#f8fafc!important;
-color:#172554!important;
-transform:translateY(-1px);
-box-shadow:
-0 6px 0 #cbd5e1,
-0 13px 21px rgba(0,0,0,.22)!important
-}
-
-.hero .primary:active{
-transform:translateY(4px);
-box-shadow:
-0 1px 0 #cbd5e1,
-0 4px 8px rgba(0,0,0,.17)!important
-}
-
-body.varex-dark .hero .primary{
-background:#fff!important;
-background-image:none!important;
-color:#172554!important;
-border:1px solid #fff!important;
-box-shadow:
-0 5px 0 #94a3b8,
-0 11px 21px rgba(0,0,0,.35)!important
-}
-
-body.varex-dark .hero .primary:hover{
-background:#f1f5f9!important;
-color:#172554!important;
-box-shadow:
-0 6px 0 #94a3b8,
-0 13px 23px rgba(0,0,0,.38)!important
-}
-
-body.varex-dark .hero .primary:active{
-transform:translateY(4px);
-box-shadow:
-0 1px 0 #94a3b8,
-0 4px 8px rgba(0,0,0,.24)!important
-}
-
-.secondary{
-background:var(--card2);
-color:var(--body);
-border:1px solid var(--border)
-}
-
-.secondary:hover{
-background:var(--card3)
-}
-
-.stats{
-display:grid;
-grid-template-columns:repeat(4,1fr);
-gap:12px;
-margin-bottom:18px
-}
-
-.stat{
-background:var(--card);
-border:1px solid var(--border);
-border-radius:14px;
-padding:16px;
-box-shadow:var(--shadow);
-transition:.25s
-}
-
-.stat span{
-font-size:11px;
-color:var(--muted);
-font-weight:600
-}
-
-.stat strong{
-display:block;
-font-size:22px;
-margin-top:6px;
-color:var(--text)
-}
-
-.green strong{color:var(--green)}
-.red strong{color:var(--red)}
-.blue strong{color:#243b70}
-
-body.varex-dark .blue strong{
-color:#a9bce8
-}
-
-.panel{
-background:var(--card);
-border:1px solid var(--border);
-border-radius:16px;
-padding:18px;
-box-shadow:var(--shadow);
-transition:.25s
-}
-
-.filters{
-display:grid;
-grid-template-columns:2fr 1fr 1fr;
-gap:9px;
-padding-bottom:16px;
-border-bottom:1px solid var(--line);
-margin-bottom:10px
-}
-
-input,select,textarea{
-width:100%;
-min-height:40px;
-padding:9px 11px;
-border:1px solid var(--border);
-border-radius:9px;
-background:var(--field);
-color:var(--text);
-font-family:inherit;
-font-size:11px;
-font-weight:600;
-outline:none;
-transition:.2s
-}
-
-input::placeholder,
-textarea::placeholder{
-color:var(--soft)
-}
-
-input:focus,
-select:focus,
-textarea:focus{
-border-color:#7183a5;
-box-shadow:0 0 0 3px rgba(71,85,105,.08)
-}
-
-body.varex-dark select option{
-background:#17233d;
-color:#fff
-}
-
-textarea{
-min-height:65px;
-resize:vertical
-}
-
-.table-wrap{
-overflow-x:auto
-}
-
-table{
-width:100%;
-border-collapse:collapse;
-min-width:950px
-}
-
-th{
-background:var(--card2);
-color:var(--muted);
-font-size:10px;
-text-align:right;
-padding:12px;
-border-bottom:1px solid var(--border);
-white-space:nowrap
-}
-
-td{
-padding:13px 12px;
-border-bottom:1px solid var(--line);
-font-size:11px;
-color:var(--body)
-}
-
-tbody tr:hover td{
-background:var(--card2)
-}
-
-.invoice{
-font-weight:bold;
-color:var(--text);
-direction:ltr;
-text-align:right
-}
-
-.badge{
-display:inline-flex;
-padding:5px 9px;
-border-radius:20px;
-font-size:9px;
-font-weight:bold
-}
-
-.approved{
-background:#dcfce7;
-color:#15803d
-}
-
-.draft{
-background:#fefce8;
-color:#a16207
-}
-
-.paid{
-background:#ecfdf5;
-color:#15803d
-}
-
-.partial{
-background:#fff7ed;
-color:#c2410c
-}
-
-.unpaid{
-background:#fef2f2;
-color:#b91c1c
-}
-
-body.varex-dark .approved{
-background:rgba(34,197,94,.14);
-color:#86efac
-}
-
-body.varex-dark .draft{
-background:rgba(202,138,4,.14);
-color:#fde68a
-}
-
-body.varex-dark .paid{
-background:rgba(34,197,94,.14);
-color:#86efac
-}
-
-body.varex-dark .partial{
-background:rgba(234,88,12,.14);
-color:#fdba74
-}
-
-body.varex-dark .unpaid{
-background:rgba(220,38,38,.14);
-color:#fca5a5
-}
-
-.mini{
-min-height:30px;
-padding:6px 9px;
-background:var(--card2);
-border:1px solid var(--border);
-color:var(--body);
-margin:2px
-}
-
-.mini:hover{
-background:var(--card3)
-}
-
-.empty{
-text-align:center;
-padding:45px;
-color:var(--soft);
-display:none
-}
-
-.modal-bg{
-position:fixed;
-inset:0;
-background:rgba(15,23,42,.58);
-z-index:3000;
-display:none;
-align-items:flex-start;
-justify-content:center;
-padding:25px;
-overflow:auto
-}
-
-body.varex-dark .modal-bg{
-background:rgba(2,8,23,.76)
-}
-
-.modal{
-width:min(1000px,100%);
-background:var(--card);
-color:var(--text);
-border:1px solid var(--border);
-border-radius:17px;
-padding:22px;
-margin:auto;
-box-shadow:0 20px 60px rgba(0,0,0,.25)
-}
-
-.modal-head{
-display:flex;
-justify-content:space-between;
-align-items:center;
-padding-bottom:14px;
-margin-bottom:17px;
-border-bottom:1px solid var(--border)
-}
-
-.modal-head h3{
-font-size:17px;
-color:var(--text)
-}
-
-.close{
-width:34px;
-min-height:34px;
-padding:0;
-background:var(--card3);
-color:var(--text);
-font-size:18px
-}
-
-.form-grid{
-display:grid;
-grid-template-columns:repeat(3,1fr);
-gap:11px
-}
-
-.field{
-margin-bottom:11px
-}
-
-.field label{
-display:block;
-font-size:10px;
-font-weight:bold;
-color:var(--body);
-margin-bottom:5px
-}
-
-.full{
-grid-column:1/-1
-}
-
-.items-title{
-display:flex;
-justify-content:space-between;
-align-items:center;
-margin:14px 0 9px
-}
-
-.items-title h4{
-font-size:13px;
-color:var(--text)
-}
-
-.items-table input{
-min-width:80px
-}
-
-.items-table select{
-min-width:150px
-}
-
-.remove{
-color:#b91c1c;
-background:#fff1f2;
-border:1px solid #fecaca
-}
-
-body.varex-dark .remove{
-background:rgba(185,28,28,.14);
-border-color:rgba(248,113,113,.20);
-color:#fca5a5
-}
-
-.totals{
-margin-top:15px;
-margin-right:auto;
-width:min(420px,100%);
-background:var(--card2);
-border:1px solid var(--border);
-border-radius:12px;
-padding:14px
-}
-
-.total-row{
-display:flex;
-justify-content:space-between;
-padding:7px 0;
-font-size:11px;
-color:var(--body);
-border-bottom:1px solid var(--border)
-}
-
-.total-row:last-child{
-border:0
-}
-
-.total-row.final{
-font-size:14px;
-font-weight:bold;
-color:var(--text)
-}
-
-.total-row.remaining{
-font-weight:bold;
-color:var(--red)
-}
-
-.modal-actions{
-display:flex;
-gap:8px;
-margin-top:17px;
-flex-wrap:wrap
-}
-
-.toast{
-position:fixed;
-left:25px;
-bottom:25px;
-background:#172554;
-color:#fff;
-padding:12px 17px;
-border-radius:10px;
-font-size:11px;
-display:none;
-z-index:5000;
-box-shadow:0 7px 22px rgba(15,23,42,.20)
-}
-
-@media(max-width:900px){
-.stats{grid-template-columns:1fr 1fr}
-.form-grid{grid-template-columns:1fr 1fr}
-}
-
-@media(max-width:750px){
-.top-info{display:none}
-.hero{flex-direction:column;align-items:flex-start}
-.filters{grid-template-columns:1fr}
-}
-
-@media(max-width:600px){
-.content{width:94%}
-.topbar{padding:0 14px}
-.form-grid{grid-template-columns:1fr}
-.stats{grid-template-columns:1fr 1fr}
-.hero button{width:100%}
-}
+box-shadow:0 4px 0 #94a3b8,0 10px 20px rgba(0,0,0,.38)!important
+}
+body.varex-dark .top-info .chip strong,
+body.varex-dark header.topbar .top-info .chip strong{color:#172554!important}
+body.varex-dark .top-info .chip:hover,
+body.varex-dark header.topbar .top-info .chip:hover{background:#f1f5f9!important;background-image:none!important;color:#172554!important;border-color:#fff!important;transform:translateY(-1px);box-shadow:0 5px 0 #94a3b8,0 12px 22px rgba(0,0,0,.42)!important}
+
+.content{width:calc(100% - 48px);max-width:1450px;margin:24px auto 40px}
+.hero{display:flex;align-items:center;justify-content:space-between;gap:15px;margin-bottom:20px;padding:21px 23px;border:1px solid rgba(255,255,255,.10);border-radius:15px;background:linear-gradient(135deg,#172554,#243b70);box-shadow:0 7px 22px rgba(23,37,84,.14)}
+body.varex-dark .hero{background:linear-gradient(135deg,#172554,#1e3568);border-color:rgba(255,255,255,.10)}
+.hero h1{font-size:25px;margin-bottom:6px;color:#fff}
+.hero p{color:#dbeafe;font-size:13px;font-weight:500}
+button{border:0;border-radius:9px;min-height:40px;padding:9px 14px;font-family:inherit;font-size:11px;font-weight:bold;cursor:pointer}
+.primary{background:linear-gradient(135deg,#172554,#243b70);color:#fff;box-shadow:0 4px 12px rgba(23,37,84,.12)}
+.primary:hover{filter:brightness(1.08)}
+.hero .primary{background:#fff!important;background-image:none!important;color:#172554!important;border:1px solid #fff!important;box-shadow:0 5px 0 #cbd5e1,0 11px 19px rgba(0,0,0,.20)!important;transform:translateY(0);transition:transform .12s ease,box-shadow .12s ease,background .18s ease!important}
+.hero .primary:hover{background:#f8fafc!important;color:#172554!important;transform:translateY(-1px);box-shadow:0 6px 0 #cbd5e1,0 13px 21px rgba(0,0,0,.22)!important}
+.hero .primary:active{transform:translateY(4px);box-shadow:0 1px 0 #cbd5e1,0 4px 8px rgba(0,0,0,.17)!important}
+body.varex-dark .hero .primary{background:#fff!important;background-image:none!important;color:#172554!important;border:1px solid #fff!important;box-shadow:0 5px 0 #94a3b8,0 11px 21px rgba(0,0,0,.35)!important}
+body.varex-dark .hero .primary:hover{background:#f1f5f9!important;color:#172554!important;box-shadow:0 6px 0 #94a3b8,0 13px 23px rgba(0,0,0,.38)!important}
+body.varex-dark .hero .primary:active{transform:translateY(4px);box-shadow:0 1px 0 #94a3b8,0 4px 8px rgba(0,0,0,.24)!important}
+.secondary{background:var(--card2);color:var(--body);border:1px solid var(--border)}
+.secondary:hover{background:var(--card3)}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:18px}
+.stat{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px;box-shadow:var(--shadow);transition:.25s}
+.stat span{font-size:11px;color:var(--muted);font-weight:600}
+.stat strong{display:block;font-size:22px;margin-top:6px;color:var(--text)}
+.green strong{color:var(--green)}.red strong{color:var(--red)}.blue strong{color:#243b70}
+body.varex-dark .blue strong{color:#a9bce8}
+.panel{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:18px;box-shadow:var(--shadow);transition:.25s}
+.filters{display:grid;grid-template-columns:2fr 1fr 1fr;gap:9px;padding-bottom:16px;border-bottom:1px solid var(--line);margin-bottom:10px}
+input,select,textarea{width:100%;min-height:40px;padding:9px 11px;border:1px solid var(--border);border-radius:9px;background:var(--field);color:var(--text);font-family:inherit;font-size:11px;font-weight:600;outline:none;transition:.2s}
+input::placeholder,textarea::placeholder{color:var(--soft)}
+input:focus,select:focus,textarea:focus{border-color:#7183a5;box-shadow:0 0 0 3px rgba(71,85,105,.08)}
+body.varex-dark select option{background:#17233d;color:#fff}
+textarea{min-height:65px;resize:vertical}
+.table-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;min-width:950px}
+th{background:var(--card2);color:var(--muted);font-size:10px;text-align:right;padding:12px;border-bottom:1px solid var(--border);white-space:nowrap}
+td{padding:13px 12px;border-bottom:1px solid var(--line);font-size:11px;color:var(--body)}
+tbody tr:hover td{background:var(--card2)}
+.invoice{font-weight:bold;color:var(--text);direction:ltr;text-align:right}
+.badge{display:inline-flex;padding:5px 9px;border-radius:20px;font-size:9px;font-weight:bold}
+.approved{background:#dcfce7;color:#15803d}.draft{background:#fefce8;color:#a16207}.paid{background:#ecfdf5;color:#15803d}.partial{background:#fff7ed;color:#c2410c}.unpaid{background:#fef2f2;color:#b91c1c}
+body.varex-dark .approved{background:rgba(34,197,94,.14);color:#86efac}
+body.varex-dark .draft{background:rgba(202,138,4,.14);color:#fde68a}
+body.varex-dark .paid{background:rgba(34,197,94,.14);color:#86efac}
+body.varex-dark .partial{background:rgba(234,88,12,.14);color:#fdba74}
+body.varex-dark .unpaid{background:rgba(220,38,38,.14);color:#fca5a5}
+.mini{min-height:30px;padding:6px 9px;background:var(--card2);border:1px solid var(--border);color:var(--body);margin:2px}
+.mini:hover{background:var(--card3)}
+.empty{text-align:center;padding:45px;color:var(--soft);display:none}
+.modal-bg{position:fixed;inset:0;background:rgba(15,23,42,.58);z-index:3000;display:none;align-items:flex-start;justify-content:center;padding:25px;overflow:auto}
+body.varex-dark .modal-bg{background:rgba(2,8,23,.76)}
+.modal{width:min(1000px,100%);background:var(--card);color:var(--text);border:1px solid var(--border);border-radius:17px;padding:22px;margin:auto;box-shadow:0 20px 60px rgba(0,0,0,.25)}
+.modal-head{display:flex;justify-content:space-between;align-items:center;padding-bottom:14px;margin-bottom:17px;border-bottom:1px solid var(--border)}
+.modal-head h3{font-size:17px;color:var(--text)}
+.close{width:34px;min-height:34px;padding:0;background:var(--card3);color:var(--text);font-size:18px}
+.form-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:11px}
+.field{margin-bottom:11px}
+.field label{display:block;font-size:10px;font-weight:bold;color:var(--body);margin-bottom:5px}
+.full{grid-column:1/-1}
+.items-title{display:flex;justify-content:space-between;align-items:center;margin:14px 0 9px}
+.items-title h4{font-size:13px;color:var(--text)}
+.items-table input{min-width:80px}
+.items-table select{min-width:150px}
+.remove{color:#b91c1c;background:#fff1f2;border:1px solid #fecaca}
+body.varex-dark .remove{background:rgba(185,28,28,.14);border-color:rgba(248,113,113,.20);color:#fca5a5}
+.totals{margin-top:15px;margin-right:auto;width:min(420px,100%);background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:14px}
+.total-row{display:flex;justify-content:space-between;padding:7px 0;font-size:11px;color:var(--body);border-bottom:1px solid var(--border)}
+.total-row:last-child{border:0}
+.total-row.final{font-size:14px;font-weight:bold;color:var(--text)}
+.total-row.remaining{font-weight:bold;color:var(--red)}
+.modal-actions{display:flex;gap:8px;margin-top:17px;flex-wrap:wrap}
+.toast{position:fixed;left:25px;bottom:25px;background:#172554;color:#fff;padding:12px 17px;border-radius:10px;font-size:11px;display:none;z-index:5000;box-shadow:0 7px 22px rgba(15,23,42,.20)}
+@media(max-width:900px){.stats{grid-template-columns:1fr 1fr}.form-grid{grid-template-columns:1fr 1fr}}
+@media(max-width:750px){.top-info{display:none}.hero{flex-direction:column;align-items:flex-start}.filters{grid-template-columns:1fr}}
+@media(max-width:600px){.content{width:94%}.topbar{padding:0 14px}.form-grid{grid-template-columns:1fr}.stats{grid-template-columns:1fr 1fr}.hero button{width:100%}}
 </style>
 </head>
-
 <body>
+<aside class="sidebar"><div class="brand"><div class="logo">VAREX</div><div class="brand-small">BUSINESS MANAGEMENT SYSTEM</div><div class="system-status"><span class="dot"></span><span>النظام متصل وجاهز للعمل</span></div></div><nav class="nav"><a href="./index.html"><span class="nav-icon">▦</span><span>لوحة التحكم</span></a><a href="./pos.html"><span class="nav-icon">🛒</span><span>شاشة المبيعات</span></a><a href="./products.html"><span class="nav-icon">📦</span><span>المنتجات والمخزون</span></a><a href="./purchases.html" class="active"><span class="nav-icon">🧾</span><span>المشتريات</span></a><a href="./customers.html"><span class="nav-icon">👥</span><span>العملاء</span></a><a href="./suppliers.html"><span class="nav-icon">🚚</span><span>الموردون</span></a><a href="./accounts.html"><span class="nav-icon">💰</span><span>الحسابات</span></a><a href="./employees.html"><span class="nav-icon">👤</span><span>الموظفون</span></a><a href="./reports.html"><span class="nav-icon">📊</span><span>التقارير</span></a><a href="./branches.html"><span class="nav-icon">🏢</span><span>الفروع</span></a><a href="./notifications.html"><span class="nav-icon">🔔</span><span>مركز التنبيهات</span></a><a href="./activity.html"><span class="nav-icon">📋</span><span>سجل النشاط</span></a><a href="./users.html"><span class="nav-icon">🔐</span><span>المستخدمون والصلاحيات</span></a><a href="./setting.html"><span class="nav-icon">⚙️</span><span>الإعدادات</span></a></nav><div class="sidebar-footer">VAREX BUSINESS SYSTEM</div></aside>
 
-<aside class="sidebar">
-
-<div class="brand">
-<div class="logo">VAREX</div>
-<div class="brand-small">BUSINESS MANAGEMENT SYSTEM</div>
-<div class="system-status">
-<span class="dot"></span>
-<span>النظام متصل وجاهز للعمل</span>
-</div>
-</div>
-
-<nav class="nav">
-
-<a href="./index.html">
-<span class="nav-icon">▦</span>
-<span>لوحة التحكم</span>
-</a>
-
-<a href="./pos.html">
-<span class="nav-icon">🛒</span>
-<span>شاشة المبيعات</span>
-</a>
-
-<a href="./products.html">
-<span class="nav-icon">📦</span>
-<span>المنتجات والمخزون</span>
-</a>
-
-<a href="./purchases.html" class="active">
-<span class="nav-icon">🧾</span>
-<span>المشتريات</span>
-</a>
-
-<a href="./customers.html">
-<span class="nav-icon">👥</span>
-<span>العملاء</span>
-</a>
-
-<a href="./suppliers.html">
-<span class="nav-icon">🚚</span>
-<span>الموردون</span>
-</a>
-
-<a href="./accounts.html">
-<span class="nav-icon">💰</span>
-<span>الحسابات</span>
-</a>
-
-<a href="./employees.html">
-<span class="nav-icon">👤</span>
-<span>الموظفون</span>
-</a>
-
-<a href="./reports.html">
-<span class="nav-icon">📊</span>
-<span>التقارير</span>
-</a>
-
-<a href="./branches.html">
-<span class="nav-icon">🏢</span>
-<span>الفروع</span>
-</a>
-
-<a href="./notifications.html">
-<span class="nav-icon">🔔</span>
-<span>مركز التنبيهات</span>
-</a>
-
-<a href="./activity.html">
-<span class="nav-icon">📋</span>
-<span>سجل النشاط</span>
-</a>
-
-<a href="./users.html">
-<span class="nav-icon">🔐</span>
-<span>المستخدمون والصلاحيات</span>
-</a>
-
-<a href="./setting.html">
-<span class="nav-icon">⚙️</span>
-<span>الإعدادات</span>
-</a>
-
-</nav>
-
-<div class="sidebar-footer">
-VAREX BUSINESS SYSTEM
-</div>
-
-</aside>
-
-<div class="main">
-
-<header class="topbar">
-
-<div class="page-name">
-<div class="page-icon">🧾</div>
-
-<div>
-<h2>المشتريات</h2>
-<small>VAREX PURCHASES</small>
-</div>
-</div>
-
-<div class="top-info">
-
-<div class="chip">
-المستخدم:
-<strong>Owner</strong>
-</div>
-
-<div class="chip" id="currentDate">—</div>
-
-<div class="chip" id="currentTime">—</div>
-
-</div>
-
-</header>
+<div class="main"><header class="topbar"><div class="page-name"><div class="page-icon">🧾</div><div><h2>المشتريات</h2><small>VAREX PURCHASES</small></div></div><div class="top-info"><div class="chip">المستخدم:<strong>Owner</strong></div><div class="chip" id="currentDate">—</div><div class="chip" id="currentTime">—</div></div></header>
 
 <main class="content">
-
-<section class="hero">
-
-<div>
-<h1>إدارة المشتريات</h1>
-<p>تسجيل فواتير الموردين ومتابعة قيمة المشتريات والمدفوع والمتبقي.</p>
-</div>
-
-<button class="primary" onclick="openPurchase()">
-＋ فاتورة شراء جديدة
-</button>
-
-</section>
+<section class="hero"><div><h1>إدارة المشتريات</h1><p>تسجيل فواتير الموردين ومتابعة قيمة المشتريات والمدفوع والمتبقي.</p></div><button class="primary" onclick="openPurchase()">＋ فاتورة شراء جديدة</button></section>
 
 <div class="stats">
-
-<div class="stat">
-<span>إجمالي الفواتير</span>
-<strong id="invoiceCount">0</strong>
-</div>
-
-<div class="stat blue">
-<span>إجمالي المشتريات</span>
-<strong id="purchaseTotal">0.00 AED</strong>
-</div>
-
-<div class="stat green">
-<span>إجمالي المدفوع</span>
-<strong id="paidTotal">0.00 AED</strong>
-</div>
-
-<div class="stat red">
-<span>المبالغ المتبقية</span>
-<strong id="remainingTotal">0.00 AED</strong>
-</div>
-
+<div class="stat"><span>إجمالي الفواتير</span><strong id="invoiceCount">0</strong></div>
+<div class="stat blue"><span>إجمالي المشتريات</span><strong id="purchaseTotal">0.00 AED</strong></div>
+<div class="stat green"><span>إجمالي المدفوع</span><strong id="paidTotal">0.00 AED</strong></div>
+<div class="stat red"><span>المبالغ المتبقية</span><strong id="remainingTotal">0.00 AED</strong></div>
 </div>
 
 <section class="panel">
-
 <div class="filters">
-
-<input id="search"
-placeholder="🔎 البحث برقم الفاتورة أو المورد..."
-oninput="render()">
-
-<select id="statusFilter" onchange="render()">
-<option value="all">كل الحالات</option>
-<option value="approved">معتمدة</option>
-<option value="draft">مسودة</option>
-</select>
-
-<select id="paymentFilter" onchange="render()">
-<option value="all">كل حالات الدفع</option>
-<option value="paid">مدفوعة</option>
-<option value="partial">مدفوعة جزئياً</option>
-<option value="unpaid">غير مدفوعة</option>
-</select>
-
+<input id="search" placeholder="🔎 البحث برقم الفاتورة أو المورد..." oninput="render()">
+<select id="statusFilter" onchange="render()"><option value="all">كل الحالات</option><option value="approved">معتمدة</option><option value="draft">مسودة</option></select>
+<select id="paymentFilter" onchange="render()"><option value="all">كل حالات الدفع</option><option value="paid">مدفوعة</option><option value="partial">مدفوعة جزئياً</option><option value="unpaid">غير مدفوعة</option></select>
 </div>
-
-<div class="table-wrap">
-
-<table>
-
-<thead>
-<tr>
-<th>رقم الفاتورة</th>
-<th>المورد</th>
-<th>الفرع</th>
-<th>التاريخ</th>
-<th>الإجمالي</th>
-<th>المدفوع</th>
-<th>المتبقي</th>
-<th>الدفع</th>
-<th>الحالة</th>
-<th>الإجراءات</th>
-</tr>
-</thead>
-
-<tbody id="purchaseBody"></tbody>
-
-</table>
-
-</div>
-
-<div class="empty" id="empty">
-لا توجد فواتير شراء.
-</div>
-
+<div class="table-wrap"><table><thead><tr><th>رقم الفاتورة</th><th>المورد</th><th>الفرع</th><th>التاريخ</th><th>الإجمالي</th><th>المدفوع</th><th>المتبقي</th><th>الدفع</th><th>الحالة</th><th>الإجراءات</th></tr></thead><tbody id="purchaseBody"></tbody></table></div>
+<div class="empty" id="empty">لا توجد فواتير شراء.</div>
 </section>
-
 </main>
-
 </div>
 
-<div class="modal-bg" id="purchaseModal">
-
-<div class="modal">
-
-<div class="modal-head">
-<h3>فاتورة شراء جديدة</h3>
-<button class="close" onclick="closePurchase()">×</button>
-</div>
-
+<div class="modal-bg" id="purchaseModal"><div class="modal">
+<div class="modal-head"><h3>فاتورة شراء جديدة</h3><button class="close" onclick="closePurchase()">×</button></div>
 <div class="form-grid">
-
-<div class="field">
-<label>المورد *</label>
-
-<select id="supplier">
-<option value="">اختر المورد</option>
-<option>شركة الخليج للتجارة</option>
-<option>المورد الرئيسي</option>
-<option>شركة التوريدات الحديثة</option>
-</select>
+<div class="field"><label>المورد *</label><select id="supplier"><option value="">اختر المورد</option><option>شركة الخليج للتجارة</option><option>المورد الرئيسي</option><option>شركة التوريدات الحديثة</option></select></div>
+<div class="field"><label>رقم فاتورة المورد</label><input id="supplierInvoice" placeholder="رقم فاتورة المورد"></div>
+<div class="field"><label>الفرع *</label><select id="branch"><option>الفرع الرئيسي</option></select></div>
+<div class="field"><label>تاريخ الفاتورة</label><input id="purchaseDate" type="date"></div>
+<div class="field"><label>طريقة الدفع</label><select id="paymentMethod"><option value="cash">نقدي</option><option value="card">بطاقة</option><option value="bank">تحويل بنكي</option><option value="credit">آجل</option></select></div>
+<div class="field"><label>المبلغ المدفوع</label><input id="paidAmount" type="number" min="0" step=".01" value="0" oninput="calculate()"></div>
 </div>
 
-<div class="field">
-<label>رقم فاتورة المورد</label>
-<input id="supplierInvoice" placeholder="رقم فاتورة المورد">
-</div>
-
-<div class="field">
-<label>الفرع *</label>
-<select id="branch">
-<option>الفرع الرئيسي</option>
-</select>
-</div>
-
-<div class="field">
-<label>تاريخ الفاتورة</label>
-<input id="purchaseDate" type="date">
-</div>
-
-<div class="field">
-<label>طريقة الدفع</label>
-
-<select id="paymentMethod">
-<option value="cash">نقدي</option>
-<option value="card">بطاقة</option>
-<option value="bank">تحويل بنكي</option>
-<option value="credit">آجل</option>
-</select>
-</div>
-
-<div class="field">
-<label>المبلغ المدفوع</label>
-<input id="paidAmount" type="number" min="0" step=".01" value="0" oninput="calculate()">
-</div>
-
-</div>
-
-<div class="items-title">
-
-<h4>📦 أصناف الفاتورة</h4>
-
-<button class="secondary" onclick="addItem()">
-＋ إضافة منتج
-</button>
-
-</div>
-
-<div class="table-wrap">
-
-<table class="items-table">
-
-<thead>
-<tr>
-<th>المنتج</th>
-<th>الكمية</th>
-<th>تكلفة الوحدة</th>
-<th>الضريبة %</th>
-<th>الإجمالي</th>
-<th></th>
-</tr>
-</thead>
-
-<tbody id="itemsBody"></tbody>
-
-</table>
-
-</div>
+<div class="items-title"><h4>📦 أصناف الفاتورة</h4><button class="secondary" onclick="addItem()">＋ إضافة منتج</button></div>
+<div class="table-wrap"><table class="items-table"><thead><tr><th>المنتج</th><th>الكمية</th><th>تكلفة الوحدة</th><th>الضريبة %</th><th>الإجمالي</th><th></th></tr></thead><tbody id="itemsBody"></tbody></table></div>
 
 <div class="totals">
-
-<div class="total-row">
-<span>الإجمالي قبل الضريبة</span>
-<strong id="subtotal">0.00 AED</strong>
+<div class="total-row"><span>الإجمالي قبل الضريبة</span><strong id="subtotal">0.00 AED</strong></div>
+<div class="total-row"><span>الضريبة</span><strong id="taxTotal">0.00 AED</strong></div>
+<div class="total-row final"><span>إجمالي الفاتورة</span><strong id="grandTotal">0.00 AED</strong></div>
+<div class="total-row"><span>المدفوع</span><strong id="paidView">0.00 AED</strong></div>
+<div class="total-row remaining"><span>المتبقي</span><strong id="remainingView">0.00 AED</strong></div>
 </div>
 
-<div class="total-row">
-<span>الضريبة</span>
-<strong id="taxTotal">0.00 AED</strong>
-</div>
-
-<div class="total-row final">
-<span>إجمالي الفاتورة</span>
-<strong id="grandTotal">0.00 AED</strong>
-</div>
-
-<div class="total-row">
-<span>المدفوع</span>
-<strong id="paidView">0.00 AED</strong>
-</div>
-
-<div class="total-row remaining">
-<span>المتبقي</span>
-<strong id="remainingView">0.00 AED</strong>
-</div>
-
-</div>
-
-<div class="field full" style="margin-top:14px">
-
-<label>ملاحظات</label>
-
-<textarea
-id="notes"
-placeholder="أي ملاحظات على فاتورة الشراء"></textarea>
-
-</div>
-
-<div class="modal-actions">
-
-<button class="primary" onclick="savePurchase('approved')">
-✓ حفظ واعتماد الفاتورة
-</button>
-
-<button class="secondary" onclick="savePurchase('draft')">
-حفظ كمسودة
-</button>
-
-<button class="secondary" onclick="closePurchase()">
-إلغاء
-</button>
-
-</div>
-
-</div>
-
-</div>
+<div class="field full" style="margin-top:14px"><label>ملاحظات</label><textarea id="notes" placeholder="أي ملاحظات على فاتورة الشراء"></textarea></div>
+<div class="modal-actions"><button class="primary" onclick="savePurchase('approved')">✓ حفظ واعتماد الفاتورة</button><button class="secondary" onclick="savePurchase('draft')">حفظ كمسودة</button><button class="secondary" onclick="closePurchase()">إلغاء</button></div>
+</div></div>
 
 <div class="toast" id="toast"></div>
 
 <script src="./varex.js"></script>
-
 <script>
 let purchases=[],rowNo=0;
 
-const demo=[
-{
-id:"PUR-1001",
-supplier:"شركة الخليج للتجارة",
-supplierInvoice:"SUP-552",
-branch:"الفرع الرئيسي",
-date:"2026-08-15",
-total:1250,
-paid:1000,
-remaining:250,
-status:"approved",
-payment:"partial",
-method:"bank",
-items:[]
-}
-];
+const demo=[{id:"PUR-1001",supplier:"شركة الخليج للتجارة",supplierInvoice:"SUP-552",branch:"الفرع الرئيسي",date:"2026-08-15",total:1250,paid:1000,remaining:250,status:"approved",payment:"partial",method:"bank",items:[]}];
 
 function load(){
-
 try{
-
-const x=
-JSON.parse(
-localStorage.getItem("varexPurchases")||"null"
-);
-
-purchases=
-Array.isArray(x)
-?x
-:demo;
-
-}catch(e){
-
-purchases=demo;
-
+const x=JSON.parse(localStorage.getItem("varexPurchases")||"null");
+purchases=Array.isArray(x)?x:demo;
+}catch(e){purchases=demo}
+saveStore();loadBranches();render();
 }
 
-saveStore();
-loadBranches();
-render();
-
-}
-
-function saveStore(){
-
-localStorage.setItem(
-"varexPurchases",
-JSON.stringify(purchases)
-);
-
-}
+function saveStore(){localStorage.setItem("varexPurchases",JSON.stringify(purchases))}
 
 function loadBranches(){
-
 try{
-
-const b=
-JSON.parse(
-localStorage.getItem("varexBranches")||"[]"
-);
-
+const b=JSON.parse(localStorage.getItem("varexBranches")||"[]");
 if(Array.isArray(b)&&b.length){
-
 branch.innerHTML="";
-
-b
-.filter(x=>x.status==="active")
-.forEach(x=>{
-
-const o=
-document.createElement("option");
-
+b.filter(x=>x.status==="active").forEach(x=>{
+const o=document.createElement("option");
 o.value=x.name;
 o.textContent=x.name;
-
 branch.appendChild(o);
-
 });
-
 }
-
 }catch(e){}
-
 }
 
 function render(){
+const q=search.value.trim().toLowerCase();
+const s=statusFilter.value;
+const p=paymentFilter.value;
 
-const q=
-search.value.trim().toLowerCase();
-
-const s=
-statusFilter.value;
-
-const p=
-paymentFilter.value;
-
-const data=
-purchases.filter(x=>
-(
-!q ||
-`${x.id} ${x.supplier} ${x.supplierInvoice||""}`
-.toLowerCase()
-.includes(q)
-)
-&&
-(s==="all"||x.status===s)
-&&
+const data=purchases.filter(x=>
+(!q||`${x.id} ${x.supplier} ${x.supplierInvoice||""}`.toLowerCase().includes(q))&&
+(s==="all"||x.status===s)&&
 (p==="all"||x.payment===p)
 );
 
 purchaseBody.innerHTML="";
 
 data.forEach(x=>{
-
-const tr=
-document.createElement("tr");
-
+const tr=document.createElement("tr");
 tr.innerHTML=`
-
-<td class="invoice">
-${esc(x.id)}
-</td>
-
+<td class="invoice">${esc(x.id)}</td>
+<td>${esc(x.supplier)}</td>
+<td>${esc(x.branch)}</td>
+<td>${formatDate(x.date)}</td>
+<td>${money(x.total)}</td>
+<td>${money(x.paid)}</td>
+<td>${money(x.remaining)}</td>
+<td><span class="badge ${x.payment}">${paymentName(x.payment)}</span></td>
+<td><span class="badge ${x.status}">${x.status==="approved"?"معتمدة":"مسودة"}</span></td>
 <td>
-${esc(x.supplier)}
-</td>
-
-<td>
-${esc(x.branch)}
-</td>
-
-<td>
-${formatDate(x.date)}
-</td>
-
-<td>
-${money(x.total)}
-</td>
-
-<td>
-${money(x.paid)}
-</td>
-
-<td>
-${money(x.remaining)}
-</td>
-
-<td>
-<span class="badge ${x.payment}">
-${paymentName(x.payment)}
-</span>
-</td>
-
-<td>
-<span class="badge ${x.status}">
-${x.status==="approved"?"معتمدة":"مسودة"}
-</span>
-</td>
-
-<td>
-
-<button
-class="mini"
-onclick="viewPurchase('${x.id}')">
-عرض
-</button>
-
-${
-x.status==="draft"
-?
-`<button
-class="mini"
-onclick="approvePurchase('${x.id}')">
-اعتماد
-</button>`
-:""
-}
-
-</td>
-
-`;
-
+<button class="mini" onclick="viewPurchase('${x.id}')">عرض</button>
+${x.status==="draft"?`<button class="mini" onclick="approvePurchase('${x.id}')">اعتماد</button>`:""}
+</td>`;
 purchaseBody.appendChild(tr);
-
 });
 
-empty.style.display=
-data.length
-?"none"
-:"block";
-
-invoiceCount.innerText=
-purchases.length;
-
-purchaseTotal.innerText=
-money(
-purchases.reduce(
-(a,x)=>a+Number(x.total||0),
-0
-)
-);
-
-paidTotal.innerText=
-money(
-purchases.reduce(
-(a,x)=>a+Number(x.paid||0),
-0
-)
-);
-
-remainingTotal.innerText=
-money(
-purchases.reduce(
-(a,x)=>a+Number(x.remaining||0),
-0
-)
-);
-
+empty.style.display=data.length?"none":"block";
+invoiceCount.innerText=purchases.length;
+purchaseTotal.innerText=money(purchases.reduce((a,x)=>a+Number(x.total||0),0));
+paidTotal.innerText=money(purchases.reduce((a,x)=>a+Number(x.paid||0),0));
+remainingTotal.innerText=money(purchases.reduce((a,x)=>a+Number(x.remaining||0),0));
 }
 
 function openPurchase(){
-
 supplier.value="";
 supplierInvoice.value="";
-purchaseDate.value=
-new Date()
-.toISOString()
-.slice(0,10);
-
+purchaseDate.value=new Date().toISOString().slice(0,10);
 paymentMethod.value="cash";
 paidAmount.value="0";
 notes.value="";
 itemsBody.innerHTML="";
 rowNo=0;
-
 addItem();
 calculate();
-
 purchaseModal.style.display="flex";
-
 }
 
-function closePurchase(){
-
-purchaseModal.style.display="none";
-
-}
+function closePurchase(){purchaseModal.style.display="none"}
 
 function addItem(){
-
 rowNo++;
-
-const tr=
-document.createElement("tr");
-
+const tr=document.createElement("tr");
 tr.dataset.row=rowNo;
-
 tr.innerHTML=`
-
-<td>
-
-<select class="item-name" onchange="calculate()">
-
-<option value="">
-اختر المنتج
-</option>
-
-<option>
-تونة 185 غرام
-</option>
-
-<option>
-مياه معدنية
-</option>
-
-<option>
-أرز 5 كغ
-</option>
-
-<option>
-سكر 2 كغ
-</option>
-
-<option>
-منتج آخر
-</option>
-
-</select>
-
-</td>
-
-<td>
-
-<input
-class="qty"
-type="number"
-min="1"
-value="1"
-oninput="calculate()">
-
-</td>
-
-<td>
-
-<input
-class="cost"
-type="number"
-min="0"
-step=".01"
-value="0"
-oninput="calculate()">
-
-</td>
-
-<td>
-
-<input
-class="tax"
-type="number"
-min="0"
-step=".01"
-value="5"
-oninput="calculate()">
-
-</td>
-
-<td class="line-total">
-0.00 AED
-</td>
-
-<td>
-
-<button
-class="remove"
-onclick="removeItem(this)">
-×
-</button>
-
-</td>
-
-`;
-
+<td><select class="item-name" onchange="calculate()"><option value="">اختر المنتج</option><option>تونة 185 غرام</option><option>مياه معدنية</option><option>أرز 5 كغ</option><option>سكر 2 كغ</option><option>منتج آخر</option></select></td>
+<td><input class="qty" type="number" min="1" value="1" oninput="calculate()"></td>
+<td><input class="cost" type="number" min="0" step=".01" value="0" oninput="calculate()"></td>
+<td><input class="tax" type="number" min="0" step=".01" value="5" oninput="calculate()"></td>
+<td class="line-total">0.00 AED</td>
+<td><button class="remove" onclick="removeItem(this)">×</button></td>`;
 itemsBody.appendChild(tr);
-
 calculate();
-
 }
 
 function removeItem(btn){
-
 if(itemsBody.children.length<=1){
-
-alert(
-"يجب أن تحتوي الفاتورة على منتج واحد على الأقل."
-);
-
+alert("يجب أن تحتوي الفاتورة على منتج واحد على الأقل.");
 return;
-
 }
-
 btn.closest("tr").remove();
-
 calculate();
-
 }
 
 function calculate(){
+let sub=0,tax=0;
 
-let sub=0;
-let tax=0;
-
-[
-...itemsBody.querySelectorAll("tr")
-].forEach(r=>{
-
-const q=
-Number(
-r.querySelector(".qty").value||0
-);
-
-const c=
-Number(
-r.querySelector(".cost").value||0
-);
-
-const t=
-Number(
-r.querySelector(".tax").value||0
-);
-
+[...itemsBody.querySelectorAll("tr")].forEach(r=>{
+const q=Number(r.querySelector(".qty").value||0);
+const c=Number(r.querySelector(".cost").value||0);
+const t=Number(r.querySelector(".tax").value||0);
 const base=q*c;
 const tx=base*t/100;
 const total=base+tx;
-
 sub+=base;
 tax+=tx;
-
-r.querySelector(
-".line-total"
-).textContent=
-money(total);
-
+r.querySelector(".line-total").textContent=money(total);
 });
 
-const grand=
-sub+tax;
+const grand=sub+tax;
+const paid=Math.max(0,Number(paidAmount.value||0));
+const remain=Math.max(0,grand-paid);
 
-const paid=
-Math.max(
-0,
-Number(
-paidAmount.value||0
-)
-);
+subtotal.textContent=money(sub);
+taxTotal.textContent=money(tax);
+grandTotal.textContent=money(grand);
+paidView.textContent=money(paid);
+remainingView.textContent=money(remain);
 
-const remain=
-Math.max(
-0,
-grand-paid
-);
-
-subtotal.textContent=
-money(sub);
-
-taxTotal.textContent=
-money(tax);
-
-grandTotal.textContent=
-money(grand);
-
-paidView.textContent=
-money(paid);
-
-remainingView.textContent=
-money(remain);
-
-return{
-sub,
-tax,
-grand,
-paid:Math.min(paid,grand),
-remain:Math.max(0,grand-paid)
-};
-
+return{sub,tax,grand,paid:Math.min(paid,grand),remain:Math.max(0,grand-paid)};
 }
 
 function savePurchase(status){
-
 if(!supplier.value){
-
-alert(
-"يرجى اختيار المورد."
-);
-
+alert("يرجى اختيار المورد.");
 return;
-
 }
 
-const items=[
-...itemsBody.querySelectorAll("tr")
-]
-.map(r=>({
-
-product:
-r.querySelector(".item-name").value,
-
-qty:
-Number(
-r.querySelector(".qty").value
-),
-
-cost:
-Number(
-r.querySelector(".cost").value
-),
-
-tax:
-Number(
-r.querySelector(".tax").value
-)
-
-}))
-.filter(
-x=>x.product&&x.qty>0
-);
+const items=[...itemsBody.querySelectorAll("tr")].map(r=>({
+product:r.querySelector(".item-name").value,
+qty:Number(r.querySelector(".qty").value),
+cost:Number(r.querySelector(".cost").value),
+tax:Number(r.querySelector(".tax").value)
+})).filter(x=>x.product&&x.qty>0);
 
 if(!items.length){
-
-alert(
-"يرجى إضافة منتج واحد على الأقل."
-);
-
+alert("يرجى إضافة منتج واحد على الأقل.");
 return;
-
 }
 
-const c=
-calculate();
+const c=calculate();
 
 if(c.grand<=0){
-
-alert(
-"يجب أن تكون قيمة الفاتورة أكبر من صفر."
-);
-
+alert("يجب أن تكون قيمة الفاتورة أكبر من صفر.");
 return;
-
 }
 
-const paid=
-Math.min(
-c.paid,
-c.grand
-);
-
-const remaining=
-Math.max(
-0,
-c.grand-paid
-);
-
-const payment=
-remaining<=.001
-?"paid"
-:paid>0
-?"partial"
-:"unpaid";
-
-const next=
-1001+purchases.length;
+const paid=Math.min(c.paid,c.grand);
+const remaining=Math.max(0,c.grand-paid);
+const payment=remaining<=.001?"paid":paid>0?"partial":"unpaid";
+const next=1001+purchases.length;
 
 purchases.unshift({
-
-id:
-"PUR-"+next,
-
-supplier:
-supplier.value,
-
-supplierInvoice:
-supplierInvoice.value.trim(),
-
-branch:
-branch.value,
-
-date:
-purchaseDate.value,
-
-total:
-c.grand,
-
+id:"PUR-"+next,
+supplier:supplier.value,
+supplierInvoice:supplierInvoice.value.trim(),
+branch:branch.value,
+date:purchaseDate.value,
+total:c.grand,
 paid,
-
 remaining,
-
 status,
-
 payment,
-
-method:
-paymentMethod.value,
-
-notes:
-notes.value.trim(),
-
+method:paymentMethod.value,
+notes:notes.value.trim(),
 items
-
 });
 
 saveStore();
@@ -1726,167 +371,73 @@ status==="approved"
 ?"تم حفظ واعتماد فاتورة الشراء"
 :"تم حفظ الفاتورة كمسودة"
 );
-
 }
 
 function approvePurchase(id){
-
-const x=
-purchases.find(
-v=>v.id===id
-);
-
+const x=purchases.find(v=>v.id===id);
 if(!x)return;
 
-if(
-!confirm(
-"اعتماد الفاتورة؟ عند الربط النهائي سيؤدي الاعتماد إلى تحديث المخزون والحسابات."
-)
-)return;
+if(!confirm("اعتماد الفاتورة؟ عند الربط النهائي سيؤدي الاعتماد إلى تحديث المخزون والحسابات."))return;
 
 x.status="approved";
-
 saveStore();
 render();
-
-showToast(
-"تم اعتماد الفاتورة"
-);
-
+showToast("تم اعتماد الفاتورة");
 }
 
 function viewPurchase(id){
-
-const x=
-purchases.find(
-v=>v.id===id
-);
-
+const x=purchases.find(v=>v.id===id);
 if(!x)return;
 
-alert(
-`فاتورة: ${x.id}
+alert(`فاتورة: ${x.id}
 المورد: ${x.supplier}
 الفرع: ${x.branch}
 الإجمالي: ${money(x.total)}
 المدفوع: ${money(x.paid)}
-المتبقي: ${money(x.remaining)}`
-);
-
+المتبقي: ${money(x.remaining)}`);
 }
 
-function paymentName(x){
-
-return x==="paid"
-?"مدفوعة"
-:x==="partial"
-?"مدفوعة جزئياً"
-:"غير مدفوعة";
-
-}
+function paymentName(x){return x==="paid"?"مدفوعة":x==="partial"?"مدفوعة جزئياً":"غير مدفوعة"}
 
 function money(n){
-
-return Number(n||0)
-.toLocaleString(
-"en-US",
-{
-minimumFractionDigits:2,
-maximumFractionDigits:2
-}
-)
-+" AED";
-
+return Number(n||0).toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2})+" AED";
 }
 
 function formatDate(d){
-
 if(!d)return"—";
-
 const p=d.split("-");
-
 return`${p[2]}/${p[1]}/${p[0]}`;
-
 }
 
 function esc(v){
-
 return String(v??"")
 .replace(/&/g,"&amp;")
 .replace(/</g,"&lt;")
 .replace(/>/g,"&gt;")
 .replace(/"/g,"&quot;")
 .replace(/'/g,"&#039;");
-
 }
 
 function showToast(t){
-
 toast.innerText=t;
-
 toast.style.display="block";
-
-clearTimeout(
-window.tt
-);
-
-window.tt=
-setTimeout(
-()=>toast.style.display="none",
-2200
-);
-
+clearTimeout(window.tt);
+window.tt=setTimeout(()=>toast.style.display="none",2200);
 }
 
 function clock(){
-
-const n=
-new Date();
-
-currentDate.innerText=
-n.toLocaleDateString(
-"ar-AE",
-{
-year:"numeric",
-month:"2-digit",
-day:"2-digit"
-}
-);
-
-currentTime.innerText=
-n.toLocaleTimeString(
-"ar-AE",
-{
-hour:"2-digit",
-minute:"2-digit",
-second:"2-digit"
-}
-);
-
+const n=new Date();
+currentDate.innerText=n.toLocaleDateString("ar-AE",{year:"numeric",month:"2-digit",day:"2-digit"});
+currentTime.innerText=n.toLocaleTimeString("ar-AE",{hour:"2-digit",minute:"2-digit",second:"2-digit"});
 }
 
-purchaseModal.addEventListener(
-"click",
-e=>{
-
-if(e.target===purchaseModal){
-
-closePurchase();
-
-}
-
-}
-);
+purchaseModal.addEventListener("click",e=>{
+if(e.target===purchaseModal)closePurchase();
+});
 
 clock();
-
-setInterval(
-clock,
-1000
-);
-
+setInterval(clock,1000);
 load();
 </script>
-
 </body>
 </html>
