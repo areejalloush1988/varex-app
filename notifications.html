@@ -1,54 +1,284 @@
 <!DOCTYPE html><html lang="ar" dir="rtl"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>مركز التنبيهات - VAREX</title><style>
 *{box-sizing:border-box;margin:0;padding:0}:root{--navy:#172554;--navy-dark:#0f1d43;--bg:#f4f6fb;--card:#fff;--card2:#f8fafc;--field:#fff;--border:#e5eaf2;--line:#edf0f5;--text:#172554;--body:#475569;--muted:#64748b;--soft:#f8fafc;--green:#16a34a;--red:#dc2626;--orange:#ea580c;--blue:#2563eb;--sidebar:240px;--brand:170px}
 body.varex-dark{--bg:#0b1120;--card:#111c33;--card2:#162139;--field:#17233d;--border:#263550;--line:#263550;--text:#f1f5f9;--body:#cbd5e1;--muted:#94a3b8;--soft:#162139;--green:#4ade80;--red:#f87171;--orange:#fdba74;--blue:#93c5fd}
-html{scroll-behavior:smooth}body{font-family:Arial,Tahoma,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;transition:background .25s,color .25s}.sidebar{position:fixed;right:0;top:0;width:var(--sidebar);height:100vh;background:linear-gradient(180deg,#172554,#13234f 48%,#0f1d43);color:#fff;z-index:1000;display:flex;flex-direction:column;overflow:hidden}.brand{height:var(--brand);min-height:var(--brand);padding:24px 14px 20px;border-bottom:1px solid rgba(255,255,255,.1);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}.logo{font-size:30px;font-weight:800;letter-spacing:4px;direction:ltr}.brand-small{margin-top:11px;font-size:10px;font-weight:600;letter-spacing:.8px;color:#e2e8f0;direction:ltr}.system-status{margin-top:16px;display:flex;align-items:center;gap:7px;font-size:10px;color:#d1fae5}.status-dot{width:7px;height:7px;border-radius:50%;background:#22c55e;box-shadow:0 0 8px rgba(34,197,94,.75)}body.varex-dark .sidebar{background:linear-gradient(180deg,#101b38,#0d1730 50%,#080f20)}.nav{padding:16px 12px;flex:1;overflow-y:auto}.nav a{height:48px;display:flex;align-items:center;gap:11px;padding:0 14px;margin-bottom:5px;border-radius:10px;color:#dbeafe;text-decoration:none;font-size:13px;font-weight:600;white-space:nowrap}.nav a:hover{background:rgba(255,255,255,.08);color:#fff}.nav a.active{background:#fff;color:var(--navy);font-weight:700}.nav-icon{width:25px;text-align:center;font-size:16px}body.varex-dark .nav a.active{background:#e2e8f0;color:#0f1d43}.sidebar-footer{height:54px;min-height:54px;border-top:1px solid rgba(255,255,255,.1);color:#94a3b8;font-size:9px;letter-spacing:.5px;direction:ltr;display:flex;align-items:center;justify-content:center}.main{margin-right:var(--sidebar);min-height:100vh;background:var(--bg);transition:.25s}.topbar{height:78px;background:var(--card);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 28px;position:sticky;top:0;z-index:50;transition:.25s}.page-name{display:flex;align-items:center;gap:12px}.page-icon{width:44px;height:44px;border-radius:11px;background:var(--card2);display:flex;align-items:center;justify-content:center;font-size:20px;position:relative}.page-name h2{font-size:19px;color:var(--text)}.page-name small{display:block;color:var(--muted);margin-top:4px;font-size:11px;direction:ltr}.badge{position:absolute;top:-5px;left:-5px;min-width:19px;height:19px;padding:0 5px;border-radius:10px;background:var(--red);color:#fff;font-size:10px;font-weight:bold;display:flex;align-items:center;justify-content:center}.top-info{display:flex;gap:10px;align-items:center}
+html{scroll-behavior:smooth}
+body{font-family:Arial,Tahoma,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;transition:background .25s,color .25s}
+.sidebar{position:fixed;right:0;top:0;width:var(--sidebar);height:100vh;background:linear-gradient(180deg,#172554,#13234f 48%,#0f1d43);color:#fff;z-index:1000;display:flex;flex-direction:column;overflow:hidden}
+.brand{height:var(--brand);min-height:var(--brand);padding:24px 14px 20px;border-bottom:1px solid rgba(255,255,255,.1);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
+.logo{font-size:30px;font-weight:800;letter-spacing:4px;direction:ltr}
+.brand-small{margin-top:11px;font-size:10px;font-weight:600;letter-spacing:.8px;color:#e2e8f0;direction:ltr}
+.system-status{margin-top:16px;display:flex;align-items:center;gap:7px;font-size:10px;color:#d1fae5}
+.status-dot{width:7px;height:7px;border-radius:50%;background:#22c55e;box-shadow:0 0 8px rgba(34,197,94,.75)}
+body.varex-dark .sidebar{background:linear-gradient(180deg,#101b38,#0d1730 50%,#080f20)}
+.nav{padding:16px 12px;flex:1;overflow-y:auto}
+.nav a{height:48px;display:flex;align-items:center;gap:11px;padding:0 14px;margin-bottom:5px;border-radius:10px;color:#dbeafe;text-decoration:none;font-size:13px;font-weight:600;white-space:nowrap}
+.nav a:hover{background:rgba(255,255,255,.08);color:#fff}
+.nav a.active{background:#fff;color:var(--navy);font-weight:700}
+.nav-icon{width:25px;text-align:center;font-size:16px}
+body.varex-dark .nav a.active{background:#e2e8f0;color:#0f1d43}
+.sidebar-footer{height:54px;min-height:54px;border-top:1px solid rgba(255,255,255,.1);color:#94a3b8;font-size:9px;letter-spacing:.5px;direction:ltr;display:flex;align-items:center;justify-content:center}
+.main{margin-right:var(--sidebar);min-height:100vh;background:var(--bg);transition:.25s}
+.topbar{height:78px;background:var(--card);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 28px;position:sticky;top:0;z-index:50;transition:.25s}
+.page-name{display:flex;align-items:center;gap:12px}
+.page-icon{width:44px;height:44px;border-radius:11px;background:var(--card2);display:flex;align-items:center;justify-content:center;font-size:20px;position:relative}
+.page-name h2{font-size:19px;color:var(--text)}
+.page-name small{display:block;color:var(--muted);margin-top:4px;font-size:11px;direction:ltr}
+.badge{position:absolute;top:-5px;left:-5px;min-width:19px;height:19px;padding:0 5px;border-radius:10px;background:var(--red);color:#fff;font-size:10px;font-weight:bold;display:flex;align-items:center;justify-content:center}
+.top-info{display:flex;gap:10px;align-items:center}
 
 /* المستخدم + التاريخ + الوقت — نهاري كحلي 3D */
-.chip{min-height:40px;background:#172554!important;background-image:none!important;color:#fff!important;border:1px solid #172554!important;border-radius:9px;padding:8px 13px;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;white-space:nowrap;box-shadow:0 5px 0 #0f1d43,0 10px 18px rgba(23,37,84,.24)!important;transform:translateY(0);transition:transform .12s ease,box-shadow .12s ease,background .18s ease}.chip strong{color:#fff!important;margin-right:4px;font-weight:800}.chip:hover{background:#213765!important;color:#fff!important;transform:translateY(-1px);box-shadow:0 6px 0 #0f1d43,0 12px 20px rgba(23,37,84,.28)!important}.chip:active{transform:translateY(3px);box-shadow:0 2px 0 #0f1d43,0 5px 9px rgba(23,37,84,.18)!important}
+.chip{min-height:40px;background:#172554!important;background-image:none!important;color:#fff!important;border:1px solid #172554!important;border-radius:9px;padding:8px 13px;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;white-space:nowrap;box-shadow:0 5px 0 #0f1d43,0 10px 18px rgba(23,37,84,.24)!important;transform:translateY(0);transition:transform .12s ease,box-shadow .12s ease,background .18s ease}
+.chip strong{color:#fff!important;margin-right:4px;font-weight:800}
+.chip:hover{background:#213765!important;color:#fff!important;transform:translateY(-1px);box-shadow:0 6px 0 #0f1d43,0 12px 20px rgba(23,37,84,.28)!important}
+.chip:active{transform:translateY(3px);box-shadow:0 2px 0 #0f1d43,0 5px 9px rgba(23,37,84,.18)!important}
 
 /* المستخدم + التاريخ + الوقت — ليلي أبيض 3D */
-body.varex-dark .chip{background:#fff!important;background-color:#fff!important;background-image:none!important;color:#172554!important;border:1px solid #fff!important;box-shadow:0 5px 0 #94a3b8,0 11px 21px rgba(0,0,0,.40)!important}
-body.varex-dark .chip strong{color:#172554!important}
-body.varex-dark .chip:hover{background:#f1f5f9!important;color:#172554!important;transform:translateY(-1px);box-shadow:0 6px 0 #94a3b8,0 13px 23px rgba(0,0,0,.44)!important}
-body.varex-dark .chip:active{background:#fff!important;color:#172554!important;transform:translateY(3px);box-shadow:0 2px 0 #94a3b8,0 5px 9px rgba(0,0,0,.29)!important}
+body.varex-dark .top-info .chip{
+background:#fff!important;
+background-color:#fff!important;
+background-image:none!important;
+color:#172554!important;
+border:1px solid #fff!important;
+box-shadow:0 5px 0 #94a3b8,0 11px 21px rgba(0,0,0,.40)!important
+}
+body.varex-dark .top-info .chip strong{color:#172554!important}
+body.varex-dark .top-info .chip:hover{
+background:#f1f5f9!important;
+color:#172554!important;
+transform:translateY(-1px);
+box-shadow:0 6px 0 #94a3b8,0 13px 23px rgba(0,0,0,.44)!important
+}
+body.varex-dark .top-info .chip:active{
+background:#fff!important;
+color:#172554!important;
+transform:translateY(3px);
+box-shadow:0 2px 0 #94a3b8,0 5px 9px rgba(0,0,0,.29)!important
+}
 
-.content{width:calc(100% - 48px);max-width:1450px;margin:24px auto 40px}.hero{display:flex;align-items:center;justify-content:space-between;gap:15px;margin-bottom:20px;padding:20px 22px;border-radius:14px;background:linear-gradient(135deg,#172554,#213765);border:1px solid rgba(255,255,255,.09);box-shadow:0 5px 18px rgba(15,23,42,.06)}body.varex-dark .hero{background:linear-gradient(135deg,#172554,#1b3159);border-color:rgba(255,255,255,.08)}.hero h1{font-size:25px;margin-bottom:6px;color:#fff}.hero p{color:#dbeafe;font-size:13px;line-height:1.7}.hero-actions{display:flex;gap:10px;flex-wrap:wrap}button{border:0;border-radius:9px;min-height:40px;padding:9px 14px;font-family:inherit;font-size:11px;font-weight:bold;cursor:pointer;transform:translateY(0);transition:transform .11s ease,box-shadow .11s ease,background .16s ease}.primary{background:var(--navy);color:#fff}
-
-/* تحديد الكل + حذف المقروء — أبيض 3D نهاري */
-.secondary{background:#fff;color:#172554;border:1px solid #fff;box-shadow:0 5px 0 #cbd5e1,0 11px 18px rgba(0,0,0,.18)}.secondary:hover{background:#f1f5f9;color:#172554;transform:translateY(-1px);box-shadow:0 6px 0 #cbd5e1,0 13px 20px rgba(0,0,0,.21)}.secondary:active{transform:translateY(4px);box-shadow:0 1px 0 #cbd5e1,0 4px 7px rgba(0,0,0,.14)}
-
-/* تحديد الكل + حذف المقروء — أبيض 3D ليلي */
+.content{width:calc(100% - 48px);max-width:1450px;margin:24px auto 40px}
+.hero{display:flex;align-items:center;justify-content:space-between;gap:15px;margin-bottom:20px;padding:20px 22px;border-radius:14px;background:linear-gradient(135deg,#172554,#213765);border:1px solid rgba(255,255,255,.09);box-shadow:0 5px 18px rgba(15,23,42,.06)}
+body.varex-dark .hero{background:linear-gradient(135deg,#172554,#1b3159);border-color:rgba(255,255,255,.08)}
+.hero h1{font-size:25px;margin-bottom:6px;color:#fff}
+.hero p{color:#dbeafe;font-size:13px;line-height:1.7}
+.hero-actions{display:flex;gap:10px;flex-wrap:wrap}
+button{border:0;border-radius:9px;min-height:40px;padding:9px 14px;font-family:inherit;font-size:11px;font-weight:bold;cursor:pointer;transform:translateY(0);transition:transform .11s ease,box-shadow .11s ease,background .16s ease}
+.primary{background:var(--navy);color:#fff}
+.secondary{background:#fff;color:#172554;border:1px solid #fff;box-shadow:0 5px 0 #cbd5e1,0 11px 18px rgba(0,0,0,.18)}
+.secondary:hover{background:#f1f5f9;color:#172554;transform:translateY(-1px);box-shadow:0 6px 0 #cbd5e1,0 13px 20px rgba(0,0,0,.21)}
+.secondary:active{transform:translateY(4px);box-shadow:0 1px 0 #cbd5e1,0 4px 7px rgba(0,0,0,.14)}
 body.varex-dark .hero-actions .secondary{background:#fff!important;background-image:none!important;color:#172554!important;border-color:#fff!important;box-shadow:0 5px 0 #94a3b8,0 11px 21px rgba(0,0,0,.36)!important}
 body.varex-dark .hero-actions .secondary:hover{background:#f1f5f9!important;color:#172554!important;transform:translateY(-1px);box-shadow:0 6px 0 #94a3b8,0 13px 23px rgba(0,0,0,.40)!important}
 body.varex-dark .hero-actions .secondary:active{background:#fff!important;color:#172554!important;transform:translateY(4px);box-shadow:0 1px 0 #94a3b8,0 4px 8px rgba(0,0,0,.24)!important}
+.stats{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:18px}
+.stat{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:15px;box-shadow:0 4px 15px rgba(15,23,42,.04)}
+.stat span{font-size:10px;color:var(--muted)}
+.stat strong{display:block;font-size:24px;margin-top:5px}
+.stat.red strong{color:var(--red)}
+.stat.orange strong{color:var(--orange)}
+.stat.green strong{color:var(--green)}
+.stat.blue strong{color:var(--blue)}
+.panel{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:18px;box-shadow:0 4px 18px rgba(15,23,42,.05)}
+.filters{display:flex;gap:8px;flex-wrap:wrap;padding-bottom:16px;border-bottom:1px solid var(--line);margin-bottom:10px}
+.filter{background:var(--card2);border:1px solid var(--border);color:var(--body)}
+.filter.active{background:var(--navy);color:#fff;border-color:var(--navy)}
+body.varex-dark .filter{background:var(--card2);color:var(--body);border-color:var(--border)}
+body.varex-dark .filter.active{background:#294477;color:#fff;border-color:#526fa9}
+.notification{display:grid;grid-template-columns:50px 1fr auto;gap:13px;align-items:center;padding:16px 10px;border-bottom:1px solid var(--line);transition:.2s}
+.notification:last-child{border-bottom:0}
+.notification.unread{background:#f8faff;border-radius:10px}
+body.varex-dark .notification.unread{background:#162139}
+.n-icon{width:44px;height:44px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:20px}
+.stock{background:#fff7ed}
+.expiry{background:#fef2f2}
+.employee{background:#eff6ff}
+.debt{background:#fefce8}
+.system{background:#f0fdf4}
+body.varex-dark .stock{background:#3d2d20}
+body.varex-dark .expiry{background:#3b2130}
+body.varex-dark .employee{background:#1c3155}
+body.varex-dark .debt{background:#3b3520}
+body.varex-dark .system{background:#17364a}
+.n-title{font-size:13px;font-weight:bold;color:var(--text);margin-bottom:4px}
+.n-text{font-size:11px;color:var(--body);line-height:1.6}
+.n-meta{font-size:10px;color:var(--muted);margin-top:5px}
+.new-dot{display:inline-block;width:7px;height:7px;background:#2563eb;border-radius:50%;margin-left:5px}
+.n-actions{display:flex;gap:7px;flex-wrap:wrap;justify-content:flex-end}
 
-.stats{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:18px}.stat{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:15px;box-shadow:0 4px 15px rgba(15,23,42,.04)}.stat span{font-size:10px;color:var(--muted)}.stat strong{display:block;font-size:24px;margin-top:5px}.stat.red strong{color:var(--red)}.stat.orange strong{color:var(--orange)}.stat.green strong{color:var(--green)}.stat.blue strong{color:var(--blue)}.panel{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:18px;box-shadow:0 4px 18px rgba(15,23,42,.05)}.filters{display:flex;gap:8px;flex-wrap:wrap;padding-bottom:16px;border-bottom:1px solid var(--line);margin-bottom:10px}.filter{background:var(--card2);border:1px solid var(--border);color:var(--body)}.filter.active{background:var(--navy);color:#fff;border-color:var(--navy)}body.varex-dark .filter{background:var(--card2);color:var(--body);border-color:var(--border)}body.varex-dark .filter.active{background:#294477;color:#fff;border-color:#526fa9}.notification{display:grid;grid-template-columns:50px 1fr auto;gap:13px;align-items:center;padding:16px 10px;border-bottom:1px solid var(--line);transition:.2s}.notification:last-child{border-bottom:0}.notification.unread{background:#f8faff;border-radius:10px}body.varex-dark .notification.unread{background:#162139}.n-icon{width:44px;height:44px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:20px}.stock{background:#fff7ed}.expiry{background:#fef2f2}.employee{background:#eff6ff}.debt{background:#fefce8}.system{background:#f0fdf4}body.varex-dark .stock{background:#3d2d20}body.varex-dark .expiry{background:#3b2130}body.varex-dark .employee{background:#1c3155}body.varex-dark .debt{background:#3b3520}body.varex-dark .system{background:#17364a}.n-title{font-size:13px;font-weight:bold;color:var(--text);margin-bottom:4px}.n-text{font-size:11px;color:var(--body);line-height:1.6}.n-meta{font-size:10px;color:var(--muted);margin-top:5px}.new-dot{display:inline-block;width:7px;height:7px;background:#2563eb;border-radius:50%;margin-left:5px}.n-actions{display:flex;gap:7px;flex-wrap:wrap;justify-content:flex-end}
-
-/* فتح + تمت القراءة/غير مقروء + حذف — نهاري كحلي 3D */
+/* فتح + تمت القراءة / غير مقروء + حذف — نهاري */
 .mini,.mini.danger{min-height:32px;padding:7px 11px;background:#172554!important;color:#fff!important;border:1px solid #172554!important;border-radius:7px;font-weight:700;box-shadow:0 4px 0 #0f1d43,0 8px 13px rgba(23,37,84,.18);transform:translateY(0);transition:transform .1s ease,box-shadow .1s ease,background .15s ease}
 .mini:hover,.mini.danger:hover{background:#213765!important;color:#fff!important;transform:translateY(-1px);box-shadow:0 5px 0 #0f1d43,0 10px 15px rgba(23,37,84,.22)}
 .mini:active,.mini.danger:active{transform:translateY(3px);box-shadow:0 1px 0 #0f1d43,0 3px 6px rgba(23,37,84,.15)}
 
-/* فتح + تمت القراءة/غير مقروء + حذف — ليلي أبيض 3D */
-body.varex-dark .mini,body.varex-dark .mini.danger{background:#fff!important;background-color:#fff!important;background-image:none!important;color:#172554!important;border-color:#fff!important;box-shadow:0 4px 0 #94a3b8,0 9px 16px rgba(0,0,0,.34)!important}
-body.varex-dark .mini:hover,body.varex-dark .mini.danger:hover{background:#f1f5f9!important;color:#172554!important;transform:translateY(-1px);box-shadow:0 5px 0 #94a3b8,0 11px 18px rgba(0,0,0,.38)!important}
-body.varex-dark .mini:active,body.varex-dark .mini.danger:active{background:#fff!important;color:#172554!important;transform:translateY(3px);box-shadow:0 1px 0 #94a3b8,0 3px 6px rgba(0,0,0,.25)!important}
+/* فتح + تمت القراءة / غير مقروء + حذف — ليلي أبيض 3D */
+body.varex-dark .notification .n-actions .mini,
+body.varex-dark .notification .n-actions .mini.danger{
+background:#fff!important;
+background-color:#fff!important;
+background-image:none!important;
+color:#172554!important;
+border:1px solid #fff!important;
+box-shadow:0 4px 0 #94a3b8,0 9px 16px rgba(0,0,0,.36)!important
+}
+body.varex-dark .notification .n-actions .mini:hover,
+body.varex-dark .notification .n-actions .mini.danger:hover{
+background:#f1f5f9!important;
+color:#172554!important;
+border-color:#fff!important;
+transform:translateY(-1px);
+box-shadow:0 5px 0 #94a3b8,0 11px 18px rgba(0,0,0,.40)!important
+}
+body.varex-dark .notification .n-actions .mini:active,
+body.varex-dark .notification .n-actions .mini.danger:active{
+background:#fff!important;
+color:#172554!important;
+border-color:#fff!important;
+transform:translateY(3px);
+box-shadow:0 1px 0 #94a3b8,0 3px 6px rgba(0,0,0,.27)!important
+}
 
-.empty{text-align:center;padding:50px 20px;color:var(--muted);font-size:13px}.toast{position:fixed;left:25px;bottom:25px;background:#172554;color:#fff;padding:12px 17px;border-radius:10px;font-size:12px;display:none;z-index:5000}@media(max-width:1000px){.stats{grid-template-columns:repeat(3,1fr)}}@media(max-width:750px){.top-info{display:none}.hero{align-items:flex-start;flex-direction:column}.stats{grid-template-columns:repeat(2,1fr)}.notification{grid-template-columns:45px 1fr}.n-actions{grid-column:1/-1;justify-content:flex-start}}@media(max-width:600px){.content{width:94%}.topbar{padding:0 14px}.stats{grid-template-columns:1fr 1fr}.hero-actions{width:100%}.hero-actions button{flex:1}}
-</style></head><body><aside class="sidebar"><div class="brand"><div class="logo">VAREX</div><div class="brand-small">BUSINESS MANAGEMENT SYSTEM</div><div class="system-status"><span class="status-dot"></span><span>النظام متصل وجاهز للعمل</span></div></div><nav class="nav"><a href="./index.html"><span class="nav-icon">▦</span><span>لوحة التحكم</span></a><a href="./pos.html"><span class="nav-icon">🛒</span><span>شاشة المبيعات</span></a><a href="./products.html"><span class="nav-icon">📦</span><span>المنتجات والمخزون</span></a><a href="./customers.html"><span class="nav-icon">👥</span><span>العملاء</span></a><a href="./suppliers.html"><span class="nav-icon">🚚</span><span>الموردون</span></a><a href="./accounts.html"><span class="nav-icon">💰</span><span>الحسابات</span></a><a href="./employees.html"><span class="nav-icon">👤</span><span>الموظفون</span></a><a href="./reports.html"><span class="nav-icon">📊</span><span>التقارير</span></a><a href="./notifications.html" class="active"><span class="nav-icon">🔔</span><span>مركز التنبيهات</span></a><a href="./users.html"><span class="nav-icon">🔐</span><span>المستخدمون والصلاحيات</span></a><a href="./setting.html"><span class="nav-icon">⚙️</span><span>الإعدادات</span></a></nav><div class="sidebar-footer">VAREX BUSINESS SYSTEM</div></aside><div class="main"><header class="topbar"><div class="page-name"><div class="page-icon">🔔<span class="badge" id="topBadge">0</span></div><div><h2>مركز التنبيهات</h2><small>VAREX NOTIFICATIONS</small></div></div><div class="top-info"><div class="chip">المستخدم:<strong>Owner</strong></div><div class="chip" id="currentDate">—</div><div class="chip" id="currentTime">—</div></div></header><main class="content"><section class="hero"><div><h1>التنبيهات</h1><p>متابعة تنبيهات المخزون والصلاحية والموظفين والديون والنظام من مكان واحد.</p></div><div class="hero-actions"><button class="secondary" onclick="markAllRead()">✓ تحديد الكل كمقروء</button><button class="secondary" onclick="clearRead()">🗑 حذف المقروء</button></div></section><div class="stats"><div class="stat"><span>جميع التنبيهات</span><strong id="totalCount">0</strong></div><div class="stat red"><span>غير مقروء</span><strong id="unreadCount">0</strong></div><div class="stat orange"><span>المخزون والصلاحية</span><strong id="stockCount">0</strong></div><div class="stat blue"><span>الموظفون</span><strong id="employeeCount">0</strong></div><div class="stat green"><span>الديون والنظام</span><strong id="otherCount">0</strong></div></div><section class="panel"><div class="filters"><button class="filter active" data-filter="all" onclick="setFilter('all',this)">الكل</button><button class="filter" data-filter="unread" onclick="setFilter('unread',this)">غير مقروء</button><button class="filter" data-filter="stock" onclick="setFilter('stock',this)">📦 المخزون</button><button class="filter" data-filter="expiry" onclick="setFilter('expiry',this)">⏳ الصلاحية</button><button class="filter" data-filter="employee" onclick="setFilter('employee',this)">👤 الموظفون</button><button class="filter" data-filter="debt" onclick="setFilter('debt',this)">💰 الديون</button><button class="filter" data-filter="system" onclick="setFilter('system',this)">⚙️ النظام</button></div><div id="notificationsList"></div><div class="empty" id="emptyState" style="display:none">✓ لا توجد تنبيهات في هذا القسم.</div></section></main></div><div class="toast" id="toast"></div><script src="./varex.js"></script><script>
-const demoNotifications=[{id:"n1",type:"stock",icon:"📦",title:"مخزون منخفض",text:"وصل مخزون منتج تونة 185 غرام إلى 8 قطع فقط.",time:"اليوم - 10:35",read:false,link:"./products.html"},{id:"n2",type:"expiry",icon:"⏳",title:"منتج يقترب من انتهاء الصلاحية",text:"يوجد منتج ستنتهي صلاحيته خلال أقل من شهرين. يرجى مراجعة المخزون.",time:"اليوم - 09:20",read:false,link:"./products.html"},{id:"n3",type:"employee",icon:"👤",title:"إقامة موظف تقترب من الانتهاء",text:"تبقى 30 يوماً على انتهاء إقامة أحد الموظفين. يرجى مراجعة بيانات الموظفين.",time:"أمس - 16:40",read:false,link:"./employees.html"},{id:"n4",type:"debt",icon:"💰",title:"دفعة مستحقة",text:"يوجد مبلغ مستحق لم يتم تسديده حتى الآن.",time:"أمس - 12:15",read:true,link:"./accounts.html"},{id:"n5",type:"system",icon:"⚙️",title:"إعدادات النظام",text:"تم حفظ إعدادات VAREX بنجاح.",time:"12 أغسطس - 18:10",read:true,link:"./setting.html"}];let currentFilter="all",notifications=[];
-function loadNotifications(){try{const saved=JSON.parse(localStorage.getItem("varexNotifications")||"null");notifications=Array.isArray(saved)?saved:demoNotifications}catch(e){notifications=demoNotifications}saveStorage();render()}
-function saveStorage(){localStorage.setItem("varexNotifications",JSON.stringify(notifications))}
-function setFilter(filter,button){currentFilter=filter;document.querySelectorAll(".filter").forEach(x=>x.classList.remove("active"));button.classList.add("active");render()}
-function render(){const list=document.getElementById("notificationsList"),empty=document.getElementById("emptyState");let data=notifications.filter(n=>currentFilter==="all"?true:currentFilter==="unread"?!n.read:n.type===currentFilter);list.innerHTML="";empty.style.display=data.length?"none":"block";data.forEach(n=>{const item=document.createElement("div");item.className="notification"+(!n.read?" unread":"");item.innerHTML=`<div class="n-icon ${n.type}">${n.icon}</div><div><div class="n-title">${!n.read?'<span class="new-dot"></span>':""}${escapeHtml(n.title)}</div><div class="n-text">${escapeHtml(n.text)}</div><div class="n-meta">${escapeHtml(n.time)}</div></div><div class="n-actions"><button class="mini" onclick="openNotification('${n.id}')">فتح</button><button class="mini" onclick="toggleRead('${n.id}')">${n.read?"غير مقروء":"تمت القراءة"}</button><button class="mini danger" onclick="deleteNotification('${n.id}')">حذف</button></div>`;list.appendChild(item)});updateCounts()}
-function openNotification(id){const n=notifications.find(x=>x.id===id);if(!n)return;n.read=true;saveStorage();render();if(n.link)location.href=n.link}
-function toggleRead(id){const n=notifications.find(x=>x.id===id);if(!n)return;n.read=!n.read;saveStorage();render()}
-function deleteNotification(id){if(!confirm("هل تريد حذف هذا التنبيه؟"))return;notifications=notifications.filter(x=>x.id!==id);saveStorage();render();showToast("تم حذف التنبيه")}
-function markAllRead(){notifications.forEach(n=>n.read=true);saveStorage();render();showToast("تم تحديد جميع التنبيهات كمقروءة")}
-function clearRead(){const count=notifications.filter(n=>n.read).length;if(!count){showToast("لا توجد تنبيهات مقروءة للحذف");return}if(!confirm("هل تريد حذف جميع التنبيهات المقروءة؟"))return;notifications=notifications.filter(n=>!n.read);saveStorage();render();showToast("تم حذف التنبيهات المقروءة")}
-function updateCounts(){const unread=notifications.filter(n=>!n.read).length;totalCount.innerText=notifications.length;unreadCount.innerText=unread;stockCount.innerText=notifications.filter(n=>n.type==="stock"||n.type==="expiry").length;employeeCount.innerText=notifications.filter(n=>n.type==="employee").length;otherCount.innerText=notifications.filter(n=>n.type==="debt"||n.type==="system").length;topBadge.innerText=unread;topBadge.style.display=unread?"flex":"none"}
-function escapeHtml(v){return String(v??"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#039;")}
-function showToast(t){toast.innerText=t;toast.style.display="block";clearTimeout(window.tt);window.tt=setTimeout(()=>toast.style.display="none",2200)}
-function updateClock(){const n=new Date();currentDate.innerText=n.toLocaleDateString("ar-AE",{year:"numeric",month:"2-digit",day:"2-digit"});currentTime.innerText=n.toLocaleTimeString("ar-AE",{hour:"2-digit",minute:"2-digit",second:"2-digit"})}
-updateClock();setInterval(updateClock,1000);loadNotifications();
+.empty{text-align:center;padding:50px 20px;color:var(--muted);font-size:13px}
+.toast{position:fixed;left:25px;bottom:25px;background:#172554;color:#fff;padding:12px 17px;border-radius:10px;font-size:12px;display:none;z-index:5000}
+@media(max-width:1000px){.stats{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:750px){.top-info{display:none}.hero{align-items:flex-start;flex-direction:column}.stats{grid-template-columns:repeat(2,1fr)}.notification{grid-template-columns:45px 1fr}.n-actions{grid-column:1/-1;justify-content:flex-start}}
+@media(max-width:600px){.content{width:94%}.topbar{padding:0 14px}.stats{grid-template-columns:1fr 1fr}.hero-actions{width:100%}.hero-actions button{flex:1}}
+</style></head><body>
+
+<aside class="sidebar"><div class="brand"><div class="logo">VAREX</div><div class="brand-small">BUSINESS MANAGEMENT SYSTEM</div><div class="system-status"><span class="status-dot"></span><span>النظام متصل وجاهز للعمل</span></div></div><nav class="nav"><a href="./index.html"><span class="nav-icon">▦</span><span>لوحة التحكم</span></a><a href="./pos.html"><span class="nav-icon">🛒</span><span>شاشة المبيعات</span></a><a href="./products.html"><span class="nav-icon">📦</span><span>المنتجات والمخزون</span></a><a href="./customers.html"><span class="nav-icon">👥</span><span>العملاء</span></a><a href="./suppliers.html"><span class="nav-icon">🚚</span><span>الموردون</span></a><a href="./accounts.html"><span class="nav-icon">💰</span><span>الحسابات</span></a><a href="./employees.html"><span class="nav-icon">👤</span><span>الموظفون</span></a><a href="./reports.html"><span class="nav-icon">📊</span><span>التقارير</span></a><a href="./notifications.html" class="active"><span class="nav-icon">🔔</span><span>مركز التنبيهات</span></a><a href="./users.html"><span class="nav-icon">🔐</span><span>المستخدمون والصلاحيات</span></a><a href="./setting.html"><span class="nav-icon">⚙️</span><span>الإعدادات</span></a></nav><div class="sidebar-footer">VAREX BUSINESS SYSTEM</div></aside>
+
+<div class="main"><header class="topbar"><div class="page-name"><div class="page-icon">🔔<span class="badge" id="topBadge">0</span></div><div><h2>مركز التنبيهات</h2><small>VAREX NOTIFICATIONS</small></div></div><div class="top-info"><div class="chip">المستخدم:<strong>Owner</strong></div><div class="chip" id="currentDate">—</div><div class="chip" id="currentTime">—</div></div></header>
+
+<main class="content">
+<section class="hero"><div><h1>التنبيهات</h1><p>متابعة تنبيهات المخزون والصلاحية والموظفين والديون والنظام من مكان واحد.</p></div><div class="hero-actions"><button class="secondary" onclick="markAllRead()">✓ تحديد الكل كمقروء</button><button class="secondary" onclick="clearRead()">🗑 حذف المقروء</button></div></section>
+
+<div class="stats"><div class="stat"><span>جميع التنبيهات</span><strong id="totalCount">0</strong></div><div class="stat red"><span>غير مقروء</span><strong id="unreadCount">0</strong></div><div class="stat orange"><span>المخزون والصلاحية</span><strong id="stockCount">0</strong></div><div class="stat blue"><span>الموظفون</span><strong id="employeeCount">0</strong></div><div class="stat green"><span>الديون والنظام</span><strong id="otherCount">0</strong></div></div>
+
+<section class="panel">
+<div class="filters"><button class="filter active" data-filter="all" onclick="setFilter('all',this)">الكل</button><button class="filter" data-filter="unread" onclick="setFilter('unread',this)">غير مقروء</button><button class="filter" data-filter="stock" onclick="setFilter('stock',this)">📦 المخزون</button><button class="filter" data-filter="expiry" onclick="setFilter('expiry',this)">⏳ الصلاحية</button><button class="filter" data-filter="employee" onclick="setFilter('employee',this)">👤 الموظفون</button><button class="filter" data-filter="debt" onclick="setFilter('debt',this)">💰 الديون</button><button class="filter" data-filter="system" onclick="setFilter('system',this)">⚙️ النظام</button></div>
+<div id="notificationsList"></div>
+<div class="empty" id="emptyState" style="display:none">✓ لا توجد تنبيهات في هذا القسم.</div>
+</section>
+</main></div>
+
+<div class="toast" id="toast"></div>
+
+<script src="./varex.js"></script><script>
+const demoNotifications=[{id:"n1",type:"stock",icon:"📦",title:"مخزون منخفض",text:"وصل مخزون منتج تونة 185 غرام إلى 8 قطع فقط.",time:"اليوم - 10:35",read:false,link:"./products.html"},{id:"n2",type:"expiry",icon:"⏳",title:"منتج يقترب من انتهاء الصلاحية",text:"يوجد منتج ستنتهي صلاحيته خلال أقل من شهرين. يرجى مراجعة المخزون.",time:"اليوم - 09:20",read:false,link:"./products.html"},{id:"n3",type:"employee",icon:"👤",title:"إقامة موظف تقترب من الانتهاء",text:"تبقى 30 يوماً على انتهاء إقامة أحد الموظفين. يرجى مراجعة بيانات الموظفين.",time:"أمس - 16:40",read:false,link:"./employees.html"},{id:"n4",type:"debt",icon:"💰",title:"دفعة مستحقة",text:"يوجد مبلغ مستحق لم يتم تسديده حتى الآن.",time:"أمس - 12:15",read:true,link:"./accounts.html"},{id:"n5",type:"system",icon:"⚙️",title:"إعدادات النظام",text:"تم حفظ إعدادات VAREX بنجاح.",time:"12 أغسطس - 18:10",read:true,link:"./setting.html"}];
+
+let currentFilter="all",notifications=[];
+
+function loadNotifications(){
+try{
+const saved=JSON.parse(localStorage.getItem("varexNotifications")||"null");
+notifications=Array.isArray(saved)?saved:demoNotifications
+}catch(e){
+notifications=demoNotifications
+}
+saveStorage();
+render()
+}
+
+function saveStorage(){
+localStorage.setItem("varexNotifications",JSON.stringify(notifications))
+}
+
+function setFilter(filter,button){
+currentFilter=filter;
+document.querySelectorAll(".filter").forEach(x=>x.classList.remove("active"));
+button.classList.add("active");
+render()
+}
+
+function render(){
+const list=document.getElementById("notificationsList"),empty=document.getElementById("emptyState");
+let data=notifications.filter(n=>currentFilter==="all"?true:currentFilter==="unread"?!n.read:n.type===currentFilter);
+
+list.innerHTML="";
+empty.style.display=data.length?"none":"block";
+
+data.forEach(n=>{
+const item=document.createElement("div");
+item.className="notification"+(!n.read?" unread":"");
+item.innerHTML=`<div class="n-icon ${n.type}">${n.icon}</div><div><div class="n-title">${!n.read?'<span class="new-dot"></span>':""}${escapeHtml(n.title)}</div><div class="n-text">${escapeHtml(n.text)}</div><div class="n-meta">${escapeHtml(n.time)}</div></div><div class="n-actions"><button class="mini" onclick="openNotification('${n.id}')">فتح</button><button class="mini" onclick="toggleRead('${n.id}')">${n.read?"غير مقروء":"تمت القراءة"}</button><button class="mini danger" onclick="deleteNotification('${n.id}')">حذف</button></div>`;
+list.appendChild(item)
+});
+
+updateCounts()
+}
+
+function openNotification(id){
+const n=notifications.find(x=>x.id===id);
+if(!n)return;
+n.read=true;
+saveStorage();
+render();
+if(n.link)location.href=n.link
+}
+
+function toggleRead(id){
+const n=notifications.find(x=>x.id===id);
+if(!n)return;
+n.read=!n.read;
+saveStorage();
+render()
+}
+
+function deleteNotification(id){
+if(!confirm("هل تريد حذف هذا التنبيه؟"))return;
+notifications=notifications.filter(x=>x.id!==id);
+saveStorage();
+render();
+showToast("تم حذف التنبيه")
+}
+
+function markAllRead(){
+notifications.forEach(n=>n.read=true);
+saveStorage();
+render();
+showToast("تم تحديد جميع التنبيهات كمقروءة")
+}
+
+function clearRead(){
+const count=notifications.filter(n=>n.read).length;
+if(!count){
+showToast("لا توجد تنبيهات مقروءة للحذف");
+return
+}
+if(!confirm("هل تريد حذف جميع التنبيهات المقروءة؟"))return;
+notifications=notifications.filter(n=>!n.read);
+saveStorage();
+render();
+showToast("تم حذف التنبيهات المقروءة")
+}
+
+function updateCounts(){
+const unread=notifications.filter(n=>!n.read).length;
+totalCount.innerText=notifications.length;
+unreadCount.innerText=unread;
+stockCount.innerText=notifications.filter(n=>n.type==="stock"||n.type==="expiry").length;
+employeeCount.innerText=notifications.filter(n=>n.type==="employee").length;
+otherCount.innerText=notifications.filter(n=>n.type==="debt"||n.type==="system").length;
+topBadge.innerText=unread;
+topBadge.style.display=unread?"flex":"none"
+}
+
+function escapeHtml(v){
+return String(v??"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#039;")
+}
+
+function showToast(t){
+toast.innerText=t;
+toast.style.display="block";
+clearTimeout(window.tt);
+window.tt=setTimeout(()=>toast.style.display="none",2200)
+}
+
+function updateClock(){
+const n=new Date();
+currentDate.innerText=n.toLocaleDateString("ar-AE",{year:"numeric",month:"2-digit",day:"2-digit"});
+currentTime.innerText=n.toLocaleTimeString("ar-AE",{hour:"2-digit",minute:"2-digit",second:"2-digit"})
+}
+
+updateClock();
+setInterval(updateClock,1000);
+loadNotifications();
 </script></body></html>
