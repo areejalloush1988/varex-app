@@ -6,86 +6,64 @@
 <title>VAREX | شاشة المبيعات</title>
 
 <style>
-*{
-box-sizing:border-box;
-margin:0;
-padding:0
-}
+*{box-sizing:border-box;margin:0;padding:0}
 
 :root{
 --navy:#172554;
 --navy-dark:#0f1d43;
 --navy-mid:#13234f;
-
+--blue:#2563eb;
 --bg:#f4f6fb;
 --card:#ffffff;
 --card2:#f8fafc;
+--card3:#eef2ff;
 --field:#ffffff;
---soft:#f8fafc;
---soft2:#eef2ff;
-
 --border:#e5eaf2;
 --line:#edf0f5;
-
 --text:#172554;
 --bodytext:#475569;
 --muted:#64748b;
---muted2:#94a3b8;
-
---blue:#2563eb;
+--softmuted:#94a3b8;
 --green:#15803d;
 --red:#b91c1c;
 --orange:#d97706;
-
 --shadow:0 6px 22px rgba(15,23,42,.06);
-
 --sidebar-width:240px;
 --brand-height:170px
 }
 
 /* =====================================================
    DARK MODE
-   نفس ألوان صفحة الإعدادات
+   يتفعّل مباشرة من varex.js عبر body.varex-dark
 ===================================================== */
 
-html[data-theme="dark"],
-html[data-varex-theme="dark"],
 body.varex-dark{
 --bg:#0b1120;
 --card:#111c33;
 --card2:#162139;
+--card3:#1c2945;
 --field:#17233d;
---soft:#162139;
---soft2:#1c2945;
-
 --border:#263550;
 --line:#263550;
-
 --text:#f1f5f9;
 --bodytext:#cbd5e1;
 --muted:#94a3b8;
---muted2:#7f8da5;
-
+--softmuted:#8293aa;
 --blue:#60a5fa;
 --green:#4ade80;
 --red:#f87171;
 --orange:#fb923c;
-
---shadow:0 6px 22px rgba(0,0,0,.20)
+--shadow:0 7px 24px rgba(0,0,0,.18)
 }
 
-html{
-scroll-behavior:smooth
-}
+html{scroll-behavior:smooth}
 
 body{
 font-family:Tahoma,Arial,"Segoe UI",sans-serif;
 background:var(--bg);
 color:var(--text);
 min-height:100vh;
-transition:
-background .25s,
-color .25s
+transition:background .25s,color .25s
 }
 
 /* =====================================================
@@ -97,232 +75,136 @@ position:fixed;
 right:0;
 top:0;
 bottom:0;
-
 width:var(--sidebar-width);
 height:100vh;
-
-background:
-linear-gradient(
-180deg,
-#172554 0%,
-#13234f 48%,
-#0f1d43 100%
-);
-
+background:linear-gradient(180deg,#172554 0%,#13234f 48%,#0f1d43 100%);
 color:#fff;
-
 z-index:1000;
-
 display:flex;
 flex-direction:column;
-
 overflow:hidden;
-
-box-shadow:
--4px 0 18px
-rgba(15,29,67,.08)
+box-shadow:-4px 0 18px rgba(15,29,67,.08)
 }
 
-html[data-theme="dark"] .sidebar,
-html[data-varex-theme="dark"] .sidebar,
 body.varex-dark .sidebar{
-background:
-linear-gradient(
-180deg,
-#101b38,
-#0d1730 50%,
-#080f20
-)
+background:linear-gradient(180deg,#101b38,#0d1730 50%,#080f20)
 }
 
 .brand{
 width:100%;
-
 height:var(--brand-height);
 min-height:var(--brand-height);
 max-height:var(--brand-height);
-
 padding:24px 14px 20px;
-
-border-bottom:
-1px solid
-rgba(255,255,255,.10);
-
+border-bottom:1px solid rgba(255,255,255,.10);
 display:flex;
 flex-direction:column;
 align-items:center;
 justify-content:center;
-
 text-align:center;
-
 flex:0 0 var(--brand-height);
-
 overflow:hidden
 }
 
 .logo{
 width:100%;
-
 font-size:30px;
 line-height:30px;
 height:30px;
-
 font-weight:800;
 letter-spacing:4px;
-
 color:#fff;
-
 text-align:center;
 direction:ltr;
-
 flex-shrink:0
 }
 
 .brand-small{
 width:100%;
-
 height:14px;
-
 margin-top:11px;
-
 font-size:10px;
 line-height:14px;
-
 font-weight:600;
 letter-spacing:.8px;
-
 color:#e2e8f0;
-
 text-align:center;
 direction:ltr;
-
 white-space:nowrap;
-
 flex-shrink:0
 }
 
 .store-status{
 width:100%;
-
 height:15px;
-
 margin-top:16px;
-
 display:flex;
 align-items:center;
 justify-content:center;
-
 gap:7px;
-
 font-size:10px;
 line-height:15px;
-
 color:#d1fae5;
-
 white-space:nowrap;
-
 flex-shrink:0
 }
 
 .status-dot{
 display:inline-block;
-
 width:7px;
 height:7px;
 min-width:7px;
-
 border-radius:50%;
-
 background:#22c55e;
-
-box-shadow:
-0 0 8px
-rgba(34,197,94,.75);
-
+box-shadow:0 0 8px rgba(34,197,94,.75);
 flex-shrink:0
 }
 
 .nav{
 padding:16px 12px;
-
 flex:1;
 min-height:0;
-
 overflow-y:auto;
 overflow-x:hidden;
-
 scrollbar-width:thin;
-
-scrollbar-color:
-rgba(255,255,255,.15)
-transparent
+scrollbar-color:rgba(255,255,255,.15) transparent
 }
 
-.nav::-webkit-scrollbar{
-width:4px
-}
-
-.nav::-webkit-scrollbar-track{
-background:transparent
-}
-
-.nav::-webkit-scrollbar-thumb{
-background:
-rgba(255,255,255,.14);
-
-border-radius:10px
-}
+.nav::-webkit-scrollbar{width:4px}
+.nav::-webkit-scrollbar-track{background:transparent}
+.nav::-webkit-scrollbar-thumb{background:rgba(255,255,255,.14);border-radius:10px}
 
 .nav a{
 width:100%;
-
 height:48px;
 min-height:48px;
-
 display:flex;
 align-items:center;
 justify-content:flex-start;
-
 gap:11px;
-
 color:#dbeafe;
-
 text-decoration:none;
-
 padding:0 14px;
-
 border-radius:10px;
-
 margin:0 0 5px;
-
 background:transparent;
-
 font-size:13px;
 font-weight:600;
-
 text-align:right;
-
 transition:.2s
 }
 
 .nav a:hover{
-background:
-rgba(255,255,255,.08);
-
+background:rgba(255,255,255,.08);
 color:#fff
 }
 
 .nav a.active{
 background:#fff;
 color:var(--navy);
-
-box-shadow:
-0 5px 15px
-rgba(0,0,0,.14)
+box-shadow:0 5px 15px rgba(0,0,0,.14)
 }
 
-html[data-theme="dark"] .nav a.active,
-html[data-varex-theme="dark"] .nav a.active,
 body.varex-dark .nav a.active{
 background:#e2e8f0;
 color:#0f1d43
@@ -331,15 +213,11 @@ color:#0f1d43
 .nav-icon{
 width:25px;
 min-width:25px;
-
 height:25px;
-
 display:flex;
 align-items:center;
 justify-content:center;
-
 font-size:16px;
-
 background:transparent!important
 }
 
@@ -349,36 +227,19 @@ white-space:nowrap;
 line-height:1.4
 }
 
-/* =====================================================
-   USER AREA
-===================================================== */
-
 .sidebar-user-area{
 flex-shrink:0;
-
 padding:9px 11px 11px;
-
-border-top:
-1px solid
-rgba(255,255,255,.08);
-
-background:
-rgba(4,10,28,.18)
+border-top:1px solid rgba(255,255,255,.08);
+background:rgba(4,10,28,.18)
 }
 
 .cashier-card{
 padding:10px;
-
 margin-bottom:7px;
-
-border:
-1px solid
-rgba(255,255,255,.08);
-
+border:1px solid rgba(255,255,255,.08);
 border-radius:10px;
-
-background:
-rgba(255,255,255,.055)
+background:rgba(255,255,255,.055)
 }
 
 .cashier-label{
@@ -397,16 +258,11 @@ gap:9px
 width:31px;
 height:31px;
 min-width:31px;
-
 display:flex;
 align-items:center;
 justify-content:center;
-
 border-radius:8px;
-
-background:
-rgba(255,255,255,.09);
-
+background:rgba(255,255,255,.09);
 font-size:14px
 }
 
@@ -426,26 +282,15 @@ font-size:8px
 .logout-button{
 width:100%;
 height:38px;
-
-border:
-1px solid
-rgba(239,68,68,.26);
-
+border:1px solid rgba(239,68,68,.26);
 border-radius:9px;
-
-background:
-rgba(185,28,28,.10);
-
+background:rgba(185,28,28,.10);
 color:#fecaca;
-
 display:flex;
 align-items:center;
 justify-content:center;
-
 gap:8px;
-
 cursor:pointer;
-
 font-family:inherit;
 font-size:10px;
 font-weight:700
@@ -463,11 +308,8 @@ font-size:16px
 
 .sidebar-footer{
 margin-top:7px;
-
 text-align:center;
-
 color:#64748b;
-
 font-size:7px;
 letter-spacing:.5px
 }
@@ -479,11 +321,8 @@ letter-spacing:.5px
 .main{
 min-height:100vh;
 margin-right:var(--sidebar-width);
-
 background:var(--bg);
-
-transition:
-background .25s
+transition:background .25s
 }
 
 /* =====================================================
@@ -492,31 +331,17 @@ background .25s
 
 .topbar{
 min-height:72px;
-
 position:sticky;
 top:0;
-
 z-index:100;
-
 padding:0 25px;
-
 display:flex;
 justify-content:space-between;
 align-items:center;
-
 background:var(--card);
-
-border-bottom:
-1px solid
-var(--border);
-
-box-shadow:
-0 3px 14px
-rgba(15,23,42,.04);
-
-transition:
-background .25s,
-border-color .25s
+border-bottom:1px solid var(--border);
+box-shadow:0 3px 15px rgba(15,23,42,.03);
+transition:.25s
 }
 
 .page-name{
@@ -528,15 +353,11 @@ gap:11px
 .page-icon{
 width:41px;
 height:41px;
-
 display:flex;
 align-items:center;
 justify-content:center;
-
 border-radius:11px;
-
-background:var(--soft2);
-
+background:var(--card3);
 font-size:18px
 }
 
@@ -547,11 +368,8 @@ color:var(--text)
 
 .page-name small{
 display:block;
-
 margin-top:3px;
-
 color:var(--muted);
-
 font-size:8px
 }
 
@@ -563,17 +381,10 @@ gap:7px
 
 .info-chip{
 padding:7px 10px;
-
-border:
-1px solid
-var(--border);
-
+border:1px solid var(--border);
 border-radius:8px;
-
-background:var(--soft);
-
+background:var(--card2);
 color:var(--muted);
-
 font-size:9px
 }
 
@@ -584,23 +395,15 @@ color:var(--text)
 .online-chip{
 display:flex;
 align-items:center;
-
 gap:6px;
-
 background:#f0fdf4;
 border-color:#dcfce7;
 color:#166534
 }
 
-html[data-theme="dark"] .online-chip,
-html[data-varex-theme="dark"] .online-chip,
 body.varex-dark .online-chip{
-background:
-rgba(21,128,61,.15);
-
-border-color:
-rgba(74,222,128,.25);
-
+background:rgba(21,128,61,.15);
+border-color:rgba(74,222,128,.25);
 color:#bbf7d0
 }
 
@@ -611,7 +414,6 @@ color:#bbf7d0
 .content{
 width:95%;
 max-width:1500px;
-
 margin:21px auto 40px
 }
 
@@ -623,44 +425,23 @@ margin:21px auto 40px
 display:flex;
 align-items:center;
 justify-content:space-between;
-
 gap:15px;
-
 margin-bottom:16px;
-
 padding:20px 22px;
-
-border:
-1px solid
-rgba(255,255,255,.10);
-
+border:1px solid var(--border);
 border-radius:14px;
-
-background:
-linear-gradient(
-135deg,
-#172554,
-#1e3a6d
-);
-
-color:#fff;
-
-box-shadow:
-0 7px 20px
-rgba(23,37,84,.12)
+background:linear-gradient(135deg,#172554,#1e3a6d);
+box-shadow:var(--shadow)
 }
 
 .hero h1{
 margin-bottom:5px;
-
 font-size:23px;
-
 color:#fff
 }
 
 .hero p{
 color:#dbeafe;
-
 font-size:10px;
 line-height:1.7
 }
@@ -668,55 +449,36 @@ line-height:1.7
 .hero-actions{
 display:flex;
 gap:7px;
-
 flex-wrap:wrap
 }
 
 .hero-actions button{
 min-height:38px;
-
 padding:8px 14px;
-
 border-radius:8px;
-
 cursor:pointer;
-
 font-family:inherit;
-
 font-size:10px;
 font-weight:700
 }
 
 .new-sale{
-border:0;
-
+border:1px solid rgba(255,255,255,.18);
 background:#fff;
-
 color:#172554
 }
 
 .hold-button{
-border:
-1px solid
-rgba(255,255,255,.18);
-
-background:
-rgba(255,255,255,.10);
-
+border:1px solid rgba(255,255,255,.16);
+background:rgba(255,255,255,.08);
 color:#fff
 }
 
 .restore-button{
 display:none;
-
-border:
-1px solid
-rgba(255,255,255,.18);
-
-background:
-rgba(255,255,255,.10);
-
-color:#fff
+border:1px solid rgba(147,197,253,.30);
+background:rgba(37,99,235,.18);
+color:#dbeafe
 }
 
 /* =====================================================
@@ -725,176 +487,118 @@ color:#fff
 
 .quick-stats{
 display:grid;
-
-grid-template-columns:
-repeat(4,1fr);
-
+grid-template-columns:repeat(4,1fr);
 gap:11px;
-
 margin-bottom:16px
 }
 
 .stat{
 padding:14px 15px;
-
-border:
-1px solid
-var(--border);
-
+border:1px solid var(--border);
 border-radius:12px;
-
 background:var(--card);
-
 box-shadow:var(--shadow);
-
-transition:
-background .25s,
-border-color .25s
+transition:.25s
 }
 
 .stat-top{
 display:flex;
 justify-content:space-between;
 align-items:center;
-
 margin-bottom:7px
 }
 
 .stat-label{
 color:var(--muted);
-
 font-size:9px
 }
 
 .stat-icon{
 width:27px;
 height:27px;
-
 display:flex;
 align-items:center;
 justify-content:center;
-
 border-radius:7px;
-
-background:var(--soft2);
-
+background:var(--card3);
 font-size:12px
 }
 
 .stat-value{
 color:var(--text);
-
 font-size:18px;
 font-weight:700
 }
 
 .stat-small{
 margin-top:4px;
-
-color:var(--muted2);
-
+color:var(--softmuted);
 font-size:8px
 }
 
 /* =====================================================
-   SCANNER
+   BARCODE
 ===================================================== */
 
 .scanner-box{
 display:grid;
-
-grid-template-columns:
-auto 1fr minmax(280px,420px);
-
+grid-template-columns:auto 1fr minmax(280px,420px);
 align-items:center;
-
 gap:13px;
-
 margin-bottom:16px;
-
 padding:14px 17px;
-
+border:1px solid rgba(255,255,255,.10);
 border-radius:13px;
-
 color:#fff;
-
-background:
-linear-gradient(
-135deg,
-#172554,
-#1e3a6d
-);
-
-box-shadow:
-0 7px 20px
-rgba(23,37,84,.13)
+background:linear-gradient(135deg,#172554,#1e3a6d);
+box-shadow:var(--shadow)
 }
 
 .scanner-icon{
 width:42px;
 height:42px;
-
 display:flex;
 align-items:center;
 justify-content:center;
-
 border-radius:10px;
-
-background:
-rgba(255,255,255,.10);
-
+background:rgba(255,255,255,.10);
 font-size:20px
 }
 
 .scanner-text strong{
 display:block;
-
 margin-bottom:3px;
-
 font-size:11px
 }
 
 .scanner-text small{
 color:#cbd5e1;
-
 font-size:8px
 }
 
 .barcode-input{
 width:100%;
-
 padding:11px 13px;
-
-border:
-1px solid
-rgba(255,255,255,.25);
-
+border:1px solid rgba(255,255,255,.20);
 border-radius:8px;
-
 outline:none;
-
 background:#fff;
-
 color:#172554;
-
 direction:ltr;
 text-align:left;
-
 font-size:12px
 }
 
-html[data-theme="dark"] .barcode-input,
-html[data-varex-theme="dark"] .barcode-input,
 body.varex-dark .barcode-input{
-background:var(--field);
-color:var(--text);
-
-border-color:
-var(--border)
+background:#17233d;
+border-color:#35506f;
+color:#fff
 }
 
-.barcode-input::placeholder{
-color:#94a3b8
+.barcode-input::placeholder,
+.search::placeholder,
+.field input::placeholder{
+color:var(--softmuted)
 }
 
 /* =====================================================
@@ -903,50 +607,30 @@ color:#94a3b8
 
 .success{
 display:none;
-
 margin-bottom:16px;
-
 padding:13px 16px;
-
-border:
-1px solid
-#bbf7d0;
-
+border:1px solid #bbf7d0;
 border-radius:10px;
-
 background:#ecfdf3;
-
 color:#166534;
-
 font-size:10px;
 font-weight:700
 }
 
-html[data-theme="dark"] .success,
-html[data-varex-theme="dark"] .success,
 body.varex-dark .success{
-background:
-rgba(21,128,61,.16);
-
-border-color:
-rgba(74,222,128,.25);
-
+border-color:rgba(74,222,128,.25);
+background:rgba(21,128,61,.16);
 color:#bbf7d0
 }
 
 /* =====================================================
-   POS LAYOUT
+   POS GRID
 ===================================================== */
 
 .pos{
 display:grid;
-
-grid-template-columns:
-minmax(0,1.5fr)
-minmax(350px,.8fr);
-
+grid-template-columns:minmax(0,1.5fr) minmax(350px,.8fr);
 gap:16px;
-
 align-items:start
 }
 
@@ -955,19 +639,11 @@ align-items:start
 ===================================================== */
 
 .panel{
-border:
-1px solid
-var(--border);
-
+border:1px solid var(--border);
 border-radius:14px;
-
 background:var(--card);
-
 box-shadow:var(--shadow);
-
-transition:
-background .25s,
-border-color .25s
+transition:.25s
 }
 
 .products-panel{
@@ -976,10 +652,8 @@ padding:18px
 
 .panel-header{
 display:flex;
-
 justify-content:space-between;
 align-items:center;
-
 margin-bottom:13px
 }
 
@@ -990,7 +664,6 @@ color:var(--text)
 
 .panel-header span{
 color:var(--muted);
-
 font-size:8px
 }
 
@@ -1000,35 +673,19 @@ font-size:8px
 
 .search-box{
 position:relative;
-
 margin-bottom:12px
 }
 
 .search{
 width:100%;
-
-padding:
-12px 40px 12px 12px;
-
-border:
-1px solid
-var(--border);
-
+padding:12px 40px 12px 12px;
+border:1px solid var(--border);
 border-radius:9px;
-
 outline:none;
-
 background:var(--field);
-
 color:var(--text);
-
 font-family:inherit;
-
 font-size:11px
-}
-
-.search::placeholder{
-color:var(--muted)
 }
 
 .search:focus,
@@ -1036,24 +693,15 @@ color:var(--muted)
 .field input:focus,
 .field select:focus{
 border-color:#64748b;
-
-box-shadow:
-0 0 0 3px
-rgba(100,116,139,.10)
+box-shadow:0 0 0 3px rgba(100,116,139,.10)
 }
 
 .search-icon{
 position:absolute;
-
 right:13px;
-
 top:50%;
-
-transform:
-translateY(-50%);
-
+transform:translateY(-50%);
 color:var(--muted);
-
 font-size:13px
 }
 
@@ -1063,58 +711,37 @@ font-size:13px
 
 .category-tabs{
 display:flex;
-
 gap:6px;
-
 overflow-x:auto;
-
 margin-bottom:14px;
-
 padding-bottom:3px
 }
 
 .category{
 flex-shrink:0;
-
 padding:7px 12px;
-
-border:
-1px solid
-var(--border);
-
+border:1px solid var(--border);
 border-radius:18px;
-
-background:var(--field);
-
+background:var(--card2);
 color:var(--bodytext);
-
 cursor:pointer;
-
 font-family:inherit;
-
 font-size:9px
 }
 
 .category:hover{
-background:var(--soft)
+background:var(--card3)
 }
 
 .category.active{
-border-color:#172554;
-
+border-color:#64748b;
 background:#172554;
-
 color:#fff
 }
 
-html[data-theme="dark"] .category.active,
-html[data-varex-theme="dark"] .category.active,
 body.varex-dark .category.active{
-border-color:#64748b;
-
 background:#294477;
-
-color:#fff
+border-color:#7694d0
 }
 
 /* =====================================================
@@ -1123,105 +750,68 @@ color:#fff
 
 .products{
 display:grid;
-
-grid-template-columns:
-repeat(3,1fr);
-
+grid-template-columns:repeat(3,1fr);
 gap:9px
 }
 
 .product{
 position:relative;
-
 min-height:132px;
-
 padding:13px;
-
-border:
-1px solid
-var(--border);
-
+border:1px solid var(--border);
 border-radius:11px;
-
 background:var(--card2);
-
 cursor:pointer;
-
 transition:.17s
 }
 
 .product:hover{
-transform:
-translateY(-2px);
-
+transform:translateY(-2px);
 border-color:#a5b4fc;
-
-box-shadow:
-0 7px 18px
-rgba(15,23,42,.065)
+background:var(--card3);
+box-shadow:0 7px 18px rgba(15,23,42,.065)
 }
 
-html[data-theme="dark"] .product:hover,
-html[data-varex-theme="dark"] .product:hover,
 body.varex-dark .product:hover{
 border-color:#526fa9;
-
-background:#1c2d4d
+box-shadow:0 8px 20px rgba(0,0,0,.18)
 }
 
 .product-name{
 padding-left:50px;
-
 margin-bottom:8px;
-
 font-size:11px;
 font-weight:700;
-
 line-height:1.6;
-
 color:var(--text)
 }
 
 .product-info{
 margin-top:4px;
-
 color:var(--muted);
-
 font-size:8px
 }
 
 .price{
 margin-top:10px;
-
 color:var(--blue);
-
 font-size:12px;
 font-weight:700
 }
 
 .stock-badge{
 position:absolute;
-
 top:9px;
 left:9px;
-
 padding:4px 7px;
-
 border-radius:14px;
-
 background:#ecfdf5;
-
 color:#15803d;
-
 font-size:7px
 }
 
-html[data-theme="dark"] .stock-badge,
-html[data-varex-theme="dark"] .stock-badge,
 body.varex-dark .stock-badge{
-background:
-rgba(34,197,94,.13);
-
+background:rgba(34,197,94,.13);
 color:#86efac
 }
 
@@ -1230,20 +820,15 @@ background:#fff7ed;
 color:#c2410c
 }
 
-html[data-theme="dark"] .stock-badge.low,
-html[data-varex-theme="dark"] .stock-badge.low,
 body.varex-dark .stock-badge.low{
-background:
-rgba(217,119,6,.18);
-
+background:rgba(217,119,6,.18);
 color:#fdba74
 }
 
 .product.out{
 opacity:.45;
 cursor:not-allowed;
-
-background:var(--soft)
+background:var(--card2)
 }
 
 .product.out .stock-badge{
@@ -1251,24 +836,16 @@ background:#fee2e2;
 color:#b91c1c
 }
 
-html[data-theme="dark"] .product.out .stock-badge,
-html[data-varex-theme="dark"] .product.out .stock-badge,
 body.varex-dark .product.out .stock-badge{
-background:
-rgba(185,28,28,.18);
-
+background:rgba(185,28,28,.18);
 color:#fca5a5
 }
 
 .no-products{
 grid-column:1/-1;
-
 padding:45px 10px;
-
 text-align:center;
-
 color:var(--muted);
-
 font-size:11px
 }
 
@@ -1278,69 +855,44 @@ font-size:11px
 
 .invoice-panel{
 position:sticky;
-
 top:88px;
-
 overflow:hidden
 }
 
 .invoice-head{
 padding:14px 16px;
-
 display:flex;
 justify-content:space-between;
 align-items:center;
-
-border-bottom:
-1px solid
-var(--border);
-
-background:var(--soft)
+border-bottom:1px solid var(--border);
+background:var(--card2)
 }
 
 .invoice-head h3{
 font-size:13px;
-
 color:var(--text)
 }
 
 .invoice-number{
 padding:5px 7px;
-
-border:
-1px solid
-var(--border);
-
+border:1px solid var(--border);
 border-radius:7px;
-
 background:var(--field);
-
 color:var(--muted);
-
 font-size:7px
 }
 
 .invoice-mini-stats{
 display:grid;
-
-grid-template-columns:
-repeat(3,1fr);
-
-border-bottom:
-1px solid
-var(--border);
-
+grid-template-columns:repeat(3,1fr);
+border-bottom:1px solid var(--border);
 background:var(--card)
 }
 
 .invoice-mini-stat{
 padding:9px 5px;
-
 text-align:center;
-
-border-left:
-1px solid
-var(--border)
+border-left:1px solid var(--border)
 }
 
 .invoice-mini-stat:last-child{
@@ -1349,17 +901,13 @@ border-left:0
 
 .invoice-mini-stat small{
 display:block;
-
 margin-bottom:3px;
-
 color:var(--muted);
-
 font-size:7px
 }
 
 .invoice-mini-stat strong{
 font-size:10px;
-
 color:var(--text)
 }
 
@@ -1367,41 +915,25 @@ color:var(--text)
 padding:14px 16px 16px
 }
 
-/* =====================================================
-   CART
-===================================================== */
-
 .cart-items{
 display:flex;
-
 flex-direction:column;
-
 gap:6px;
-
 max-height:235px;
-
 overflow-y:auto
 }
 
 .cart-item{
 padding:9px;
-
-border:
-1px solid
-var(--border);
-
+border:1px solid var(--border);
 border-radius:8px;
-
 background:var(--card2)
 }
 
 .cart-top{
 display:flex;
-
 justify-content:space-between;
-
 gap:10px;
-
 margin-bottom:7px
 }
 
@@ -1409,95 +941,66 @@ margin-bottom:7px
 .cart-price{
 font-size:10px;
 font-weight:700;
-
 color:var(--text)
 }
 
 .quantity-controls{
 display:flex;
-
 align-items:center;
-
 gap:5px
 }
 
 .quantity-controls button{
 width:26px;
 height:26px;
-
-border:
-1px solid
-var(--border);
-
+border:1px solid var(--border);
 border-radius:6px;
-
 background:var(--field);
-
 color:var(--text);
-
 cursor:pointer
 }
 
 .quantity-controls button:hover{
-background:var(--soft2)
+background:var(--card3)
 }
 
 .quantity-number{
 min-width:22px;
-
 text-align:center;
-
 font-size:10px;
-
 color:var(--text)
 }
 
 .remove{
 width:auto!important;
-
 margin-right:auto;
-
 padding:0 8px!important;
-
 background:#fff1f2!important;
-
 color:#b91c1c!important;
-
 font-size:8px!important
 }
 
-html[data-theme="dark"] .remove,
-html[data-varex-theme="dark"] .remove,
 body.varex-dark .remove{
-background:
-rgba(185,28,28,.16)!important;
-
+background:rgba(185,28,28,.16)!important;
 color:#fca5a5!important
 }
 
 .empty{
 padding:25px 10px;
-
 text-align:center;
-
 color:var(--muted)
 }
 
 .empty-icon{
 margin-bottom:7px;
-
 font-size:28px;
-
 opacity:.6
 }
 
 .empty strong{
 display:block;
-
 margin-bottom:4px;
-
 color:var(--bodytext);
-
 font-size:10px
 }
 
@@ -1511,12 +1014,8 @@ font-size:8px
 
 .sale-options{
 margin-top:11px;
-
 padding-top:11px;
-
-border-top:
-1px solid
-var(--border)
+border-top:1px solid var(--border)
 }
 
 .field{
@@ -1525,70 +1024,42 @@ margin-bottom:8px
 
 .field label{
 display:block;
-
 margin-bottom:5px;
-
-color:var(--bodytext);
-
+color:var(--muted);
 font-size:8px
 }
 
 .field input,
 .field select{
 width:100%;
-
 padding:8px;
-
-border:
-1px solid
-var(--border);
-
+border:1px solid var(--border);
 border-radius:7px;
-
 outline:none;
-
 background:var(--field);
-
 color:var(--text);
-
 font-family:inherit;
-
 font-size:10px
 }
 
-.field select option{
-background:var(--field);
-
-color:var(--text)
-}
-
-.field input::placeholder{
-color:var(--muted)
+body.varex-dark .field select option{
+background:#17233d;
+color:#fff
 }
 
 .two-fields{
 display:grid;
-
-grid-template-columns:
-1fr 1fr;
-
+grid-template-columns:1fr 1fr;
 gap:7px
 }
 
 .customer-preview{
 display:none;
-
 margin:-1px 0 9px;
-
 padding:9px 10px;
-
-border:
-1px solid
-var(--border);
-
+border:1px solid var(--border);
 border-radius:8px;
-
-background:var(--soft)
+background:var(--card2)
 }
 
 .customer-preview.active{
@@ -1597,15 +1068,10 @@ display:block
 
 .customer-preview-row{
 display:flex;
-
 justify-content:space-between;
-
 gap:10px;
-
 padding:3px 0;
-
 font-size:8px;
-
 color:var(--bodytext)
 }
 
@@ -1613,25 +1079,14 @@ color:var(--bodytext)
 color:var(--text)
 }
 
-/* =====================================================
-   PAYMENT
-===================================================== */
-
 .cash-payment,
 .credit-payment{
 display:none;
-
 margin-bottom:9px;
-
 padding:10px;
-
-border:
-1px solid
-var(--border);
-
+border:1px solid var(--border);
 border-radius:8px;
-
-background:var(--soft)
+background:var(--card2)
 }
 
 .cash-payment.active,
@@ -1642,21 +1097,15 @@ display:block
 .change-row,
 .payment-status{
 display:flex;
-
 justify-content:space-between;
 align-items:center;
-
 font-size:9px
 }
 
 .change-row{
 margin-top:6px;
-
 padding-top:7px;
-
-border-top:
-1px dashed
-var(--border)
+border-top:1px dashed var(--border)
 }
 
 .change-value{
@@ -1671,19 +1120,11 @@ font-weight:700
 
 .payment-status{
 padding:8px 10px;
-
 margin-bottom:9px;
-
-border:
-1px solid
-var(--border);
-
+border:1px solid var(--border);
 border-radius:8px;
-
-background:var(--soft);
-
+background:var(--card2);
 font-size:8px;
-
 color:var(--bodytext)
 }
 
@@ -1697,27 +1138,17 @@ color:var(--text)
 
 .invoice-summary{
 margin-top:4px;
-
 padding:10px 12px;
-
-border:
-1px solid
-var(--border);
-
+border:1px solid var(--border);
 border-radius:9px;
-
-background:var(--soft)
+background:var(--card2)
 }
 
 .summary-row{
 display:flex;
-
 justify-content:space-between;
-
 padding:4px 0;
-
 color:var(--bodytext);
-
 font-size:9px
 }
 
@@ -1727,19 +1158,11 @@ color:var(--text)
 
 .total{
 display:flex;
-
 justify-content:space-between;
-
 margin-top:7px;
-
 padding-top:10px;
-
-border-top:
-1px dashed
-var(--border);
-
+border-top:1px dashed var(--border);
 color:var(--text);
-
 font-size:17px;
 font-weight:700
 }
@@ -1754,28 +1177,19 @@ margin-top:11px
 
 .pay{
 width:100%;
-
 padding:13px;
-
 border:0;
-
 border-radius:8px;
-
-background:
-linear-gradient(
-135deg,
-#172554,
-#1e3a8a
-);
-
+background:linear-gradient(135deg,#172554,#1e3a8a);
 color:#fff;
-
 cursor:pointer;
-
 font-family:inherit;
-
 font-size:12px;
 font-weight:700
+}
+
+body.varex-dark .pay{
+background:linear-gradient(135deg,#294477,#1e3a6d)
 }
 
 .pay:hover{
@@ -1784,72 +1198,48 @@ filter:brightness(1.08)
 
 .pay:disabled{
 opacity:.42;
-
 cursor:not-allowed
 }
 
 .secondary-actions{
 display:grid;
-
-grid-template-columns:
-repeat(3,1fr);
-
+grid-template-columns:repeat(3,1fr);
 gap:6px;
-
 margin-top:7px
 }
 
 .secondary{
 padding:8px 4px;
-
-border:
-1px solid
-var(--border);
-
+border:1px solid var(--border);
 border-radius:7px;
-
 background:var(--field);
-
 color:var(--bodytext);
-
 cursor:pointer;
-
 font-family:inherit;
-
 font-size:8px
 }
 
 .secondary:hover{
-background:var(--soft)
+background:var(--card3)
 }
 
 .secondary.print{
 background:#eff6ff;
-
 color:#1d4ed8
 }
 
-html[data-theme="dark"] .secondary.print,
-html[data-varex-theme="dark"] .secondary.print,
 body.varex-dark .secondary.print{
-background:
-rgba(37,99,235,.16);
-
+background:rgba(37,99,235,.16);
 color:#bfdbfe
 }
 
 .secondary.danger{
 background:#fffafa;
-
 color:#b91c1c
 }
 
-html[data-theme="dark"] .secondary.danger,
-html[data-varex-theme="dark"] .secondary.danger,
 body.varex-dark .secondary.danger{
-background:
-rgba(185,28,28,.13);
-
+background:rgba(185,28,28,.13);
 color:#fca5a5
 }
 
@@ -1859,82 +1249,50 @@ color:#fca5a5
 
 .modal-overlay{
 display:none;
-
 position:fixed;
-
 inset:0;
-
 z-index:5000;
-
 padding:20px;
-
 align-items:center;
 justify-content:center;
+background:rgba(15,23,42,.48)
+}
 
-background:
-rgba(15,23,42,.48)
+body.varex-dark .modal-overlay{
+background:rgba(3,7,18,.72)
 }
 
 .modal-overlay.active{
 display:flex
 }
 
-html[data-theme="dark"] .modal-overlay,
-html[data-varex-theme="dark"] .modal-overlay,
-body.varex-dark .modal-overlay{
-background:
-rgba(3,7,18,.72)
-}
-
 .modal{
 width:100%;
 max-width:650px;
 max-height:80vh;
-
 overflow:auto;
-
-border:
-1px solid
-var(--border);
-
+border:1px solid var(--border);
 border-radius:15px;
-
 background:var(--card);
-
 color:var(--text);
-
-box-shadow:
-0 25px 60px
-rgba(0,0,0,.20)
+box-shadow:0 25px 60px rgba(0,0,0,.20)
 }
 
 .modal-head{
 display:flex;
-
 justify-content:space-between;
 align-items:center;
-
 padding:15px 18px;
-
-border-bottom:
-1px solid
-var(--border)
+border-bottom:1px solid var(--border)
 }
 
 .modal-close{
 width:29px;
 height:29px;
-
-border:
-1px solid
-var(--border);
-
+border:1px solid var(--border);
 border-radius:7px;
-
-background:var(--soft);
-
+background:var(--card2);
 color:var(--text);
-
 cursor:pointer
 }
 
@@ -1944,25 +1302,16 @@ padding:15px
 
 .held-item{
 margin-bottom:8px;
-
 padding:11px;
-
-border:
-1px solid
-var(--border);
-
+border:1px solid var(--border);
 border-radius:9px;
-
-background:var(--soft)
+background:var(--card2)
 }
 
 .held-top{
 display:flex;
-
 justify-content:space-between;
-
 gap:10px;
-
 margin-bottom:6px
 }
 
@@ -1974,61 +1323,41 @@ font-weight:700
 .held-date,
 .held-details{
 color:var(--muted);
-
 font-size:8px
 }
 
 .held-actions{
 display:flex;
-
 gap:6px;
-
 margin-top:8px
 }
 
 .held-actions button{
 padding:7px 9px;
-
-border:
-1px solid
-var(--border);
-
+border:1px solid var(--border);
 border-radius:7px;
-
 background:var(--field);
-
 color:var(--text);
-
 cursor:pointer
 }
 
 .restore{
 background:#eff6ff!important;
-
 color:#1d4ed8!important
 }
 
-html[data-theme="dark"] .restore,
-html[data-varex-theme="dark"] .restore,
 body.varex-dark .restore{
-background:
-rgba(37,99,235,.18)!important;
-
+background:rgba(37,99,235,.18)!important;
 color:#bfdbfe!important
 }
 
 .delete{
 background:#fff1f2!important;
-
 color:#b91c1c!important
 }
 
-html[data-theme="dark"] .delete,
-html[data-varex-theme="dark"] .delete,
 body.varex-dark .delete{
-background:
-rgba(185,28,28,.16)!important;
-
+background:rgba(185,28,28,.16)!important;
 color:#fca5a5!important
 }
 
@@ -2038,92 +1367,43 @@ color:#fca5a5!important
 
 .toast{
 display:none;
-
 position:fixed;
-
 left:22px;
 bottom:22px;
-
 z-index:9999;
-
 padding:11px 16px;
-
 border-radius:9px;
-
 background:#172554;
-
 color:#fff;
-
 font-size:9px;
+box-shadow:0 8px 25px rgba(0,0,0,.20)
+}
 
-box-shadow:
-0 8px 25px
-rgba(0,0,0,.18)
+.print-receipt{
+display:none
 }
 
 /* =====================================================
    PRINT
 ===================================================== */
 
-.print-receipt{
-display:none
-}
-
 @media print{
-
-body *{
-visibility:hidden
-}
-
-.print-receipt,
-.print-receipt *{
-visibility:visible
-}
-
+body *{visibility:hidden}
+.print-receipt,.print-receipt *{visibility:visible}
 .print-receipt{
 display:block;
-
 position:absolute;
-
 top:0;
 right:0;
-
 width:100%;
-
 padding:20px;
-
 background:#fff;
-
 color:#000;
-
 direction:rtl
 }
-
-.receipt-title{
-text-align:center;
-
-margin-bottom:15px
-}
-
-.receipt-line{
-margin:10px 0;
-
-border-top:
-1px dashed #777
-}
-
-.receipt-row{
-display:flex;
-
-justify-content:space-between;
-
-gap:20px;
-
-margin:6px 0;
-
-font-size:13px
-}
-
+.receipt-title{text-align:center;margin-bottom:15px}
+.receipt-line{margin:10px 0;border-top:1px dashed #777}
+.receipt-row{display:flex;justify-content:space-between;gap:20px;margin:6px 0;font-size:13px}
 }
 
 /* =====================================================
@@ -2131,119 +1411,24 @@ font-size:13px
 ===================================================== */
 
 @media(max-width:850px){
-
-.sidebar{
-position:relative;
-
-width:100%;
-height:auto
-}
-
-.brand{
-height:170px;
-min-height:170px;
-max-height:170px;
-
-flex:
-0 0 170px
-}
-
-.sidebar-user-area{
-display:none
-}
-
-.nav{
-display:flex;
-
-overflow-x:auto;
-
-padding:8px
-}
-
-.nav a{
-width:auto;
-
-min-width:max-content;
-
-flex-shrink:0;
-
-margin:0 3px
-}
-
-.main{
-margin-right:0
-}
-
-.topbar{
-position:relative;
-
-padding:0 14px
-}
-
-.pos{
-grid-template-columns:1fr
-}
-
-.invoice-panel{
-position:relative;
-top:auto
-}
-
-.scanner-box{
-grid-template-columns:
-auto 1fr
-}
-
-.barcode-input{
-grid-column:1/-1
-}
-
+.pos{grid-template-columns:1fr}
+.invoice-panel{position:relative;top:auto}
+.scanner-box{grid-template-columns:auto 1fr}
+.barcode-input{grid-column:1/-1}
 }
 
 @media(max-width:600px){
-
-.content{
-width:94%
-}
-
-.hero{
-flex-direction:column;
-
-align-items:flex-start
-}
-
-.hero-actions{
-width:100%
-}
-
-.hero-actions button{
-flex:1
-}
-
-.quick-stats,
-.products{
-grid-template-columns:
-1fr 1fr
-}
-
-.top-info{
-display:none
-}
-
-.two-fields{
-grid-template-columns:1fr
-}
-
+.content{width:94%}
+.hero{flex-direction:column;align-items:flex-start}
+.hero-actions{width:100%}
+.hero-actions button{flex:1}
+.quick-stats,.products{grid-template-columns:1fr 1fr}
+.top-info{display:none}
+.two-fields{grid-template-columns:1fr}
 }
 
 @media(max-width:430px){
-
-.products,
-.quick-stats,
-.secondary-actions{
-grid-template-columns:1fr
-}
-
+.products,.quick-stats,.secondary-actions{grid-template-columns:1fr}
 }
 </style>
 </head>
@@ -2253,148 +1438,60 @@ grid-template-columns:1fr
 <aside class="sidebar">
 
 <div class="brand">
-
-<div class="logo">
-VAREX
-</div>
-
-<div class="brand-small">
-BUSINESS MANAGEMENT SYSTEM
-</div>
-
+<div class="logo">VAREX</div>
+<div class="brand-small">BUSINESS MANAGEMENT SYSTEM</div>
 <div class="store-status">
-
 <span class="status-dot"></span>
-
-<span>
-النظام متصل وجاهز للعمل
-</span>
-
+<span>النظام متصل وجاهز للعمل</span>
 </div>
-
 </div>
-
 
 <nav class="nav">
-
 <a href="index.html">
-
-<span class="nav-icon">
-▦
-</span>
-
-<span class="nav-label">
-لوحة التحكم
-</span>
-
+<span class="nav-icon">▦</span>
+<span class="nav-label">لوحة التحكم</span>
 </a>
-
 
 <a href="pos.html" class="active">
-
-<span class="nav-icon">
-🛒
-</span>
-
-<span class="nav-label">
-شاشة المبيعات
-</span>
-
+<span class="nav-icon">🛒</span>
+<span class="nav-label">شاشة المبيعات</span>
 </a>
-
 
 <a href="products.html">
-
-<span class="nav-icon">
-📦
-</span>
-
-<span class="nav-label">
-المنتجات والمخزون
-</span>
-
+<span class="nav-icon">📦</span>
+<span class="nav-label">المنتجات والمخزون</span>
 </a>
-
 
 <a href="customers.html">
-
-<span class="nav-icon">
-👥
-</span>
-
-<span class="nav-label">
-العملاء
-</span>
-
+<span class="nav-icon">👥</span>
+<span class="nav-label">العملاء</span>
 </a>
-
 
 <a href="suppliers.html">
-
-<span class="nav-icon">
-🚚
-</span>
-
-<span class="nav-label">
-الموردون
-</span>
-
+<span class="nav-icon">🚚</span>
+<span class="nav-label">الموردون</span>
 </a>
-
 
 <a href="accounts.html">
-
-<span class="nav-icon">
-💰
-</span>
-
-<span class="nav-label">
-الحسابات
-</span>
-
+<span class="nav-icon">💰</span>
+<span class="nav-label">الحسابات</span>
 </a>
-
 
 <a href="employees.html">
-
-<span class="nav-icon">
-👤
-</span>
-
-<span class="nav-label">
-الموظفون
-</span>
-
+<span class="nav-icon">👤</span>
+<span class="nav-label">الموظفون</span>
 </a>
-
 
 <a href="reports.html">
-
-<span class="nav-icon">
-📊
-</span>
-
-<span class="nav-label">
-التقارير
-</span>
-
+<span class="nav-icon">📊</span>
+<span class="nav-label">التقارير</span>
 </a>
-
 
 <a href="setting.html">
-
-<span class="nav-icon">
-⚙️
-</span>
-
-<span class="nav-label">
-الإعدادات
-</span>
-
+<span class="nav-icon">⚙️</span>
+<span class="nav-label">الإعدادات</span>
 </a>
-
 </nav>
-
 
 <div class="sidebar-user-area">
 
@@ -2412,15 +1509,11 @@ BUSINESS MANAGEMENT SYSTEM
 
 <div>
 
-<div
-class="cashier-name"
-id="sidebarUserName">
+<div class="cashier-name" id="sidebarUserName">
 المستخدم
 </div>
 
-<div
-class="cashier-role"
-id="sidebarUserRole">
+<div class="cashier-role" id="sidebarUserRole">
 USER
 </div>
 
@@ -2430,23 +1523,10 @@ USER
 
 </div>
 
-
-<button
-type="button"
-class="logout-button"
-onclick="logoutUser()"
->
-
-<span class="logout-icon">
-⏻
-</span>
-
-<span>
-تسجيل الخروج
-</span>
-
+<button type="button" class="logout-button" onclick="logoutUser()">
+<span class="logout-icon">⏻</span>
+<span>تسجيل الخروج</span>
 </button>
-
 
 <div class="sidebar-footer">
 VAREX BUSINESS SYSTEM
@@ -2455,7 +1535,6 @@ VAREX BUSINESS SYSTEM
 </div>
 
 </aside>
-
 
 <div class="main">
 
@@ -2481,46 +1560,29 @@ VAREX SALES MANAGEMENT
 
 </div>
 
-
 <div class="top-info">
 
 <div class="info-chip online-chip">
-
 <span class="status-dot"></span>
-
 متصل
-
 </div>
-
 
 <div class="info-chip">
-
 المستخدم:
-
-<strong id="topUserName">
-—
-</strong>
-
+<strong id="topUserName">—</strong>
 </div>
 
-
-<div
-class="info-chip"
-id="currentDate">
+<div class="info-chip" id="currentDate">
 —
 </div>
 
-
-<div
-class="info-chip"
-id="currentTime">
+<div class="info-chip" id="currentTime">
 —
 </div>
 
 </div>
 
 </header>
-
 
 <main class="content">
 
@@ -2537,7 +1599,6 @@ id="currentTime">
 </p>
 
 </div>
-
 
 <div class="hero-actions">
 
@@ -2567,7 +1628,6 @@ onclick="newSale()"
 
 </section>
 
-
 <section class="quick-stats">
 
 <div class="stat">
@@ -2584,9 +1644,7 @@ onclick="newSale()"
 
 </div>
 
-<div
-class="stat-value"
-id="todaySales">
+<div class="stat-value" id="todaySales">
 0.00 د.إ
 </div>
 
@@ -2595,7 +1653,6 @@ id="todaySales">
 </div>
 
 </div>
-
 
 <div class="stat">
 
@@ -2611,9 +1668,7 @@ id="todaySales">
 
 </div>
 
-<div
-class="stat-value"
-id="todayInvoices">
+<div class="stat-value" id="todayInvoices">
 0
 </div>
 
@@ -2622,7 +1677,6 @@ id="todayInvoices">
 </div>
 
 </div>
-
 
 <div class="stat">
 
@@ -2638,9 +1692,7 @@ id="todayInvoices">
 
 </div>
 
-<div
-class="stat-value"
-id="lastInvoice">
+<div class="stat-value" id="lastInvoice">
 —
 </div>
 
@@ -2649,7 +1701,6 @@ id="lastInvoice">
 </div>
 
 </div>
-
 
 <div class="stat">
 
@@ -2667,7 +1718,8 @@ id="lastInvoice">
 
 <div
 class="stat-value"
-style="color:#22c55e;font-size:15px">
+style="color:#22c55e;font-size:15px"
+>
 جاهز للعمل
 </div>
 
@@ -2678,7 +1730,6 @@ style="color:#22c55e;font-size:15px">
 </div>
 
 </section>
-
 
 <section class="scanner-box">
 
@@ -2698,7 +1749,6 @@ style="color:#22c55e;font-size:15px">
 
 </div>
 
-
 <input
 id="barcodeScanner"
 class="barcode-input"
@@ -2710,12 +1760,10 @@ onkeydown="handleBarcode(event)"
 
 </section>
 
-
 <div
 id="successMessage"
-class="success">
-</div>
-
+class="success"
+></div>
 
 <section class="pos">
 
@@ -2733,7 +1781,6 @@ class="success">
 
 </div>
 
-
 <div class="search-box">
 
 <span class="search-icon">
@@ -2750,20 +1797,17 @@ oninput="renderProducts()"
 
 </div>
 
-
 <div
 id="categoryTabs"
-class="category-tabs">
-</div>
-
+class="category-tabs"
+></div>
 
 <div
 id="products"
-class="products">
-</div>
+class="products"
+></div>
 
 </div>
-
 
 <div class="panel invoice-panel">
 
@@ -2775,67 +1819,43 @@ class="products">
 
 <span
 class="invoice-number"
-id="draftInvoiceNumber">
+id="draftInvoiceNumber"
+>
 فاتورة جديدة
 </span>
 
 </div>
 
-
 <div class="invoice-mini-stats">
 
 <div class="invoice-mini-stat">
-
-<small>
-الأصناف
-</small>
-
-<strong id="invoiceItemsCount">
-0
-</strong>
-
+<small>الأصناف</small>
+<strong id="invoiceItemsCount">0</strong>
 </div>
-
 
 <div class="invoice-mini-stat">
-
-<small>
-عدد القطع
-</small>
-
-<strong id="invoiceQuantityCount">
-0
-</strong>
-
+<small>عدد القطع</small>
+<strong id="invoiceQuantityCount">0</strong>
 </div>
-
 
 <div class="invoice-mini-stat">
-
-<small>
-الإجمالي
-</small>
-
-<strong id="invoiceMiniTotal">
-0.00 د.إ
-</strong>
-
+<small>الإجمالي</small>
+<strong id="invoiceMiniTotal">0.00 د.إ</strong>
 </div>
 
 </div>
-
 
 <div class="invoice-body">
 
 <div
 id="cartItems"
-class="cart-items">
-</div>
-
+class="cart-items"
+></div>
 
 <div
 id="emptyCart"
-class="empty">
+class="empty"
+>
 
 <div class="empty-icon">
 🛒
@@ -2850,7 +1870,6 @@ class="empty">
 </small>
 
 </div>
-
 
 <div class="sale-options">
 
@@ -2873,12 +1892,10 @@ onchange="customerChanged()"
 
 </div>
 
-
 <div
 id="customerPreview"
-class="customer-preview">
-</div>
-
+class="customer-preview"
+></div>
 
 <div class="field">
 
@@ -2911,7 +1928,6 @@ onchange="paymentMethodChanged()"
 
 </div>
 
-
 <div class="two-fields">
 
 <div class="field">
@@ -2930,7 +1946,6 @@ oninput="renderCart()"
 >
 
 </div>
-
 
 <div class="field">
 
@@ -2951,10 +1966,10 @@ oninput="renderCart()"
 
 </div>
 
-
 <div
 id="cashPayment"
-class="cash-payment active">
+class="cash-payment active"
+>
 
 <div class="field">
 
@@ -2973,7 +1988,6 @@ oninput="calculateChange()"
 
 </div>
 
-
 <div class="change-row">
 
 <span>
@@ -2982,7 +1996,8 @@ oninput="calculateChange()"
 
 <span
 id="changeAmount"
-class="change-value">
+class="change-value"
+>
 0.00 د.إ
 </span>
 
@@ -2990,10 +2005,10 @@ class="change-value">
 
 </div>
 
-
 <div
 id="creditPayment"
-class="credit-payment">
+class="credit-payment"
+>
 
 <div class="field">
 
@@ -3012,7 +2027,6 @@ oninput="calculateCreditDue()"
 
 </div>
 
-
 <div class="change-row">
 
 <span>
@@ -3021,14 +2035,14 @@ oninput="calculateCreditDue()"
 
 <span
 id="creditDue"
-class="due-value">
+class="due-value"
+>
 0.00 د.إ
 </span>
 
 </div>
 
 </div>
-
 
 <div class="payment-status">
 
@@ -3044,7 +2058,6 @@ class="due-value">
 
 </div>
 
-
 <div class="invoice-summary">
 
 <div class="summary-row">
@@ -3059,7 +2072,6 @@ class="due-value">
 
 </div>
 
-
 <div class="summary-row">
 
 <span>
@@ -3072,7 +2084,6 @@ class="due-value">
 
 </div>
 
-
 <div class="summary-row">
 
 <span>
@@ -3084,7 +2095,6 @@ class="due-value">
 </strong>
 
 </div>
-
 
 <div class="total">
 
@@ -3100,7 +2110,6 @@ class="due-value">
 
 </div>
 
-
 <div class="invoice-actions">
 
 <button
@@ -3111,7 +2120,6 @@ disabled
 >
 ✓ إتمام عملية البيع
 </button>
-
 
 <div class="secondary-actions">
 
@@ -3150,7 +2158,6 @@ onclick="clearCart()"
 
 </div>
 
-
 <div
 id="heldModal"
 class="modal-overlay"
@@ -3176,190 +2183,52 @@ onclick="closeHeldSales()"
 
 <div
 id="heldSalesList"
-class="modal-body">
-</div>
+class="modal-body"
+></div>
 
 </div>
 
 </div>
-
 
 <div
 id="printReceipt"
-class="print-receipt">
-</div>
-
+class="print-receipt"
+></div>
 
 <div
 id="toast"
-class="toast">
-</div>
+class="toast"
+></div>
 
-
-<script src="varex.js"></script>
+<script src="./varex.js"></script>
 
 <script>
-
-/* =====================================================
-   THEME SYNC
-===================================================== */
-
-function syncPosTheme(){
-
-let theme="light";
-
-try{
-
-const saved=
-localStorage.getItem(
-"varex_theme"
-);
-
-if(
-saved==="dark"||
-saved==="light"
-){
-
-theme=saved;
-
-}else if(
-document.body.classList.contains(
-"varex-dark"
-)
-){
-
-theme="dark";
-
-}else if(
-document.documentElement.getAttribute(
-"data-varex-theme"
-)==="dark"
-){
-
-theme="dark";
-
-}
-
-}catch(e){}
-
-document.documentElement.setAttribute(
-"data-theme",
-theme
-);
-
-document.documentElement.setAttribute(
-"data-varex-theme",
-theme
-);
-
-document.body.classList.toggle(
-"varex-dark",
-theme==="dark"
-);
-
-}
-
-
-/* أول تطبيق للثيم */
-
-syncPosTheme();
-
-
-/* مراقبة تغيير الثيم من varex.js */
-
-const posThemeObserver=
-new MutationObserver(
-function(){
-
-syncPosTheme();
-
-}
-);
-
-posThemeObserver.observe(
-document.documentElement,
-{
-attributes:true,
-attributeFilter:[
-"data-varex-theme",
-"data-theme"
-]
-}
-);
-
-posThemeObserver.observe(
-document.body,
-{
-attributes:true,
-attributeFilter:[
-"class"
-]
-}
-);
-
-
-/* مزامنة عند الرجوع للصفحة */
-
-window.addEventListener(
-"focus",
-syncPosTheme
-);
-
-window.addEventListener(
-"pageshow",
-syncPosTheme
-);
-
-window.addEventListener(
-"storage",
-function(e){
-
-if(
-e.key==="varex_theme"
-){
-
-syncPosTheme();
-
-}
-
-}
-);
-
 
 /* =====================================================
    LOGIN CHECK
 ===================================================== */
 
-if(
-typeof VAREX==="undefined"
-){
+if(typeof VAREX==="undefined"){
 
-alert(
-"تعذر تحميل نظام VAREX."
-);
+alert("تعذر تحميل نظام VAREX.");
 
-}
-else if(
+}else if(
 typeof VAREX.isLoggedIn==="function" &&
 !VAREX.isLoggedIn()
 ){
 
-location.replace(
-"./login.html"
-);
+location.replace("./login.html");
 
 }
 
-
 /* =====================================================
-   POS STATE
+   VARIABLES
 ===================================================== */
 
 let cart=[];
 let activeCategory="";
 let lastCompletedSale=null;
 let currentTotal=0;
-
 
 /* =====================================================
    HELPERS
@@ -3368,20 +2237,14 @@ let currentTotal=0;
 function money(v){
 
 return typeof VAREX.money==="function"
-? VAREX.money(
-Number(v||0)
-)
-: Number(v||0).toFixed(2)+" د.إ";
+?VAREX.money(Number(v||0))
+:Number(v||0).toFixed(2)+" د.إ";
 
 }
 
-
 function escapeHTML(v){
 
-let d=
-document.createElement(
-"div"
-);
+let d=document.createElement("div");
 
 d.textContent=
 v==null
@@ -3391,7 +2254,6 @@ v==null
 return d.innerHTML;
 
 }
-
 
 function showToast(m){
 
@@ -3422,7 +2284,6 @@ t.style.display=
 
 }
 
-
 function formatDateTime(v){
 
 if(!v){
@@ -3432,16 +2293,11 @@ return"—";
 let d=
 new Date(v);
 
-return isNaN(
-d.getTime()
-)
+return isNaN(d.getTime())
 ?"—"
-:d.toLocaleString(
-"ar-AE"
-);
+:d.toLocaleString("ar-AE");
 
 }
-
 
 /* =====================================================
    DATA
@@ -3452,65 +2308,58 @@ function getProducts(){
 try{
 
 return typeof VAREX.getProducts==="function"
-? VAREX.getProducts()||[]
+?VAREX.getProducts()||[]
 :[];
 
-}
-catch(e){
+}catch(e){
 
 return[];
 
 }
 
 }
-
 
 function getCustomers(){
 
 try{
 
 return typeof VAREX.getCustomers==="function"
-? VAREX.getCustomers()||[]
+?VAREX.getCustomers()||[]
 :[];
 
-}
-catch(e){
+}catch(e){
 
 return[];
 
 }
 
 }
-
 
 function getSales(){
 
 try{
 
 return typeof VAREX.getSales==="function"
-? VAREX.getSales()||[]
+?VAREX.getSales()||[]
 :[];
 
-}
-catch(e){
+}catch(e){
 
 return[];
 
 }
 
 }
-
 
 function getHeldSales(){
 
 try{
 
 return typeof VAREX.getHeldSales==="function"
-? VAREX.getHeldSales()||[]
+?VAREX.getHeldSales()||[]
 :[];
 
-}
-catch(e){
+}catch(e){
 
 return[];
 
@@ -3518,25 +2367,22 @@ return[];
 
 }
 
-
 function findProductById(id){
 
 return typeof VAREX.getProductById==="function"
-? VAREX.getProductById(id)
-: getProducts().find(
+?VAREX.getProductById(id)
+:getProducts().find(
 function(p){
 
-return String(p.id)===
-String(id);
+return String(p.id)===String(id);
 
 }
 )||null;
 
 }
 
-
 /* =====================================================
-   USER
+   CURRENT USER
 ===================================================== */
 
 function loadCurrentUser(){
@@ -3546,8 +2392,7 @@ let u=null;
 try{
 
 if(
-typeof VAREX.getCurrentUser===
-"function"
+typeof VAREX.getCurrentUser==="function"
 ){
 
 u=
@@ -3571,20 +2416,34 @@ let r=
 u.role||
 "مستخدم";
 
+const sidebarName=
 document.getElementById(
 "sidebarUserName"
-).textContent=n;
+);
 
+const sidebarRole=
 document.getElementById(
 "sidebarUserRole"
-).textContent=r;
+);
 
+const topUser=
 document.getElementById(
 "topUserName"
-).textContent=n;
+);
 
+if(sidebarName){
+sidebarName.textContent=n;
 }
 
+if(sidebarRole){
+sidebarRole.textContent=r;
+}
+
+if(topUser){
+topUser.textContent=n;
+}
+
+}
 
 function logoutUser(){
 
@@ -3612,7 +2471,6 @@ location.replace(
 
 }
 
-
 /* =====================================================
    CLOCK
 ===================================================== */
@@ -3622,9 +2480,19 @@ function updateClock(){
 let n=
 new Date();
 
+const date=
 document.getElementById(
 "currentDate"
-).textContent=
+);
+
+const time=
+document.getElementById(
+"currentTime"
+);
+
+if(date){
+
+date.textContent=
 n.toLocaleDateString(
 "ar-AE",
 {
@@ -3634,9 +2502,11 @@ day:"2-digit"
 }
 );
 
-document.getElementById(
-"currentTime"
-).textContent=
+}
+
+if(time){
+
+time.textContent=
 n.toLocaleTimeString(
 "ar-AE",
 {
@@ -3648,6 +2518,7 @@ second:"2-digit"
 
 }
 
+}
 
 /* =====================================================
    CUSTOMERS
@@ -3660,16 +2531,20 @@ document.getElementById(
 "customerSelect"
 );
 
-let o=
+if(!s){
+return;
+}
+
+let oldValue=
 s.value;
 
-let c=
+let customers=
 getCustomers();
 
 s.innerHTML=
 '<option value="">عميل نقدي / غير مسجل</option>';
 
-c.forEach(
+customers.forEach(
 function(x){
 
 let op=
@@ -3688,26 +2563,25 @@ x.phone
 :""
 );
 
-s.appendChild(
-op
-);
+s.appendChild(op);
 
 }
 );
 
 if(
-o &&
-c.some(
+oldValue &&
+customers.some(
 function(x){
 
 return String(x.id)===
-String(o);
+String(oldValue);
 
 }
 )
 ){
 
-s.value=o;
+s.value=
+oldValue;
 
 }
 
@@ -3715,16 +2589,22 @@ customerChanged();
 
 }
 
-
 function getSelectedCustomer(){
 
-let id=
+let select=
 document.getElementById(
 "customerSelect"
-).value;
+);
+
+if(!select){
+return null;
+}
+
+let id=
+select.value;
 
 return id
-? getCustomers().find(
+?getCustomers().find(
 function(c){
 
 return String(c.id)===
@@ -3736,19 +2616,19 @@ String(id);
 
 }
 
-
 function getCustomerOutstanding(id){
 
-return id
-? getSales()
+if(!id){
+return 0;
+}
+
+return getSales()
 .filter(
 function(s){
 
 return String(
-s.customerId||
-""
-)===
-String(id);
+s.customerId||""
+)===String(id);
 
 }
 )
@@ -3769,11 +2649,9 @@ s.remaining!==undefined
 
 },
 0
-)
-:0;
+);
 
 }
-
 
 function customerChanged(){
 
@@ -3784,6 +2662,10 @@ let p=
 document.getElementById(
 "customerPreview"
 );
+
+if(!p){
+return;
+}
 
 if(!c){
 
@@ -3799,20 +2681,14 @@ return;
 
 p.innerHTML=
 '<div class="customer-preview-row"><span>العميل</span><strong>'+
-escapeHTML(
-c.name||"-"
-)+
+escapeHTML(c.name||"-")+
 '</strong></div>'+
 '<div class="customer-preview-row"><span>الهاتف</span><strong>'+
-escapeHTML(
-c.phone||"-"
-)+
+escapeHTML(c.phone||"-")+
 '</strong></div>'+
 '<div class="customer-preview-row"><span>الرصيد المستحق</span><strong>'+
 money(
-getCustomerOutstanding(
-c.id
-)
+getCustomerOutstanding(c.id)
 )+
 '</strong></div>'+
 '<div class="customer-preview-row"><span>الحد الائتماني</span><strong>'+
@@ -3827,7 +2703,6 @@ p.classList.add(
 
 }
 
-
 /* =====================================================
    CATEGORIES
 ===================================================== */
@@ -3839,6 +2714,10 @@ document.getElementById(
 "categoryTabs"
 );
 
+if(!c){
+return;
+}
+
 let cats=[
 ...new Set(
 getProducts()
@@ -3846,8 +2725,7 @@ getProducts()
 function(p){
 
 return String(
-p.category||
-"عام"
+p.category||"عام"
 ).trim();
 
 }
@@ -3858,12 +2736,12 @@ p.category||
 
 c.innerHTML="";
 
-let a=
+let all=
 document.createElement(
 "button"
 );
 
-a.className=
+all.className=
 "category"+
 (
 !activeCategory
@@ -3871,10 +2749,10 @@ a.className=
 :""
 );
 
-a.textContent=
+all.textContent=
 "كل المنتجات";
 
-a.onclick=
+all.onclick=
 function(){
 
 activeCategory="";
@@ -3885,9 +2763,7 @@ renderProducts();
 
 };
 
-c.appendChild(
-a
-);
+c.appendChild(all);
 
 cats.forEach(
 function(n){
@@ -3918,15 +2794,12 @@ renderProducts();
 
 };
 
-c.appendChild(
-b
-);
+c.appendChild(b);
 
 }
 );
 
 }
-
 
 /* =====================================================
    PRODUCTS
@@ -3939,11 +2812,20 @@ document.getElementById(
 "products"
 );
 
-let s=
+let searchInput=
 document.getElementById(
 "search"
-)
-.value
+);
+
+if(
+!c ||
+!searchInput
+){
+return;
+}
+
+let s=
+searchInput.value
 .trim()
 .toLowerCase();
 
@@ -3955,15 +2837,9 @@ getProducts()
 function(p){
 
 return(
-String(
-p.name||""
-)+" "+
-String(
-p.barcode||""
-)+" "+
-String(
-p.sku||""
-)
+String(p.name||"")+" "+
+String(p.barcode||"")+" "+
+String(p.sku||"")
 )
 .toLowerCase()
 .includes(s)
@@ -4013,23 +2889,19 @@ q<=0
 );
 
 let sc="";
-
 let st=
 "متوفر "+q;
 
 if(q<=0){
 
-st=
-"نفد";
+st="نفد";
 
-}
-else if(
+}else if(
 m>0 &&
 q<=m
 ){
 
-sc=
-" low";
+sc=" low";
 
 st=
 "منخفض "+q;
@@ -4037,30 +2909,20 @@ st=
 }
 
 d.innerHTML=
-'<span class="stock-badge'+
-sc+
-'">'+
+'<span class="stock-badge'+sc+'">'+
 escapeHTML(st)+
 '</span>'+
 '<div class="product-name">'+
-escapeHTML(
-p.name||""
-)+
+escapeHTML(p.name||"")+
 '</div>'+
 '<div class="product-info">الباركود: '+
-escapeHTML(
-p.barcode||"-"
-)+
+escapeHTML(p.barcode||"-")+
 '</div>'+
 '<div class="product-info">'+
-escapeHTML(
-p.category||"عام"
-)+
+escapeHTML(p.category||"عام")+
 '</div>'+
 '<div class="price">'+
-money(
-p.price
-)+
+money(p.price)+
 '</div>';
 
 if(q>0){
@@ -4068,23 +2930,18 @@ if(q>0){
 d.onclick=
 function(){
 
-addToCart(
-p.id
-);
+addToCart(p.id);
 
 };
 
 }
 
-c.appendChild(
-d
-);
+c.appendChild(d);
 
 }
 );
 
 }
-
 
 /* =====================================================
    BARCODE
@@ -4092,9 +2949,7 @@ d
 
 function handleBarcode(e){
 
-if(
-e.key!=="Enter"
-){
+if(e.key!=="Enter"){
 return;
 }
 
@@ -4114,13 +2969,12 @@ return;
 
 let p=
 typeof VAREX.findProductByBarcode==="function"
-? VAREX.findProductByBarcode(b)
-: getProducts().find(
+?VAREX.findProductByBarcode(b)
+:getProducts().find(
 function(x){
 
 return String(
-x.barcode||
-""
+x.barcode||""
 )===b;
 
 }
@@ -4139,9 +2993,7 @@ return;
 }
 
 if(
-Number(
-p.quantity||0
-)<=0
+Number(p.quantity||0)<=0
 ){
 
 showToast(
@@ -4154,16 +3006,13 @@ return;
 
 }
 
-addToCart(
-p.id
-);
+addToCart(p.id);
 
 input.value="";
 
 input.focus();
 
 }
-
 
 /* =====================================================
    CART
@@ -4172,20 +3021,18 @@ input.focus();
 function addToCart(id){
 
 let p=
-findProductById(
-id
-);
+findProductById(id);
 
 if(!p){
 return;
 }
 
-let av=
+let available=
 Number(
 p.quantity||0
 );
 
-if(av<=0){
+if(available<=0){
 
 showToast(
 "هذا المنتج غير متوفر في المخزون"
@@ -4195,22 +3042,22 @@ return;
 
 }
 
-let e=
+let existing=
 cart.find(
 function(i){
 
 return String(
 i.productId
-)===
-String(id);
+)===String(id);
 
 }
 );
 
-if(e){
+if(existing){
 
 if(
-e.quantity>=av
+existing.quantity>=
+available
 ){
 
 showToast(
@@ -4221,7 +3068,7 @@ return;
 
 }
 
-e.quantity++;
+existing.quantity++;
 
 }else{
 
@@ -4242,51 +3089,41 @@ renderCart();
 
 }
 
-
 function changeQuantity(id,a){
 
-let i=
+let item=
 cart.find(
 function(x){
 
 return String(
 x.productId
-)===
-String(id);
+)===String(id);
 
 }
 );
 
-if(!i){
+if(!item){
 return;
 }
 
 let p=
-findProductById(
-id
-);
+findProductById(id);
 
 if(!p){
 
-removeFromCart(
-id
-);
+removeFromCart(id);
 
 return;
 
 }
 
 let q=
-Number(
-i.quantity
-)+
+Number(item.quantity)+
 Number(a);
 
 if(q<=0){
 
-removeFromCart(
-id
-);
+removeFromCart(id);
 
 return;
 
@@ -4307,12 +3144,11 @@ return;
 
 }
 
-i.quantity=q;
+item.quantity=q;
 
 renderCart();
 
 }
-
 
 function removeFromCart(id){
 
@@ -4322,8 +3158,7 @@ function(i){
 
 return String(
 i.productId
-)!==
-String(id);
+)!==String(id);
 
 }
 );
@@ -4331,7 +3166,6 @@ String(id);
 renderCart();
 
 }
-
 
 function clearCart(){
 
@@ -4349,7 +3183,6 @@ renderCart();
 }
 
 }
-
 
 function resetCurrentSale(){
 
@@ -4386,7 +3219,6 @@ customerChanged();
 paymentMethodChanged();
 
 }
-
 
 function newSale(){
 
@@ -4426,7 +3258,6 @@ document.getElementById(
 ).focus();
 
 }
-
 
 /* =====================================================
    PAYMENT
@@ -4481,7 +3312,6 @@ updatePaymentStatus();
 
 }
 
-
 function calculateChange(){
 
 if(
@@ -4499,7 +3329,7 @@ return;
 
 }
 
-let r=
+let received=
 Math.max(
 0,
 Number(
@@ -4515,12 +3345,11 @@ document.getElementById(
 money(
 Math.max(
 0,
-r-currentTotal
+received-currentTotal
 )
 );
 
 }
-
 
 function calculateCreditDue(){
 
@@ -4544,7 +3373,7 @@ document.getElementById(
 "creditPaid"
 );
 
-let p=
+let paid=
 Math.max(
 0,
 Number(
@@ -4552,13 +3381,11 @@ input.value||0
 )
 );
 
-if(
-p>currentTotal
-){
+if(paid>currentTotal){
 
-p=currentTotal;
+paid=currentTotal;
 
-input.value=p;
+input.value=paid;
 
 }
 
@@ -4568,7 +3395,7 @@ document.getElementById(
 money(
 Math.max(
 0,
-currentTotal-p
+currentTotal-paid
 )
 );
 
@@ -4576,10 +3403,9 @@ updatePaymentStatus();
 
 }
 
-
 function updatePaymentStatus(){
 
-let s=
+let status=
 "مدفوع";
 
 if(
@@ -4588,7 +3414,7 @@ document.getElementById(
 ).value==="آجل"
 ){
 
-let p=
+let paid=
 Math.max(
 0,
 Number(
@@ -4598,10 +3424,10 @@ document.getElementById(
 )
 );
 
-s=
-p<=0
+status=
+paid<=0
 ?"غير مدفوع"
-:p<currentTotal
+:paid<currentTotal
 ?"مدفوع جزئياً"
 :"مدفوع";
 
@@ -4609,10 +3435,10 @@ p<=0
 
 document.getElementById(
 "paymentStatus"
-).textContent=s;
+).textContent=
+status;
 
 }
-
 
 /* =====================================================
    RENDER CART
@@ -4627,41 +3453,36 @@ document.getElementById(
 
 ci.innerHTML="";
 
-let sub=0;
-
-let q=0;
+let subtotal=0;
+let quantityCount=0;
 
 cart.forEach(
 function(i){
 
-let t=
+let total=
 Number(i.price)*
 Number(i.quantity);
 
-sub+=t;
+subtotal+=total;
 
-q+=
-Number(
-i.quantity
-);
+quantityCount+=
+Number(i.quantity);
 
-let r=
+let row=
 document.createElement(
 "div"
 );
 
-r.className=
+row.className=
 "cart-item";
 
-r.innerHTML=
+row.innerHTML=
 '<div class="cart-top">'+
 '<span class="cart-name">'+
-escapeHTML(
-i.name
-)+
+escapeHTML(i.name)+
 '</span>'+
 '<span class="cart-price">'+
-money(t)+
+money(total)+
 '</span>'+
 '</div>'+
 '<div class="quantity-controls">'+
@@ -4679,9 +3500,7 @@ i.productId+
 '\')">حذف</button>'+
 '</div>';
 
-ci.appendChild(
-r
-);
+ci.appendChild(row);
 
 }
 );
@@ -4691,7 +3510,7 @@ document.getElementById(
 "discount"
 );
 
-let d=
+let discount=
 Math.max(
 0,
 Number(
@@ -4699,7 +3518,7 @@ discountInput.value||0
 )
 );
 
-let tx=
+let tax=
 Math.max(
 0,
 Number(
@@ -4709,41 +3528,40 @@ document.getElementById(
 )
 );
 
-if(d>sub){
+if(discount>subtotal){
 
-d=sub;
+discount=subtotal;
 
-discountInput.value=d;
+discountInput.value=
+discount;
 
 }
 
 currentTotal=
 Math.max(
 0,
-sub-d+tx
+subtotal-discount+tax
 );
 
 document.getElementById(
 "subtotal"
 ).textContent=
-money(sub);
+money(subtotal);
 
 document.getElementById(
 "discountView"
 ).textContent=
-money(d);
+money(discount);
 
 document.getElementById(
 "taxView"
 ).textContent=
-money(tx);
+money(tax);
 
 document.getElementById(
 "total"
 ).textContent=
-money(
-currentTotal
-);
+money(currentTotal);
 
 document.getElementById(
 "invoiceItemsCount"
@@ -4752,14 +3570,13 @@ cart.length;
 
 document.getElementById(
 "invoiceQuantityCount"
-).textContent=q;
+).textContent=
+quantityCount;
 
 document.getElementById(
 "invoiceMiniTotal"
 ).textContent=
-money(
-currentTotal
-);
+money(currentTotal);
 
 document.getElementById(
 "emptyCart"
@@ -4780,7 +3597,6 @@ calculateCreditDue();
 updatePaymentStatus();
 
 }
-
 
 /* =====================================================
    HELD SALES
@@ -4815,38 +3631,17 @@ getSelectedCustomer();
 
 VAREX.holdSale(
 {
-cart:
-JSON.parse(
-JSON.stringify(
-cart
-)
+cart:JSON.parse(
+JSON.stringify(cart)
 ),
-customerId:
-c?c.id:"",
-customerName:
-c?c.name:"عميل نقدي",
-discount:
-document.getElementById(
-"discount"
-).value,
-tax:
-document.getElementById(
-"tax"
-).value,
-paymentMethod:
-document.getElementById(
-"paymentMethod"
-).value,
-amountReceived:
-document.getElementById(
-"amountReceived"
-).value,
-creditPaid:
-document.getElementById(
-"creditPaid"
-).value,
-total:
-currentTotal
+customerId:c?c.id:"",
+customerName:c?c.name:"عميل نقدي",
+discount:document.getElementById("discount").value,
+tax:document.getElementById("tax").value,
+paymentMethod:document.getElementById("paymentMethod").value,
+amountReceived:document.getElementById("amountReceived").value,
+creditPaid:document.getElementById("creditPaid").value,
+total:currentTotal
 }
 );
 
@@ -4862,33 +3657,31 @@ showToast(
 
 }
 
-
 function updateHoldButton(){
 
-let n=
+let count=
 getHeldSales().length;
 
-let b=
+let button=
 document.getElementById(
 "restoreButton"
 );
 
-b.style.display=
-n
+button.style.display=
+count
 ?"inline-block"
 :"none";
 
-if(n){
+if(count){
 
-b.textContent=
+button.textContent=
 "▶ الفواتير المعلقة ("+
-n+
+count+
 ")";
 
 }
 
 }
-
 
 function openHeldSales(){
 
@@ -4902,7 +3695,6 @@ document.getElementById(
 
 }
 
-
 function closeHeldSales(){
 
 document.getElementById(
@@ -4912,7 +3704,6 @@ document.getElementById(
 );
 
 }
-
 
 function modalBackgroundClose(e){
 
@@ -4926,10 +3717,9 @@ closeHeldSales();
 
 }
 
-
 function renderHeldSales(){
 
-let s=
+let sales=
 getHeldSales();
 
 let list=
@@ -4937,7 +3727,7 @@ document.getElementById(
 "heldSalesList"
 );
 
-if(!s.length){
+if(!sales.length){
 
 list.innerHTML=
 '<div class="empty"><strong>لا توجد فواتير معلقة</strong></div>';
@@ -4948,7 +3738,7 @@ return;
 
 list.innerHTML="";
 
-s.forEach(
+sales.forEach(
 function(x){
 
 let d=
@@ -4962,9 +3752,7 @@ let q=
 function(a,i){
 
 return a+
-Number(
-i.quantity||0
-);
+Number(i.quantity||0);
 
 },
 0
@@ -4990,9 +3778,7 @@ x.createdAt
 '<div class="held-details">'+
 q+
 ' قطعة | '+
-money(
-x.total||0
-)+
+money(x.total||0)+
 '</div>'+
 '<div class="held-actions">'+
 '<button class="restore" onclick="restoreHeldSale(\''+
@@ -5003,15 +3789,12 @@ x.id+
 '\')">حذف</button>'+
 '</div>';
 
-list.appendChild(
-d
-);
+list.appendChild(d);
 
 }
 );
 
 }
-
 
 function restoreHeldSale(id){
 
@@ -5022,9 +3805,7 @@ return;
 }
 
 let h=
-VAREX.getHeldSaleById(
-id
-);
+VAREX.getHeldSaleById(id);
 
 if(!h){
 
@@ -5057,13 +3838,9 @@ i.productId
 
 if(
 !p ||
-Number(
-p.quantity||0
-)<=0
+Number(p.quantity||0)<=0
 ){
-
 return null;
-
 }
 
 return{
@@ -5074,8 +3851,7 @@ i.price||
 p.price||
 0
 ),
-quantity:
-Math.min(
+quantity:Math.min(
 Number(
 i.quantity||1
 ),
@@ -5123,9 +3899,7 @@ if(
 typeof VAREX.removeHeldSale==="function"
 ){
 
-VAREX.removeHeldSale(
-id
-);
+VAREX.removeHeldSale(id);
 
 }
 
@@ -5147,7 +3921,6 @@ cart.length
 
 }
 
-
 function deleteHeldSale(id){
 
 if(
@@ -5162,9 +3935,7 @@ if(
 typeof VAREX.removeHeldSale==="function"
 ){
 
-VAREX.removeHeldSale(
-id
-);
+VAREX.removeHeldSale(id);
 
 }
 
@@ -5178,17 +3949,16 @@ showToast(
 
 }
 
-
 /* =====================================================
    TODAY STATS
 ===================================================== */
 
 function updateTodayStats(){
 
-let ts=
+let todaySales=
 typeof VAREX.getTodaySales==="function"
-? VAREX.getTodaySales()||[]
-: getSales().filter(
+?VAREX.getTodaySales()||[]
+:getSales().filter(
 function(s){
 
 let d=
@@ -5206,10 +3976,10 @@ new Date().toDateString()
 }
 );
 
-let tt=
+let total=
 typeof VAREX.getTodaySalesTotal==="function"
-? VAREX.getTodaySalesTotal()
-: ts.reduce(
+?VAREX.getTodaySalesTotal()
+:todaySales.reduce(
 function(a,s){
 
 return a+
@@ -5224,22 +3994,22 @@ s.total||0
 document.getElementById(
 "todaySales"
 ).textContent=
-money(tt);
+money(total);
 
 document.getElementById(
 "todayInvoices"
 ).textContent=
-ts.length;
+todaySales.length;
 
-let s=
+let sales=
 getSales();
 
 document.getElementById(
 "lastInvoice"
 ).textContent=
-s.length
-?
-s.slice()
+sales.length
+?sales
+.slice()
 .sort(
 function(a,b){
 
@@ -5258,11 +4028,9 @@ a.date||
 )[0]
 .invoiceNumber||
 "—"
-:
-"—";
+:"—";
 
 }
-
 
 /* =====================================================
    COMPLETE SALE
@@ -5292,17 +4060,17 @@ return;
 
 }
 
-let pm=
+let paymentMethod=
 document.getElementById(
 "paymentMethod"
 ).value;
 
-let c=
+let customer=
 getSelectedCustomer();
 
 if(
-pm==="آجل" &&
-!c
+paymentMethod==="آجل" &&
+!customer
 ){
 
 alert(
@@ -5318,7 +4086,9 @@ let due=0;
 let received=0;
 let change=0;
 
-if(pm==="نقدي"){
+if(
+paymentMethod==="نقدي"
+){
 
 received=
 Math.max(
@@ -5343,21 +4113,19 @@ return;
 
 }
 
-paid=
-currentTotal;
+paid=currentTotal;
 
 change=
 received>0
-?
-Math.max(
+?Math.max(
 0,
 received-currentTotal
 )
-:
-0;
+:0;
 
-}
-else if(pm==="آجل"){
+}else if(
+paymentMethod==="آجل"
+){
 
 paid=
 Math.max(
@@ -5369,9 +4137,7 @@ document.getElementById(
 )
 );
 
-if(
-paid>currentTotal
-){
+if(paid>currentTotal){
 
 alert(
 "المبلغ المدفوع لا يمكن أن يتجاوز إجمالي الفاتورة"
@@ -5387,49 +4153,44 @@ Math.max(
 currentTotal-paid
 );
 
-}
-else{
+}else{
 
-paid=
-currentTotal;
+paid=currentTotal;
 
 }
 
 if(
-pm==="آجل" &&
-c
+paymentMethod==="آجل" &&
+customer
 ){
 
-let l=
+let limit=
 Number(
-c.creditLimit||0
+customer.creditLimit||0
 );
 
-let nb=
+let newBalance=
 getCustomerOutstanding(
-c.id
-)+
-due;
+customer.id
+)+due;
 
 if(
-l>0 &&
-nb>l &&
+limit>0 &&
+newBalance>limit &&
 !confirm(
 "الرصيد المستحق بعد هذه الفاتورة ("+
-money(nb)+
+money(newBalance)+
 ") سيتجاوز الحد الائتماني للعميل ("+
-money(l)+
+money(limit)+
 "). هل تريد المتابعة؟"
 )
 ){
-
 return;
-
 }
 
 }
 
-let sub=
+let subtotal=
 cart.reduce(
 function(a,i){
 
@@ -5441,7 +4202,7 @@ Number(i.quantity);
 0
 );
 
-let dis=
+let discount=
 Math.max(
 0,
 Number(
@@ -5451,7 +4212,7 @@ document.getElementById(
 )
 );
 
-let tx=
+let tax=
 Math.max(
 0,
 Number(
@@ -5461,14 +4222,13 @@ document.getElementById(
 )
 );
 
-let u=
+let user=
 typeof VAREX.getCurrentUser==="function"
-?
-VAREX.getCurrentUser()
-:
-null;
+?VAREX.getCurrentUser()
+:null;
 
-let data={
+let data=
+{
 items:
 cart.map(
 function(i){
@@ -5478,57 +4238,89 @@ productId:i.productId,
 name:i.name,
 quantity:i.quantity,
 price:i.price,
-total:
-Number(i.price)*
+total:Number(i.price)*
 Number(i.quantity)
 };
 
 }
 ),
+
 customerId:
-c?c.id:"",
+customer
+?customer.id
+:"",
+
 customerName:
-c?c.name:"عميل نقدي",
+customer
+?customer.name
+:"عميل نقدي",
+
 customerPhone:
-c?c.phone||"":"",
-paymentMethod:pm,
-subtotal:sub,
-discount:dis,
-tax:tx,
-total:currentTotal,
-paid:paid,
-due:due,
-remaining:due,
-amountReceived:received,
-change:change,
+customer
+?customer.phone||""
+:"",
+
+paymentMethod:
+paymentMethod,
+
+subtotal:
+subtotal,
+
+discount:
+discount,
+
+tax:
+tax,
+
+total:
+currentTotal,
+
+paid:
+paid,
+
+due:
+due,
+
+remaining:
+due,
+
+amountReceived:
+received,
+
+change:
+change,
+
 paymentStatus:
 due<=0
 ?"مدفوع"
 :paid>0
 ?"مدفوع جزئياً"
 :"غير مدفوع",
+
 userId:
-u?u.id:"",
+user
+?user.id
+:"",
+
 userName:
-u
-?
-(u.name||u.username||"")
+user
+?(user.name||user.username||"")
 :""
 };
 
-let r=
+let result=
 VAREX.completeSale(
 data
 );
 
 if(
-!r ||
-!r.success
+!result ||
+!result.success
 ){
 
 alert(
-r&&r.message
-?r.message
+result&&result.message
+?result.message
 :"تعذر إتمام عملية البيع"
 );
 
@@ -5546,25 +4338,18 @@ VAREX.addTransaction(
 type:"income",
 description:
 "مبيعات فاتورة "+
-(
-r.sale.invoiceNumber||
-""
-),
+(result.sale.invoiceNumber||""),
 category:"المبيعات",
 amount:paid,
 date:
 typeof VAREX.today==="function"
-?
-VAREX.today()
-:
-new Date()
+?VAREX.today()
+:new Date()
 .toISOString()
 .slice(0,10),
-payment:pm,
-referenceId:
-r.sale.id,
-invoiceNumber:
-r.sale.invoiceNumber
+payment:paymentMethod,
+referenceId:result.sale.id,
+invoiceNumber:result.sale.invoiceNumber
 }
 );
 
@@ -5573,7 +4358,7 @@ r.sale.invoiceNumber
 let sale=
 Object.assign(
 {},
-r.sale,
+result.sale,
 data
 );
 
@@ -5625,19 +4410,16 @@ behavior:"smooth"
 
 }
 
-
 /* =====================================================
-   RECEIPT
+   PRINT RECEIPT
 ===================================================== */
 
 function prepareReceipt(s){
 
-let set=
+let settings=
 typeof VAREX.getSettings==="function"
-?
-VAREX.getSettings()||{}
-:
-{};
+?VAREX.getSettings()||{}
+:{};
 
 let items=
 (s.items||[])
@@ -5666,48 +4448,48 @@ Number(i.quantity||0)
 )
 .join("");
 
-let bn=
-set.businessNameArabic||
-set.businessName||
+let businessName=
+settings.businessNameArabic||
+settings.businessName||
 "VAREX";
 
 let html=
 '<div class="receipt-title">'+
 '<h2>'+
 escapeHTML(
-bn
+businessName
 )+
 '</h2>'+
 '<p>فاتورة مبيعات</p>';
 
-if(set.phone){
+if(settings.phone){
 
 html+=
 '<p>'+
 escapeHTML(
-set.phone
+settings.phone
 )+
 '</p>';
 
 }
 
-if(set.address){
+if(settings.address){
 
 html+=
 '<p>'+
 escapeHTML(
-set.address
+settings.address
 )+
 '</p>';
 
 }
 
-if(set.taxNumber){
+if(settings.taxNumber){
 
 html+=
 '<p>الرقم الضريبي: '+
 escapeHTML(
-set.taxNumber
+settings.taxNumber
 )+
 '</p>';
 
@@ -5844,7 +4626,6 @@ html;
 
 }
 
-
 function printLastSale(){
 
 if(!lastCompletedSale){
@@ -5861,14 +4642,11 @@ window.print();
 
 }
 
-
 /* =====================================================
    START POS
 ===================================================== */
 
 function startVarexPOS(){
-
-syncPosTheme();
 
 loadCurrentUser();
 
@@ -5896,15 +4674,13 @@ updateHoldButton();
 setTimeout(
 function(){
 
-let b=
+let barcode=
 document.getElementById(
 "barcodeScanner"
 );
 
-if(b){
-
-b.focus();
-
+if(barcode){
+barcode.focus();
 }
 
 },
@@ -5913,8 +4689,45 @@ b.focus();
 
 }
 
-
 startVarexPOS();
+
+/* =====================================================
+   REFRESH DATA WHEN RETURNING TO PAGE
+===================================================== */
+
+window.addEventListener(
+"focus",
+function(){
+
+loadCurrentUser();
+
+renderCustomers();
+
+renderCategories();
+
+renderProducts();
+
+updateTodayStats();
+
+updateHoldButton();
+
+}
+);
+
+window.addEventListener(
+"storage",
+function(){
+
+renderCustomers();
+
+renderProducts();
+
+updateTodayStats();
+
+updateHoldButton();
+
+}
+);
 
 </script>
 
