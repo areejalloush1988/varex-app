@@ -1,11 +1,14 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
+
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
+
 <title>VAREX | العملاء</title>
 
 <style>
+
 *{
 box-sizing:border-box;
 margin:0;
@@ -15,17 +18,73 @@ padding:0
 :root{
 --navy:#172554;
 --navy-dark:#0f1d43;
---navy-light:#1e3a6d;
+
 --bg:#f4f6fb;
---white:#ffffff;
+--card:#ffffff;
+
 --border:#e5eaf2;
+
 --text:#172554;
+--bodytext:#475569;
 --muted:#64748b;
+
+--field:#ffffff;
+
+--soft:#f8fafc;
+--soft2:#eef2ff;
+
+--line:#edf0f5;
+
 --green:#15803d;
 --red:#b91c1c;
+--orange:#d97706;
+
 --sidebar-width:240px;
 --brand-height:170px
 }
+
+
+/* =====================================================
+   DARK MODE
+===================================================== */
+
+html[data-theme="dark"],
+html[data-varex-theme="dark"]{
+--bg:#0b1120;
+--card:#111c33;
+
+--border:#263550;
+
+--text:#f1f5f9;
+--bodytext:#cbd5e1;
+--muted:#94a3b8;
+
+--field:#17233d;
+
+--soft:#162139;
+--soft2:#1c2945;
+
+--line:#263550
+}
+
+body.varex-dark{
+--bg:#0b1120;
+--card:#111c33;
+
+--border:#263550;
+
+--text:#f1f5f9;
+--bodytext:#cbd5e1;
+--muted:#94a3b8;
+
+--field:#17233d;
+
+--soft:#162139;
+--soft2:#1c2945;
+
+--line:#263550
+}
+
 
 html{
 scroll-behavior:smooth
@@ -33,578 +92,1052 @@ scroll-behavior:smooth
 
 body{
 font-family:Arial,Tahoma,sans-serif;
+
 background:var(--bg);
+
 color:var(--text);
+
 min-height:100vh;
-line-height:1.5
+
+line-height:1.5;
+
+transition:
+background .25s,
+color .25s
 }
 
-/* SIDEBAR */
+
+/* =====================================================
+   SIDEBAR
+===================================================== */
 
 .sidebar{
 position:fixed;
+
 right:0;
 top:0;
+
 width:var(--sidebar-width);
+
 height:100vh;
-background:linear-gradient(
+
+background:
+linear-gradient(
 180deg,
-#172554 0%,
+#172554,
 #13234f 48%,
-#0f1d43 100%
+#0f1d43
 );
-color:#fff;
+
+color:#ffffff;
+
 z-index:1000;
+
 display:flex;
 flex-direction:column;
+
 overflow:hidden;
-box-shadow:-4px 0 18px rgba(15,29,67,.08)
+
+box-shadow:
+-4px 0 18px
+rgba(15,29,67,.08)
 }
+
+
+html[data-theme="dark"] .sidebar,
+html[data-varex-theme="dark"] .sidebar,
+body.varex-dark .sidebar{
+
+background:
+linear-gradient(
+180deg,
+#101b38,
+#0d1730 50%,
+#080f20
+)
+
+}
+
 
 .brand{
-width:100%;
 height:var(--brand-height);
+
 min-height:var(--brand-height);
+
 flex:0 0 var(--brand-height);
-padding:24px 14px 20px;
-border-bottom:1px solid rgba(255,255,255,.10);
+
+padding:
+24px 14px 20px;
+
+border-bottom:
+1px solid
+rgba(255,255,255,.10);
+
 display:flex;
+
 flex-direction:column;
+
 align-items:center;
+
 justify-content:center;
-text-align:center;
-overflow:hidden
+
+text-align:center
 }
+
 
 .logo{
-width:100%;
 font-size:30px;
+
 line-height:30px;
+
 font-weight:800;
+
 letter-spacing:4px;
-color:#fff;
-text-align:center;
-direction:ltr;
-white-space:nowrap
+
+color:#ffffff;
+
+direction:ltr
 }
+
 
 .brand-small{
-width:100%;
 margin-top:11px;
+
 font-size:10px;
+
 line-height:14px;
+
 font-weight:600;
+
 letter-spacing:.8px;
+
 color:#e2e8f0;
-text-align:center;
-direction:ltr;
-white-space:nowrap
+
+direction:ltr
 }
 
+
 .system-status{
-width:100%;
 margin-top:16px;
+
 display:flex;
+
 align-items:center;
+
 justify-content:center;
+
 gap:7px;
+
 font-size:10px;
-line-height:14px;
-color:#d1fae5;
-white-space:nowrap
+
+color:#d1fae5
 }
+
 
 .status-dot{
 width:7px;
+
 height:7px;
+
 min-width:7px;
+
 border-radius:50%;
+
 background:#22c55e;
-box-shadow:0 0 8px rgba(34,197,94,.75)
+
+box-shadow:
+0 0 8px
+rgba(34,197,94,.75)
 }
 
+
+/* =====================================================
+   NAV
+===================================================== */
+
 .nav{
-width:100%;
 padding:16px 12px;
+
 flex:1;
+
 min-height:0;
+
 overflow-y:auto;
+
 overflow-x:hidden;
+
 scrollbar-width:thin
 }
 
+
 .nav a{
-width:100%;
 height:48px;
+
 min-height:48px;
+
 display:flex;
+
 align-items:center;
-justify-content:flex-start;
+
 gap:11px;
+
 padding:0 14px;
-margin:0 0 5px;
+
+margin-bottom:5px;
+
 border-radius:10px;
+
 color:#dbeafe;
+
 text-decoration:none;
+
 font-size:13px;
+
 font-weight:600;
+
 white-space:nowrap;
+
 transition:.2s
 }
 
+
 .nav a:hover{
-background:rgba(255,255,255,.08);
-color:#fff
+background:
+rgba(255,255,255,.08);
+
+color:#ffffff
 }
 
+
 .nav a.active{
-background:#fff;
-color:var(--navy);
+background:#ffffff;
+
+color:#172554;
+
 font-weight:700;
-box-shadow:0 5px 15px rgba(0,0,0,.14)
+
+box-shadow:
+0 5px 15px
+rgba(0,0,0,.14)
 }
+
+
+html[data-theme="dark"] .nav a.active,
+html[data-varex-theme="dark"] .nav a.active,
+body.varex-dark .nav a.active{
+
+background:#e2e8f0;
+
+color:#0f1d43
+
+}
+
 
 .nav-icon{
 width:25px;
+
 min-width:25px;
-height:25px;
-display:flex;
-align-items:center;
-justify-content:center;
-font-size:16px;
-flex-shrink:0
-}
 
-.sidebar-footer{
-width:100%;
-height:54px;
-min-height:54px;
-flex:0 0 54px;
-padding:0 10px;
-border-top:1px solid rgba(255,255,255,.10);
-color:#94a3b8;
-font-size:9px;
-letter-spacing:.5px;
 text-align:center;
-direction:ltr;
-display:flex;
-align-items:center;
-justify-content:center
-}
 
-/* MAIN */
-
-.main{
-margin-right:var(--sidebar-width);
-min-height:100vh
-}
-
-/* TOPBAR */
-
-.topbar{
-min-height:78px;
-background:#fff;
-border-bottom:1px solid var(--border);
-display:flex;
-align-items:center;
-justify-content:space-between;
-gap:20px;
-padding:0 28px;
-position:sticky;
-top:0;
-z-index:50
-}
-
-.page-name{
-display:flex;
-align-items:center;
-gap:12px
-}
-
-.page-icon{
-width:44px;
-min-width:44px;
-height:44px;
-border-radius:11px;
-background:#eef2ff;
-display:flex;
-align-items:center;
-justify-content:center;
-font-size:20px
-}
-
-.page-name h2{
-font-size:19px;
-font-weight:700;
-color:var(--navy)
-}
-
-.page-name small{
-display:block;
-color:var(--muted);
-margin-top:4px;
-font-size:11px;
-direction:ltr;
-text-align:right
-}
-
-.top-info{
-display:flex;
-align-items:center;
-justify-content:flex-end;
-gap:9px
-}
-
-.info-chip{
-min-height:38px;
-background:#f8fafc;
-border:1px solid var(--border);
-border-radius:9px;
-padding:8px 12px;
-font-size:11px;
-color:var(--muted);
-display:flex;
-align-items:center;
-justify-content:center;
-white-space:nowrap
-}
-
-.info-chip strong{
-color:var(--navy);
-margin-right:4px
-}
-
-/* CONTENT */
-
-.content{
-width:calc(100% - 48px);
-max-width:1450px;
-margin:24px auto 40px
-}
-
-.hero{
-display:flex;
-align-items:center;
-justify-content:space-between;
-gap:15px;
-margin-bottom:20px
-}
-
-.hero h1{
-font-size:25px;
-font-weight:700;
-margin-bottom:6px
-}
-
-.hero p{
-color:var(--muted);
-font-size:13px;
-line-height:1.7
-}
-
-button{
-font-family:inherit
-}
-
-.primary{
-border:0;
-background:linear-gradient(135deg,#172554,#1e3a8a);
-color:#fff;
-padding:12px 18px;
-min-height:42px;
-border-radius:10px;
-cursor:pointer;
-font-weight:bold;
-box-shadow:0 5px 14px rgba(23,37,84,.16)
-}
-
-/* STATS */
-
-.stats{
-display:grid;
-grid-template-columns:repeat(4,1fr);
-gap:14px;
-margin-bottom:20px
-}
-
-.stat{
-background:#fff;
-border:1px solid var(--border);
-border-radius:14px;
-min-height:126px;
-padding:17px 18px;
-box-shadow:0 3px 12px rgba(15,23,42,.04)
-}
-
-.stat-top{
-display:flex;
-align-items:center;
-justify-content:space-between;
-margin-bottom:10px
-}
-
-.stat-label{
-font-size:12px;
-color:var(--muted)
-}
-
-.stat-icon{
-width:36px;
-height:36px;
-border-radius:10px;
-background:#eef2ff;
-display:flex;
-align-items:center;
-justify-content:center;
-font-size:17px
-}
-
-.stat-value{
-font-size:22px;
-font-weight:bold;
-color:var(--navy)
-}
-
-.stat-small{
-color:#94a3b8;
-font-size:11px;
-margin-top:5px
-}
-
-/* PANEL */
-
-.panel{
-background:#fff;
-border:1px solid var(--border);
-border-radius:16px;
-box-shadow:0 4px 18px rgba(15,23,42,.05);
-overflow:hidden
-}
-
-.panel-head{
-min-height:65px;
-padding:18px 20px;
-border-bottom:1px solid var(--border);
-display:flex;
-justify-content:space-between;
-align-items:center;
-gap:15px
-}
-
-.panel-head h3{
 font-size:16px
 }
 
-.panel-head span{
+
+.sidebar-footer{
+height:54px;
+
+min-height:54px;
+
+flex:0 0 54px;
+
+border-top:
+1px solid
+rgba(255,255,255,.10);
+
+color:#94a3b8;
+
+font-size:9px;
+
+letter-spacing:.5px;
+
+direction:ltr;
+
+display:flex;
+
+align-items:center;
+
+justify-content:center
+}
+
+
+/* =====================================================
+   MAIN
+===================================================== */
+
+.main{
+margin-right:var(--sidebar-width);
+
+min-height:100vh;
+
+background:var(--bg);
+
+transition:background .25s
+}
+
+
+/* =====================================================
+   TOPBAR
+===================================================== */
+
+.topbar{
+min-height:78px;
+
+background:var(--card);
+
+border-bottom:
+1px solid
+var(--border);
+
+display:flex;
+
+align-items:center;
+
+justify-content:space-between;
+
+gap:20px;
+
+padding:0 28px;
+
+position:sticky;
+
+top:0;
+
+z-index:50;
+
+transition:.25s
+}
+
+
+.page-name{
+display:flex;
+
+align-items:center;
+
+gap:12px
+}
+
+
+.page-icon{
+width:44px;
+
+height:44px;
+
+min-width:44px;
+
+border-radius:11px;
+
+background:var(--soft2);
+
+display:flex;
+
+align-items:center;
+
+justify-content:center;
+
+font-size:20px
+}
+
+
+.page-name h2{
+font-size:19px;
+
+color:var(--text)
+}
+
+
+.page-name small{
+display:block;
+
+color:var(--muted);
+
+margin-top:4px;
+
 font-size:11px;
+
+direction:ltr;
+
+text-align:right
+}
+
+
+.top-info{
+display:flex;
+
+gap:9px
+}
+
+
+.info-chip{
+min-height:38px;
+
+background:var(--soft);
+
+border:
+1px solid
+var(--border);
+
+border-radius:9px;
+
+padding:8px 12px;
+
+font-size:11px;
+
+color:var(--muted);
+
+display:flex;
+
+align-items:center;
+
+white-space:nowrap
+}
+
+
+.info-chip strong{
+color:var(--text);
+
+margin-right:4px
+}
+
+
+/* =====================================================
+   CONTENT
+===================================================== */
+
+.content{
+width:calc(100% - 48px);
+
+max-width:1450px;
+
+margin:
+24px auto 40px
+}
+
+
+/* =====================================================
+   HERO
+===================================================== */
+
+.hero{
+display:flex;
+
+align-items:center;
+
+justify-content:space-between;
+
+gap:15px;
+
+margin-bottom:20px
+}
+
+
+.hero h1{
+font-size:25px;
+
+margin-bottom:6px;
+
+color:var(--text)
+}
+
+
+.hero p{
+color:var(--muted);
+
+font-size:13px;
+
+line-height:1.7
+}
+
+
+/* =====================================================
+   BUTTONS
+===================================================== */
+
+button{
+border:0;
+
+border-radius:9px;
+
+min-height:42px;
+
+padding:11px 19px;
+
+cursor:pointer;
+
+font-family:inherit;
+
+font-weight:bold;
+
+font-size:13px
+}
+
+
+.primary,
+.save{
+background:
+linear-gradient(
+135deg,
+#172554,
+#1e3a8a
+);
+
+color:#ffffff;
+
+box-shadow:
+0 5px 14px
+rgba(23,37,84,.16)
+}
+
+
+.cancel{
+background:#e5e7eb;
+
+color:#111827
+}
+
+
+html[data-theme="dark"] .cancel,
+html[data-varex-theme="dark"] .cancel,
+body.varex-dark .cancel{
+
+background:#334155;
+
+color:#f8fafc
+
+}
+
+
+/* =====================================================
+   STATS
+===================================================== */
+
+.stats{
+display:grid;
+
+grid-template-columns:
+repeat(4,1fr);
+
+gap:14px;
+
+margin-bottom:20px
+}
+
+
+.stat{
+background:var(--card);
+
+border:
+1px solid
+var(--border);
+
+border-radius:16px;
+
+min-height:126px;
+
+padding:17px 18px;
+
+box-shadow:
+0 4px 18px
+rgba(15,23,42,.05);
+
+transition:.25s
+}
+
+
+.stat-top{
+display:flex;
+
+align-items:center;
+
+justify-content:space-between;
+
+gap:10px;
+
+margin-bottom:10px
+}
+
+
+.stat-label{
+font-size:12px;
+
 color:var(--muted)
 }
 
+
+.stat-icon{
+width:36px;
+
+height:36px;
+
+border-radius:10px;
+
+background:var(--soft2);
+
+display:flex;
+
+align-items:center;
+
+justify-content:center;
+
+font-size:17px
+}
+
+
+.stat-value{
+font-size:22px;
+
+font-weight:bold;
+
+color:var(--text)
+}
+
+
+.stat-small{
+color:var(--muted);
+
+font-size:11px;
+
+margin-top:5px
+}
+
+
+/* =====================================================
+   PANEL
+===================================================== */
+
+.panel{
+background:var(--card);
+
+border:
+1px solid
+var(--border);
+
+border-radius:16px;
+
+box-shadow:
+0 4px 18px
+rgba(15,23,42,.05);
+
+overflow:hidden;
+
+transition:.25s
+}
+
+
+.panel-head{
+min-height:65px;
+
+padding:18px 20px;
+
+border-bottom:
+1px solid
+var(--line);
+
+display:flex;
+
+justify-content:space-between;
+
+align-items:center;
+
+gap:15px
+}
+
+
+.panel-head h3{
+font-size:16px;
+
+color:var(--text)
+}
+
+
+.panel-head span{
+font-size:11px;
+
+color:var(--muted)
+}
+
+
+/* =====================================================
+   TOOLBAR
+===================================================== */
+
 .toolbar{
 padding:15px 20px;
-background:#fbfdff;
-border-bottom:1px solid var(--border);
+
+background:var(--soft);
+
+border-bottom:
+1px solid
+var(--border);
+
 display:flex;
+
 gap:9px;
+
 flex-wrap:wrap
 }
+
 
 input,
 textarea,
 select{
-padding:11px;
 min-height:42px;
-border:1px solid #dbe1ea;
+
+padding:10px 12px;
+
+border:
+1px solid
+var(--border);
+
 border-radius:9px;
+
 font-size:13px;
+
+font-family:inherit;
+
+background:var(--field);
+
 outline:none;
-background:#fff;
-color:#172554;
-font-family:inherit
+
+color:var(--text);
+
+transition:.2s
 }
+
+
+input::placeholder,
+textarea::placeholder{
+color:var(--muted)
+}
+
 
 input:focus,
 textarea:focus,
 select:focus{
-border-color:#94a3b8;
-box-shadow:0 0 0 3px rgba(37,99,235,.05)
+border-color:#64748b;
+
+box-shadow:
+0 0 0 3px
+rgba(100,116,139,.10)
 }
+
 
 .search{
 flex:1;
+
 min-width:250px
 }
 
+
 .filter{
-min-width:160px
+min-width:170px
 }
 
-/* TABLE */
+
+/* =====================================================
+   TABLE
+===================================================== */
 
 .table-wrap{
 overflow-x:auto
 }
 
+
 table{
 width:100%;
+
 border-collapse:collapse;
-min-width:1150px
+
+min-width:1150px;
+
+background:var(--card)
 }
+
 
 th,
 td{
 padding:13px 10px;
+
 text-align:right;
-border-bottom:1px solid #edf0f5;
+
+border-bottom:
+1px solid
+var(--line);
+
 vertical-align:middle;
+
 font-size:12px
 }
 
+
 th{
-background:#f8fafc;
-color:#475569;
+background:var(--soft);
+
+color:var(--bodytext);
+
 white-space:nowrap;
+
 font-weight:bold
 }
 
-tbody tr:hover{
-background:#fbfdff
+
+td{
+color:var(--bodytext);
+
+background:var(--card)
 }
+
+
+tbody tr:hover td{
+background:var(--soft)
+}
+
 
 .customer-name{
 font-weight:bold;
-color:var(--navy)
+
+color:var(--text)
 }
+
 
 .customer-code{
 font-weight:bold;
-color:#475569
+
+color:var(--bodytext)
 }
+
 
 .money-positive,
 .no-due{
-color:var(--green);
+color:#22c55e;
+
 font-weight:bold
 }
 
+
 .money-due{
-color:var(--red);
+color:#ef4444;
+
 font-weight:bold
 }
+
 
 .type-badge{
 display:inline-block;
-padding:5px 9px;
+
+padding:5px 10px;
+
 border-radius:20px;
-background:#eef2ff;
-color:#3730a3;
+
+background:var(--soft2);
+
+color:var(--text);
+
 font-size:10px;
+
 font-weight:bold
 }
+
 
 .details,
 .edit,
 .delete{
-border:0;
-border-radius:7px;
+min-height:34px;
+
 padding:7px 10px;
-cursor:pointer;
-font-family:inherit;
-margin:2px
+
+margin:2px;
+
+border-radius:7px;
+
+font-size:11px
 }
+
 
 .details{
 background:#ecfeff;
+
 color:#155e75
 }
 
+
 .edit{
 background:#eef2ff;
+
 color:#172554
 }
+
 
 .delete{
 background:#fee2e2;
+
 color:#b91c1c
 }
 
+
+html[data-theme="dark"] .details,
+html[data-varex-theme="dark"] .details,
+body.varex-dark .details{
+
+background:#164e63;
+
+color:#cffafe
+
+}
+
+
+html[data-theme="dark"] .edit,
+html[data-varex-theme="dark"] .edit,
+body.varex-dark .edit{
+
+background:#1e3a5f;
+
+color:#dbeafe
+
+}
+
+
+html[data-theme="dark"] .delete,
+html[data-varex-theme="dark"] .delete,
+body.varex-dark .delete{
+
+background:#4c1d27;
+
+color:#fecaca
+
+}
+
+
 .empty{
 text-align:center;
+
 color:var(--muted);
+
 padding:35px;
+
 font-size:12px
 }
 
-/* MODALS */
+
+/* =====================================================
+   MODAL
+===================================================== */
 
 .modal{
 display:none;
+
 position:fixed;
+
 inset:0;
-background:rgba(15,23,42,.62);
+
+background:
+rgba(15,23,42,.62);
+
 align-items:center;
+
 justify-content:center;
+
 padding:15px;
+
 z-index:5000
 }
 
+
 .modal-box{
-background:#fff;
+background:var(--card);
+
 width:100%;
+
 max-width:800px;
+
+border:
+1px solid
+var(--border);
+
 border-radius:16px;
+
 padding:24px;
+
 max-height:92vh;
+
 overflow:auto;
-box-shadow:0 20px 50px rgba(0,0,0,.20)
+
+box-shadow:
+0 20px 50px
+rgba(0,0,0,.20);
+
+color:var(--text)
 }
+
 
 .modal-header{
 display:flex;
+
 justify-content:space-between;
+
 align-items:center;
+
 margin-bottom:18px
 }
 
+
 .modal-header h2{
-font-size:19px
+font-size:19px;
+
+color:var(--text)
 }
+
 
 .close{
 cursor:pointer;
+
 font-size:25px;
-color:#64748b
+
+color:var(--muted)
 }
 
-.form-section{
-margin:15px 0 5px;
-padding-bottom:8px;
-border-bottom:1px solid #e5e7eb;
-grid-column:1/-1
-}
 
-.form-section h3{
-font-size:14px;
-color:#172554
-}
+/* =====================================================
+   FORM
+===================================================== */
 
 .form-grid{
 display:grid;
-grid-template-columns:1fr 1fr;
+
+grid-template-columns:
+1fr 1fr;
+
 gap:12px
 }
+
 
 .field{
 width:100%
 }
 
+
 .field label{
 display:block;
-font-size:12px;
-color:#475569;
+
 margin-bottom:6px;
-font-weight:bold
+
+font-size:12px;
+
+font-weight:bold;
+
+color:var(--bodytext)
 }
+
 
 .field input,
 .field select,
@@ -612,104 +1145,159 @@ font-weight:bold
 width:100%
 }
 
+
 .full{
 grid-column:1/-1
 }
 
+
 textarea{
 min-height:100px;
+
 resize:vertical
 }
 
+
+.form-section{
+grid-column:1/-1;
+
+margin:
+16px 0 5px;
+
+padding-bottom:8px;
+
+border-bottom:
+1px solid
+var(--line)
+}
+
+
+.form-section h3{
+font-size:14px;
+
+color:var(--text)
+}
+
+
 .form-actions{
 display:flex;
+
 gap:10px;
+
 margin-top:18px
 }
 
-.save{
-border:0;
-background:linear-gradient(135deg,#172554,#1e3a8a);
-color:#fff;
-padding:12px 20px;
-border-radius:9px;
-cursor:pointer;
-font-weight:bold
-}
 
-.cancel{
-border:0;
-background:#e5e7eb;
-color:#111827;
-padding:12px 20px;
-border-radius:9px;
-cursor:pointer
-}
+/* =====================================================
+   DETAILS
+===================================================== */
 
 .details-grid{
 display:grid;
-grid-template-columns:1fr 1fr;
+
+grid-template-columns:
+1fr 1fr;
+
 gap:12px
 }
 
+
 .detail-card{
-background:#f8fafc;
-border:1px solid #e2e8f0;
+background:var(--soft);
+
+border:
+1px solid
+var(--border);
+
 border-radius:10px;
+
 padding:15px
 }
 
+
 .detail-card span{
 display:block;
-color:#64748b;
+
+color:var(--muted);
+
 font-size:12px;
+
 margin-bottom:6px
 }
 
+
 .detail-card strong{
-color:#172554;
+color:var(--text);
+
 word-break:break-word
 }
+
 
 .notes-card{
 grid-column:1/-1
 }
 
-/* RESPONSIVE */
+
+/* =====================================================
+   SCROLLBAR
+===================================================== */
+
+.nav::-webkit-scrollbar{
+width:5px
+}
+
+
+.nav::-webkit-scrollbar-track{
+background:transparent
+}
+
+
+.nav::-webkit-scrollbar-thumb{
+background:
+rgba(255,255,255,.20);
+
+border-radius:10px
+}
+
+
+/* =====================================================
+   RESPONSIVE
+===================================================== */
 
 @media(max-width:1200px){
+
 .stats{
-grid-template-columns:repeat(2,1fr)
-}
+grid-template-columns:
+repeat(2,1fr)
 }
 
-@media(max-width:1000px){
+}
+
+
+@media(max-width:900px){
+
 .topbar{
 padding:0 18px
 }
-}
 
-@media(max-width:850px){
 .content{
-width:94%
-}
-.topbar{
-padding:0 14px
-}
+width:
+calc(100% - 32px)
 }
 
-@media(max-width:650px){
+}
+
+
+@media(max-width:750px){
+
 .top-info{
 display:none
 }
 
 .hero{
 flex-direction:column;
-align-items:flex-start
-}
 
-.stats{
-grid-template-columns:1fr 1fr
+align-items:flex-start
 }
 
 .form-grid,
@@ -722,9 +1310,29 @@ grid-template-columns:1fr
 .notes-card{
 grid-column:auto
 }
+
 }
 
+
+@media(max-width:600px){
+
+.content{
+width:94%
+}
+
+.topbar{
+padding:0 14px
+}
+
+.stats{
+grid-template-columns:1fr 1fr
+}
+
+}
+
+
 @media(max-width:450px){
+
 .stats{
 grid-template-columns:1fr
 }
@@ -732,11 +1340,20 @@ grid-template-columns:1fr
 .page-name small{
 display:none
 }
+
 }
+
 </style>
+
 </head>
 
+
 <body>
+
+
+<!-- =====================================================
+     SIDEBAR
+===================================================== -->
 
 <aside class="sidebar">
 
@@ -751,110 +1368,264 @@ BUSINESS MANAGEMENT SYSTEM
 </div>
 
 <div class="system-status">
+
 <span class="status-dot"></span>
-<span>النظام متصل وجاهز للعمل</span>
+
+<span>
+النظام متصل وجاهز للعمل
+</span>
+
 </div>
 
 </div>
+
 
 <nav class="nav">
 
 <a href="./index.html">
-<span class="nav-icon">▦</span>
-<span>لوحة التحكم</span>
+
+<span class="nav-icon">
+▦
+</span>
+
+<span>
+لوحة التحكم
+</span>
+
 </a>
+
 
 <a href="./pos.html">
-<span class="nav-icon">🛒</span>
-<span>شاشة المبيعات</span>
+
+<span class="nav-icon">
+🛒
+</span>
+
+<span>
+شاشة المبيعات
+</span>
+
 </a>
+
 
 <a href="./products.html">
-<span class="nav-icon">📦</span>
-<span>المنتجات والمخزون</span>
+
+<span class="nav-icon">
+📦
+</span>
+
+<span>
+المنتجات والمخزون
+</span>
+
 </a>
+
 
 <a href="./purchases.html">
-<span class="nav-icon">🧾</span>
-<span>المشتريات</span>
+
+<span class="nav-icon">
+🧾
+</span>
+
+<span>
+المشتريات
+</span>
+
 </a>
+
 
 <a href="./transfers.html">
-<span class="nav-icon">🔄</span>
-<span>تحويلات المخزون</span>
+
+<span class="nav-icon">
+🔄
+</span>
+
+<span>
+تحويلات المخزون
+</span>
+
 </a>
 
-<a href="./customers.html" class="active">
-<span class="nav-icon">👥</span>
-<span>العملاء</span>
+
+<a
+href="./customers.html"
+class="active"
+>
+
+<span class="nav-icon">
+👥
+</span>
+
+<span>
+العملاء
+</span>
+
 </a>
+
 
 <a href="./suppliers.html">
-<span class="nav-icon">🚚</span>
-<span>الموردون</span>
+
+<span class="nav-icon">
+🚚
+</span>
+
+<span>
+الموردون
+</span>
+
 </a>
+
 
 <a href="./accounts.html">
-<span class="nav-icon">💰</span>
-<span>الحسابات</span>
+
+<span class="nav-icon">
+💰
+</span>
+
+<span>
+الحسابات
+</span>
+
 </a>
+
 
 <a href="./expenses.html">
-<span class="nav-icon">💸</span>
-<span>المصروفات</span>
+
+<span class="nav-icon">
+💸
+</span>
+
+<span>
+المصروفات
+</span>
+
 </a>
+
 
 <a href="./shifts.html">
-<span class="nav-icon">🕘</span>
-<span>ورديات الكاشير</span>
+
+<span class="nav-icon">
+🕘
+</span>
+
+<span>
+ورديات الكاشير
+</span>
+
 </a>
+
 
 <a href="./employees.html">
-<span class="nav-icon">👤</span>
-<span>الموظفون</span>
+
+<span class="nav-icon">
+👤
+</span>
+
+<span>
+الموظفون
+</span>
+
 </a>
+
 
 <a href="./branches.html">
-<span class="nav-icon">🏢</span>
-<span>الفروع</span>
+
+<span class="nav-icon">
+🏢
+</span>
+
+<span>
+الفروع
+</span>
+
 </a>
+
 
 <a href="./reports.html">
-<span class="nav-icon">📊</span>
-<span>التقارير</span>
+
+<span class="nav-icon">
+📊
+</span>
+
+<span>
+التقارير
+</span>
+
 </a>
+
 
 <a href="./notifications.html">
-<span class="nav-icon">🔔</span>
-<span>مركز التنبيهات</span>
+
+<span class="nav-icon">
+🔔
+</span>
+
+<span>
+مركز التنبيهات
+</span>
+
 </a>
+
 
 <a href="./activity.html">
-<span class="nav-icon">📋</span>
-<span>سجل النشاط</span>
+
+<span class="nav-icon">
+📋
+</span>
+
+<span>
+سجل النشاط
+</span>
+
 </a>
+
 
 <a href="./users.html">
-<span class="nav-icon">🔐</span>
-<span>المستخدمون والصلاحيات</span>
+
+<span class="nav-icon">
+🔐
+</span>
+
+<span>
+المستخدمون والصلاحيات
+</span>
+
 </a>
 
+
 <a href="./setting.html">
-<span class="nav-icon">⚙️</span>
-<span>الإعدادات</span>
+
+<span class="nav-icon">
+⚙️
+</span>
+
+<span>
+الإعدادات
+</span>
+
 </a>
 
 </nav>
 
+
 <div class="sidebar-footer">
+
 VAREX BUSINESS SYSTEM
+
 </div>
 
 </aside>
 
+
+<!-- =====================================================
+     MAIN
+===================================================== -->
+
 <div class="main">
 
+
 <header class="topbar">
+
 
 <div class="page-name">
 
@@ -863,36 +1634,69 @@ VAREX BUSINESS SYSTEM
 </div>
 
 <div>
-<h2>العملاء</h2>
-<small>VAREX CUSTOMERS</small>
+
+<h2>
+العملاء
+</h2>
+
+<small>
+VAREX CUSTOMERS
+</small>
+
 </div>
 
 </div>
+
 
 <div class="top-info">
 
+
 <div class="info-chip">
+
 المستخدم:
+
 <strong id="currentUserName">
 المستخدم الحالي
 </strong>
+
 </div>
 
-<div class="info-chip" id="currentDate">
+
+<div
+class="info-chip"
+id="currentDate"
+>
+
 —
+
 </div>
 
-<div class="info-chip" id="currentTime">
+
+<div
+class="info-chip"
+id="currentTime"
+>
+
 —
-</div>
 
 </div>
+
+
+</div>
+
 
 </header>
 
+
 <main class="content">
 
+
+<!-- =====================================================
+     HERO
+===================================================== -->
+
 <section class="hero">
+
 
 <div>
 
@@ -901,301 +1705,495 @@ VAREX BUSINESS SYSTEM
 </h1>
 
 <p>
+
 إدارة بيانات العملاء ومتابعة المشتريات والفواتير والأرصدة والحدود الائتمانية من مكان واحد.
+
 </p>
 
 </div>
 
+
 <button
 class="primary"
-onclick="openCustomerModal()">
+onclick="openCustomerModal()"
+>
+
 ＋ إضافة عميل جديد
+
 </button>
 
+
 </section>
+
+
+<!-- =====================================================
+     STATS
+===================================================== -->
 
 <section class="stats">
 
+
 <div class="stat">
 
 <div class="stat-top">
+
 <div class="stat-label">
+
 إجمالي العملاء
+
 </div>
+
 <div class="stat-icon">
+
 👥
+
 </div>
+
 </div>
+
 
 <div
 class="stat-value"
-id="totalCustomers">
+id="totalCustomers"
+>
+
 0
+
 </div>
 
+
 <div class="stat-small">
+
 عدد العملاء المسجلين
+
 </div>
 
 </div>
+
 
 <div class="stat">
 
 <div class="stat-top">
+
 <div class="stat-label">
+
 إجمالي مشتريات العملاء
+
 </div>
+
 <div class="stat-icon">
+
 🛒
+
 </div>
+
 </div>
+
 
 <div
 class="stat-value"
-id="totalCustomerPurchases">
+id="totalCustomerPurchases"
+>
+
 0.00 د.إ
+
 </div>
 
+
 <div class="stat-small">
+
 من فواتير المبيعات المسجلة
+
 </div>
 
 </div>
+
 
 <div class="stat">
 
 <div class="stat-top">
+
 <div class="stat-label">
+
 إجمالي المستحقات
+
 </div>
+
 <div class="stat-icon">
+
 💳
+
 </div>
+
 </div>
+
 
 <div
 class="stat-value"
-id="totalCustomerDue">
+id="totalCustomerDue"
+>
+
 0.00 د.إ
+
 </div>
+
 
 <div class="stat-small">
+
 المبالغ المستحقة على العملاء
+
 </div>
 
 </div>
+
 
 <div class="stat">
 
 <div class="stat-top">
+
 <div class="stat-label">
+
 عملاء لديهم رصيد مستحق
+
 </div>
+
 <div class="stat-icon">
+
 ⚠️
+
 </div>
+
 </div>
+
 
 <div
 class="stat-value"
-id="customersWithDue">
+id="customersWithDue"
+>
+
 0
+
 </div>
+
 
 <div class="stat-small">
+
 عملاء لديهم فواتير غير مسددة
+
 </div>
 
 </div>
+
 
 </section>
 
+
+<!-- =====================================================
+     CUSTOMERS PANEL
+===================================================== -->
+
 <section class="panel">
+
 
 <div class="panel-head">
 
+
 <h3>
+
 قائمة العملاء
+
 </h3>
 
+
 <span>
+
 إدارة بيانات العملاء وسجل المبيعات
+
 </span>
+
 
 </div>
 
+
 <div class="toolbar">
+
 
 <input
 id="search"
 class="search"
 placeholder="🔍 ابحث برقم العميل أو الاسم أو الهاتف أو البريد"
-oninput="renderCustomers()">
+oninput="renderCustomers()"
+>
+
 
 <select
 id="typeFilter"
 class="filter"
-onchange="renderCustomers()">
+onchange="renderCustomers()"
+>
+
 
 <option value="">
+
 كل أنواع العملاء
+
 </option>
+
 
 <option value="فرد">
+
 فرد
+
 </option>
 
+
 <option value="شركة">
+
 شركة
+
 </option>
+
 
 </select>
 
+
 </div>
+
 
 <div class="table-wrap">
 
+
 <table>
+
 
 <thead>
 
+
 <tr>
-<th>#</th>
-<th>رقم العميل</th>
-<th>اسم العميل</th>
-<th>النوع</th>
-<th>الهاتف</th>
-<th>إجمالي المشتريات</th>
-<th>المستحق</th>
-<th>عدد الفواتير</th>
-<th>آخر شراء</th>
-<th>الإجراءات</th>
+
+<th>
+#
+</th>
+
+<th>
+رقم العميل
+</th>
+
+<th>
+اسم العميل
+</th>
+
+<th>
+النوع
+</th>
+
+<th>
+الهاتف
+</th>
+
+<th>
+إجمالي المشتريات
+</th>
+
+<th>
+المستحق
+</th>
+
+<th>
+عدد الفواتير
+</th>
+
+<th>
+آخر شراء
+</th>
+
+<th>
+الإجراءات
+</th>
+
 </tr>
 
+
 </thead>
+
 
 <tbody id="customerTable">
 </tbody>
 
+
 </table>
+
 
 <div
 id="emptyMessage"
-class="empty">
+class="empty"
+>
+
 لا يوجد عملاء حتى الآن
-</div>
 
 </div>
+
+
+</div>
+
 
 </section>
 
+
 </main>
+
 
 </div>
 
-<!-- ADD / EDIT CUSTOMER -->
+
+<!-- =====================================================
+     CUSTOMER MODAL
+===================================================== -->
 
 <div
 class="modal"
-id="customerModal">
+id="customerModal"
+>
+
 
 <div class="modal-box">
 
+
 <div class="modal-header">
 
+
 <h2 id="modalTitle">
+
 إضافة عميل جديد
+
 </h2>
+
 
 <span
 class="close"
-onclick="closeCustomerModal()">
+onclick="closeCustomerModal()"
+>
+
 ×
+
 </span>
 
+
 </div>
+
 
 <div class="form-grid">
 
+
 <div class="form-section">
+
 <h3>
+
 👤 البيانات الأساسية
+
 </h3>
+
 </div>
+
 
 <div class="field">
 
 <label>
+
 اسم العميل *
+
 </label>
 
 <input
 id="customerName"
-placeholder="اسم العميل">
+placeholder="اسم العميل"
+>
 
 </div>
+
 
 <div class="field">
 
 <label>
+
 نوع العميل
+
 </label>
 
 <select id="customerType">
 
 <option value="فرد">
+
 فرد
+
 </option>
 
 <option value="شركة">
+
 شركة
+
 </option>
 
 </select>
 
 </div>
 
+
 <div class="field">
 
 <label>
+
 رقم الهاتف
+
 </label>
 
 <input
 id="phone"
-placeholder="رقم الهاتف">
+placeholder="رقم الهاتف"
+>
 
 </div>
+
 
 <div class="field">
 
 <label>
+
 البريد الإلكتروني
+
 </label>
 
 <input
 id="email"
 type="email"
-placeholder="البريد الإلكتروني">
+placeholder="البريد الإلكتروني"
+>
 
 </div>
+
 
 <div class="field">
 
 <label>
+
 الرقم الضريبي TRN
+
 </label>
 
 <input
 id="taxNumber"
-placeholder="الرقم الضريبي إن وجد">
+placeholder="الرقم الضريبي إن وجد"
+>
 
 </div>
+
 
 <div class="field">
 
 <label>
+
 الحد الائتماني
+
 </label>
 
 <input
@@ -1203,133 +2201,194 @@ id="creditLimit"
 type="number"
 min="0"
 step="0.01"
-placeholder="0.00">
+placeholder="0.00"
+>
 
 </div>
+
 
 <div class="form-section">
+
 <h3>
+
 📍 بيانات إضافية
+
 </h3>
+
 </div>
+
 
 <div class="field full">
 
 <label>
+
 العنوان
+
 </label>
 
 <input
 id="address"
-placeholder="عنوان العميل">
+placeholder="عنوان العميل"
+>
 
 </div>
+
 
 <div class="field full">
 
 <label>
+
 ملاحظات
+
 </label>
 
 <textarea
 id="notes"
-placeholder="ملاحظات عن العميل"></textarea>
+placeholder="ملاحظات عن العميل"
+></textarea>
 
 </div>
 
+
 </div>
+
 
 <div class="form-actions">
 
+
 <button
 class="save"
-onclick="saveCustomer()">
+onclick="saveCustomer()"
+>
+
 حفظ العميل
+
 </button>
+
 
 <button
 class="cancel"
-onclick="closeCustomerModal()">
+onclick="closeCustomerModal()"
+>
+
 إلغاء
+
 </button>
 
-</div>
 
 </div>
 
+
 </div>
 
-<!-- DETAILS MODAL -->
+
+</div>
+
+
+<!-- =====================================================
+     DETAILS MODAL
+===================================================== -->
 
 <div
 class="modal"
-id="detailsModal">
+id="detailsModal"
+>
+
 
 <div class="modal-box">
 
+
 <div class="modal-header">
 
+
 <h2 id="detailsTitle">
+
 بيانات العميل
+
 </h2>
+
 
 <span
 class="close"
-onclick="closeDetailsModal()">
+onclick="closeDetailsModal()"
+>
+
 ×
+
 </span>
 
+
 </div>
+
 
 <div
 class="details-grid"
-id="detailsContent">
+id="detailsContent"
+>
 </div>
+
 
 </div>
 
+
 </div>
+
 
 <script src="./varex.js"></script>
 
+
 <script>
 
-/* =========================================
-   LOGIN CHECK
-========================================= */
+
+let editingCustomerId=null;
+
+
+/* =====================================================
+   LOGIN
+===================================================== */
 
 if(
 typeof VAREX==="undefined"
 ){
-alert("تعذر تحميل نظام VAREX.");
+
+alert(
+"تعذر تحميل نظام VAREX."
+);
+
 }
 else if(
 typeof VAREX.isLoggedIn==="function" &&
 !VAREX.isLoggedIn()
 ){
-location.replace("./login.html");
+
+location.replace(
+"./login.html"
+);
+
 }
 
-let editingCustomerId=null;
 
-
-/* =========================================
+/* =====================================================
    CLOCK
-========================================= */
+===================================================== */
 
 function updateClock(){
 
-const now=new Date();
+const now=
+new Date();
+
 
 const dateElement=
 document.getElementById(
 "currentDate"
 );
 
+
 const timeElement=
 document.getElementById(
 "currentTime"
 );
+
 
 if(dateElement){
 
@@ -1344,6 +2403,7 @@ day:"2-digit"
 );
 
 }
+
 
 if(timeElement){
 
@@ -1361,7 +2421,9 @@ second:"2-digit"
 
 }
 
+
 updateClock();
+
 
 setInterval(
 updateClock,
@@ -1369,31 +2431,40 @@ updateClock,
 );
 
 
-/* =========================================
+/* =====================================================
    CURRENT USER
-========================================= */
+===================================================== */
 
 function loadCurrentUser(){
 
 try{
 
 if(
+typeof VAREX==="undefined" ||
 typeof VAREX.getCurrentUser!=="function"
 ){
+
 return;
+
 }
+
 
 const user=
 VAREX.getCurrentUser();
 
+
 if(!user){
+
 return;
+
 }
+
 
 const element=
 document.getElementById(
 "currentUserName"
 );
+
 
 if(element){
 
@@ -1409,7 +2480,6 @@ user.email||
 catch(error){
 
 console.error(
-"Current user error:",
 error
 );
 
@@ -1417,18 +2487,20 @@ error
 
 }
 
+
 loadCurrentUser();
 
 
-/* =========================================
+/* =====================================================
    DATA
-========================================= */
+===================================================== */
 
 function getCustomers(){
 
 try{
 
 if(
+typeof VAREX!=="undefined" &&
 typeof VAREX.getCustomers==="function"
 ){
 
@@ -1446,6 +2518,7 @@ error
 
 }
 
+
 return[];
 
 }
@@ -1456,6 +2529,7 @@ function getSales(){
 try{
 
 if(
+typeof VAREX!=="undefined" &&
 typeof VAREX.getSales==="function"
 ){
 
@@ -1473,6 +2547,7 @@ error
 
 }
 
+
 return[];
 
 }
@@ -1489,9 +2564,9 @@ String(id)
 }
 
 
-/* =========================================
+/* =====================================================
    CUSTOMER CODE
-========================================= */
+===================================================== */
 
 function getCustomerCode(customer){
 
@@ -1503,16 +2578,19 @@ return customer.customerCode;
 
 }
 
+
 const id=
 String(
 customer.id||""
 );
+
 
 const numeric=
 id.replace(
 /\D/g,
 ""
 );
+
 
 if(numeric){
 
@@ -1526,6 +2604,7 @@ numeric
 
 }
 
+
 return "CUS-"+
 id
 .slice(-6)
@@ -1534,9 +2613,9 @@ id
 }
 
 
-/* =========================================
+/* =====================================================
    CUSTOMER SALES
-========================================= */
+===================================================== */
 
 function saleBelongsToCustomer(
 sale,
@@ -1552,10 +2631,12 @@ return false;
 
 }
 
+
 const customerId=
 String(
 customer.id||""
 );
+
 
 const saleCustomerId=
 String(
@@ -1563,6 +2644,7 @@ sale.customerId||
 sale.customerID||
 ""
 );
+
 
 if(
 customerId &&
@@ -1574,10 +2656,12 @@ return true;
 
 }
 
+
 const customerPhone=
 String(
 customer.phone||""
 ).trim();
+
 
 const salePhone=
 String(
@@ -1585,6 +2669,7 @@ sale.customerPhone||
 sale.phone||
 ""
 ).trim();
+
 
 return Boolean(
 customerPhone &&
@@ -1594,6 +2679,10 @@ customerPhone===salePhone
 
 }
 
+
+/* =====================================================
+   FINANCIALS
+===================================================== */
 
 function getCustomerFinancials(
 customer
@@ -1608,12 +2697,17 @@ customer
 )
 );
 
+
 let purchases=0;
+
 let due=0;
-let lastPurchaseDate=null;
+
+let lastPurchase=null;
+
 
 sales.forEach(
 sale=>{
+
 
 const total=
 Number(
@@ -1625,7 +2719,9 @@ sale.amount ??
 0
 )||0;
 
+
 purchases+=total;
+
 
 if(
 sale.remaining!==undefined
@@ -1667,19 +2763,22 @@ sale.paid
 
 }
 
-const rawDate=
+
+const raw=
 sale.createdAt||
 sale.saleDate||
 sale.date||
 sale.invoiceDate||
 "";
 
-if(rawDate){
+
+if(raw){
 
 const date=
 new Date(
-rawDate
+raw
 );
+
 
 if(
 !Number.isNaN(
@@ -1688,12 +2787,13 @@ date.getTime()
 ){
 
 if(
-!lastPurchaseDate ||
+!lastPurchase ||
 date.getTime()>
-lastPurchaseDate.getTime()
+lastPurchase.getTime()
 ){
 
-lastPurchaseDate=date;
+lastPurchase=
+date;
 
 }
 
@@ -1704,32 +2804,75 @@ lastPurchaseDate=date;
 }
 );
 
+
 return{
+
 purchases,
+
 due,
-invoiceCount:sales.length,
-lastPurchase:lastPurchaseDate
+
+invoiceCount:
+sales.length,
+
+lastPurchase
+
 };
 
 }
 
 
-/* =========================================
-   CUSTOMER MODAL
-========================================= */
+/* =====================================================
+   MONEY
+===================================================== */
+
+function money(value){
+
+try{
+
+if(
+typeof VAREX!=="undefined" &&
+typeof VAREX.money==="function"
+){
+
+return VAREX.money(
+Number(value)||0
+);
+
+}
+
+}
+catch(error){}
+
+
+return(
+Number(value)||0
+).toFixed(
+2
+)+" د.إ";
+
+}
+
+
+/* =====================================================
+   OPEN CUSTOMER
+===================================================== */
 
 function openCustomerModal(
 id=null
 ){
 
-editingCustomerId=id;
+editingCustomerId=
+id;
+
 
 clearCustomerForm();
+
 
 const title=
 document.getElementById(
 "modalTitle"
 );
+
 
 if(
 id===null
@@ -1741,10 +2884,12 @@ title.innerText=
 }
 else{
 
+
 const customer=
 findCustomer(
 id
 );
+
 
 if(!customer){
 
@@ -1752,28 +2897,34 @@ return;
 
 }
 
+
 title.innerText=
 "تعديل بيانات العميل";
+
 
 document.getElementById(
 "customerName"
 ).value=
 customer.name||"";
 
+
 document.getElementById(
 "customerType"
 ).value=
 customer.type||"فرد";
+
 
 document.getElementById(
 "phone"
 ).value=
 customer.phone||"";
 
+
 document.getElementById(
 "email"
 ).value=
 customer.email||"";
+
 
 document.getElementById(
 "taxNumber"
@@ -1782,17 +2933,20 @@ customer.taxNumber||
 customer.trn||
 "";
 
+
 document.getElementById(
 "creditLimit"
 ).value=
 customer.creditLimit||
 "";
 
+
 document.getElementById(
 "address"
 ).value=
 customer.address||
 "";
+
 
 document.getElementById(
 "notes"
@@ -1802,6 +2956,7 @@ customer.notes||
 
 }
 
+
 document.getElementById(
 "customerModal"
 ).style.display=
@@ -1810,6 +2965,10 @@ document.getElementById(
 }
 
 
+/* =====================================================
+   CLOSE CUSTOMER
+===================================================== */
+
 function closeCustomerModal(){
 
 document.getElementById(
@@ -1817,10 +2976,16 @@ document.getElementById(
 ).style.display=
 "none";
 
-editingCustomerId=null;
+
+editingCustomerId=
+null;
 
 }
 
+
+/* =====================================================
+   CLEAR FORM
+===================================================== */
 
 function clearCustomerForm(){
 
@@ -1828,29 +2993,36 @@ document.getElementById(
 "customerName"
 ).value="";
 
+
 document.getElementById(
 "customerType"
 ).value="فرد";
+
 
 document.getElementById(
 "phone"
 ).value="";
 
+
 document.getElementById(
 "email"
 ).value="";
+
 
 document.getElementById(
 "taxNumber"
 ).value="";
 
+
 document.getElementById(
 "creditLimit"
 ).value="";
 
+
 document.getElementById(
 "address"
 ).value="";
+
 
 document.getElementById(
 "notes"
@@ -1859,9 +3031,9 @@ document.getElementById(
 }
 
 
-/* =========================================
+/* =====================================================
    SAVE CUSTOMER
-========================================= */
+===================================================== */
 
 function saveCustomer(){
 
@@ -1869,6 +3041,7 @@ const name=
 document.getElementById(
 "customerName"
 ).value.trim();
+
 
 if(!name){
 
@@ -1880,6 +3053,7 @@ return;
 
 }
 
+
 const credit=
 Number(
 document.getElementById(
@@ -1887,7 +3061,10 @@ document.getElementById(
 ).value
 )||0;
 
-if(credit<0){
+
+if(
+credit<0
+){
 
 alert(
 "الحد الائتماني لا يمكن أن يكون قيمة سالبة"
@@ -1896,6 +3073,7 @@ alert(
 return;
 
 }
+
 
 const data={
 
@@ -1936,6 +3114,7 @@ document.getElementById(
 
 };
 
+
 if(
 editingCustomerId===null
 ){
@@ -1963,53 +3142,21 @@ data
 );
 
 }
-else{
-
-const customers=
-getCustomers();
-
-const index=
-customers.findIndex(
-customer=>
-String(customer.id)===
-String(
-editingCustomerId
-)
-);
-
-if(index!==-1){
-
-customers[index]={
-...customers[index],
-...data
-};
-
-if(
-typeof VAREX.saveCustomers==="function"
-){
-
-VAREX.saveCustomers(
-customers
-);
 
 }
 
-}
-
-}
-
-}
 
 closeCustomerModal();
+
 
 renderCustomers();
 
 }
 
 
-/* =========================================
-   DELETE CUSTOMER
-========================================= */
+/* =====================================================
+   DELETE
+===================================================== */
 
 function deleteCustomer(
 id
@@ -2020,31 +3167,33 @@ findCustomer(
 id
 );
 
+
 if(!customer){
 
 return;
 
 }
 
+
 const financial=
 getCustomerFinancials(
 customer
 );
 
+
 if(
 financial.due>0
 ){
 
-const warning=
-confirm(
+if(
+!confirm(
 "يوجد على هذا العميل رصيد مستحق بقيمة "+
 money(
 financial.due
 )+
-". هل تريد المتابعة وحذف العميل؟"
-);
-
-if(!warning){
+". هل تريد حذف العميل رغم ذلك؟"
+)
+){
 
 return;
 
@@ -2053,20 +3202,20 @@ return;
 }
 else{
 
-const confirmed=
-confirm(
+if(
+!confirm(
 "هل تريد حذف العميل "+
 customer.name+
 "؟"
-);
-
-if(!confirmed){
+)
+){
 
 return;
 
 }
 
 }
+
 
 if(
 typeof VAREX.deleteCustomer==="function"
@@ -2077,35 +3226,16 @@ id
 );
 
 }
-else{
 
-const customers=
-getCustomers().filter(
-item=>
-String(item.id)!==
-String(id)
-);
-
-if(
-typeof VAREX.saveCustomers==="function"
-){
-
-VAREX.saveCustomers(
-customers
-);
-
-}
-
-}
 
 renderCustomers();
 
 }
 
 
-/* =========================================
-   DETAILS MODAL
-========================================= */
+/* =====================================================
+   DETAILS
+===================================================== */
 
 function openDetailsModal(
 id
@@ -2116,16 +3246,19 @@ findCustomer(
 id
 );
 
+
 if(!customer){
 
 return;
 
 }
 
+
 const financial=
 getCustomerFinancials(
 customer
 );
+
 
 const last=
 financial.lastPurchase
@@ -2137,6 +3270,7 @@ financial.lastPurchase
 :
 "لا توجد مشتريات";
 
+
 document.getElementById(
 "detailsTitle"
 ).innerText=
@@ -2146,76 +3280,183 @@ customer.name||
 "العميل"
 );
 
+
 document.getElementById(
 "detailsContent"
 ).innerHTML=`
 
 <div class="detail-card">
-<span>رقم العميل</span>
-<strong>${escapeHTML(getCustomerCode(customer))}</strong>
+
+<span>
+رقم العميل
+</span>
+
+<strong>
+${escapeHTML(getCustomerCode(customer))}
+</strong>
+
 </div>
 
-<div class="detail-card">
-<span>اسم العميل</span>
-<strong>${escapeHTML(customer.name||"-")}</strong>
-</div>
 
 <div class="detail-card">
-<span>نوع العميل</span>
-<strong>${escapeHTML(customer.type||"فرد")}</strong>
+
+<span>
+اسم العميل
+</span>
+
+<strong>
+${escapeHTML(customer.name||"-")}
+</strong>
+
 </div>
 
-<div class="detail-card">
-<span>رقم الهاتف</span>
-<strong>${escapeHTML(customer.phone||"-")}</strong>
-</div>
 
 <div class="detail-card">
-<span>البريد الإلكتروني</span>
-<strong>${escapeHTML(customer.email||"-")}</strong>
+
+<span>
+نوع العميل
+</span>
+
+<strong>
+${escapeHTML(customer.type||"فرد")}
+</strong>
+
 </div>
 
-<div class="detail-card">
-<span>الرقم الضريبي TRN</span>
-<strong>${escapeHTML(customer.taxNumber||customer.trn||"-")}</strong>
-</div>
 
 <div class="detail-card">
-<span>الحد الائتماني</span>
-<strong>${money(customer.creditLimit||0)}</strong>
+
+<span>
+رقم الهاتف
+</span>
+
+<strong>
+${escapeHTML(customer.phone||"-")}
+</strong>
+
 </div>
 
-<div class="detail-card">
-<span>إجمالي المشتريات</span>
-<strong class="money-positive">${money(financial.purchases)}</strong>
-</div>
 
 <div class="detail-card">
-<span>الرصيد المستحق</span>
-<strong class="${financial.due>0?"money-due":"no-due"}">${money(financial.due)}</strong>
+
+<span>
+البريد الإلكتروني
+</span>
+
+<strong>
+${escapeHTML(customer.email||"-")}
+</strong>
+
 </div>
 
-<div class="detail-card">
-<span>عدد الفواتير</span>
-<strong>${financial.invoiceCount}</strong>
-</div>
 
 <div class="detail-card">
-<span>آخر عملية شراء</span>
-<strong>${escapeHTML(last)}</strong>
+
+<span>
+الرقم الضريبي TRN
+</span>
+
+<strong>
+${escapeHTML(customer.taxNumber||customer.trn||"-")}
+</strong>
+
 </div>
 
+
 <div class="detail-card">
-<span>العنوان</span>
-<strong>${escapeHTML(customer.address||"-")}</strong>
+
+<span>
+الحد الائتماني
+</span>
+
+<strong>
+${money(customer.creditLimit||0)}
+</strong>
+
 </div>
+
+
+<div class="detail-card">
+
+<span>
+إجمالي المشتريات
+</span>
+
+<strong class="money-positive">
+${money(financial.purchases)}
+</strong>
+
+</div>
+
+
+<div class="detail-card">
+
+<span>
+الرصيد المستحق
+</span>
+
+<strong class="${financial.due>0?"money-due":"no-due"}">
+
+${money(financial.due)}
+
+</strong>
+
+</div>
+
+
+<div class="detail-card">
+
+<span>
+عدد الفواتير
+</span>
+
+<strong>
+${financial.invoiceCount}
+</strong>
+
+</div>
+
+
+<div class="detail-card">
+
+<span>
+آخر عملية شراء
+</span>
+
+<strong>
+${escapeHTML(last)}
+</strong>
+
+</div>
+
+
+<div class="detail-card">
+
+<span>
+العنوان
+</span>
+
+<strong>
+${escapeHTML(customer.address||"-")}
+</strong>
+
+</div>
+
 
 <div class="detail-card notes-card">
-<span>الملاحظات</span>
-<strong>${escapeHTML(customer.notes||"لا توجد ملاحظات")}</strong>
+
+<span>
+الملاحظات
+</span>
+
+<strong>
+${escapeHTML(customer.notes||"لا توجد ملاحظات")}
+</strong>
+
 </div>
 
 `;
+
 
 document.getElementById(
 "detailsModal"
@@ -2224,6 +3465,10 @@ document.getElementById(
 
 }
 
+
+/* =====================================================
+   CLOSE DETAILS
+===================================================== */
 
 function closeDetailsModal(){
 
@@ -2235,64 +3480,40 @@ document.getElementById(
 }
 
 
-/* =========================================
-   MONEY
-========================================= */
-
-function money(
-value
-){
-
-try{
-
-if(
-typeof VAREX.money==="function"
-){
-
-return VAREX.money(
-Number(value)||0
-);
-
-}
-
-}
-catch(error){}
-
-return(
-Number(value)||0
-).toFixed(
-2
-)+" د.إ";
-
-}
-
-
-/* =========================================
+/* =====================================================
    STATS
-========================================= */
+===================================================== */
 
 function updateCustomerStats(){
 
 const customers=
 getCustomers();
 
+
 let purchases=0;
+
 let due=0;
+
 let withDue=0;
+
 
 customers.forEach(
 customer=>{
+
 
 const financial=
 getCustomerFinancials(
 customer
 );
 
+
 purchases+=
 financial.purchases;
 
+
 due+=
 financial.due;
+
 
 if(
 financial.due>0
@@ -2305,10 +3526,12 @@ withDue++;
 }
 );
 
+
 document.getElementById(
 "totalCustomers"
 ).innerText=
 customers.length;
+
 
 document.getElementById(
 "totalCustomerPurchases"
@@ -2317,12 +3540,14 @@ money(
 purchases
 );
 
+
 document.getElementById(
 "totalCustomerDue"
 ).innerText=
 money(
 due
 );
+
 
 document.getElementById(
 "customersWithDue"
@@ -2332,47 +3557,59 @@ withDue;
 }
 
 
-/* =========================================
-   RENDER CUSTOMERS
-========================================= */
+/* =====================================================
+   RENDER
+===================================================== */
 
 function renderCustomers(){
 
 const customers=
 getCustomers();
 
+
 const table=
 document.getElementById(
 "customerTable"
 );
 
+
 const searchText=
 document.getElementById(
 "search"
-).value
+)
+.value
 .trim()
 .toLowerCase();
 
-const type=
+
+const filter=
 document.getElementById(
 "typeFilter"
 ).value;
 
-table.innerHTML="";
 
-let visible=0;
+table.innerHTML=
+"";
+
+
+let visible=
+0;
+
 
 customers.forEach(
 customer=>{
+
 
 const code=
 getCustomerCode(
 customer
 );
 
-const customerType=
+
+const type=
 customer.type||
 "فرد";
+
 
 const searchable=(
 code+
@@ -2386,6 +3623,7 @@ code+
 (customer.address||"")
 ).toLowerCase();
 
+
 if(
 searchText &&
 !searchable.includes(
@@ -2397,21 +3635,25 @@ return;
 
 }
 
+
 if(
-type &&
-customerType!==type
+filter &&
+type!==filter
 ){
 
 return;
 
 }
 
+
 visible++;
+
 
 const financial=
 getCustomerFinancials(
 customer
 );
+
 
 const last=
 financial.lastPurchase
@@ -2423,10 +3665,12 @@ financial.lastPurchase
 :
 "-";
 
+
 const row=
 document.createElement(
 "tr"
 );
+
 
 row.innerHTML=`
 
@@ -2434,63 +3678,102 @@ row.innerHTML=`
 ${visible}
 </td>
 
+
 <td class="customer-code">
+
 ${escapeHTML(code)}
+
 </td>
+
 
 <td class="customer-name">
+
 ${escapeHTML(customer.name||"-")}
+
 </td>
 
+
 <td>
+
 <span class="type-badge">
-${escapeHTML(customerType)}
+
+${escapeHTML(type)}
+
 </span>
+
 </td>
 
+
 <td>
+
 ${escapeHTML(customer.phone||"-")}
+
 </td>
+
 
 <td class="money-positive">
+
 ${money(financial.purchases)}
+
 </td>
+
 
 <td class="${financial.due>0?"money-due":"no-due"}">
+
 ${money(financial.due)}
+
 </td>
 
+
 <td>
+
 ${financial.invoiceCount}
+
 </td>
 
+
 <td>
+
 ${escapeHTML(last)}
+
 </td>
+
 
 <td>
 
 <button
 class="details"
-onclick="openDetailsModal('${escapeAttribute(customer.id)}')">
+onclick="openDetailsModal('${customer.id}')"
+>
+
 عرض
+
 </button>
+
 
 <button
 class="edit"
-onclick="openCustomerModal('${escapeAttribute(customer.id)}')">
+onclick="openCustomerModal('${customer.id}')"
+>
+
 تعديل
+
 </button>
+
 
 <button
 class="delete"
-onclick="deleteCustomer('${escapeAttribute(customer.id)}')">
+onclick="deleteCustomer('${customer.id}')"
+>
+
 حذف
+
 </button>
 
 </td>
 
 `;
+
 
 table.appendChild(
 row
@@ -2498,6 +3781,7 @@ row
 
 }
 );
+
 
 document.getElementById(
 "emptyMessage"
@@ -2508,14 +3792,15 @@ visible===0
 :
 "none";
 
+
 updateCustomerStats();
 
 }
 
 
-/* =========================================
-   ESCAPE HTML
-========================================= */
+/* =====================================================
+   ESCAPE
+===================================================== */
 
 function escapeHTML(
 value
@@ -2526,61 +3811,42 @@ document.createElement(
 "div"
 );
 
+
 div.textContent=
 value==null
 ?
 ""
 :
-String(value);
+String(
+value
+);
+
 
 return div.innerHTML;
 
 }
 
-function escapeAttribute(
-value
-){
 
-return String(
-value==null
-?
-""
-:
-value
-)
-.replace(
-/\\/g,
-"\\\\"
-)
-.replace(
-/'/g,
-"\\'"
-)
-.replace(
-/"/g,
-"&quot;"
-);
-
-}
-
-
-/* =========================================
+/* =====================================================
    MODAL BACKDROP
-========================================= */
+===================================================== */
 
 window.addEventListener(
 "click",
 event=>{
+
 
 const customerModal=
 document.getElementById(
 "customerModal"
 );
 
+
 const detailsModal=
 document.getElementById(
 "detailsModal"
 );
+
 
 if(
 event.target===
@@ -2590,6 +3856,7 @@ customerModal
 closeCustomerModal();
 
 }
+
 
 if(
 event.target===
@@ -2604,9 +3871,9 @@ closeDetailsModal();
 );
 
 
-/* =========================================
-   KEYBOARD
-========================================= */
+/* =====================================================
+   ESC KEY
+===================================================== */
 
 document.addEventListener(
 "keydown",
@@ -2617,6 +3884,7 @@ event.key==="Escape"
 ){
 
 closeCustomerModal();
+
 closeDetailsModal();
 
 }
@@ -2625,29 +3893,40 @@ closeDetailsModal();
 );
 
 
-/* =========================================
+/* =====================================================
    START
-========================================= */
+===================================================== */
 
 renderCustomers();
+
 
 window.addEventListener(
 "focus",
 ()=>{
+
 renderCustomers();
+
 loadCurrentUser();
+
 }
 );
+
 
 window.addEventListener(
 "storage",
 ()=>{
+
 renderCustomers();
+
 loadCurrentUser();
+
 }
 );
 
+
 </script>
 
+
 </body>
-</html>
+
+</html
