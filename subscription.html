@@ -61,7 +61,7 @@ document.documentElement.setAttribute("data-theme",theme);
 <div class="plan-icon">📅</div>
 <h3>الاشتراك الشهري</h3>
 <div class="plan-sub">مرونة كاملة للشركات التي تفضّل الدفع شهرياً.</div>
-<div class="price"><strong>180</strong><span>د.إ</span></div>
+<div class="price"><strong>179</strong><span>د.إ</span></div>
 <div class="billing">كل شهر</div>
 <div class="features">
 <div class="feature"><i>✓</i><span>الوصول إلى نظام VAREX الكامل</span></div>
@@ -78,7 +78,7 @@ document.documentElement.setAttribute("data-theme",theme);
 <div class="plan-icon">⭐</div>
 <h3>الاشتراك السنوي</h3>
 <div class="plan-sub">أفضل قيمة للشركات التي تستخدم VAREX بشكل مستمر.</div>
-<div class="price"><strong>1,800</strong><span>د.إ</span></div>
+<div class="price"><strong>1,799</strong><span>د.إ</span></div>
 <div class="billing">كل سنة</div>
 <div class="features">
 <div class="feature"><i>✓</i><span>جميع ميزات الاشتراك الشهري</span></div>
@@ -94,7 +94,7 @@ document.documentElement.setAttribute("data-theme",theme);
 <div class="plan-icon">♾️</div>
 <h3>ترخيص مدى الحياة</h3>
 <div class="plan-sub">دفعة واحدة للحصول على ترخيص دائم لـ VAREX.</div>
-<div class="price"><strong>6,000</strong><span>د.إ</span></div>
+<div class="price"><strong>5,999</strong><span>د.إ</span></div>
 <div class="billing">دفعة واحدة</div>
 <div class="features">
 <div class="feature"><i>✓</i><span>ترخيص دائم بدون رسوم تجديد</span></div>
@@ -135,9 +135,9 @@ document.documentElement.setAttribute("data-theme",theme);
 
 <script src="./varex.js"></script><script>
 const PLAN_DATA={
-monthly:{billingType:"monthly",plan:"business",planName:"VAREX الشهري",price:180,duration:"شهر واحد",priceText:"180 د.إ"},
-yearly:{billingType:"yearly",plan:"business",planName:"VAREX السنوي",price:1800,duration:"سنة واحدة",priceText:"1,800 د.إ"},
-lifetime:{billingType:"lifetime",plan:"business",planName:"VAREX مدى الحياة",price:6000,duration:"مدى الحياة",priceText:"6,000 د.إ"}
+monthly:{billingType:"monthly",plan:"business",planName:"VAREX الشهري",price:179,duration:"شهر واحد",priceText:"179 د.إ"},
+yearly:{billingType:"yearly",plan:"business",planName:"VAREX السنوي",price:1799,duration:"سنة واحدة",priceText:"1,799 د.إ"},
+lifetime:{billingType:"lifetime",plan:"business",planName:"VAREX مدى الحياة",price:5999,duration:"مدى الحياة",priceText:"5,999 د.إ"}
 };
 
 let selectedPlanType="";
@@ -229,14 +229,6 @@ function continueToPayment(){
 if(!selectedPlanType)return;
 
 const p=PLAN_DATA[selectedPlanType];
-
-/*
-=========================================================
-مهم:
-لا نستخدم VAREX.activateSubscription() هنا الآن.
-سيتم استدعاؤها لاحقاً فقط بعد نجاح الدفع الحقيقي.
-=========================================================
-*/
 
 localStorage.setItem("varex_selected_plan",JSON.stringify({
 ...p,
