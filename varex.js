@@ -223,13 +223,18 @@ createdAt:this.now()
 };
 
 try{
+
 localStorage.setItem(
 this.keys.pendingVerification,
 JSON.stringify(x)
 );
+
 return x
+
 }catch(e){
+
 return null
+
 }
 
 },
@@ -244,10 +249,14 @@ this.keys.pendingVerification
 )||"null"
 );
 
-return x&&typeof x==="object"?x:null
+return x&&typeof x==="object"
+?x
+:null
 
 }catch(e){
+
 return null
+
 }
 
 },
@@ -255,9 +264,11 @@ return null
 clearPendingVerification(){
 
 try{
+
 localStorage.removeItem(
 this.keys.pendingVerification
-)
+);
+
 }catch(e){}
 
 },
@@ -265,37 +276,65 @@ this.keys.pendingVerification
 async createUser(user={}){
 
 const name=this.cleanText(user.name);
-const username=this.normalizeUsername(user.username);
-const email=this.normalizeEmail(user.email);
-const password=String(user.password||"");
 
-if(!name)
+const username=
+this.normalizeUsername(
+user.username
+);
+
+const email=
+this.normalizeEmail(
+user.email
+);
+
+const password=
+String(
+user.password||""
+);
+
+if(!name){
+
 return{
 success:false,
 message:"الاسم الكامل مطلوب."
 };
 
-if(username.length<3)
+}
+
+if(username.length<3){
+
 return{
 success:false,
 message:"اسم المستخدم يجب أن يحتوي على 3 أحرف على الأقل."
 };
 
-if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))
+}
+
+if(
+!/^[^\s@]+@[^\s@]+\.[^\s@]+$/
+.test(email)
+){
+
 return{
 success:false,
 message:"يرجى إدخال بريد إلكتروني صحيح."
 };
 
-if(password.length<6)
+}
+
+if(password.length<6){
+
 return{
 success:false,
 message:"كلمة المرور يجب أن تحتوي على 6 أحرف على الأقل."
 };
 
+}
+
 try{
 
-const d=await this.authFetch(
+const d=
+await this.authFetch(
 "/auth/v1/signup",
 {
 method:"POST",
@@ -318,7 +357,9 @@ name,
 username
 });
 
-if(d?.session?.access_token){
+if(
+d?.session?.access_token
+){
 
 this.storeSession(
 d.session,
@@ -330,7 +371,7 @@ success:true,
 user:this.getSafeUser(d.user),
 needsEmailConfirmation:false,
 message:"تم إنشاء الحساب وتأكيد البريد الإلكتروني."
-}
+};
 
 }
 
@@ -340,14 +381,14 @@ user:this.getSafeUser(d.user),
 needsEmailConfirmation:true,
 email,
 message:"تم إنشاء الحساب. أرسلنا رمز التحقق إلى بريدك الإلكتروني."
-}
+};
 
 }catch(e){
 
 return{
 success:false,
 message:this.mapAuthError(e)
-}
+};
 
 }
 
@@ -355,24 +396,39 @@ message:this.mapAuthError(e)
 
 async verifyEmailOtp(email,token){
 
-const mail=this.normalizeEmail(email);
-const code=this.cleanText(token).replace(/\s+/g,"");
+const mail=
+this.normalizeEmail(
+email
+);
 
-if(!mail)
+const code=
+this.cleanText(
+token
+)
+.replace(/\s+/g,"");
+
+if(!mail){
+
 return{
 success:false,
 message:"البريد الإلكتروني غير موجود."
 };
 
-if(!code)
+}
+
+if(!code){
+
 return{
 success:false,
 message:"يرجى إدخال رمز التحقق."
 };
 
+}
+
 try{
 
-const d=await this.authFetch(
+const d=
+await this.authFetch(
 "/auth/v1/verify",
 {
 method:"POST",
@@ -384,46 +440,65 @@ token:code
 }
 );
 
-if(!d?.user)
+if(!d?.user){
+
 return{
 success:false,
 message:"تعذر تأكيد البريد الإلكتروني."
 };
 
+}
+
 if(d?.access_token){
 
-this.storeSession({
+this.storeSession(
+{
 access_token:d.access_token,
 refresh_token:d.refresh_token,
 expires_in:d.expires_in,
 expires_at:d.expires_at,
 token_type:d.token_type,
 user:d.user
-},false);
+},
+false
+);
 
 }
 
 this.clearPendingVerification();
 
-sessionStorage.removeItem(this.keys.session);
-localStorage.removeItem(this.keys.session);
-localStorage.removeItem(this.keys.cachedUser);
+sessionStorage.removeItem(
+this.keys.session
+);
 
-sessionStorage.removeItem("varex_authenticated");
-localStorage.removeItem("varex_authenticated");
+localStorage.removeItem(
+this.keys.session
+);
+
+localStorage.removeItem(
+this.keys.cachedUser
+);
+
+sessionStorage.removeItem(
+"varex_authenticated"
+);
+
+localStorage.removeItem(
+"varex_authenticated"
+);
 
 return{
 success:true,
 user:this.getSafeUser(d.user),
 message:"تم تأكيد البريد الإلكتروني بنجاح. يمكنك الآن تسجيل الدخول."
-}
+};
 
 }catch(e){
 
 return{
 success:false,
 message:this.mapAuthError(e)
-}
+};
 
 }
 
@@ -431,13 +506,19 @@ message:this.mapAuthError(e)
 
 async resendConfirmation(email){
 
-const mail=this.normalizeEmail(email);
+const mail=
+this.normalizeEmail(
+email
+);
 
-if(!mail)
+if(!mail){
+
 return{
 success:false,
 message:"البريد الإلكتروني غير موجود."
 };
+
+}
 
 try{
 
@@ -455,94 +536,160 @@ email:mail
 return{
 success:true,
 message:"تم إرسال رمز تحقق جديد إلى بريدك الإلكتروني."
-}
+};
 
 }catch(e){
 
 return{
 success:false,
 message:this.mapAuthError(e)
-}
+};
 
 }
 
 },
 
-async login(login,password,remember=false){
+async login(
+login,
+password,
+remember=false
+){
 
-const identifier=this.cleanText(login);
-const pw=String(password||"");
+const identifier=
+this.cleanText(
+login
+);
 
-if(!identifier||!pw)
+const pw=
+String(
+password||""
+);
+
+if(
+!identifier||
+!pw
+){
+
 return{
 success:false,
 message:"يرجى إدخال البريد الإلكتروني وكلمة المرور."
 };
 
-if(!identifier.includes("@"))
+}
+
+if(
+!identifier.includes("@")
+){
+
 return{
 success:false,
 message:"حالياً سجّل الدخول بالبريد الإلكتروني."
 };
 
+}
+
 try{
 
-const d=await this.authFetch(
+const d=
+await this.authFetch(
 "/auth/v1/token?grant_type=password",
 {
 method:"POST",
 body:JSON.stringify({
-email:this.normalizeEmail(identifier),
+email:
+this.normalizeEmail(
+identifier
+),
 password:pw
 })
 }
 );
 
-if(!d.access_token||!d.user)
+if(
+!d.access_token||
+!d.user
+){
+
 return{
 success:false,
 message:"تعذر إنشاء جلسة المستخدم."
 };
 
-this.storeSession(d,remember);
+}
+
+this.storeSession(
+d,
+remember
+);
 
 localStorage.setItem(
 this.keys.rememberedUser,
-remember?identifier:""
+remember
+?identifier
+:""
 );
 
 this.clearPendingVerification();
 
 return{
 success:true,
-user:this.getSafeUser(d.user)
-}
+user:this.getSafeUser(
+d.user
+)
+};
 
 }catch(e){
 
 return{
 success:false,
 message:this.mapAuthError(e)
-}
+};
 
 }
 
 },
 
-storeSession(s,remember=false){
+storeSession(
+s,
+remember=false
+){
 
 const x={
-access_token:s.access_token,
-refresh_token:s.refresh_token,
-expires_in:s.expires_in,
-expires_at:s.expires_at||
-Math.floor(Date.now()/1000)+(s.expires_in||3600),
-token_type:s.token_type||"bearer",
-user:s.user,
-remember:Boolean(remember)
+
+access_token:
+s.access_token,
+
+refresh_token:
+s.refresh_token,
+
+expires_in:
+s.expires_in,
+
+expires_at:
+s.expires_at||
+Math.floor(
+Date.now()/1000
+)+
+(s.expires_in||3600),
+
+token_type:
+s.token_type||
+"bearer",
+
+user:
+s.user,
+
+remember:
+Boolean(
+remember
+)
+
 };
 
-const str=JSON.stringify(x);
+const str=
+JSON.stringify(
+x
+);
 
 if(remember){
 
@@ -571,47 +718,68 @@ this.keys.session
 localStorage.setItem(
 this.keys.cachedUser,
 JSON.stringify(
-this.getSafeUser(s.user)
+this.getSafeUser(
+s.user
+)
 )
 );
 
 return x
+
 },
 
 getSession(){
 
 const raw=
-sessionStorage.getItem(this.keys.session)||
-localStorage.getItem(this.keys.session);
+sessionStorage.getItem(
+this.keys.session
+)||
+localStorage.getItem(
+this.keys.session
+);
 
 if(!raw)return null;
 
 try{
 
-const s=JSON.parse(raw);
+const s=
+JSON.parse(
+raw
+);
 
-return s?.access_token&&s?.user
+return(
+s?.access_token&&
+s?.user
+)
 ?s
-:null
+:null;
 
 }catch(e){
 
-return null
+return null;
 
 }
 
 },
 
 isLoggedIn(){
-return!!this.getSession()
+
+return!!this.getSession();
+
 },
 
 getCurrentUser(){
 
-const s=this.getSession();
+const s=
+this.getSession();
 
-if(s?.user)
-return this.getSafeUser(s.user);
+if(s?.user){
+
+return this.getSafeUser(
+s.user
+);
+
+}
 
 try{
 
@@ -619,11 +787,11 @@ return JSON.parse(
 localStorage.getItem(
 this.keys.cachedUser
 )||"null"
-)
+);
 
 }catch(e){
 
-return null
+return null;
 
 }
 
@@ -633,31 +801,44 @@ getRememberedUser(){
 
 return localStorage.getItem(
 this.keys.rememberedUser
-)||""
+)||"";
 
 },
 
 async refreshSession(){
 
-const s=this.getSession();
+const s=
+this.getSession();
 
-if(!s?.refresh_token)
+if(
+!s?.refresh_token
+){
+
 return false;
+
+}
 
 if(
 (s.expires_at||0)>
-Math.floor(Date.now()/1000)+60
-)
+Math.floor(
+Date.now()/1000
+)+60
+){
+
 return true;
+
+}
 
 try{
 
-const d=await this.authFetch(
+const d=
+await this.authFetch(
 "/auth/v1/token?grant_type=refresh_token",
 {
 method:"POST",
 body:JSON.stringify({
-refresh_token:s.refresh_token
+refresh_token:
+s.refresh_token
 })
 }
 );
@@ -667,29 +848,39 @@ d,
 s.remember
 );
 
-return true
+return true;
 
 }catch(e){
 
-this.logout(false);
-return false
+this.logout(
+false
+);
+
+return false;
 
 }
 
 },
 
-async logout(redirect=true){
+async logout(
+redirect=true
+){
 
-const s=this.getSession();
+const s=
+this.getSession();
 
 try{
 
-if(s?.access_token){
+if(
+s?.access_token
+){
 
 await this.authFetch(
 "/auth/v1/logout",
-{method:"POST"}
-)
+{
+method:"POST"
+}
+);
 
 }
 
@@ -716,10 +907,15 @@ localStorage.removeItem(
 );
 
 if(redirect){
-location.replace("./login.html")
+
+location.replace(
+"./login.html"
+);
+
 }
 
-return true
+return true;
+
 },
 
 requireLogin(){
@@ -728,64 +924,99 @@ if(
 this.isLoginPage()||
 this.isRegisterPage()||
 this.isVerifyEmailPage()
-)
+){
+
 return true;
 
-if(!this.isLoggedIn()){
+}
 
-location.replace("./login.html");
-return false
+if(
+!this.isLoggedIn()
+){
+
+location.replace(
+"./login.html"
+);
+
+return false;
 
 }
 
 this.refreshSession();
 
-return true
+return true;
+
 },
 
 isLoginPage(){
+
 return location.pathname
 .toLowerCase()
-.endsWith("login.html")
+.endsWith(
+"login.html"
+);
+
 },
 
 isRegisterPage(){
+
 return location.pathname
 .toLowerCase()
-.endsWith("register.html")
+.endsWith(
+"register.html"
+);
+
 },
 
 isVerifyEmailPage(){
+
 return location.pathname
 .toLowerCase()
-.endsWith("verify-email.html")
+.endsWith(
+"verify-email.html"
+);
+
 },
 
 redirectLoggedUser(){
 
 if(
-(this.isLoginPage()||
-this.isRegisterPage())&&
+(
+this.isLoginPage()||
+this.isRegisterPage()
+)&&
 this.isLoggedIn()
 ){
 
-location.replace("./index.html");
-return true
+location.replace(
+"./index.html"
+);
+
+return true;
 
 }
 
-return false
+return false;
+
 },
 
-async requestPasswordReset(email){
+async requestPasswordReset(
+email
+){
 
-const mail=this.normalizeEmail(email);
+const mail=
+this.normalizeEmail(
+email
+);
 
-if(!mail)
+if(!mail){
+
 return{
 success:false,
 message:"يرجى إدخال البريد الإلكتروني."
 };
+
+}
 
 try{
 
@@ -802,32 +1033,40 @@ email:mail
 return{
 success:true,
 message:"تم إرسال تعليمات استعادة كلمة المرور إلى بريدك الإلكتروني."
-}
+};
 
 }catch(e){
 
 return{
 success:false,
 message:this.mapAuthError(e)
-}
+};
 
 }
 
 },
 
-async updateCurrentUser(changes={}){
+async updateCurrentUser(
+changes={}
+){
 
-const s=this.getSession();
+const s=
+this.getSession();
 
-if(!s)
+if(!s){
+
 return{
 success:false,
 message:"لا يوجد مستخدم مسجل الدخول."
 };
 
+}
+
 const body={};
 
-if(changes.email!==undefined){
+if(
+changes.email!==undefined
+){
 
 body.email=
 this.normalizeEmail(
@@ -838,10 +1077,16 @@ changes.email
 
 const data={};
 
-["name","username","role"]
+[
+"name",
+"username",
+"role"
+]
 .forEach(k=>{
 
-if(changes[k]!==undefined){
+if(
+changes[k]!==undefined
+){
 
 data[k]=
 this.cleanText(
@@ -852,10 +1097,15 @@ changes[k]
 
 });
 
-if(Object.keys(data).length){
+if(
+Object.keys(data).length
+){
 
 body.data={
-...(s.user.user_metadata||{}),
+...(
+s.user.user_metadata||
+{}
+),
 ...data
 };
 
@@ -863,11 +1113,14 @@ body.data={
 
 try{
 
-const u=await this.authFetch(
+const u=
+await this.authFetch(
 "/auth/v1/user",
 {
 method:"PUT",
-body:JSON.stringify(body)
+body:JSON.stringify(
+body
+)
 }
 );
 
@@ -880,44 +1133,64 @@ s.remember
 
 return{
 success:true,
-user:this.getSafeUser(u)
-}
+user:this.getSafeUser(
+u
+)
+};
 
 }catch(e){
 
 return{
 success:false,
 message:this.mapAuthError(e)
-}
+};
 
 }
 
 },
 
-async changePassword(currentPassword,newPassword){
+async changePassword(
+currentPassword,
+newPassword
+){
 
-if(String(newPassword||"").length<6)
+if(
+String(
+newPassword||""
+).length<6
+){
+
 return{
 success:false,
 message:"كلمة المرور الجديدة يجب أن تحتوي على 6 أحرف على الأقل."
 };
 
-const s=this.getSession();
+}
 
-if(!s)
+const s=
+this.getSession();
+
+if(!s){
+
 return{
 success:false,
 message:"يجب تسجيل الدخول أولاً."
 };
 
+}
+
 try{
 
-const u=await this.authFetch(
+const u=
+await this.authFetch(
 "/auth/v1/user",
 {
 method:"PUT",
 body:JSON.stringify({
-password:String(newPassword)
+password:
+String(
+newPassword
+)
 })
 }
 );
@@ -932,14 +1205,14 @@ s.remember
 return{
 success:true,
 message:"تم تغيير كلمة المرور بنجاح."
-}
+};
 
 }catch(e){
 
 return{
 success:false,
 message:this.mapAuthError(e)
-}
+};
 
 }
 
@@ -950,77 +1223,129 @@ message:this.mapAuthError(e)
 ========================================================= */
 
 getProducts(){
+
 return this.getData(
 this.keys.products
-)
+);
+
 },
 
 saveProducts(x){
+
 return this.saveData(
 this.keys.products,
 x
-)
+);
+
 },
 
 getProductById(id){
 
 return this.getProducts()
 .find(
-x=>String(x.id)===String(id)
-)||null
+x=>
+String(x.id)===
+String(id)
+)||null;
 
 },
 
 findProductByBarcode(b){
 
-b=this.cleanText(b);
+b=
+this.cleanText(
+b
+);
 
 return this.getProducts()
 .find(
-x=>this.cleanText(x.barcode)===b
-)||null
+x=>
+this.cleanText(
+x.barcode
+)===b
+)||null;
 
 },
 
 addProduct(p={}){
 
-const a=this.getProducts();
+const a=
+this.getProducts();
 
 const x={
 ...p,
-id:p.id||this.generateId("PRD"),
-name:this.cleanText(
-p.name||p.productName
+
+id:
+p.id||
+this.generateId(
+"PRD"
 ),
-quantity:this.positiveNumber(
+
+name:
+this.cleanText(
+p.name||
+p.productName
+),
+
+quantity:
+this.positiveNumber(
 p.quantity
 ),
-price:this.positiveNumber(
-p.price||p.salePrice
+
+price:
+this.positiveNumber(
+p.price||
+p.salePrice
 ),
-cost:this.positiveNumber(
-p.cost||p.costPrice
+
+cost:
+this.positiveNumber(
+p.cost||
+p.costPrice
 ),
-createdAt:p.createdAt||this.now(),
-updatedAt:this.now()
+
+createdAt:
+p.createdAt||
+this.now(),
+
+updatedAt:
+this.now()
 };
 
-a.push(x);
-
-this.saveProducts(a);
-
-return x
-},
-
-updateProduct(id,c={}){
-
-const a=this.getProducts();
-
-const i=a.findIndex(
-x=>String(x.id)===String(id)
+a.push(
+x
 );
 
-if(i<0)return false;
+this.saveProducts(
+a
+);
+
+return x;
+
+},
+
+updateProduct(
+id,
+c={}
+){
+
+const a=
+this.getProducts();
+
+const i=
+a.findIndex(
+x=>
+String(x.id)===
+String(id)
+);
+
+if(
+i<0
+){
+
+return false;
+
+}
 
 a[i]={
 ...a[i],
@@ -1029,46 +1354,80 @@ id:a[i].id,
 updatedAt:this.now()
 };
 
-this.saveProducts(a);
+this.saveProducts(
+a
+);
 
-return a[i]
+return a[i];
+
 },
 
 deleteProduct(id){
 
-const a=this.getProducts();
+const a=
+this.getProducts();
 
-const b=a.filter(
-x=>String(x.id)!==String(id)
+const b=
+a.filter(
+x=>
+String(x.id)!==
+String(id)
 );
 
-this.saveProducts(b);
+this.saveProducts(
+b
+);
 
-return b.length!==a.length
+return(
+b.length!==
+a.length
+);
+
 },
 
-adjustStock(id,n){
+adjustStock(
+id,
+n
+){
 
-const a=this.getProducts();
+const a=
+this.getProducts();
 
-const i=a.findIndex(
-x=>String(x.id)===String(id)
+const i=
+a.findIndex(
+x=>
+String(x.id)===
+String(id)
 );
 
-if(i<0)return false;
+if(
+i<0
+){
+
+return false;
+
+}
 
 a[i].quantity=
 Math.max(
 0,
-this.toNumber(a[i].quantity)+
-this.toNumber(n)
+this.toNumber(
+a[i].quantity
+)+
+this.toNumber(
+n
+)
 );
 
-a[i].updatedAt=this.now();
+a[i].updatedAt=
+this.now();
 
-this.saveProducts(a);
+this.saveProducts(
+a
+);
 
-return a[i]
+return a[i];
+
 },
 
 /* =========================================================
@@ -1076,200 +1435,376 @@ return a[i]
 ========================================================= */
 
 getSales(){
+
 return this.getData(
 this.keys.sales
-)
+);
+
 },
 
 saveSales(x){
+
 return this.saveData(
 this.keys.sales,
 x
-)
+);
+
 },
 
 getSaleById(id){
 
 return this.getSales()
 .find(
-x=>String(x.id)===String(id)
-)||null
+x=>
+String(x.id)===
+String(id)
+)||null;
 
 },
 
 addSale(s={}){
 
-const a=this.getSales();
+const a=
+this.getSales();
 
 const x={
 ...s,
-id:s.id||this.generateId("SAL"),
+
+id:
+s.id||
+this.generateId(
+"SAL"
+),
+
 invoiceNumber:
 s.invoiceNumber||
 `INV-${Date.now()}`,
-createdAt:s.createdAt||this.now(),
-date:s.date||this.now(),
-updatedAt:this.now()
+
+createdAt:
+s.createdAt||
+this.now(),
+
+date:
+s.date||
+this.now(),
+
+updatedAt:
+this.now()
+
 };
 
-a.push(x);
+a.push(
+x
+);
 
-this.saveSales(a);
+this.saveSales(
+a
+);
 
-return x
+return x;
+
 },
 
 deleteSale(id){
 
-const a=this.getSales();
+const a=
+this.getSales();
 
-const b=a.filter(
-x=>String(x.id)!==String(id)
+const b=
+a.filter(
+x=>
+String(x.id)!==
+String(id)
 );
 
-this.saveSales(b);
+this.saveSales(
+b
+);
 
-return b.length!==a.length
+return(
+b.length!==
+a.length
+);
+
 },
 
 completeSale(s={}){
 
 const items=
-Array.isArray(s.items)
+Array.isArray(
+s.items
+)
 ?s.items
 :[];
 
-if(!items.length)
+if(
+!items.length
+){
+
 return{
 success:false,
 message:"لا توجد منتجات في الفاتورة."
 };
 
-const p=this.getProducts();
+}
 
-for(const x of items){
+const p=
+this.getProducts();
 
-const i=p.findIndex(
-y=>String(y.id)===
-String(x.productId||x.id)
+for(
+const x of items
+){
+
+const i=
+p.findIndex(
+y=>
+String(y.id)===
+String(
+x.productId||
+x.id
+)
 );
 
-const q=this.positiveNumber(
-x.quantity||x.qty||1
+const q=
+this.positiveNumber(
+x.quantity||
+x.qty||
+1
 );
 
 if(
 i>=0&&
-q>this.toNumber(p[i].quantity)
+q>
+this.toNumber(
+p[i].quantity
+)
 ){
 
 return{
 success:false,
 message:
 "الكمية غير متوفرة للمنتج: "+
-(p[i].name||"")
+(
+p[i].name||
+""
+)
 };
 
 }
 
 }
 
-for(const x of items){
+for(
+const x of items
+){
 
-const i=p.findIndex(
-y=>String(y.id)===
-String(x.productId||x.id)
+const i=
+p.findIndex(
+y=>
+String(y.id)===
+String(
+x.productId||
+x.id
+)
 );
 
-const q=this.positiveNumber(
-x.quantity||x.qty||1
+const q=
+this.positiveNumber(
+x.quantity||
+x.qty||
+1
 );
 
-if(i>=0){
+if(
+i>=0
+){
 
 p[i].quantity=
 Math.max(
 0,
-this.toNumber(p[i].quantity)-q
+this.toNumber(
+p[i].quantity
+)-q
 );
 
-p[i].updatedAt=this.now();
+p[i].updatedAt=
+this.now();
 
 }
 
 }
 
-this.saveProducts(p);
+this.saveProducts(
+p
+);
 
 return{
 success:true,
-sale:this.addSale(s)
-}
+sale:
+this.addSale(
+s
+)
+};
 
 },
 
 /* =========================================================
-   CUSTOMERS / SUPPLIERS / EMPLOYEES
+   CUSTOMERS
 ========================================================= */
 
 getCustomers(){
-return this.getData(this.keys.customers)
+
+return this.getData(
+this.keys.customers
+);
+
 },
 
 saveCustomers(x){
-return this.saveData(this.keys.customers,x)
+
+return this.saveData(
+this.keys.customers,
+x
+);
+
 },
 
 addCustomer(x={}){
-return this._add(this.keys.customers,"CUS",x)
+
+return this._add(
+this.keys.customers,
+"CUS",
+x
+);
+
 },
 
-updateCustomer(id,c={}){
-return this._update(this.keys.customers,id,c)
+updateCustomer(
+id,
+c={}
+){
+
+return this._update(
+this.keys.customers,
+id,
+c
+);
+
 },
 
 deleteCustomer(id){
-return this._delete(this.keys.customers,id)
+
+return this._delete(
+this.keys.customers,
+id
+);
+
 },
 
+/* =========================================================
+   SUPPLIERS
+========================================================= */
+
 getSuppliers(){
-return this.getData(this.keys.suppliers)
+
+return this.getData(
+this.keys.suppliers
+);
+
 },
 
 saveSuppliers(x){
-return this.saveData(this.keys.suppliers,x)
+
+return this.saveData(
+this.keys.suppliers,
+x
+);
+
 },
 
 addSupplier(x={}){
-return this._add(this.keys.suppliers,"SUP",x)
+
+return this._add(
+this.keys.suppliers,
+"SUP",
+x
+);
+
 },
 
-updateSupplier(id,c={}){
-return this._update(this.keys.suppliers,id,c)
+updateSupplier(
+id,
+c={}
+){
+
+return this._update(
+this.keys.suppliers,
+id,
+c
+);
+
 },
 
 deleteSupplier(id){
-return this._delete(this.keys.suppliers,id)
+
+return this._delete(
+this.keys.suppliers,
+id
+);
+
 },
 
+/* =========================================================
+   EMPLOYEES
+========================================================= */
+
 getEmployees(){
-return this.getData(this.keys.employees)
+
+return this.getData(
+this.keys.employees
+);
+
 },
 
 saveEmployees(x){
-return this.saveData(this.keys.employees,x)
+
+return this.saveData(
+this.keys.employees,
+x
+);
+
 },
 
 addEmployee(x={}){
-return this._add(this.keys.employees,"EMP",x)
+
+return this._add(
+this.keys.employees,
+"EMP",
+x
+);
+
 },
 
-updateEmployee(id,c={}){
-return this._update(this.keys.employees,id,c)
+updateEmployee(
+id,
+c={}
+){
+
+return this._update(
+this.keys.employees,
+id,
+c
+);
+
 },
 
 deleteEmployee(id){
-return this._delete(this.keys.employees,id)
+
+return this._delete(
+this.keys.employees,
+id
+);
+
 },
 
 /* =========================================================
@@ -1277,47 +1812,66 @@ return this._delete(this.keys.employees,id)
 ========================================================= */
 
 getTransactions(){
+
 return this.getData(
 this.keys.transactions
-)
+);
+
 },
 
 saveTransactions(x){
+
 return this.saveData(
 this.keys.transactions,
 x
-)
+);
+
 },
 
 addTransaction(x={}){
 
 x={
 ...x,
-amount:this.positiveNumber(x.amount),
-date:x.date||this.today()
+
+amount:
+this.positiveNumber(
+x.amount
+),
+
+date:
+x.date||
+this.today()
+
 };
 
 return this._add(
 this.keys.transactions,
 "TRX",
 x
-)
+);
 
 },
 
-updateTransaction(id,c={}){
+updateTransaction(
+id,
+c={}
+){
+
 return this._update(
 this.keys.transactions,
 id,
 c
-)
+);
+
 },
 
 deleteTransaction(id){
+
 return this._delete(
 this.keys.transactions,
 id
-)
+);
+
 },
 
 /* =========================================================
@@ -1325,69 +1879,123 @@ id
 ========================================================= */
 
 getHeldSales(){
+
 return this.getData(
 this.keys.heldSales
-)
+);
+
 },
 
 saveHeldSales(x){
+
 return this.saveData(
 this.keys.heldSales,
 x
-)
+);
+
 },
 
 holdSale(x={}){
+
 return this._add(
 this.keys.heldSales,
 "HOLD",
 x
-)
+);
+
 },
 
 removeHeldSale(id){
+
 return this._delete(
 this.keys.heldSales,
 id
-)
+);
+
 },
 
 getHeldSaleById(id){
 
 return this.getHeldSales()
 .find(
-x=>String(x.id)===String(id)
-)||null
+x=>
+String(x.id)===
+String(id)
+)||null;
 
 },
 
-_add(k,p,x={}){
+/* =========================================================
+   GENERIC DATA HELPERS
+========================================================= */
 
-const a=this.getData(k);
+_add(
+k,
+p,
+x={}
+){
+
+const a=
+this.getData(
+k
+);
 
 const o={
 ...x,
-id:x.id||this.generateId(p),
-createdAt:x.createdAt||this.now(),
-updatedAt:this.now()
+
+id:
+x.id||
+this.generateId(
+p
+),
+
+createdAt:
+x.createdAt||
+this.now(),
+
+updatedAt:
+this.now()
+
 };
 
-a.push(o);
-
-this.saveData(k,a);
-
-return o
-},
-
-_update(k,id,c={}){
-
-const a=this.getData(k);
-
-const i=a.findIndex(
-x=>String(x.id)===String(id)
+a.push(
+o
 );
 
-if(i<0)return false;
+this.saveData(
+k,
+a
+);
+
+return o;
+
+},
+
+_update(
+k,
+id,
+c={}
+){
+
+const a=
+this.getData(
+k
+);
+
+const i=
+a.findIndex(
+x=>
+String(x.id)===
+String(id)
+);
+
+if(
+i<0
+){
+
+return false;
+
+}
 
 a[i]={
 ...a[i],
@@ -1396,22 +2004,42 @@ id:a[i].id,
 updatedAt:this.now()
 };
 
-this.saveData(k,a);
-
-return a[i]
-},
-
-_delete(k,id){
-
-const a=this.getData(k);
-
-const b=a.filter(
-x=>String(x.id)!==String(id)
+this.saveData(
+k,
+a
 );
 
-this.saveData(k,b);
+return a[i];
 
-return b.length!==a.length
+},
+
+_delete(
+k,
+id
+){
+
+const a=
+this.getData(
+k
+);
+
+const b=
+a.filter(
+x=>
+String(x.id)!==
+String(id)
+);
+
+this.saveData(
+k,
+b
+);
+
+return(
+b.length!==
+a.length
+);
+
 },
 
 /* =========================================================
@@ -1421,13 +2049,28 @@ return b.length!==a.length
 getSettings(){
 
 const d={
-businessName:"VAREX",
-currency:"AED",
-currencySymbol:"د.إ",
-taxEnabled:true,
-taxRate:5,
-lowStockLimit:5,
-language:"ar"
+
+businessName:
+"VAREX",
+
+currency:
+"AED",
+
+currencySymbol:
+"د.إ",
+
+taxEnabled:
+true,
+
+taxRate:
+5,
+
+lowStockLimit:
+5,
+
+language:
+"ar"
+
 };
 
 const p=
@@ -1440,7 +2083,8 @@ let l={};
 
 try{
 
-const x=JSON.parse(
+const x=
+JSON.parse(
 localStorage.getItem(
 "varexSettings"
 )||"null"
@@ -1450,8 +2094,11 @@ if(
 x&&
 typeof x==="object"&&
 !Array.isArray(x)
-)
+){
+
 l=x;
+
+}
 
 }catch(e){}
 
@@ -1459,7 +2106,7 @@ return{
 ...d,
 ...l,
 ...p
-}
+};
 
 },
 
@@ -1481,17 +2128,21 @@ try{
 
 localStorage.setItem(
 "varexSettings",
-JSON.stringify(d)
+JSON.stringify(
+d
+)
 );
 
 }catch(e){}
 
-return ok
+return ok;
+
 },
 
 money(v){
 
-const s=this.getSettings();
+const s=
+this.getSettings();
 
 const sym=
 this.cleanText(
@@ -1503,35 +2154,46 @@ s.currency==="AED"
 :s.currency
 );
 
-return`${this.toNumber(v).toFixed(2)} ${sym}`
+return`${this.toNumber(v).toFixed(2)} ${sym}`;
 
 },
 
 calculateTax(v){
 
-const s=this.getSettings();
+const s=
+this.getSettings();
 
-return s.taxEnabled===false
+return(
+s.taxEnabled===false
+)
 ?0
-:this.positiveNumber(v)*
-this.toNumber(s.taxRate,5)/100
+:
+this.positiveNumber(
+v
+)*
+this.toNumber(
+s.taxRate,
+5
+)/100;
 
 },
 
 getTodaySales(){
 
-const t=this.today();
+const t=
+this.today();
 
 return this.getSales()
 .filter(
-s=>this.normalizeDate(
+s=>
+this.normalizeDate(
 s.createdAt||
 s.date||
 s.saleDate||
 s.invoiceDate||
 ""
 )===t
-)
+);
 
 },
 
@@ -1540,7 +2202,8 @@ getTodaySalesTotal(){
 return this.getTodaySales()
 .reduce(
 (a,s)=>
-a+this.toNumber(
+a+
+this.toNumber(
 s.total??
 s.grandTotal??
 s.finalTotal??
@@ -1549,26 +2212,30 @@ s.amount??
 0
 ),
 0
-)
+);
 
 },
 
 getStockAlerts(){
 
-const l=this.toNumber(
-this.getSettings().lowStockLimit,
+const l=
+this.toNumber(
+this.getSettings()
+.lowStockLimit,
 5
 );
 
 return this.getProducts()
 .filter(
 p=>
-this.toNumber(p.quantity)<=
+this.toNumber(
+p.quantity
+)<=
 this.toNumber(
 p.minimumStock,
 l
 )
-)
+);
 
 },
 
@@ -1582,10 +2249,20 @@ this.keys.suppliers,
 this.keys.employees,
 this.keys.transactions,
 this.keys.heldSales
-].forEach(k=>{
+]
+.forEach(k=>{
 
-if(localStorage.getItem(k)===null){
-localStorage.setItem(k,"[]");
+if(
+localStorage.getItem(
+k
+)===null
+){
+
+localStorage.setItem(
+k,
+"[]"
+);
+
 }
 
 });
@@ -1602,13 +2279,21 @@ this.getSettings()
 
 }
 
-return true
+return true;
+
 }
 
 };
 
+
+/* =========================================================
+   START CORE
+========================================================= */
+
 VAREX.initialize();
-window.VAREX=VAREX;
+
+window.VAREX=
+VAREX;
 
 
 /* =========================================================
@@ -1617,30 +2302,113 @@ window.VAREX=VAREX;
 
 const VAREX_MENU=[
 
-["index.html","▦","لوحة التحكم"],
-["pos.html","🛒","شاشة المبيعات"],
-["products.html","📦","المنتجات والمخزون"],
-["purchases.html","🧾","المشتريات"],
-["transfers.html","🔄","تحويلات المخزون"],
-["customers.html","👥","العملاء"],
-["suppliers.html","🚚","الموردون"],
-["accounts.html","💰","الحسابات"],
-["expenses.html","💸","المصروفات"],
-["shifts.html","🕘","ورديات الكاشير"],
-["employees.html","👤","الموظفون"],
-["branches.html","🏢","الفروع"],
-["reports.html","📊","التقارير"],
-["notifications.html","🔔","مركز التنبيهات"],
-["activity.html","📋","سجل النشاط"],
-["users.html","🔐","المستخدمون والصلاحيات"],
-["setting.html","⚙️","الإعدادات"]
+[
+"index.html",
+"▦",
+"لوحة التحكم"
+],
+
+[
+"pos.html",
+"🛒",
+"شاشة المبيعات"
+],
+
+[
+"products.html",
+"📦",
+"المنتجات والمخزون"
+],
+
+[
+"purchases.html",
+"🧾",
+"المشتريات"
+],
+
+[
+"transfers.html",
+"🔄",
+"تحويلات المخزون"
+],
+
+[
+"customers.html",
+"👥",
+"العملاء"
+],
+
+[
+"suppliers.html",
+"🚚",
+"الموردون"
+],
+
+[
+"accounts.html",
+"💰",
+"الحسابات"
+],
+
+[
+"expenses.html",
+"💸",
+"المصروفات"
+],
+
+[
+"shifts.html",
+"🕘",
+"ورديات الكاشير"
+],
+
+[
+"employees.html",
+"👤",
+"الموظفون"
+],
+
+[
+"branches.html",
+"🏢",
+"الفروع"
+],
+
+[
+"reports.html",
+"📊",
+"التقارير"
+],
+
+[
+"notifications.html",
+"🔔",
+"مركز التنبيهات"
+],
+
+[
+"activity.html",
+"📋",
+"سجل النشاط"
+],
+
+[
+"users.html",
+"🔐",
+"المستخدمون والصلاحيات"
+],
+
+[
+"setting.html",
+"⚙️",
+"الإعدادات"
+]
 
 ];
 
 
 /* =========================================================
-   SIDEBAR SCROLL
-   القائمة الكحلية كلها تتحرك كوحدة واحدة
+   SIDEBAR SETTINGS
 ========================================================= */
 
 const VAREX_SIDEBAR_SCROLL_KEY=
@@ -1656,17 +2424,33 @@ return document.querySelector(
 }
 
 
+/* =========================================================
+   SAVE SIDEBAR POSITION
+========================================================= */
+
 function varexSaveSidebarScroll(){
 
-const sidebar=varexGetSidebar();
+const sidebar=
+varexGetSidebar();
 
 if(!sidebar)return;
+
+const value=
+String(
+sidebar.scrollTop||
+0
+);
 
 try{
 
 sessionStorage.setItem(
 VAREX_SIDEBAR_SCROLL_KEY,
-String(sidebar.scrollTop)
+value
+);
+
+localStorage.setItem(
+VAREX_SIDEBAR_SCROLL_KEY,
+value
 );
 
 }catch(e){}
@@ -1674,9 +2458,14 @@ String(sidebar.scrollTop)
 }
 
 
+/* =========================================================
+   RESTORE SIDEBAR POSITION
+========================================================= */
+
 function varexRestoreSidebarScroll(){
 
-const sidebar=varexGetSidebar();
+const sidebar=
+varexGetSidebar();
 
 if(!sidebar)return;
 
@@ -1684,10 +2473,15 @@ let saved=0;
 
 try{
 
-saved=Number(
+saved=
+Number(
 sessionStorage.getItem(
 VAREX_SIDEBAR_SCROLL_KEY
-)||0
+)||
+localStorage.getItem(
+VAREX_SIDEBAR_SCROLL_KEY
+)||
+0
 );
 
 }catch(e){}
@@ -1696,7 +2490,9 @@ if(
 !Number.isFinite(saved)||
 saved<0
 ){
+
 saved=0;
+
 }
 
 const restore=()=>{
@@ -1716,12 +2512,29 @@ max
 
 };
 
-requestAnimationFrame(()=>{
-requestAnimationFrame(()=>{
+requestAnimationFrame(
+()=>{
+
+requestAnimationFrame(
+()=>{
+
 restore();
-setTimeout(restore,50);
-});
-});
+
+setTimeout(
+restore,
+40
+);
+
+setTimeout(
+restore,
+120
+);
+
+}
+);
+
+}
+);
 
 }
 
@@ -1746,12 +2559,16 @@ location.pathname
 .toLowerCase();
 
 if(!current){
-current="index.html";
+
+current=
+"index.html";
+
 }
 
 nav.innerHTML=
 VAREX_MENU
-.map(item=>{
+.map(
+item=>{
 
 const[
 file,
@@ -1760,7 +2577,8 @@ title
 ]=item;
 
 const active=
-current===file.toLowerCase()
+current===
+file.toLowerCase()
 ?" active"
 :"";
 
@@ -1773,14 +2591,15 @@ class="${active.trim()}">
 ${icon}
 </span>
 
-<span>
+<span class="nav-label">
 ${title}
 </span>
 
 </a>
 `;
 
-})
+}
+)
 .join("");
 
 varexAddSidebarActions();
@@ -1802,7 +2621,9 @@ document.querySelector(
 if(!nav)return;
 
 const box=
-document.createElement("div");
+document.createElement(
+"div"
+);
 
 box.className=
 "varex-sidebar-actions";
@@ -1820,7 +2641,8 @@ id="varexThemeIcon">
 🌙
 </span>
 
-<span id="varexThemeText">
+<span
+id="varexThemeText">
 الوضع الليلي
 </span>
 
@@ -1832,7 +2654,8 @@ type="button"
 class="varex-logout-button"
 id="varexLogoutButton">
 
-<span class="varex-power-icon">
+<span
+class="varex-power-icon">
 ⏻
 </span>
 
@@ -1842,9 +2665,17 @@ id="varexLogoutButton">
 
 </button>
 
+
+<div
+class="varex-sidebar-bottom-space"
+aria-hidden="true">
+</div>
+
 `;
 
-nav.appendChild(box);
+nav.appendChild(
+box
+);
 
 varexInstallSharedStyles();
 
@@ -1857,6 +2688,7 @@ document
 ()=>{
 
 varexSaveSidebarScroll();
+
 varexToggleTheme();
 
 }
@@ -1878,7 +2710,9 @@ confirm(
 )
 ){
 
-await VAREX.logout(true);
+await VAREX.logout(
+true
+);
 
 }
 
@@ -1892,9 +2726,7 @@ varexUpdateThemeButton();
 
 /* =========================================================
    SHARED SIDEBAR STYLES
-   IMPORTANT:
-   SIDEBAR = ITS OWN SCROLL AREA
-   PAGE = ITS OWN SCROLL AREA
+   WIDER + BIGGER + INDEPENDENT SCROLL
 ========================================================= */
 
 function varexInstallSharedStyles(){
@@ -1903,27 +2735,62 @@ if(
 document.getElementById(
 "varexSharedStyles"
 )
-)return;
+){
+
+return;
+
+}
 
 const style=
-document.createElement("style");
+document.createElement(
+"style"
+);
 
 style.id=
 "varexSharedStyles";
 
 style.textContent=`
 
-html{
-height:100%;
+/* =========================================================
+   GLOBAL SIDEBAR SIZE
+========================================================= */
+
+:root{
+
+--sidebar-width:265px!important;
+
 }
 
+
+html{
+
+height:100%;
+
+}
+
+
 body{
+
 min-height:100%;
+
 }
 
 
 /* =========================================================
-   SIDEBAR IS COMPLETELY INDEPENDENT
+   MAIN PAGE POSITION
+========================================================= */
+
+.main{
+
+margin-right:
+var(--sidebar-width)!important;
+
+}
+
+
+/* =========================================================
+   SIDEBAR
+   COMPLETELY INDEPENDENT FROM PAGE
 ========================================================= */
 
 .sidebar{
@@ -1934,11 +2801,19 @@ top:0!important;
 right:0!important;
 bottom:0!important;
 
+width:
+var(--sidebar-width)!important;
+
 height:100vh!important;
 height:100dvh!important;
 
+min-height:100vh!important;
+min-height:100dvh!important;
+
 max-height:100vh!important;
 max-height:100dvh!important;
+
+display:block!important;
 
 overflow-y:auto!important;
 overflow-x:hidden!important;
@@ -1954,13 +2829,44 @@ scroll-behavior:auto!important;
 
 z-index:1000!important;
 
+box-shadow:
+-4px 0 18px
+rgba(15,29,67,.10)!important;
+
 }
 
 
 /* =========================================================
+   BRAND
+   MOVES TOGETHER WITH WHOLE NAVY MENU
+========================================================= */
+
+.sidebar .brand{
+
+position:relative!important;
+
+top:auto!important;
+
+width:100%!important;
+
+height:
+var(--brand-height,170px)!important;
+
+min-height:
+var(--brand-height,170px)!important;
+
+max-height:
+var(--brand-height,170px)!important;
+
+flex:none!important;
+
+}
+
+
+/* =========================================================
+   NAV
    IMPORTANT:
-   NAV ITSELF DOES NOT SCROLL
-   WHOLE NAVY SIDEBAR SCROLLS
+   NAV DOES NOT HAVE ITS OWN SCROLL
 ========================================================= */
 
 .sidebar .nav{
@@ -1969,39 +2875,141 @@ position:relative!important;
 
 top:auto!important;
 right:auto!important;
-left:auto!important;
 bottom:auto!important;
+left:auto!important;
+
+width:100%!important;
 
 height:auto!important;
+
+min-height:0!important;
 max-height:none!important;
+
+display:block!important;
 
 overflow:visible!important;
 
+padding:
+16px 14px 0!important;
+
 touch-action:auto!important;
 
-padding-bottom:24px!important;
+}
+
+
+/* =========================================================
+   MENU LINKS
+========================================================= */
+
+.sidebar .nav a{
+
+width:100%!important;
+
+height:50px!important;
+
+min-height:50px!important;
+max-height:50px!important;
+
+display:flex!important;
+
+align-items:center!important;
+
+justify-content:flex-start!important;
+
+gap:12px!important;
+
+padding:
+0 15px!important;
+
+margin:
+0 0 6px!important;
+
+border-radius:
+10px!important;
+
+font-family:
+inherit!important;
+
+font-size:
+14px!important;
+
+font-weight:
+600!important;
+
+line-height:
+1.4!important;
+
+white-space:
+nowrap!important;
+
+text-decoration:
+none!important;
 
 }
 
 
-/* BRAND MOVES WITH SIDEBAR */
+/* =========================================================
+   MENU LABEL
+========================================================= */
 
-.sidebar .brand{
+.sidebar .nav .nav-label{
 
-position:relative!important;
+font-size:14px!important;
 
-top:auto!important;
+font-weight:600!important;
 
-flex:none!important;
+line-height:1.4!important;
+
+white-space:nowrap!important;
 
 }
 
 
-/* DO NOT CREATE SECOND SCROLL AREA */
+/* =========================================================
+   ICONS
+========================================================= */
+
+.sidebar .nav .nav-icon{
+
+width:27px!important;
+
+height:27px!important;
+
+min-width:27px!important;
+min-height:27px!important;
+
+display:flex!important;
+
+align-items:center!important;
+
+justify-content:center!important;
+
+font-size:17px!important;
+
+flex-shrink:0!important;
+
+}
+
+
+/* =========================================================
+   FOOTER
+========================================================= */
 
 .sidebar-footer{
 
 position:relative!important;
+
+width:100%!important;
+
+height:54px!important;
+
+min-height:54px!important;
+
+display:flex!important;
+
+align-items:center!important;
+
+justify-content:center!important;
 
 }
 
@@ -2012,10 +3020,11 @@ position:relative!important;
 
 .varex-sidebar-actions{
 
-margin-top:16px;
+width:100%;
 
-padding-top:14px;
-padding-bottom:24px;
+margin-top:18px;
+
+padding-top:15px;
 
 border-top:
 1px solid
@@ -2024,12 +3033,16 @@ rgba(255,255,255,.12);
 }
 
 
+/* =========================================================
+   ACTION BUTTONS
+========================================================= */
+
 .varex-sidebar-actions button{
 
 width:100%;
 
-height:48px;
-min-height:48px;
+height:50px;
+min-height:50px;
 
 display:flex;
 
@@ -2037,11 +3050,13 @@ align-items:center;
 
 justify-content:flex-start;
 
-gap:11px;
+gap:12px;
 
-padding:0 14px;
+padding:
+0 15px;
 
-margin:0 0 5px;
+margin:
+0 0 7px;
 
 border:0;
 
@@ -2049,7 +3064,7 @@ border-radius:10px;
 
 font-family:inherit;
 
-font-size:13px;
+font-size:14px;
 
 font-weight:600;
 
@@ -2057,10 +3072,17 @@ cursor:pointer;
 
 white-space:nowrap;
 
-transition:.2s;
+transition:
+background .2s,
+color .2s,
+transform .2s;
 
 }
 
+
+/* =========================================================
+   THEME BUTTON
+========================================================= */
 
 .varex-theme-button{
 
@@ -2077,10 +3099,14 @@ color:#dbeafe;
 background:
 rgba(255,255,255,.14);
 
-color:#fff;
+color:#ffffff;
 
 }
 
+
+/* =========================================================
+   LOGOUT BUTTON
+========================================================= */
 
 .varex-logout-button{
 
@@ -2096,16 +3122,24 @@ color:#fecaca;
 
 background:#dc2626;
 
-color:#fff;
+color:#ffffff;
 
 }
 
 
+/* =========================================================
+   POWER ICON
+========================================================= */
+
 .varex-power-icon{
 
-width:25px;
-height:25px;
-min-width:25px;
+width:27px;
+
+height:27px;
+
+min-width:27px;
+
+min-height:27px;
 
 border:
 1.5px solid currentColor;
@@ -2118,9 +3152,31 @@ align-items:center;
 
 justify-content:center;
 
-font-size:14px;
+font-size:15px;
 
 line-height:1;
+
+flex-shrink:0;
+
+}
+
+
+/* =========================================================
+   EXTRA SPACE AFTER LOGOUT
+   Allows more scrolling below logout button
+========================================================= */
+
+.varex-sidebar-bottom-space{
+
+display:block;
+
+width:100%;
+
+height:90px;
+
+min-height:90px;
+
+pointer-events:none;
 
 }
 
@@ -2129,16 +3185,28 @@ line-height:1;
    SIDEBAR SCROLLBAR
 ========================================================= */
 
+.sidebar{
+
+scrollbar-width:thin;
+
+scrollbar-color:
+rgba(255,255,255,.23)
+transparent;
+
+}
+
+
 .sidebar::-webkit-scrollbar{
 
-width:5px;
+width:6px;
 
 }
 
 
 .sidebar::-webkit-scrollbar-track{
 
-background:transparent;
+background:
+transparent;
 
 }
 
@@ -2146,7 +3214,7 @@ background:transparent;
 .sidebar::-webkit-scrollbar-thumb{
 
 background:
-rgba(255,255,255,.22);
+rgba(255,255,255,.23);
 
 border-radius:10px;
 
@@ -2156,13 +3224,89 @@ border-radius:10px;
 .sidebar::-webkit-scrollbar-thumb:hover{
 
 background:
-rgba(255,255,255,.35);
+rgba(255,255,255,.38);
+
+}
+
+
+/* =========================================================
+   PREVENT INNER NAV SCROLLBAR
+========================================================= */
+
+.sidebar .nav::-webkit-scrollbar{
+
+display:none!important;
+
+}
+
+
+/* =========================================================
+   TABLET / SMALL SCREEN
+   KEEP SIDEBAR VERTICAL
+========================================================= */
+
+@media(max-width:850px){
+
+.sidebar{
+
+position:fixed!important;
+
+right:0!important;
+
+top:0!important;
+
+bottom:0!important;
+
+width:
+var(--sidebar-width)!important;
+
+height:100dvh!important;
+
+display:block!important;
+
+overflow-y:auto!important;
+
+}
+
+
+.sidebar .nav{
+
+display:block!important;
+
+overflow:visible!important;
+
+padding:
+16px 14px 0!important;
+
+}
+
+
+.sidebar .nav a{
+
+width:100%!important;
+
+min-width:0!important;
+
+margin:
+0 0 6px!important;
+
+}
+
+
+.main{
+
+margin-right:
+var(--sidebar-width)!important;
+
+}
 
 }
 
 `;
 
-document.head.appendChild(style);
+document.head.appendChild(
+style
+);
 
 }
 
@@ -2179,50 +3323,60 @@ varexGetSidebar();
 if(!sidebar)return;
 
 
-/* Restore previous position */
+/* Restore previously saved location */
 
 varexRestoreSidebarScroll();
 
 
-/* Save while user scrolls */
+/* Save while manually scrolling */
 
-let saveTimer=null;
+let saveTimer=
+null;
 
 sidebar.addEventListener(
 "scroll",
 ()=>{
 
-clearTimeout(saveTimer);
+clearTimeout(
+saveTimer
+);
 
 saveTimer=
 setTimeout(
 varexSaveSidebarScroll,
-20
+25
 );
 
 },
-{passive:true}
+{
+passive:true
+}
 );
 
 
-/* Save BEFORE opening another page */
+/* Save immediately before opening another page */
 
 sidebar
 .querySelectorAll(
 "a[href]"
 )
-.forEach(link=>{
+.forEach(
+link=>{
 
 link.addEventListener(
 "pointerdown",
 varexSaveSidebarScroll,
-{passive:true}
+{
+passive:true
+}
 );
 
 link.addEventListener(
 "touchstart",
 varexSaveSidebarScroll,
-{passive:true}
+{
+passive:true
+}
 );
 
 link.addEventListener(
@@ -2230,10 +3384,11 @@ link.addEventListener(
 varexSaveSidebarScroll
 );
 
-});
+}
+);
 
 
-/* Save when leaving page */
+/* Save when browser leaves page */
 
 window.addEventListener(
 "pagehide",
@@ -2262,8 +3417,11 @@ localStorage.getItem(
 if(
 saved==="dark"||
 saved==="light"
-)
+){
+
 return saved;
+
+}
 
 return(
 window.matchMedia&&
@@ -2277,11 +3435,21 @@ window.matchMedia(
 }
 
 
+/* =========================================================
+   APPLY THEME
+========================================================= */
+
 function varexApplyTheme(theme){
 
 document.documentElement
 .setAttribute(
 "data-varex-theme",
+theme
+);
+
+document.documentElement
+.setAttribute(
+"data-theme",
 theme
 );
 
@@ -2306,6 +3474,10 @@ varexUpdateThemeButton();
 }
 
 
+/* =========================================================
+   TOGGLE THEME
+========================================================= */
+
 function varexToggleTheme(){
 
 varexApplyTheme(
@@ -2316,6 +3488,10 @@ varexGetTheme()==="dark"
 
 }
 
+
+/* =========================================================
+   UPDATE THEME BUTTON
+========================================================= */
 
 function varexUpdateThemeButton(){
 
@@ -2363,10 +3539,16 @@ if(
 document.getElementById(
 "varexDarkStyles"
 )
-)return;
+){
+
+return;
+
+}
 
 const style=
-document.createElement("style");
+document.createElement(
+"style"
+);
 
 style.id=
 "varexDarkStyles";
@@ -2414,7 +3596,7 @@ body.varex-dark .widget,
 body.varex-dark .box,
 body.varex-dark .section-card,
 body.varex-dark .table-card,
-body.varex-dark .modal,
+body.varex-dark .modal-box,
 body.varex-dark .modal-content{
 
 background:#132641!important;
@@ -2631,9 +3813,11 @@ color:#ffffff!important;
 }
 
 
-body.varex-dark .modal-bg{
+body.varex-dark .modal,
+body.varex-dark .modal-bg,
+body.varex-dark .modal-overlay{
 
-background:
+background-color:
 rgba(2,8,23,.76)!important;
 
 }
@@ -2646,7 +3830,9 @@ color:#94a3b8!important;
 }
 
 
-/* SIDEBAR */
+/* =========================================================
+   SIDEBAR NIGHT MODE
+========================================================= */
 
 body.varex-dark .sidebar{
 
@@ -2685,7 +3871,8 @@ color:#e2e8f0!important;
 }
 
 
-body.varex-dark .sidebar .system-status{
+body.varex-dark .sidebar .system-status,
+body.varex-dark .sidebar .store-status{
 
 color:#d1fae5!important;
 
@@ -2718,6 +3905,13 @@ color:#172554!important;
 box-shadow:
 0 5px 15px
 rgba(0,0,0,.18)!important;
+
+}
+
+
+body.varex-dark .sidebar .nav a.active .nav-icon{
+
+color:#172554!important;
 
 }
 
@@ -2789,6 +3983,7 @@ border-color:#29415f!important;
 body.varex-dark ::-webkit-scrollbar{
 
 width:8px;
+
 height:8px;
 
 }
@@ -2818,7 +4013,9 @@ background:#45617f;
 
 `;
 
-document.head.appendChild(style);
+document.head.appendChild(
+style
+);
 
 }
 
@@ -2838,7 +4035,8 @@ document
 .querySelectorAll(
 ".info-chip,.chip"
 )
-.forEach(el=>{
+.forEach(
+el=>{
 
 if(
 el.textContent.includes(
@@ -2847,7 +4045,9 @@ el.textContent.includes(
 ){
 
 const strong=
-el.querySelector("strong");
+el.querySelector(
+"strong"
+);
 
 if(strong){
 
@@ -2860,7 +4060,51 @@ user.username||
 
 }
 
-});
+}
+);
+
+const sidebarName=
+document.getElementById(
+"sidebarUserName"
+);
+
+if(sidebarName){
+
+sidebarName.textContent=
+user.name||
+user.username||
+user.email||
+"المستخدم";
+
+}
+
+const sidebarRole=
+document.getElementById(
+"sidebarUserRole"
+);
+
+if(sidebarRole){
+
+sidebarRole.textContent=
+user.role||
+"مستخدم";
+
+}
+
+const topUser=
+document.getElementById(
+"topUserName"
+);
+
+if(topUser){
+
+topUser.textContent=
+user.name||
+user.username||
+user.email||
+"المستخدم";
+
+}
 
 }
 
@@ -2876,27 +4120,31 @@ VAREX.isLoginPage()||
 VAREX.isRegisterPage()||
 VAREX.isVerifyEmailPage();
 
-if(publicPage)return;
+if(publicPage){
+
+return;
+
+}
 
 
-/* Build menu first */
+/* Build the common menu */
 
 varexBuildMenu();
 
 
-/* Apply saved theme */
+/* Apply the saved light / dark theme */
 
 varexApplyTheme(
 varexGetTheme()
 );
 
 
-/* Current user */
+/* Display logged-in user */
 
 varexShowCurrentUser();
 
 
-/* Make entire navy sidebar independent */
+/* Install independent sidebar scrolling */
 
 varexInstallSidebarScroll();
 
@@ -2908,7 +4156,8 @@ varexInstallSidebarScroll();
 ========================================================= */
 
 if(
-document.readyState==="loading"
+document.readyState===
+"loading"
 ){
 
 document.addEventListener(
