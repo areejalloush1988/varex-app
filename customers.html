@@ -1,4348 +1,2653 @@
-/* =========================================================
-   VAREX CORE
-   SUPABASE AUTH + EMAIL OTP + LOCAL BUSINESS DATA
-========================================================= */
-
-const VAREX = {
-
-  config: {
-    supabaseUrl: "https://eibadfdqzpeigccfdipt.supabase.co",
-    supabaseKey: "sb_publishable__xRe4q10zwB2coiWu7wVrQ_9CimA336"
-  },
-
-  keys: {
-    products: "varex_products",
-    sales: "varex_sales",
-    customers: "varex_customers",
-    suppliers: "varex_suppliers",
-    employees: "varex_employees",
-    transactions: "varexTransactions",
-    settings: "varex_settings",
-    heldSales: "varex_held_sales",
-    session: "varex_session",
-    rememberedUser: "varex_remembered_user",
-    cachedUser: "varex_cached_user",
-    pendingVerification: "varex_pending_verification"
-  },
-
-
-  getData(k) {
-
-    try {
-
-      const x = JSON.parse(
-        localStorage.getItem(k) || "[]"
-      );
-
-      return Array.isArray(x)
-        ? x
-        : [];
-
-    } catch (e) {
-
-      console.error(e);
-
-      return [];
-    }
-  },
-
-
-  saveData(k, d) {
-
-    try {
-
-      localStorage.setItem(
-        k,
-        JSON.stringify(
-          Array.isArray(d)
-            ? d
-            : []
-        )
-      );
-
-      return true;
-
-    } catch (e) {
-
-      console.error(e);
-
-      return false;
-    }
-  },
-
-
-  getObject(k, f = {}) {
-
-    try {
-
-      const x = JSON.parse(
-        localStorage.getItem(k) || "null"
-      );
-
-      return (
-        x &&
-        typeof x === "object" &&
-        !Array.isArray(x)
-      )
-        ? { ...f, ...x }
-        : { ...f };
-
-    } catch (e) {
-
-      return { ...f };
-    }
-  },
-
-
-  saveObject(k, d) {
-
-    try {
-
-      localStorage.setItem(
-        k,
-        JSON.stringify(d || {})
-      );
-
-      return true;
-
-    } catch (e) {
-
-      console.error(e);
-
-      return false;
-    }
-  },
-
-
-  generateId(p = "VRX") {
-
-    return (
-      `${p}-${Date.now()}-${Math.floor(Math.random() * 1000000)}`
-    );
-  },
-
-
-  toNumber(v, f = 0) {
-
-    v = Number(v);
-
-    return Number.isFinite(v)
-      ? v
-      : f;
-  },
-
-
-  positiveNumber(v) {
-
-    return Math.max(
-      0,
-      this.toNumber(v)
-    );
-  },
-
-
-  cleanText(v) {
-
-    return String(
-      v ?? ""
-    ).trim();
-  },
-
-
-  now() {
-
-    return new Date().toISOString();
-  },
-
-
-  today() {
-
-    const d = new Date();
-
-    return (
-      `${d.getFullYear()}-` +
-      `${String(d.getMonth() + 1).padStart(2, "0")}-` +
-      `${String(d.getDate()).padStart(2, "0")}`
-    );
-  },
-
-
-  normalizeDate(v) {
-
-    if (!v) {
-      return "";
-    }
-
-    const d = new Date(v);
-
-    if (Number.isNaN(d.getTime())) {
-
-      return String(v).slice(
-        0,
-        10
-      );
-    }
-
-    return (
-      `${d.getFullYear()}-` +
-      `${String(d.getMonth() + 1).padStart(2, "0")}-` +
-      `${String(d.getDate()).padStart(2, "0")}`
-    );
-  },
-
-
-  normalizeEmail(v) {
-
-    return this.cleanText(v).toLowerCase();
-  },
-
-
-  normalizeUsername(v) {
-
-    return this.cleanText(v).toLowerCase();
-  },
-
-
-  /* =========================================================
-     AUTH FETCH
-  ========================================================= */
-
-  async authFetch(path, opt = {}) {
-
-    const h = {
-      apikey: this.config.supabaseKey,
-      "Content-Type": "application/json",
-      ...(opt.headers || {})
-    };
-
-    const s = this.getSession();
-
-    if (s?.access_token) {
-
-      h.Authorization =
-        `Bearer ${s.access_token}`;
-    }
-
-    const r = await fetch(
-      this.config.supabaseUrl + path,
-      {
-        ...opt,
-        headers: h
-      }
-    );
-
-    let data = {};
-
-    try {
-
-      data = await r.json();
-
-    } catch (e) {}
-
-    if (!r.ok) {
-
-      const err = new Error(
-        data.msg ||
-        data.message ||
-        data.error_description ||
-        data.error ||
-        "تعذر الاتصال بخدمة الحسابات."
-      );
-
-      err.status = r.status;
-      err.data = data;
-
-      throw err;
-    }
-
-    return data;
-  },
-
-
-  mapAuthError(e) {
-
-    const m = String(
-      e?.message || ""
-    ).toLowerCase();
-
-    if (
-      m.includes("already registered") ||
-      m.includes("already been registered") ||
-      m.includes("user already registered")
-    ) {
-
-      return "البريد الإلكتروني مستخدم بالفعل.";
-    }
-
-    if (
-      m.includes("invalid login credentials")
-    ) {
-
-      return "البريد الإلكتروني أو كلمة المرور غير صحيحة.";
-    }
-
-    if (
-      m.includes("email not confirmed")
-    ) {
-
-      return "البريد الإلكتروني غير مؤكد. يرجى إدخال رمز التحقق المرسل إلى بريدك.";
-    }
-
-    if (
-      m.includes("token has expired") ||
-      m.includes("otp expired")
-    ) {
-
-      return "انتهت صلاحية رمز التحقق. اضغط إعادة إرسال الرمز.";
-    }
-
-    if (
-      m.includes("invalid token") ||
-      m.includes("invalid otp") ||
-      m.includes("token is invalid")
-    ) {
-
-      return "رمز التحقق غير صحيح.";
-    }
-
-    if (
-      m.includes("password") &&
-      m.includes("6")
-    ) {
-
-      return "كلمة المرور يجب أن تحتوي على 6 أحرف على الأقل.";
-    }
-
-    if (
-      m.includes("rate limit") ||
-      m.includes("too many requests")
-    ) {
-
-      return "تم إجراء محاولات كثيرة. يرجى الانتظار قليلاً.";
-    }
-
-    return (
-      e?.message ||
-      "حدث خطأ في خدمة الحسابات."
-    );
-  },
-
-
-  getSafeUser(u) {
-
-    if (!u) {
-      return null;
-    }
-
-    const md =
-      u.user_metadata || {};
-
-    return {
-
-      id: u.id,
-
-      name:
-        md.name ||
-        md.full_name ||
-        u.name ||
-        "المستخدم",
-
-      username:
-        md.username ||
-        u.username ||
-        "",
-
-      email:
-        u.email ||
-        "",
-
-      role:
-        md.role ||
-        u.role ||
-        "مستخدم",
-
-      status: "نشط",
-
-      createdAt:
-        u.created_at ||
-        u.createdAt ||
-        "",
-
-      lastLogin:
-        u.last_sign_in_at ||
-        u.lastLogin ||
-        ""
-    };
-  },
-
-
-  /* =========================================================
-     EMAIL VERIFICATION
-  ========================================================= */
-
-  setPendingVerification(data = {}) {
-
-    const x = {
-
-      email:
-        this.normalizeEmail(
-          data.email
-        ),
-
-      name:
-        this.cleanText(
-          data.name
-        ),
-
-      username:
-        this.normalizeUsername(
-          data.username
-        ),
-
-      createdAt:
-        this.now()
-    };
-
-    try {
-
-      localStorage.setItem(
-        this.keys.pendingVerification,
-        JSON.stringify(x)
-      );
-
-      return x;
-
-    } catch (e) {
-
-      return null;
-    }
-  },
-
-
-  getPendingVerification() {
-
-    try {
-
-      const x = JSON.parse(
-        localStorage.getItem(
-          this.keys.pendingVerification
-        ) || "null"
-      );
-
-      return (
-        x &&
-        typeof x === "object"
-      )
-        ? x
-        : null;
-
-    } catch (e) {
-
-      return null;
-    }
-  },
-
-
-  clearPendingVerification() {
-
-    try {
-
-      localStorage.removeItem(
-        this.keys.pendingVerification
-      );
-
-    } catch (e) {}
-  },
-
-
-  /* =========================================================
-     CREATE USER
-  ========================================================= */
-
-  async createUser(user = {}) {
-
-    const name =
-      this.cleanText(
-        user.name
-      );
-
-    const username =
-      this.normalizeUsername(
-        user.username
-      );
-
-    const email =
-      this.normalizeEmail(
-        user.email
-      );
-
-    const password =
-      String(
-        user.password || ""
-      );
-
-    if (!name) {
-
-      return {
-        success: false,
-        message: "الاسم الكامل مطلوب."
-      };
-    }
-
-    if (username.length < 3) {
-
-      return {
-        success: false,
-        message: "اسم المستخدم يجب أن يحتوي على 3 أحرف على الأقل."
-      };
-    }
-
-    if (
-      !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
-    ) {
-
-      return {
-        success: false,
-        message: "يرجى إدخال بريد إلكتروني صحيح."
-      };
-    }
-
-    if (password.length < 6) {
-
-      return {
-        success: false,
-        message: "كلمة المرور يجب أن تحتوي على 6 أحرف على الأقل."
-      };
-    }
-
-    try {
-
-      const d =
-        await this.authFetch(
-          "/auth/v1/signup",
-          {
-            method: "POST",
-
-            body: JSON.stringify({
-
-              email,
-
-              password,
-
-              data: {
-                name,
-                full_name: name,
-                username,
-                role: "مستخدم"
-              }
-            })
-          }
-        );
-
-      this.setPendingVerification({
-        email,
-        name,
-        username
-      });
-
-      if (
-        d?.session?.access_token
-      ) {
-
-        this.storeSession(
-          d.session,
-          false
-        );
-
-        return {
-
-          success: true,
-
-          user:
-            this.getSafeUser(
-              d.user
-            ),
-
-          needsEmailConfirmation:
-            false,
-
-          message:
-            "تم إنشاء الحساب وتأكيد البريد الإلكتروني."
-        };
-      }
-
-      return {
-
-        success: true,
-
-        user:
-          this.getSafeUser(
-            d.user
-          ),
-
-        needsEmailConfirmation:
-          true,
-
-        email,
-
-        message:
-          "تم إنشاء الحساب. أرسلنا رمز التحقق إلى بريدك الإلكتروني."
-      };
-
-    } catch (e) {
-
-      return {
-
-        success: false,
-
-        message:
-          this.mapAuthError(e)
-      };
-    }
-  },
-
-
-  /* =========================================================
-     VERIFY EMAIL OTP
-  ========================================================= */
-
-  async verifyEmailOtp(
-    email,
-    token
-  ) {
-
-    const mail =
-      this.normalizeEmail(
-        email
-      );
-
-    const code =
-      this.cleanText(
-        token
-      ).replace(
-        /\s+/g,
-        ""
-      );
-
-    if (!mail) {
-
-      return {
-        success: false,
-        message: "البريد الإلكتروني غير موجود."
-      };
-    }
-
-    if (!code) {
-
-      return {
-        success: false,
-        message: "يرجى إدخال رمز التحقق."
-      };
-    }
-
-    try {
-
-      const d =
-        await this.authFetch(
-          "/auth/v1/verify",
-          {
-            method: "POST",
-
-            body: JSON.stringify({
-              type: "signup",
-              email: mail,
-              token: code
-            })
-          }
-        );
-
-      if (!d?.user) {
-
-        return {
-          success: false,
-          message: "تعذر تأكيد البريد الإلكتروني."
-        };
-      }
-
-      if (d?.access_token) {
-
-        this.storeSession(
-          {
-            access_token:
-              d.access_token,
-
-            refresh_token:
-              d.refresh_token,
-
-            expires_in:
-              d.expires_in,
-
-            expires_at:
-              d.expires_at,
-
-            token_type:
-              d.token_type,
-
-            user:
-              d.user
-          },
-          false
-        );
-      }
-
-      this.clearPendingVerification();
-
-      sessionStorage.removeItem(
-        this.keys.session
-      );
-
-      localStorage.removeItem(
-        this.keys.session
-      );
-
-      localStorage.removeItem(
-        this.keys.cachedUser
-      );
-
-      sessionStorage.removeItem(
-        "varex_authenticated"
-      );
-
-      localStorage.removeItem(
-        "varex_authenticated"
-      );
-
-      return {
-
-        success: true,
-
-        user:
-          this.getSafeUser(
-            d.user
-          ),
-
-        message:
-          "تم تأكيد البريد الإلكتروني بنجاح. يمكنك الآن تسجيل الدخول."
-      };
-
-    } catch (e) {
-
-      return {
-
-        success: false,
-
-        message:
-          this.mapAuthError(e)
-      };
-    }
-  },
-
-
-  async resendConfirmation(email) {
-
-    const mail =
-      this.normalizeEmail(
-        email
-      );
-
-    if (!mail) {
-
-      return {
-        success: false,
-        message: "البريد الإلكتروني غير موجود."
-      };
-    }
-
-    try {
-
-      await this.authFetch(
-        "/auth/v1/resend",
-        {
-          method: "POST",
-
-          body: JSON.stringify({
-            type: "signup",
-            email: mail
-          })
-        }
-      );
-
-      return {
-
-        success: true,
-
-        message:
-          "تم إرسال رمز تحقق جديد إلى بريدك الإلكتروني."
-      };
-
-    } catch (e) {
-
-      return {
-
-        success: false,
-
-        message:
-          this.mapAuthError(e)
-      };
-    }
-  },
-
-
-  /* =========================================================
-     LOGIN
-  ========================================================= */
-
-  async login(
-    login,
-    password,
-    remember = false
-  ) {
-
-    const identifier =
-      this.cleanText(login);
-
-    const pw =
-      String(password || "");
-
-    if (
-      !identifier ||
-      !pw
-    ) {
-
-      return {
-        success: false,
-        message: "يرجى إدخال البريد الإلكتروني وكلمة المرور."
-      };
-    }
-
-    if (
-      !identifier.includes("@")
-    ) {
-
-      return {
-        success: false,
-        message: "حالياً سجّل الدخول بالبريد الإلكتروني."
-      };
-    }
-
-    try {
-
-      const d =
-        await this.authFetch(
-          "/auth/v1/token?grant_type=password",
-          {
-            method: "POST",
-
-            body: JSON.stringify({
-
-              email:
-                this.normalizeEmail(
-                  identifier
-                ),
-
-              password:
-                pw
-            })
-          }
-        );
-
-      if (
-        !d.access_token ||
-        !d.user
-      ) {
-
-        return {
-          success: false,
-          message: "تعذر إنشاء جلسة المستخدم."
-        };
-      }
-
-      this.storeSession(
-        d,
-        remember
-      );
-
-      localStorage.setItem(
-        this.keys.rememberedUser,
-        remember
-          ? identifier
-          : ""
-      );
-
-      this.clearPendingVerification();
-
-      return {
-
-        success: true,
-
-        user:
-          this.getSafeUser(
-            d.user
-          )
-      };
-
-    } catch (e) {
-
-      return {
-
-        success: false,
-
-        message:
-          this.mapAuthError(e)
-      };
-    }
-  },
-
-
-  /* =========================================================
-     SESSION
-  ========================================================= */
-
-  storeSession(
-    s,
-    remember = false
-  ) {
-
-    const x = {
-
-      access_token:
-        s.access_token,
-
-      refresh_token:
-        s.refresh_token,
-
-      expires_in:
-        s.expires_in,
-
-      expires_at:
-        s.expires_at ||
-        Math.floor(
-          Date.now() / 1000
-        ) +
-        (
-          s.expires_in ||
-          3600
-        ),
-
-      token_type:
-        s.token_type ||
-        "bearer",
-
-      user:
-        s.user,
-
-      remember:
-        Boolean(remember)
-    };
-
-    const str =
-      JSON.stringify(x);
-
-    if (remember) {
-
-      localStorage.setItem(
-        this.keys.session,
-        str
-      );
-
-      sessionStorage.removeItem(
-        this.keys.session
-      );
-
-    } else {
-
-      sessionStorage.setItem(
-        this.keys.session,
-        str
-      );
-
-      localStorage.removeItem(
-        this.keys.session
-      );
-    }
-
-    localStorage.setItem(
-      this.keys.cachedUser,
-      JSON.stringify(
-        this.getSafeUser(
-          s.user
-        )
-      )
-    );
-
-    return x;
-  },
-
-
-  getSession() {
-
-    const raw =
-      sessionStorage.getItem(
-        this.keys.session
-      ) ||
-      localStorage.getItem(
-        this.keys.session
-      );
-
-    if (!raw) {
-      return null;
-    }
-
-    try {
-
-      const s =
-        JSON.parse(raw);
-
-      return (
-        s?.access_token &&
-        s?.user
-      )
-        ? s
-        : null;
-
-    } catch (e) {
-
-      return null;
-    }
-  },
-
-
-  isLoggedIn() {
-
-    return !!this.getSession();
-  },
-
-
-  getCurrentUser() {
-
-    const s =
-      this.getSession();
-
-    if (s?.user) {
-
-      return this.getSafeUser(
-        s.user
-      );
-    }
-
-    try {
-
-      return JSON.parse(
-        localStorage.getItem(
-          this.keys.cachedUser
-        ) || "null"
-      );
-
-    } catch (e) {
-
-      return null;
-    }
-  },
-
-
-  getRememberedUser() {
-
-    return (
-      localStorage.getItem(
-        this.keys.rememberedUser
-      ) || ""
-    );
-  },
-
-
-  async refreshSession() {
-
-    const s =
-      this.getSession();
-
-    if (!s?.refresh_token) {
-
-      return false;
-    }
-
-    if (
-      (s.expires_at || 0) >
-      Math.floor(
-        Date.now() / 1000
-      ) + 60
-    ) {
-
-      return true;
-    }
-
-    try {
-
-      const d =
-        await this.authFetch(
-          "/auth/v1/token?grant_type=refresh_token",
-          {
-            method: "POST",
-
-            body: JSON.stringify({
-              refresh_token:
-                s.refresh_token
-            })
-          }
-        );
-
-      this.storeSession(
-        d,
-        s.remember
-      );
-
-      return true;
-
-    } catch (e) {
-
-      this.logout(false);
-
-      return false;
-    }
-  },
-
-
-  async logout(
-    redirect = true
-  ) {
-
-    const s =
-      this.getSession();
-
-    try {
-
-      if (s?.access_token) {
-
-        await this.authFetch(
-          "/auth/v1/logout",
-          {
-            method: "POST"
-          }
-        );
-      }
-
-    } catch (e) {}
-
-    sessionStorage.removeItem(
-      this.keys.session
-    );
-
-    localStorage.removeItem(
-      this.keys.session
-    );
-
-    localStorage.removeItem(
-      this.keys.cachedUser
-    );
-
-    sessionStorage.removeItem(
-      "varex_authenticated"
-    );
-
-    localStorage.removeItem(
-      "varex_authenticated"
-    );
-
-    if (redirect) {
-
-      location.replace(
-        "./login.html"
-      );
-    }
-
-    return true;
-  },
-
-
-  requireLogin() {
-
-    if (
-      this.isLoginPage() ||
-      this.isRegisterPage() ||
-      this.isVerifyEmailPage()
-    ) {
-
-      return true;
-    }
-
-    if (!this.isLoggedIn()) {
-
-      location.replace(
-        "./login.html"
-      );
-
-      return false;
-    }
-
-    this.refreshSession();
-
-    return true;
-  },
-
-
-  isLoginPage() {
-
-    return location.pathname
-      .toLowerCase()
-      .endsWith(
-        "login.html"
-      );
-  },
-
-
-  isRegisterPage() {
-
-    return location.pathname
-      .toLowerCase()
-      .endsWith(
-        "register.html"
-      );
-  },
-
-
-  isVerifyEmailPage() {
-
-    return location.pathname
-      .toLowerCase()
-      .endsWith(
-        "verify-email.html"
-      );
-  },
-
-
-  redirectLoggedUser() {
-
-    if (
-      (
-        this.isLoginPage() ||
-        this.isRegisterPage()
-      ) &&
-      this.isLoggedIn()
-    ) {
-
-      location.replace(
-        "./index.html"
-      );
-
-      return true;
-    }
-
-    return false;
-  },
-
-
-  async requestPasswordReset(
-    email
-  ) {
-
-    const mail =
-      this.normalizeEmail(
-        email
-      );
-
-    if (!mail) {
-
-      return {
-        success: false,
-        message: "يرجى إدخال البريد الإلكتروني."
-      };
-    }
-
-    try {
-
-      await this.authFetch(
-        "/auth/v1/recover",
-        {
-          method: "POST",
-
-          body: JSON.stringify({
-            email: mail
-          })
-        }
-      );
-
-      return {
-
-        success: true,
-
-        message:
-          "تم إرسال تعليمات استعادة كلمة المرور إلى بريدك الإلكتروني."
-      };
-
-    } catch (e) {
-
-      return {
-
-        success: false,
-
-        message:
-          this.mapAuthError(e)
-      };
-    }
-  },
-
-
-  async updateCurrentUser(
-    changes = {}
-  ) {
-
-    const s =
-      this.getSession();
-
-    if (!s) {
-
-      return {
-        success: false,
-        message: "لا يوجد مستخدم مسجل الدخول."
-      };
-    }
-
-    const body = {};
-
-    if (
-      changes.email !== undefined
-    ) {
-
-      body.email =
-        this.normalizeEmail(
-          changes.email
-        );
-    }
-
-    const data = {};
-
-    [
-      "name",
-      "username",
-      "role"
-    ].forEach(k => {
-
-      if (
-        changes[k] !== undefined
-      ) {
-
-        data[k] =
-          this.cleanText(
-            changes[k]
-          );
-      }
-    });
-
-    if (
-      Object.keys(data).length
-    ) {
-
-      body.data = {
-        ...(s.user.user_metadata || {}),
-        ...data
-      };
-    }
-
-    try {
-
-      const u =
-        await this.authFetch(
-          "/auth/v1/user",
-          {
-            method: "PUT",
-            body: JSON.stringify(body)
-          }
-        );
-
-      s.user = u;
-
-      this.storeSession(
-        s,
-        s.remember
-      );
-
-      return {
-
-        success: true,
-
-        user:
-          this.getSafeUser(u)
-      };
-
-    } catch (e) {
-
-      return {
-
-        success: false,
-
-        message:
-          this.mapAuthError(e)
-      };
-    }
-  },
-
-
-  async changePassword(
-    currentPassword,
-    newPassword
-  ) {
-
-    if (
-      String(
-        newPassword || ""
-      ).length < 6
-    ) {
-
-      return {
-        success: false,
-        message: "كلمة المرور الجديدة يجب أن تحتوي على 6 أحرف على الأقل."
-      };
-    }
-
-    const s =
-      this.getSession();
-
-    if (!s) {
-
-      return {
-        success: false,
-        message: "يجب تسجيل الدخول أولاً."
-      };
-    }
-
-    try {
-
-      const u =
-        await this.authFetch(
-          "/auth/v1/user",
-          {
-            method: "PUT",
-
-            body: JSON.stringify({
-              password:
-                String(
-                  newPassword
-                )
-            })
-          }
-        );
-
-      s.user = u;
-
-      this.storeSession(
-        s,
-        s.remember
-      );
-
-      return {
-
-        success: true,
-
-        message:
-          "تم تغيير كلمة المرور بنجاح."
-      };
-
-    } catch (e) {
-
-      return {
-
-        success: false,
-
-        message:
-          this.mapAuthError(e)
-      };
-    }
-  },
-
-
-  /* =========================================================
-     PRODUCTS
-  ========================================================= */
-
-  getProducts() {
-
-    return this.getData(
-      this.keys.products
-    );
-  },
-
-
-  saveProducts(x) {
-
-    return this.saveData(
-      this.keys.products,
-      x
-    );
-  },
-
-
-  getProductById(id) {
-
-    return (
-      this.getProducts().find(
-        x =>
-          String(x.id) ===
-          String(id)
-      ) || null
-    );
-  },
-
-
-  findProductByBarcode(b) {
-
-    b = this.cleanText(b);
-
-    return (
-      this.getProducts().find(
-        x =>
-          this.cleanText(
-            x.barcode
-          ) === b
-      ) || null
-    );
-  },
-
-
-  addProduct(p = {}) {
-
-    const a =
-      this.getProducts();
-
-    const x = {
-
-      ...p,
-
-      id:
-        p.id ||
-        this.generateId(
-          "PRD"
-        ),
-
-      name:
-        this.cleanText(
-          p.name ||
-          p.productName
-        ),
-
-      quantity:
-        this.positiveNumber(
-          p.quantity
-        ),
-
-      price:
-        this.positiveNumber(
-          p.price ||
-          p.salePrice
-        ),
-
-      cost:
-        this.positiveNumber(
-          p.cost ||
-          p.costPrice
-        ),
-
-      createdAt:
-        p.createdAt ||
-        this.now(),
-
-      updatedAt:
-        this.now()
-    };
-
-    a.push(x);
-
-    this.saveProducts(a);
-
-    return x;
-  },
-
-
-  updateProduct(
-    id,
-    c = {}
-  ) {
-
-    const a =
-      this.getProducts();
-
-    const i =
-      a.findIndex(
-        x =>
-          String(x.id) ===
-          String(id)
-      );
-
-    if (i < 0) {
-
-      return false;
-    }
-
-    a[i] = {
-
-      ...a[i],
-      ...c,
-
-      id:
-        a[i].id,
-
-      updatedAt:
-        this.now()
-    };
-
-    this.saveProducts(a);
-
-    return a[i];
-  },
-
-
-  deleteProduct(id) {
-
-    const a =
-      this.getProducts();
-
-    const b =
-      a.filter(
-        x =>
-          String(x.id) !==
-          String(id)
-      );
-
-    this.saveProducts(b);
-
-    return (
-      b.length !==
-      a.length
-    );
-  },
-
-
-  adjustStock(
-    id,
-    n
-  ) {
-
-    const a =
-      this.getProducts();
-
-    const i =
-      a.findIndex(
-        x =>
-          String(x.id) ===
-          String(id)
-      );
-
-    if (i < 0) {
-
-      return false;
-    }
-
-    a[i].quantity =
-      Math.max(
-        0,
-        this.toNumber(
-          a[i].quantity
-        ) +
-        this.toNumber(n)
-      );
-
-    a[i].updatedAt =
-      this.now();
-
-    this.saveProducts(a);
-
-    return a[i];
-  },
-
-
-  /* =========================================================
-     SALES
-  ========================================================= */
-
-  getSales() {
-
-    return this.getData(
-      this.keys.sales
-    );
-  },
-
-
-  saveSales(x) {
-
-    return this.saveData(
-      this.keys.sales,
-      x
-    );
-  },
-
-
-  getSaleById(id) {
-
-    return (
-      this.getSales().find(
-        x =>
-          String(x.id) ===
-          String(id)
-      ) || null
-    );
-  },
-
-
-  addSale(s = {}) {
-
-    const a =
-      this.getSales();
-
-    const x = {
-
-      ...s,
-
-      id:
-        s.id ||
-        this.generateId(
-          "SAL"
-        ),
-
-      invoiceNumber:
-        s.invoiceNumber ||
-        `INV-${Date.now()}`,
-
-      createdAt:
-        s.createdAt ||
-        this.now(),
-
-      date:
-        s.date ||
-        this.now(),
-
-      updatedAt:
-        this.now()
-    };
-
-    a.push(x);
-
-    this.saveSales(a);
-
-    return x;
-  },
-
-
-  deleteSale(id) {
-
-    const a =
-      this.getSales();
-
-    const b =
-      a.filter(
-        x =>
-          String(x.id) !==
-          String(id)
-      );
-
-    this.saveSales(b);
-
-    return (
-      b.length !==
-      a.length
-    );
-  },
-
-
-  completeSale(s = {}) {
-
-    const items =
-      Array.isArray(s.items)
-        ? s.items
-        : [];
-
-    if (!items.length) {
-
-      return {
-        success: false,
-        message: "لا توجد منتجات في الفاتورة."
-      };
-    }
-
-    const p =
-      this.getProducts();
-
-    for (
-      const x of items
-    ) {
-
-      const i =
-        p.findIndex(
-          y =>
-            String(y.id) ===
-            String(
-              x.productId ||
-              x.id
-            )
-        );
-
-      const q =
-        this.positiveNumber(
-          x.quantity ||
-          x.qty ||
-          1
-        );
-
-      if (
-        i >= 0 &&
-        q >
-        this.toNumber(
-          p[i].quantity
-        )
-      ) {
-
-        return {
-
-          success: false,
-
-          message:
-            "الكمية غير متوفرة للمنتج: " +
-            (
-              p[i].name ||
-              ""
-            )
-        };
-      }
-    }
-
-    for (
-      const x of items
-    ) {
-
-      const i =
-        p.findIndex(
-          y =>
-            String(y.id) ===
-            String(
-              x.productId ||
-              x.id
-            )
-        );
-
-      const q =
-        this.positiveNumber(
-          x.quantity ||
-          x.qty ||
-          1
-        );
-
-      if (i >= 0) {
-
-        p[i].quantity =
-          Math.max(
-            0,
-            this.toNumber(
-              p[i].quantity
-            ) - q
-          );
-
-        p[i].updatedAt =
-          this.now();
-      }
-    }
-
-    this.saveProducts(p);
-
-    return {
-
-      success: true,
-
-      sale:
-        this.addSale(s)
-    };
-  },
-
-
-  /* =========================================================
-     CUSTOMERS
-  ========================================================= */
-
-  getCustomers() {
-
-    return this.getData(
-      this.keys.customers
-    );
-  },
-
-
-  saveCustomers(x) {
-
-    return this.saveData(
-      this.keys.customers,
-      x
-    );
-  },
-
-
-  addCustomer(x = {}) {
-
-    return this._add(
-      this.keys.customers,
-      "CUS",
-      x
-    );
-  },
-
-
-  updateCustomer(
-    id,
-    c = {}
-  ) {
-
-    return this._update(
-      this.keys.customers,
-      id,
-      c
-    );
-  },
-
-
-  deleteCustomer(id) {
-
-    return this._delete(
-      this.keys.customers,
-      id
-    );
-  },
-
-
-  /* =========================================================
-     SUPPLIERS
-  ========================================================= */
-
-  getSuppliers() {
-
-    return this.getData(
-      this.keys.suppliers
-    );
-  },
-
-
-  saveSuppliers(x) {
-
-    return this.saveData(
-      this.keys.suppliers,
-      x
-    );
-  },
-
-
-  addSupplier(x = {}) {
-
-    return this._add(
-      this.keys.suppliers,
-      "SUP",
-      x
-    );
-  },
-
-
-  updateSupplier(
-    id,
-    c = {}
-  ) {
-
-    return this._update(
-      this.keys.suppliers,
-      id,
-      c
-    );
-  },
-
-
-  deleteSupplier(id) {
-
-    return this._delete(
-      this.keys.suppliers,
-      id
-    );
-  },
-
-
-  /* =========================================================
-     EMPLOYEES
-  ========================================================= */
-
-  getEmployees() {
-
-    return this.getData(
-      this.keys.employees
-    );
-  },
-
-
-  saveEmployees(x) {
-
-    return this.saveData(
-      this.keys.employees,
-      x
-    );
-  },
-
-
-  addEmployee(x = {}) {
-
-    return this._add(
-      this.keys.employees,
-      "EMP",
-      x
-    );
-  },
-
-
-  updateEmployee(
-    id,
-    c = {}
-  ) {
-
-    return this._update(
-      this.keys.employees,
-      id,
-      c
-    );
-  },
-
-
-  deleteEmployee(id) {
-
-    return this._delete(
-      this.keys.employees,
-      id
-    );
-  },
-
-
-  /* =========================================================
-     TRANSACTIONS
-  ========================================================= */
-
-  getTransactions() {
-
-    return this.getData(
-      this.keys.transactions
-    );
-  },
-
-
-  saveTransactions(x) {
-
-    return this.saveData(
-      this.keys.transactions,
-      x
-    );
-  },
-
-
-  addTransaction(x = {}) {
-
-    x = {
-
-      ...x,
-
-      amount:
-        this.positiveNumber(
-          x.amount
-        ),
-
-      date:
-        x.date ||
-        this.today()
-    };
-
-    return this._add(
-      this.keys.transactions,
-      "TRX",
-      x
-    );
-  },
-
-
-  updateTransaction(
-    id,
-    c = {}
-  ) {
-
-    return this._update(
-      this.keys.transactions,
-      id,
-      c
-    );
-  },
-
-
-  deleteTransaction(id) {
-
-    return this._delete(
-      this.keys.transactions,
-      id
-    );
-  },
-
-
-  /* =========================================================
-     HELD SALES
-  ========================================================= */
-
-  getHeldSales() {
-
-    return this.getData(
-      this.keys.heldSales
-    );
-  },
-
-
-  saveHeldSales(x) {
-
-    return this.saveData(
-      this.keys.heldSales,
-      x
-    );
-  },
-
-
-  holdSale(x = {}) {
-
-    return this._add(
-      this.keys.heldSales,
-      "HOLD",
-      x
-    );
-  },
-
-
-  removeHeldSale(id) {
-
-    return this._delete(
-      this.keys.heldSales,
-      id
-    );
-  },
-
-
-  getHeldSaleById(id) {
-
-    return (
-      this.getHeldSales().find(
-        x =>
-          String(x.id) ===
-          String(id)
-      ) || null
-    );
-  },
-
-
-  /* =========================================================
-     GENERIC DATA HELPERS
-  ========================================================= */
-
-  _add(
-    k,
-    p,
-    x = {}
-  ) {
-
-    const a =
-      this.getData(k);
-
-    const o = {
-
-      ...x,
-
-      id:
-        x.id ||
-        this.generateId(p),
-
-      createdAt:
-        x.createdAt ||
-        this.now(),
-
-      updatedAt:
-        this.now()
-    };
-
-    a.push(o);
-
-    this.saveData(
-      k,
-      a
-    );
-
-    return o;
-  },
-
-
-  _update(
-    k,
-    id,
-    c = {}
-  ) {
-
-    const a =
-      this.getData(k);
-
-    const i =
-      a.findIndex(
-        x =>
-          String(x.id) ===
-          String(id)
-      );
-
-    if (i < 0) {
-
-      return false;
-    }
-
-    a[i] = {
-
-      ...a[i],
-      ...c,
-
-      id:
-        a[i].id,
-
-      updatedAt:
-        this.now()
-    };
-
-    this.saveData(
-      k,
-      a
-    );
-
-    return a[i];
-  },
-
-
-  _delete(
-    k,
-    id
-  ) {
-
-    const a =
-      this.getData(k);
-
-    const b =
-      a.filter(
-        x =>
-          String(x.id) !==
-          String(id)
-      );
-
-    this.saveData(
-      k,
-      b
-    );
-
-    return (
-      b.length !==
-      a.length
-    );
-  },
-
-
-  /* =========================================================
-     SETTINGS
-  ========================================================= */
-
-  getSettings() {
-
-    const d = {
-
-      businessName:
-        "VAREX",
-
-      currency:
-        "AED",
-
-      currencySymbol:
-        "د.إ",
-
-      taxEnabled:
-        true,
-
-      taxRate:
-        5,
-
-      lowStockLimit:
-        5,
-
-      language:
-        "ar"
-    };
-
-    const p =
-      this.getObject(
-        this.keys.settings,
-        {}
-      );
-
-    let l = {};
-
-    try {
-
-      const x =
-        JSON.parse(
-          localStorage.getItem(
-            "varexSettings"
-          ) || "null"
-        );
-
-      if (
-        x &&
-        typeof x === "object" &&
-        !Array.isArray(x)
-      ) {
-
-        l = x;
-      }
-
-    } catch (e) {}
-
-    return {
-      ...d,
-      ...l,
-      ...p
-    };
-  },
-
-
-  saveSettings(s = {}) {
-
-    const d = {
-
-      ...this.getSettings(),
-      ...s,
-
-      updatedAt:
-        this.now()
-    };
-
-    const ok =
-      this.saveObject(
-        this.keys.settings,
-        d
-      );
-
-    try {
-
-      localStorage.setItem(
-        "varexSettings",
-        JSON.stringify(d)
-      );
-
-    } catch (e) {}
-
-    return ok;
-  },
-
-
-  money(v) {
-
-    const s =
-      this.getSettings();
-
-    const sym =
-      this.cleanText(
-        s.currencySymbol
-      ) ||
-      (
-        s.currency === "AED"
-          ? "د.إ"
-          : s.currency
-      );
-
-    return (
-      `${this.toNumber(v).toFixed(2)} ${sym}`
-    );
-  },
-
-
-  calculateTax(v) {
-
-    const s =
-      this.getSettings();
-
-    if (
-      s.taxEnabled === false
-    ) {
-
-      return 0;
-    }
-
-    return (
-      this.positiveNumber(v) *
-      this.toNumber(
-        s.taxRate,
-        5
-      ) /
-      100
-    );
-  },
-
-
-  getTodaySales() {
-
-    const t =
-      this.today();
-
-    return this
-      .getSales()
-      .filter(s => {
-
-        return (
-          this.normalizeDate(
-            s.createdAt ||
-            s.date ||
-            s.saleDate ||
-            s.invoiceDate ||
-            ""
-          ) === t
-        );
-      });
-  },
-
-
-  getTodaySalesTotal() {
-
-    return this
-      .getTodaySales()
-      .reduce(
-        (a, s) => {
-
-          return (
-            a +
-            this.toNumber(
-              s.total ??
-              s.grandTotal ??
-              s.finalTotal ??
-              s.netTotal ??
-              s.amount ??
-              0
-            )
-          );
-
-        },
-        0
-      );
-  },
-
-
-  getStockAlerts() {
-
-    const l =
-      this.toNumber(
-        this.getSettings()
-          .lowStockLimit,
-        5
-      );
-
-    return this
-      .getProducts()
-      .filter(p => {
-
-        return (
-          this.toNumber(
-            p.quantity
-          ) <=
-          this.toNumber(
-            p.minimumStock,
-            l
-          )
-        );
-      });
-  },
-
-
-  initialize() {
-
-    [
-      this.keys.products,
-      this.keys.sales,
-      this.keys.customers,
-      this.keys.suppliers,
-      this.keys.employees,
-      this.keys.transactions,
-      this.keys.heldSales
-    ].forEach(k => {
-
-      if (
-        localStorage.getItem(k) ===
-        null
-      ) {
-
-        localStorage.setItem(
-          k,
-          "[]"
-        );
-      }
-    });
-
-    if (
-      localStorage.getItem(
-        this.keys.settings
-      ) === null
-    ) {
-
-      this.saveSettings(
-        this.getSettings()
-      );
-    }
-
-    return true;
-  }
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>VAREX | العملاء</title>
+
+<style>
+*{
+box-sizing:border-box;
+margin:0;
+padding:0
+}
+
+:root{
+--navy:#172554;
+--navy-dark:#0f1d43;
+--navy-light:#1e3a6d;
+--bg:#f4f6fb;
+--white:#ffffff;
+--border:#e5eaf2;
+--text:#172554;
+--muted:#64748b;
+--green:#15803d;
+--red:#b91c1c;
+--sidebar-width:240px;
+--brand-height:170px
+}
+
+html{
+scroll-behavior:smooth
+}
+
+body{
+font-family:Arial,Tahoma,sans-serif;
+background:var(--bg);
+color:var(--text);
+min-height:100vh;
+line-height:1.5
+}
+
+/* SIDEBAR */
+
+.sidebar{
+position:fixed;
+right:0;
+top:0;
+width:var(--sidebar-width);
+height:100vh;
+background:linear-gradient(
+180deg,
+#172554 0%,
+#13234f 48%,
+#0f1d43 100%
+);
+color:#fff;
+z-index:1000;
+display:flex;
+flex-direction:column;
+overflow:hidden;
+box-shadow:-4px 0 18px rgba(15,29,67,.08)
+}
+
+.brand{
+width:100%;
+height:var(--brand-height);
+min-height:var(--brand-height);
+flex:0 0 var(--brand-height);
+padding:24px 14px 20px;
+border-bottom:1px solid rgba(255,255,255,.10);
+display:flex;
+flex-direction:column;
+align-items:center;
+justify-content:center;
+text-align:center;
+overflow:hidden
+}
+
+.logo{
+width:100%;
+font-size:30px;
+line-height:30px;
+font-weight:800;
+letter-spacing:4px;
+color:#fff;
+text-align:center;
+direction:ltr;
+white-space:nowrap
+}
+
+.brand-small{
+width:100%;
+margin-top:11px;
+font-size:10px;
+line-height:14px;
+font-weight:600;
+letter-spacing:.8px;
+color:#e2e8f0;
+text-align:center;
+direction:ltr;
+white-space:nowrap
+}
+
+.system-status{
+width:100%;
+margin-top:16px;
+display:flex;
+align-items:center;
+justify-content:center;
+gap:7px;
+font-size:10px;
+line-height:14px;
+color:#d1fae5;
+white-space:nowrap
+}
+
+.status-dot{
+width:7px;
+height:7px;
+min-width:7px;
+border-radius:50%;
+background:#22c55e;
+box-shadow:0 0 8px rgba(34,197,94,.75)
+}
+
+.nav{
+width:100%;
+padding:16px 12px;
+flex:1;
+min-height:0;
+overflow-y:auto;
+overflow-x:hidden;
+scrollbar-width:thin
+}
+
+.nav a{
+width:100%;
+height:48px;
+min-height:48px;
+display:flex;
+align-items:center;
+justify-content:flex-start;
+gap:11px;
+padding:0 14px;
+margin:0 0 5px;
+border-radius:10px;
+color:#dbeafe;
+text-decoration:none;
+font-size:13px;
+font-weight:600;
+white-space:nowrap;
+transition:.2s
+}
+
+.nav a:hover{
+background:rgba(255,255,255,.08);
+color:#fff
+}
+
+.nav a.active{
+background:#fff;
+color:var(--navy);
+font-weight:700;
+box-shadow:0 5px 15px rgba(0,0,0,.14)
+}
+
+.nav-icon{
+width:25px;
+min-width:25px;
+height:25px;
+display:flex;
+align-items:center;
+justify-content:center;
+font-size:16px;
+flex-shrink:0
+}
+
+.sidebar-footer{
+width:100%;
+height:54px;
+min-height:54px;
+flex:0 0 54px;
+padding:0 10px;
+border-top:1px solid rgba(255,255,255,.10);
+color:#94a3b8;
+font-size:9px;
+letter-spacing:.5px;
+text-align:center;
+direction:ltr;
+display:flex;
+align-items:center;
+justify-content:center
+}
+
+/* MAIN */
+
+.main{
+margin-right:var(--sidebar-width);
+min-height:100vh
+}
+
+/* TOPBAR */
+
+.topbar{
+min-height:78px;
+background:#fff;
+border-bottom:1px solid var(--border);
+display:flex;
+align-items:center;
+justify-content:space-between;
+gap:20px;
+padding:0 28px;
+position:sticky;
+top:0;
+z-index:50
+}
+
+.page-name{
+display:flex;
+align-items:center;
+gap:12px
+}
+
+.page-icon{
+width:44px;
+min-width:44px;
+height:44px;
+border-radius:11px;
+background:#eef2ff;
+display:flex;
+align-items:center;
+justify-content:center;
+font-size:20px
+}
+
+.page-name h2{
+font-size:19px;
+font-weight:700;
+color:var(--navy)
+}
+
+.page-name small{
+display:block;
+color:var(--muted);
+margin-top:4px;
+font-size:11px;
+direction:ltr;
+text-align:right
+}
+
+.top-info{
+display:flex;
+align-items:center;
+justify-content:flex-end;
+gap:9px
+}
+
+.info-chip{
+min-height:38px;
+background:#f8fafc;
+border:1px solid var(--border);
+border-radius:9px;
+padding:8px 12px;
+font-size:11px;
+color:var(--muted);
+display:flex;
+align-items:center;
+justify-content:center;
+white-space:nowrap
+}
+
+.info-chip strong{
+color:var(--navy);
+margin-right:4px
+}
+
+/* CONTENT */
+
+.content{
+width:calc(100% - 48px);
+max-width:1450px;
+margin:24px auto 40px
+}
+
+.hero{
+display:flex;
+align-items:center;
+justify-content:space-between;
+gap:15px;
+margin-bottom:20px
+}
+
+.hero h1{
+font-size:25px;
+font-weight:700;
+margin-bottom:6px
+}
+
+.hero p{
+color:var(--muted);
+font-size:13px;
+line-height:1.7
+}
+
+button{
+font-family:inherit
+}
+
+.primary{
+border:0;
+background:linear-gradient(135deg,#172554,#1e3a8a);
+color:#fff;
+padding:12px 18px;
+min-height:42px;
+border-radius:10px;
+cursor:pointer;
+font-weight:bold;
+box-shadow:0 5px 14px rgba(23,37,84,.16)
+}
+
+/* STATS */
+
+.stats{
+display:grid;
+grid-template-columns:repeat(4,1fr);
+gap:14px;
+margin-bottom:20px
+}
+
+.stat{
+background:#fff;
+border:1px solid var(--border);
+border-radius:14px;
+min-height:126px;
+padding:17px 18px;
+box-shadow:0 3px 12px rgba(15,23,42,.04)
+}
+
+.stat-top{
+display:flex;
+align-items:center;
+justify-content:space-between;
+margin-bottom:10px
+}
+
+.stat-label{
+font-size:12px;
+color:var(--muted)
+}
+
+.stat-icon{
+width:36px;
+height:36px;
+border-radius:10px;
+background:#eef2ff;
+display:flex;
+align-items:center;
+justify-content:center;
+font-size:17px
+}
+
+.stat-value{
+font-size:22px;
+font-weight:bold;
+color:var(--navy)
+}
+
+.stat-small{
+color:#94a3b8;
+font-size:11px;
+margin-top:5px
+}
+
+/* PANEL */
+
+.panel{
+background:#fff;
+border:1px solid var(--border);
+border-radius:16px;
+box-shadow:0 4px 18px rgba(15,23,42,.05);
+overflow:hidden
+}
+
+.panel-head{
+min-height:65px;
+padding:18px 20px;
+border-bottom:1px solid var(--border);
+display:flex;
+justify-content:space-between;
+align-items:center;
+gap:15px
+}
+
+.panel-head h3{
+font-size:16px
+}
+
+.panel-head span{
+font-size:11px;
+color:var(--muted)
+}
+
+.toolbar{
+padding:15px 20px;
+background:#fbfdff;
+border-bottom:1px solid var(--border);
+display:flex;
+gap:9px;
+flex-wrap:wrap
+}
+
+input,
+textarea,
+select{
+padding:11px;
+min-height:42px;
+border:1px solid #dbe1ea;
+border-radius:9px;
+font-size:13px;
+outline:none;
+background:#fff;
+color:#172554;
+font-family:inherit
+}
+
+input:focus,
+textarea:focus,
+select:focus{
+border-color:#94a3b8;
+box-shadow:0 0 0 3px rgba(37,99,235,.05)
+}
+
+.search{
+flex:1;
+min-width:250px
+}
+
+.filter{
+min-width:160px
+}
+
+/* TABLE */
+
+.table-wrap{
+overflow-x:auto
+}
+
+table{
+width:100%;
+border-collapse:collapse;
+min-width:1150px
+}
+
+th,
+td{
+padding:13px 10px;
+text-align:right;
+border-bottom:1px solid #edf0f5;
+vertical-align:middle;
+font-size:12px
+}
+
+th{
+background:#f8fafc;
+color:#475569;
+white-space:nowrap;
+font-weight:bold
+}
+
+tbody tr:hover{
+background:#fbfdff
+}
+
+.customer-name{
+font-weight:bold;
+color:var(--navy)
+}
+
+.customer-code{
+font-weight:bold;
+color:#475569
+}
+
+.money-positive,
+.no-due{
+color:var(--green);
+font-weight:bold
+}
+
+.money-due{
+color:var(--red);
+font-weight:bold
+}
+
+.type-badge{
+display:inline-block;
+padding:5px 9px;
+border-radius:20px;
+background:#eef2ff;
+color:#3730a3;
+font-size:10px;
+font-weight:bold
+}
+
+.details,
+.edit,
+.delete{
+border:0;
+border-radius:7px;
+padding:7px 10px;
+cursor:pointer;
+font-family:inherit;
+margin:2px
+}
+
+.details{
+background:#ecfeff;
+color:#155e75
+}
+
+.edit{
+background:#eef2ff;
+color:#172554
+}
+
+.delete{
+background:#fee2e2;
+color:#b91c1c
+}
+
+.empty{
+text-align:center;
+color:var(--muted);
+padding:35px;
+font-size:12px
+}
+
+/* MODALS */
+
+.modal{
+display:none;
+position:fixed;
+inset:0;
+background:rgba(15,23,42,.62);
+align-items:center;
+justify-content:center;
+padding:15px;
+z-index:5000
+}
+
+.modal-box{
+background:#fff;
+width:100%;
+max-width:800px;
+border-radius:16px;
+padding:24px;
+max-height:92vh;
+overflow:auto;
+box-shadow:0 20px 50px rgba(0,0,0,.20)
+}
+
+.modal-header{
+display:flex;
+justify-content:space-between;
+align-items:center;
+margin-bottom:18px
+}
+
+.modal-header h2{
+font-size:19px
+}
+
+.close{
+cursor:pointer;
+font-size:25px;
+color:#64748b
+}
+
+.form-section{
+margin:15px 0 5px;
+padding-bottom:8px;
+border-bottom:1px solid #e5e7eb;
+grid-column:1/-1
+}
+
+.form-section h3{
+font-size:14px;
+color:#172554
+}
+
+.form-grid{
+display:grid;
+grid-template-columns:1fr 1fr;
+gap:12px
+}
+
+.field{
+width:100%
+}
+
+.field label{
+display:block;
+font-size:12px;
+color:#475569;
+margin-bottom:6px;
+font-weight:bold
+}
+
+.field input,
+.field select,
+.field textarea{
+width:100%
+}
+
+.full{
+grid-column:1/-1
+}
+
+textarea{
+min-height:100px;
+resize:vertical
+}
+
+.form-actions{
+display:flex;
+gap:10px;
+margin-top:18px
+}
+
+.save{
+border:0;
+background:linear-gradient(135deg,#172554,#1e3a8a);
+color:#fff;
+padding:12px 20px;
+border-radius:9px;
+cursor:pointer;
+font-weight:bold
+}
+
+.cancel{
+border:0;
+background:#e5e7eb;
+color:#111827;
+padding:12px 20px;
+border-radius:9px;
+cursor:pointer
+}
+
+.details-grid{
+display:grid;
+grid-template-columns:1fr 1fr;
+gap:12px
+}
+
+.detail-card{
+background:#f8fafc;
+border:1px solid #e2e8f0;
+border-radius:10px;
+padding:15px
+}
+
+.detail-card span{
+display:block;
+color:#64748b;
+font-size:12px;
+margin-bottom:6px
+}
+
+.detail-card strong{
+color:#172554;
+word-break:break-word
+}
+
+.notes-card{
+grid-column:1/-1
+}
+
+/* RESPONSIVE */
+
+@media(max-width:1200px){
+.stats{
+grid-template-columns:repeat(2,1fr)
+}
+}
+
+@media(max-width:1000px){
+.topbar{
+padding:0 18px
+}
+}
+
+@media(max-width:850px){
+.content{
+width:94%
+}
+.topbar{
+padding:0 14px
+}
+}
+
+@media(max-width:650px){
+.top-info{
+display:none
+}
+
+.hero{
+flex-direction:column;
+align-items:flex-start
+}
+
+.stats{
+grid-template-columns:1fr 1fr
+}
+
+.form-grid,
+.details-grid{
+grid-template-columns:1fr
+}
+
+.full,
+.form-section,
+.notes-card{
+grid-column:auto
+}
+}
+
+@media(max-width:450px){
+.stats{
+grid-template-columns:1fr
+}
+
+.page-name small{
+display:none
+}
+}
+</style>
+</head>
+
+<body>
+
+<aside class="sidebar">
+
+<div class="brand">
+
+<div class="logo">
+VAREX
+</div>
+
+<div class="brand-small">
+BUSINESS MANAGEMENT SYSTEM
+</div>
+
+<div class="system-status">
+<span class="status-dot"></span>
+<span>النظام متصل وجاهز للعمل</span>
+</div>
+
+</div>
+
+<nav class="nav">
+
+<a href="./index.html">
+<span class="nav-icon">▦</span>
+<span>لوحة التحكم</span>
+</a>
+
+<a href="./pos.html">
+<span class="nav-icon">🛒</span>
+<span>شاشة المبيعات</span>
+</a>
+
+<a href="./products.html">
+<span class="nav-icon">📦</span>
+<span>المنتجات والمخزون</span>
+</a>
+
+<a href="./purchases.html">
+<span class="nav-icon">🧾</span>
+<span>المشتريات</span>
+</a>
+
+<a href="./transfers.html">
+<span class="nav-icon">🔄</span>
+<span>تحويلات المخزون</span>
+</a>
+
+<a href="./customers.html" class="active">
+<span class="nav-icon">👥</span>
+<span>العملاء</span>
+</a>
+
+<a href="./suppliers.html">
+<span class="nav-icon">🚚</span>
+<span>الموردون</span>
+</a>
+
+<a href="./accounts.html">
+<span class="nav-icon">💰</span>
+<span>الحسابات</span>
+</a>
+
+<a href="./expenses.html">
+<span class="nav-icon">💸</span>
+<span>المصروفات</span>
+</a>
+
+<a href="./shifts.html">
+<span class="nav-icon">🕘</span>
+<span>ورديات الكاشير</span>
+</a>
+
+<a href="./employees.html">
+<span class="nav-icon">👤</span>
+<span>الموظفون</span>
+</a>
+
+<a href="./branches.html">
+<span class="nav-icon">🏢</span>
+<span>الفروع</span>
+</a>
+
+<a href="./reports.html">
+<span class="nav-icon">📊</span>
+<span>التقارير</span>
+</a>
+
+<a href="./notifications.html">
+<span class="nav-icon">🔔</span>
+<span>مركز التنبيهات</span>
+</a>
+
+<a href="./activity.html">
+<span class="nav-icon">📋</span>
+<span>سجل النشاط</span>
+</a>
+
+<a href="./users.html">
+<span class="nav-icon">🔐</span>
+<span>المستخدمون والصلاحيات</span>
+</a>
+
+<a href="./setting.html">
+<span class="nav-icon">⚙️</span>
+<span>الإعدادات</span>
+</a>
+
+</nav>
+
+<div class="sidebar-footer">
+VAREX BUSINESS SYSTEM
+</div>
+
+</aside>
+
+<div class="main">
+
+<header class="topbar">
+
+<div class="page-name">
+
+<div class="page-icon">
+👥
+</div>
+
+<div>
+<h2>العملاء</h2>
+<small>VAREX CUSTOMERS</small>
+</div>
+
+</div>
+
+<div class="top-info">
+
+<div class="info-chip">
+المستخدم:
+<strong id="currentUserName">
+المستخدم الحالي
+</strong>
+</div>
+
+<div class="info-chip" id="currentDate">
+—
+</div>
+
+<div class="info-chip" id="currentTime">
+—
+</div>
+
+</div>
+
+</header>
+
+<main class="content">
+
+<section class="hero">
+
+<div>
+
+<h1>
+إدارة العملاء
+</h1>
+
+<p>
+إدارة بيانات العملاء ومتابعة المشتريات والفواتير والأرصدة والحدود الائتمانية من مكان واحد.
+</p>
+
+</div>
+
+<button
+class="primary"
+onclick="openCustomerModal()">
+＋ إضافة عميل جديد
+</button>
+
+</section>
+
+<section class="stats">
+
+<div class="stat">
+
+<div class="stat-top">
+<div class="stat-label">
+إجمالي العملاء
+</div>
+<div class="stat-icon">
+👥
+</div>
+</div>
+
+<div
+class="stat-value"
+id="totalCustomers">
+0
+</div>
+
+<div class="stat-small">
+عدد العملاء المسجلين
+</div>
+
+</div>
+
+<div class="stat">
+
+<div class="stat-top">
+<div class="stat-label">
+إجمالي مشتريات العملاء
+</div>
+<div class="stat-icon">
+🛒
+</div>
+</div>
+
+<div
+class="stat-value"
+id="totalCustomerPurchases">
+0.00 د.إ
+</div>
+
+<div class="stat-small">
+من فواتير المبيعات المسجلة
+</div>
+
+</div>
+
+<div class="stat">
+
+<div class="stat-top">
+<div class="stat-label">
+إجمالي المستحقات
+</div>
+<div class="stat-icon">
+💳
+</div>
+</div>
+
+<div
+class="stat-value"
+id="totalCustomerDue">
+0.00 د.إ
+</div>
+
+<div class="stat-small">
+المبالغ المستحقة على العملاء
+</div>
+
+</div>
+
+<div class="stat">
+
+<div class="stat-top">
+<div class="stat-label">
+عملاء لديهم رصيد مستحق
+</div>
+<div class="stat-icon">
+⚠️
+</div>
+</div>
+
+<div
+class="stat-value"
+id="customersWithDue">
+0
+</div>
+
+<div class="stat-small">
+عملاء لديهم فواتير غير مسددة
+</div>
+
+</div>
+
+</section>
+
+<section class="panel">
+
+<div class="panel-head">
+
+<h3>
+قائمة العملاء
+</h3>
+
+<span>
+إدارة بيانات العملاء وسجل المبيعات
+</span>
+
+</div>
+
+<div class="toolbar">
+
+<input
+id="search"
+class="search"
+placeholder="🔍 ابحث برقم العميل أو الاسم أو الهاتف أو البريد"
+oninput="renderCustomers()">
+
+<select
+id="typeFilter"
+class="filter"
+onchange="renderCustomers()">
+
+<option value="">
+كل أنواع العملاء
+</option>
+
+<option value="فرد">
+فرد
+</option>
+
+<option value="شركة">
+شركة
+</option>
+
+</select>
+
+</div>
+
+<div class="table-wrap">
+
+<table>
+
+<thead>
+
+<tr>
+<th>#</th>
+<th>رقم العميل</th>
+<th>اسم العميل</th>
+<th>النوع</th>
+<th>الهاتف</th>
+<th>إجمالي المشتريات</th>
+<th>المستحق</th>
+<th>عدد الفواتير</th>
+<th>آخر شراء</th>
+<th>الإجراءات</th>
+</tr>
+
+</thead>
+
+<tbody id="customerTable">
+</tbody>
+
+</table>
+
+<div
+id="emptyMessage"
+class="empty">
+لا يوجد عملاء حتى الآن
+</div>
+
+</div>
+
+</section>
+
+</main>
+
+</div>
+
+<!-- ADD / EDIT CUSTOMER -->
+
+<div
+class="modal"
+id="customerModal">
+
+<div class="modal-box">
+
+<div class="modal-header">
+
+<h2 id="modalTitle">
+إضافة عميل جديد
+</h2>
+
+<span
+class="close"
+onclick="closeCustomerModal()">
+×
+</span>
+
+</div>
+
+<div class="form-grid">
+
+<div class="form-section">
+<h3>
+👤 البيانات الأساسية
+</h3>
+</div>
+
+<div class="field">
+
+<label>
+اسم العميل *
+</label>
+
+<input
+id="customerName"
+placeholder="اسم العميل">
+
+</div>
+
+<div class="field">
+
+<label>
+نوع العميل
+</label>
+
+<select id="customerType">
+
+<option value="فرد">
+فرد
+</option>
+
+<option value="شركة">
+شركة
+</option>
+
+</select>
+
+</div>
+
+<div class="field">
+
+<label>
+رقم الهاتف
+</label>
+
+<input
+id="phone"
+placeholder="رقم الهاتف">
+
+</div>
+
+<div class="field">
+
+<label>
+البريد الإلكتروني
+</label>
+
+<input
+id="email"
+type="email"
+placeholder="البريد الإلكتروني">
+
+</div>
+
+<div class="field">
+
+<label>
+الرقم الضريبي TRN
+</label>
+
+<input
+id="taxNumber"
+placeholder="الرقم الضريبي إن وجد">
+
+</div>
+
+<div class="field">
+
+<label>
+الحد الائتماني
+</label>
+
+<input
+id="creditLimit"
+type="number"
+min="0"
+step="0.01"
+placeholder="0.00">
+
+</div>
+
+<div class="form-section">
+<h3>
+📍 بيانات إضافية
+</h3>
+</div>
+
+<div class="field full">
+
+<label>
+العنوان
+</label>
+
+<input
+id="address"
+placeholder="عنوان العميل">
+
+</div>
+
+<div class="field full">
+
+<label>
+ملاحظات
+</label>
+
+<textarea
+id="notes"
+placeholder="ملاحظات عن العميل"></textarea>
+
+</div>
+
+</div>
+
+<div class="form-actions">
+
+<button
+class="save"
+onclick="saveCustomer()">
+حفظ العميل
+</button>
+
+<button
+class="cancel"
+onclick="closeCustomerModal()">
+إلغاء
+</button>
+
+</div>
+
+</div>
+
+</div>
+
+<!-- DETAILS MODAL -->
+
+<div
+class="modal"
+id="detailsModal">
+
+<div class="modal-box">
+
+<div class="modal-header">
+
+<h2 id="detailsTitle">
+بيانات العميل
+</h2>
+
+<span
+class="close"
+onclick="closeDetailsModal()">
+×
+</span>
+
+</div>
+
+<div
+class="details-grid"
+id="detailsContent">
+</div>
+
+</div>
+
+</div>
+
+<script src="./varex.js"></script>
+
+<script>
+
+/* =========================================
+   LOGIN CHECK
+========================================= */
+
+if(
+typeof VAREX==="undefined"
+){
+alert("تعذر تحميل نظام VAREX.");
+}
+else if(
+typeof VAREX.isLoggedIn==="function" &&
+!VAREX.isLoggedIn()
+){
+location.replace("./login.html");
+}
+
+let editingCustomerId=null;
+
+
+/* =========================================
+   CLOCK
+========================================= */
+
+function updateClock(){
+
+const now=new Date();
+
+const dateElement=
+document.getElementById(
+"currentDate"
+);
+
+const timeElement=
+document.getElementById(
+"currentTime"
+);
+
+if(dateElement){
+
+dateElement.innerText=
+now.toLocaleDateString(
+"ar-AE",
+{
+year:"numeric",
+month:"2-digit",
+day:"2-digit"
+}
+);
+
+}
+
+if(timeElement){
+
+timeElement.innerText=
+now.toLocaleTimeString(
+"ar-AE",
+{
+hour:"2-digit",
+minute:"2-digit",
+second:"2-digit"
+}
+);
+
+}
+
+}
+
+updateClock();
+
+setInterval(
+updateClock,
+1000
+);
+
+
+/* =========================================
+   CURRENT USER
+========================================= */
+
+function loadCurrentUser(){
+
+try{
+
+if(
+typeof VAREX.getCurrentUser!=="function"
+){
+return;
+}
+
+const user=
+VAREX.getCurrentUser();
+
+if(!user){
+return;
+}
+
+const element=
+document.getElementById(
+"currentUserName"
+);
+
+if(element){
+
+element.innerText=
+user.name||
+user.username||
+user.email||
+"المستخدم";
+
+}
+
+}
+catch(error){
+
+console.error(
+"Current user error:",
+error
+);
+
+}
+
+}
+
+loadCurrentUser();
+
+
+/* =========================================
+   DATA
+========================================= */
+
+function getCustomers(){
+
+try{
+
+if(
+typeof VAREX.getCustomers==="function"
+){
+
+return VAREX.getCustomers()||[];
+
+}
+
+}
+catch(error){
+
+console.error(
+"تعذر قراءة العملاء",
+error
+);
+
+}
+
+return[];
+
+}
+
+
+function getSales(){
+
+try{
+
+if(
+typeof VAREX.getSales==="function"
+){
+
+return VAREX.getSales()||[];
+
+}
+
+}
+catch(error){
+
+console.error(
+"تعذر قراءة المبيعات",
+error
+);
+
+}
+
+return[];
+
+}
+
+
+function findCustomer(id){
+
+return getCustomers().find(
+customer=>
+String(customer.id)===
+String(id)
+)||null;
+
+}
+
+
+/* =========================================
+   CUSTOMER CODE
+========================================= */
+
+function getCustomerCode(customer){
+
+if(
+customer.customerCode
+){
+
+return customer.customerCode;
+
+}
+
+const id=
+String(
+customer.id||""
+);
+
+const numeric=
+id.replace(
+/\D/g,
+""
+);
+
+if(numeric){
+
+return "CUS-"+
+numeric
+.slice(-6)
+.padStart(
+6,
+"0"
+);
+
+}
+
+return "CUS-"+
+id
+.slice(-6)
+.toUpperCase();
+
+}
+
+
+/* =========================================
+   CUSTOMER SALES
+========================================= */
+
+function saleBelongsToCustomer(
+sale,
+customer
+){
+
+if(
+!sale ||
+!customer
+){
+
+return false;
+
+}
+
+const customerId=
+String(
+customer.id||""
+);
+
+const saleCustomerId=
+String(
+sale.customerId||
+sale.customerID||
+""
+);
+
+if(
+customerId &&
+saleCustomerId &&
+customerId===saleCustomerId
+){
+
+return true;
+
+}
+
+const customerPhone=
+String(
+customer.phone||""
+).trim();
+
+const salePhone=
+String(
+sale.customerPhone||
+sale.phone||
+""
+).trim();
+
+return Boolean(
+customerPhone &&
+salePhone &&
+customerPhone===salePhone
+);
+
+}
+
+
+function getCustomerFinancials(
+customer
+){
+
+const sales=
+getSales().filter(
+sale=>
+saleBelongsToCustomer(
+sale,
+customer
+)
+);
+
+let purchases=0;
+let due=0;
+let lastPurchaseDate=null;
+
+sales.forEach(
+sale=>{
+
+const total=
+Number(
+sale.total ??
+sale.grandTotal ??
+sale.finalTotal ??
+sale.netTotal ??
+sale.amount ??
+0
+)||0;
+
+purchases+=total;
+
+if(
+sale.remaining!==undefined
+){
+
+due+=Math.max(
+0,
+Number(
+sale.remaining
+)||0
+);
+
+}
+else if(
+sale.due!==undefined
+){
+
+due+=Math.max(
+0,
+Number(
+sale.due
+)||0
+);
+
+}
+else if(
+sale.paid!==undefined
+){
+
+due+=Math.max(
+0,
+total-
+(
+Number(
+sale.paid
+)||0
+)
+);
+
+}
+
+const rawDate=
+sale.createdAt||
+sale.saleDate||
+sale.date||
+sale.invoiceDate||
+"";
+
+if(rawDate){
+
+const date=
+new Date(
+rawDate
+);
+
+if(
+!Number.isNaN(
+date.getTime()
+)
+){
+
+if(
+!lastPurchaseDate ||
+date.getTime()>
+lastPurchaseDate.getTime()
+){
+
+lastPurchaseDate=date;
+
+}
+
+}
+
+}
+
+}
+);
+
+return{
+purchases,
+due,
+invoiceCount:sales.length,
+lastPurchase:lastPurchaseDate
 };
 
-
-/* =========================================================
-   INITIALIZE CORE
-========================================================= */
-
-VAREX.initialize();
-
-window.VAREX = VAREX;
-
-
-/* =========================================================
-   VAREX UNIFIED SIDEBAR MENU
-========================================================= */
-
-const VAREX_MENU = [
-
-  [
-    "index.html",
-    "▦",
-    "لوحة التحكم"
-  ],
-
-  [
-    "pos.html",
-    "🛒",
-    "شاشة المبيعات"
-  ],
-
-  [
-    "products.html",
-    "📦",
-    "المنتجات والمخزون"
-  ],
-
-  [
-    "purchases.html",
-    "🧾",
-    "المشتريات"
-  ],
-
-  [
-    "transfers.html",
-    "🔄",
-    "تحويلات المخزون"
-  ],
-
-  [
-    "customers.html",
-    "👥",
-    "العملاء"
-  ],
-
-  [
-    "suppliers.html",
-    "🚚",
-    "الموردون"
-  ],
-
-  [
-    "accounts.html",
-    "💰",
-    "الحسابات"
-  ],
-
-  [
-    "expenses.html",
-    "💸",
-    "المصروفات"
-  ],
-
-  [
-    "shifts.html",
-    "🕘",
-    "ورديات الكاشير"
-  ],
-
-  [
-    "employees.html",
-    "👤",
-    "الموظفون"
-  ],
-
-  [
-    "branches.html",
-    "🏢",
-    "الفروع"
-  ],
-
-  [
-    "reports.html",
-    "📊",
-    "التقارير"
-  ],
-
-  [
-    "notifications.html",
-    "🔔",
-    "مركز التنبيهات"
-  ],
-
-  [
-    "activity.html",
-    "📋",
-    "سجل النشاط"
-  ],
-
-  [
-    "users.html",
-    "🔐",
-    "المستخدمون والصلاحيات"
-  ],
-
-  [
-    "setting.html",
-    "⚙️",
-    "الإعدادات"
-  ]
-];
-
-
-const VAREX_SIDEBAR_SCROLL_KEY =
-  "varex_sidebar_scroll_position";
-
-
-/* =========================================================
-   BUILD MENU
-========================================================= */
-
-function varexBuildMenu() {
-
-  const nav =
-    document.querySelector(
-      ".sidebar .nav"
-    );
-
-  if (!nav) {
-    return;
-  }
-
-  let current =
-    location.pathname
-      .split("/")
-      .pop()
-      .toLowerCase();
-
-  if (!current) {
-
-    current =
-      "index.html";
-  }
-
-  nav.innerHTML =
-    VAREX_MENU
-      .map(
-        (
-          [
-            file,
-            icon,
-            title
-          ]
-        ) => {
-
-          const active =
-            current ===
-            file.toLowerCase()
-              ? "active"
-              : "";
-
-          return `
-            <a
-              href="./${file}"
-              class="${active}"
-            >
-              <span class="nav-icon">
-                ${icon}
-              </span>
-
-              <span>
-                ${title}
-              </span>
-            </a>
-          `;
-        }
-      )
-      .join("");
-
-  varexAddSidebarActions();
 }
 
 
-/* =========================================================
-   SIDEBAR ACTION BUTTONS
-========================================================= */
+/* =========================================
+   CUSTOMER MODAL
+========================================= */
 
-function varexAddSidebarActions() {
+function openCustomerModal(
+id=null
+){
 
-  const nav =
-    document.querySelector(
-      ".sidebar .nav"
-    );
+editingCustomerId=id;
 
-  if (!nav) {
-    return;
-  }
+clearCustomerForm();
 
-  const box =
-    document.createElement(
-      "div"
-    );
+const title=
+document.getElementById(
+"modalTitle"
+);
 
-  box.className =
-    "varex-sidebar-actions";
+if(
+id===null
+){
 
-  box.innerHTML = `
+title.innerText=
+"إضافة عميل جديد";
 
-    <button
-      type="button"
-      class="varex-theme-button"
-      id="varexThemeButton"
-    >
+}
+else{
 
-      <span
-        class="nav-icon"
-        id="varexThemeIcon"
-      >
-        🌙
-      </span>
+const customer=
+findCustomer(
+id
+);
 
-      <span
-        id="varexThemeText"
-      >
-        الوضع الليلي
-      </span>
+if(!customer){
 
-    </button>
+return;
 
+}
 
-    <button
-      type="button"
-      class="varex-logout-button"
-      id="varexLogoutButton"
-    >
+title.innerText=
+"تعديل بيانات العميل";
 
-      <span
-        class="varex-power-icon"
-      >
-        ⏻
-      </span>
+document.getElementById(
+"customerName"
+).value=
+customer.name||"";
 
-      <span>
-        تسجيل الخروج
-      </span>
+document.getElementById(
+"customerType"
+).value=
+customer.type||"فرد";
 
-    </button>
-  `;
+document.getElementById(
+"phone"
+).value=
+customer.phone||"";
 
-  nav.appendChild(box);
+document.getElementById(
+"email"
+).value=
+customer.email||"";
 
+document.getElementById(
+"taxNumber"
+).value=
+customer.taxNumber||
+customer.trn||
+"";
 
-  const themeButton =
-    document.getElementById(
-      "varexThemeButton"
-    );
+document.getElementById(
+"creditLimit"
+).value=
+customer.creditLimit||
+"";
 
+document.getElementById(
+"address"
+).value=
+customer.address||
+"";
 
-  const logoutButton =
-    document.getElementById(
-      "varexLogoutButton"
-    );
+document.getElementById(
+"notes"
+).value=
+customer.notes||
+"";
 
+}
 
-  if (themeButton) {
+document.getElementById(
+"customerModal"
+).style.display=
+"flex";
 
-    themeButton.addEventListener(
-      "click",
-      function () {
-
-        varexSaveSidebarScroll();
-
-        varexToggleTheme();
-      }
-    );
-  }
-
-
-  if (logoutButton) {
-
-    logoutButton.addEventListener(
-      "click",
-      async function () {
-
-        varexSaveSidebarScroll();
-
-        if (
-          confirm(
-            "هل تريد تسجيل الخروج من VAREX؟"
-          )
-        ) {
-
-          await VAREX.logout(
-            true
-          );
-        }
-      }
-    );
-  }
-
-
-  varexUpdateThemeButton();
 }
 
 
-/* =========================================================
-   SHARED SIDEBAR STYLES
+function closeCustomerModal(){
 
-   IMPORTANT:
-   - WHITE PAGE SCROLLS BY ITSELF
-   - NAVY SIDEBAR SCROLLS BY ITSELF
-   - WHOLE NAVY SIDEBAR CONTENT MOVES TOGETHER
-========================================================= */
+document.getElementById(
+"customerModal"
+).style.display=
+"none";
 
-function varexInstallSharedStyles() {
+editingCustomerId=null;
 
-  if (
-    document.getElementById(
-      "varexSharedStyles"
-    )
-  ) {
-
-    return;
-  }
-
-
-  const style =
-    document.createElement(
-      "style"
-    );
-
-
-  style.id =
-    "varexSharedStyles";
-
-
-  style.textContent = `
-
-    :root {
-      --varex-sidebar-width: 240px;
-      --varex-sidebar-color: #172554;
-    }
-
-
-    html {
-      min-height: 100%;
-    }
-
-
-    body {
-      min-height: 100%;
-    }
-
-
-    /*
-    ==================================================
-    NAVY SIDEBAR
-    ==================================================
-    */
-
-    .sidebar {
-
-      position: fixed !important;
-
-      top: 0 !important;
-
-      right: 0 !important;
-
-      bottom: 0 !important;
-
-      left: auto !important;
-
-      width:
-        var(
-          --sidebar-width,
-          var(--varex-sidebar-width)
-        ) !important;
-
-      height: 100vh !important;
-
-      height: 100dvh !important;
-
-      max-height: 100dvh !important;
-
-      box-sizing:
-        border-box !important;
-
-      display:
-        block !important;
-
-      overflow-y:
-        auto !important;
-
-      overflow-x:
-        hidden !important;
-
-      -webkit-overflow-scrolling:
-        touch !important;
-
-      overscroll-behavior:
-        contain !important;
-
-      touch-action:
-        pan-y !important;
-
-      scroll-behavior:
-        auto !important;
-
-      background:
-        var(
-          --varex-sidebar-color
-        ) !important;
-
-      color:
-        #ffffff !important;
-
-      z-index:
-        10000 !important;
-    }
-
-
-    /*
-    ==================================================
-    BRAND IS PART OF SIDEBAR SCROLL
-
-    لا نجعل الشعار ثابتاً لوحده.
-    يتحرك مع القائمة كاملة.
-    ==================================================
-    */
-
-    .sidebar .brand {
-
-      position:
-        relative !important;
-
-      top:
-        auto !important;
-
-      right:
-        auto !important;
-
-      bottom:
-        auto !important;
-
-      left:
-        auto !important;
-
-      width:
-        100% !important;
-
-      height:
-        auto !important;
-
-      min-height:
-        0 !important;
-
-      max-height:
-        none !important;
-
-      flex:
-        none !important;
-
-      box-sizing:
-        border-box !important;
-
-      background:
-        var(
-          --varex-sidebar-color
-        ) !important;
-    }
-
-
-    /*
-    ==================================================
-    NAV HAS NO SEPARATE SCROLL
-
-    الـ Scroll الوحيد هو على .sidebar نفسها
-    ==================================================
-    */
-
-    .sidebar .nav {
-
-      position:
-        relative !important;
-
-      top:
-        auto !important;
-
-      right:
-        auto !important;
-
-      bottom:
-        auto !important;
-
-      left:
-        auto !important;
-
-      display:
-        block !important;
-
-      width:
-        100% !important;
-
-      height:
-        auto !important;
-
-      min-height:
-        0 !important;
-
-      max-height:
-        none !important;
-
-      overflow:
-        visible !important;
-
-      flex:
-        none !important;
-
-      box-sizing:
-        border-box !important;
-
-      padding-bottom:
-        28px !important;
-    }
-
-
-    /*
-    ==================================================
-    MENU LINKS
-    ==================================================
-    */
-
-    .sidebar .nav a {
-
-      position:
-        relative !important;
-
-      color:
-        #dbeafe !important;
-
-      text-decoration:
-        none !important;
-
-      box-sizing:
-        border-box !important;
-    }
-
-
-    .sidebar .nav a:hover {
-
-      background:
-        rgba(
-          255,
-          255,
-          255,
-          0.08
-        ) !important;
-
-      color:
-        #ffffff !important;
-    }
-
-
-    .sidebar .nav a.active {
-
-      background:
-        #ffffff !important;
-
-      color:
-        #172554 !important;
-
-      box-shadow:
-        0 5px 15px
-        rgba(
-          0,
-          0,
-          0,
-          0.16
-        ) !important;
-    }
-
-
-    /*
-    ==================================================
-    FOOTER
-    ==================================================
-    */
-
-    .sidebar-footer {
-
-      position:
-        relative !important;
-
-      top:
-        auto !important;
-
-      right:
-        auto !important;
-
-      bottom:
-        auto !important;
-
-      left:
-        auto !important;
-
-      display:
-        block !important;
-
-      flex:
-        none !important;
-
-      background:
-        transparent !important;
-    }
-
-
-    /*
-    ==================================================
-    NIGHT MODE + LOGOUT
-    ==================================================
-    */
-
-    .varex-sidebar-actions {
-
-      position:
-        relative !important;
-
-      margin:
-        16px 10px 0 !important;
-
-      padding:
-        14px 0 24px !important;
-
-      border-top:
-        1px solid
-        rgba(
-          255,
-          255,
-          255,
-          0.12
-        ) !important;
-
-      box-sizing:
-        border-box !important;
-    }
-
-
-    .varex-sidebar-actions button {
-
-      width:
-        100% !important;
-
-      height:
-        48px !important;
-
-      min-height:
-        48px !important;
-
-      display:
-        flex !important;
-
-      align-items:
-        center !important;
-
-      justify-content:
-        flex-start !important;
-
-      gap:
-        11px !important;
-
-      padding:
-        0 14px !important;
-
-      margin:
-        0 0 6px !important;
-
-      border:
-        0 !important;
-
-      border-radius:
-        10px !important;
-
-      box-sizing:
-        border-box !important;
-
-      font-family:
-        inherit !important;
-
-      font-size:
-        13px !important;
-
-      font-weight:
-        600 !important;
-
-      cursor:
-        pointer !important;
-
-      white-space:
-        nowrap !important;
-    }
-
-
-    .varex-theme-button {
-
-      background:
-        rgba(
-          255,
-          255,
-          255,
-          0.08
-        ) !important;
-
-      color:
-        #dbeafe !important;
-    }
-
-
-    .varex-theme-button:hover {
-
-      background:
-        rgba(
-          255,
-          255,
-          255,
-          0.14
-        ) !important;
-
-      color:
-        #ffffff !important;
-    }
-
-
-    .varex-logout-button {
-
-      background:
-        rgba(
-          220,
-          38,
-          38,
-          0.14
-        ) !important;
-
-      color:
-        #fecaca !important;
-    }
-
-
-    .varex-logout-button:hover {
-
-      background:
-        #dc2626 !important;
-
-      color:
-        #ffffff !important;
-    }
-
-
-    .varex-power-icon {
-
-      width:
-        25px;
-
-      height:
-        25px;
-
-      min-width:
-        25px;
-
-      border:
-        1.5px solid
-        currentColor;
-
-      border-radius:
-        50%;
-
-      display:
-        flex;
-
-      align-items:
-        center;
-
-      justify-content:
-        center;
-
-      font-size:
-        14px;
-
-      line-height:
-        1;
-    }
-
-
-    /*
-    ==================================================
-    SIDEBAR SCROLLBAR
-    ==================================================
-    */
-
-    .sidebar::-webkit-scrollbar {
-
-      width:
-        5px;
-    }
-
-
-    .sidebar::-webkit-scrollbar-track {
-
-      background:
-        transparent;
-    }
-
-
-    .sidebar::-webkit-scrollbar-thumb {
-
-      background:
-        rgba(
-          255,
-          255,
-          255,
-          0.24
-        );
-
-      border-radius:
-        20px;
-    }
-
-  `;
-
-
-  document.head.appendChild(
-    style
-  );
 }
 
 
-/* =========================================================
-   SAVE SIDEBAR POSITION
-========================================================= */
+function clearCustomerForm(){
 
-function varexSaveSidebarScroll() {
+document.getElementById(
+"customerName"
+).value="";
 
-  const sidebar =
-    document.querySelector(
-      ".sidebar"
-    );
+document.getElementById(
+"customerType"
+).value="فرد";
 
-  if (!sidebar) {
+document.getElementById(
+"phone"
+).value="";
 
-    return;
-  }
+document.getElementById(
+"email"
+).value="";
 
+document.getElementById(
+"taxNumber"
+).value="";
 
-  const position =
-    sidebar.scrollTop;
+document.getElementById(
+"creditLimit"
+).value="";
 
+document.getElementById(
+"address"
+).value="";
 
-  try {
+document.getElementById(
+"notes"
+).value="";
 
-    sessionStorage.setItem(
-      VAREX_SIDEBAR_SCROLL_KEY,
-      String(position)
-    );
-
-
-    localStorage.setItem(
-      VAREX_SIDEBAR_SCROLL_KEY,
-      String(position)
-    );
-
-  } catch (e) {
-
-    console.error(e);
-  }
 }
 
 
-/* =========================================================
-   RESTORE SIDEBAR POSITION
-========================================================= */
+/* =========================================
+   SAVE CUSTOMER
+========================================= */
 
-function varexRestoreSidebarScroll() {
+function saveCustomer(){
 
-  const sidebar =
-    document.querySelector(
-      ".sidebar"
-    );
+const name=
+document.getElementById(
+"customerName"
+).value.trim();
 
-  if (!sidebar) {
+if(!name){
 
-    return;
-  }
+alert(
+"يرجى إدخال اسم العميل"
+);
 
+return;
 
-  let saved = 0;
+}
 
+const credit=
+Number(
+document.getElementById(
+"creditLimit"
+).value
+)||0;
 
-  try {
+if(credit<0){
 
-    saved =
-      Number(
-        sessionStorage.getItem(
-          VAREX_SIDEBAR_SCROLL_KEY
-        ) ||
-        localStorage.getItem(
-          VAREX_SIDEBAR_SCROLL_KEY
-        ) ||
-        0
-      );
+alert(
+"الحد الائتماني لا يمكن أن يكون قيمة سالبة"
+);
 
-  } catch (e) {
+return;
 
-    saved = 0;
-  }
+}
 
+const data={
 
-  if (
-    !Number.isFinite(saved) ||
-    saved < 0
-  ) {
+name:name,
 
-    saved = 0;
-  }
+type:
+document.getElementById(
+"customerType"
+).value,
 
+phone:
+document.getElementById(
+"phone"
+).value.trim(),
 
-  const restore =
-    function () {
+email:
+document.getElementById(
+"email"
+).value.trim(),
 
-      const max =
-        Math.max(
-          0,
-          sidebar.scrollHeight -
-          sidebar.clientHeight
-        );
+taxNumber:
+document.getElementById(
+"taxNumber"
+).value.trim(),
 
+creditLimit:
+credit,
 
-      sidebar.scrollTop =
-        Math.min(
-          saved,
-          max
-        );
-    };
+address:
+document.getElementById(
+"address"
+).value.trim(),
 
+notes:
+document.getElementById(
+"notes"
+).value.trim()
 
-  requestAnimationFrame(
-    function () {
+};
 
-      requestAnimationFrame(
-        restore
-      );
-    }
-  );
+if(
+editingCustomerId===null
+){
 
+if(
+typeof VAREX.addCustomer==="function"
+){
 
-  setTimeout(
-    restore,
-    80
-  );
+VAREX.addCustomer(
+data
+);
 
+}
 
-  setTimeout(
-    restore,
-    200
-  );
+}
+else{
 
+if(
+typeof VAREX.updateCustomer==="function"
+){
 
-  setTimeout(
-    restore,
-    500
-  );
+VAREX.updateCustomer(
+editingCustomerId,
+data
+);
+
+}
+else{
+
+const customers=
+getCustomers();
+
+const index=
+customers.findIndex(
+customer=>
+String(customer.id)===
+String(
+editingCustomerId
+)
+);
+
+if(index!==-1){
+
+customers[index]={
+...customers[index],
+...data
+};
+
+if(
+typeof VAREX.saveCustomers==="function"
+){
+
+VAREX.saveCustomers(
+customers
+);
+
+}
+
+}
+
+}
+
+}
+
+closeCustomerModal();
+
+renderCustomers();
+
 }
 
 
-/* =========================================================
-   INSTALL SIDEBAR SCROLL
-========================================================= */
+/* =========================================
+   DELETE CUSTOMER
+========================================= */
 
-function varexInstallSidebarScroll() {
+function deleteCustomer(
+id
+){
 
-  const sidebar =
-    document.querySelector(
-      ".sidebar"
-    );
+const customer=
+findCustomer(
+id
+);
 
+if(!customer){
 
-  if (!sidebar) {
+return;
 
-    return;
-  }
+}
 
+const financial=
+getCustomerFinancials(
+customer
+);
 
-  let timer = null;
+if(
+financial.due>0
+){
 
+const warning=
+confirm(
+"يوجد على هذا العميل رصيد مستحق بقيمة "+
+money(
+financial.due
+)+
+". هل تريد المتابعة وحذف العميل؟"
+);
 
-  sidebar.addEventListener(
-    "scroll",
-    function () {
+if(!warning){
 
-      clearTimeout(
-        timer
-      );
+return;
 
+}
 
-      timer =
-        setTimeout(
-          function () {
+}
+else{
 
-            varexSaveSidebarScroll();
+const confirmed=
+confirm(
+"هل تريد حذف العميل "+
+customer.name+
+"؟"
+);
 
-          },
-          25
-        );
+if(!confirmed){
 
-    },
-    {
-      passive: true
-    }
-  );
+return;
 
+}
 
-  sidebar
-    .querySelectorAll(
-      "a[href]"
-    )
-    .forEach(
-      function (link) {
+}
 
-        link.addEventListener(
-          "click",
-          function () {
+if(
+typeof VAREX.deleteCustomer==="function"
+){
 
-            varexSaveSidebarScroll();
-          }
-        );
-      }
-    );
+VAREX.deleteCustomer(
+id
+);
 
+}
+else{
 
-  varexRestoreSidebarScroll();
+const customers=
+getCustomers().filter(
+item=>
+String(item.id)!==
+String(id)
+);
+
+if(
+typeof VAREX.saveCustomers==="function"
+){
+
+VAREX.saveCustomers(
+customers
+);
+
+}
+
+}
+
+renderCustomers();
+
 }
 
 
-/* =========================================================
-   THEME
-========================================================= */
+/* =========================================
+   DETAILS MODAL
+========================================= */
 
-function varexGetTheme() {
+function openDetailsModal(
+id
+){
 
-  const saved =
-    localStorage.getItem(
-      "varex_theme"
-    );
+const customer=
+findCustomer(
+id
+);
 
+if(!customer){
 
-  if (
-    saved === "dark" ||
-    saved === "light"
-  ) {
+return;
 
-    return saved;
-  }
+}
 
+const financial=
+getCustomerFinancials(
+customer
+);
 
-  if (
-    window.matchMedia &&
-    window.matchMedia(
-      "(prefers-color-scheme: dark)"
-    ).matches
-  ) {
+const last=
+financial.lastPurchase
+?
+financial.lastPurchase
+.toLocaleDateString(
+"ar-AE"
+)
+:
+"لا توجد مشتريات";
 
-    return "dark";
-  }
+document.getElementById(
+"detailsTitle"
+).innerText=
+"بيانات العميل — "+
+(
+customer.name||
+"العميل"
+);
 
+document.getElementById(
+"detailsContent"
+).innerHTML=`
 
-  return "light";
+<div class="detail-card">
+<span>رقم العميل</span>
+<strong>${escapeHTML(getCustomerCode(customer))}</strong>
+</div>
+
+<div class="detail-card">
+<span>اسم العميل</span>
+<strong>${escapeHTML(customer.name||"-")}</strong>
+</div>
+
+<div class="detail-card">
+<span>نوع العميل</span>
+<strong>${escapeHTML(customer.type||"فرد")}</strong>
+</div>
+
+<div class="detail-card">
+<span>رقم الهاتف</span>
+<strong>${escapeHTML(customer.phone||"-")}</strong>
+</div>
+
+<div class="detail-card">
+<span>البريد الإلكتروني</span>
+<strong>${escapeHTML(customer.email||"-")}</strong>
+</div>
+
+<div class="detail-card">
+<span>الرقم الضريبي TRN</span>
+<strong>${escapeHTML(customer.taxNumber||customer.trn||"-")}</strong>
+</div>
+
+<div class="detail-card">
+<span>الحد الائتماني</span>
+<strong>${money(customer.creditLimit||0)}</strong>
+</div>
+
+<div class="detail-card">
+<span>إجمالي المشتريات</span>
+<strong class="money-positive">${money(financial.purchases)}</strong>
+</div>
+
+<div class="detail-card">
+<span>الرصيد المستحق</span>
+<strong class="${financial.due>0?"money-due":"no-due"}">${money(financial.due)}</strong>
+</div>
+
+<div class="detail-card">
+<span>عدد الفواتير</span>
+<strong>${financial.invoiceCount}</strong>
+</div>
+
+<div class="detail-card">
+<span>آخر عملية شراء</span>
+<strong>${escapeHTML(last)}</strong>
+</div>
+
+<div class="detail-card">
+<span>العنوان</span>
+<strong>${escapeHTML(customer.address||"-")}</strong>
+</div>
+
+<div class="detail-card notes-card">
+<span>الملاحظات</span>
+<strong>${escapeHTML(customer.notes||"لا توجد ملاحظات")}</strong>
+</div>
+
+`;
+
+document.getElementById(
+"detailsModal"
+).style.display=
+"flex";
+
 }
 
 
-function varexApplyTheme(
-  theme
-) {
+function closeDetailsModal(){
 
-  document.documentElement
-    .setAttribute(
-      "data-varex-theme",
-      theme
-    );
+document.getElementById(
+"detailsModal"
+).style.display=
+"none";
 
-
-  if (document.body) {
-
-    document.body.classList.toggle(
-      "varex-dark",
-      theme === "dark"
-    );
-  }
-
-
-  localStorage.setItem(
-    "varex_theme",
-    theme
-  );
-
-
-  varexInstallDarkStyles();
-
-  varexUpdateThemeButton();
 }
 
 
-function varexToggleTheme() {
+/* =========================================
+   MONEY
+========================================= */
 
-  const next =
-    varexGetTheme() ===
-    "dark"
-      ? "light"
-      : "dark";
+function money(
+value
+){
 
+try{
 
-  varexApplyTheme(
-    next
-  );
+if(
+typeof VAREX.money==="function"
+){
+
+return VAREX.money(
+Number(value)||0
+);
+
+}
+
+}
+catch(error){}
+
+return(
+Number(value)||0
+).toFixed(
+2
+)+" د.إ";
+
 }
 
 
-function varexUpdateThemeButton() {
+/* =========================================
+   STATS
+========================================= */
 
-  const dark =
-    varexGetTheme() ===
-    "dark";
+function updateCustomerStats(){
 
+const customers=
+getCustomers();
 
-  const icon =
-    document.getElementById(
-      "varexThemeIcon"
-    );
+let purchases=0;
+let due=0;
+let withDue=0;
 
+customers.forEach(
+customer=>{
 
-  const text =
-    document.getElementById(
-      "varexThemeText"
-    );
+const financial=
+getCustomerFinancials(
+customer
+);
 
+purchases+=
+financial.purchases;
 
-  if (icon) {
+due+=
+financial.due;
 
-    icon.textContent =
-      dark
-        ? "☀️"
-        : "🌙";
-  }
+if(
+financial.due>0
+){
 
+withDue++;
 
-  if (text) {
+}
 
-    text.textContent =
-      dark
-        ? "الوضع النهاري"
-        : "الوضع الليلي";
-  }
+}
+);
+
+document.getElementById(
+"totalCustomers"
+).innerText=
+customers.length;
+
+document.getElementById(
+"totalCustomerPurchases"
+).innerText=
+money(
+purchases
+);
+
+document.getElementById(
+"totalCustomerDue"
+).innerText=
+money(
+due
+);
+
+document.getElementById(
+"customersWithDue"
+).innerText=
+withDue;
+
 }
 
 
-/* =========================================================
-   DARK MODE STYLES
-========================================================= */
+/* =========================================
+   RENDER CUSTOMERS
+========================================= */
+
+function renderCustomers(){
+
+const customers=
+getCustomers();
+
+const table=
+document.getElementById(
+"customerTable"
+);
+
+const searchText=
+document.getElementById(
+"search"
+).value
+.trim()
+.toLowerCase();
+
+const type=
+document.getElementById(
+"typeFilter"
+).value;
+
+table.innerHTML="";
+
+let visible=0;
+
+customers.forEach(
+customer=>{
+
+const code=
+getCustomerCode(
+customer
+);
+
+const customerType=
+customer.type||
+"فرد";
+
+const searchable=(
+code+
+" "+
+(customer.name||"")+
+" "+
+(customer.phone||"")+
+" "+
+(customer.email||"")+
+" "+
+(customer.address||"")
+).toLowerCase();
+
+if(
+searchText &&
+!searchable.includes(
+searchText
+)
+){
+
+return;
+
+}
+
+if(
+type &&
+customerType!==type
+){
+
+return;
+
+}
+
+visible++;
+
+const financial=
+getCustomerFinancials(
+customer
+);
+
+const last=
+financial.lastPurchase
+?
+financial.lastPurchase
+.toLocaleDateString(
+"ar-AE"
+)
+:
+"-";
+
+const row=
+document.createElement(
+"tr"
+);
+
+row.innerHTML=`
+
+<td>
+${visible}
+</td>
+
+<td class="customer-code">
+${escapeHTML(code)}
+</td>
+
+<td class="customer-name">
+${escapeHTML(customer.name||"-")}
+</td>
+
+<td>
+<span class="type-badge">
+${escapeHTML(customerType)}
+</span>
+</td>
+
+<td>
+${escapeHTML(customer.phone||"-")}
+</td>
+
+<td class="money-positive">
+${money(financial.purchases)}
+</td>
+
+<td class="${financial.due>0?"money-due":"no-due"}">
+${money(financial.due)}
+</td>
+
+<td>
+${financial.invoiceCount}
+</td>
+
+<td>
+${escapeHTML(last)}
+</td>
+
+<td>
+
+<button
+class="details"
+onclick="openDetailsModal('${escapeAttribute(customer.id)}')">
+عرض
+</button>
+
+<button
+class="edit"
+onclick="openCustomerModal('${escapeAttribute(customer.id)}')">
+تعديل
+</button>
+
+<button
+class="delete"
+onclick="deleteCustomer('${escapeAttribute(customer.id)}')">
+حذف
+</button>
+
+</td>
+
+`;
+
+table.appendChild(
+row
+);
+
+}
+);
+
+document.getElementById(
+"emptyMessage"
+).style.display=
+visible===0
+?
+"block"
+:
+"none";
+
+updateCustomerStats();
 
-function varexInstallDarkStyles() {
-
-  if (
-    document.getElementById(
-      "varexDarkStyles"
-    )
-  ) {
-
-    return;
-  }
-
-
-  const style =
-    document.createElement(
-      "style"
-    );
-
-
-  style.id =
-    "varexDarkStyles";
-
-
-  style.textContent = `
-
-    body.varex-dark {
-
-      background:
-        #081426 !important;
-
-      color:
-        #f8fafc !important;
-    }
-
-
-    body.varex-dark .main,
-    body.varex-dark main,
-    body.varex-dark .content {
-
-      background:
-        #081426 !important;
-
-      color:
-        #f8fafc !important;
-    }
-
-
-    body.varex-dark .topbar {
-
-      background:
-        #101f38 !important;
-
-      border-color:
-        #263955 !important;
-
-      color:
-        #f8fafc !important;
-    }
-
-
-    body.varex-dark .panel,
-    body.varex-dark .card,
-    body.varex-dark .stat,
-    body.varex-dark .stat-card,
-    body.varex-dark .summary-card,
-    body.varex-dark .dashboard-card,
-    body.varex-dark .widget,
-    body.varex-dark .box,
-    body.varex-dark .section-card,
-    body.varex-dark .table-card,
-    body.varex-dark .modal-box,
-    body.varex-dark .modal-content {
-
-      background:
-        #132641 !important;
-
-      border-color:
-        #29415f !important;
-
-      color:
-        #f8fafc !important;
-
-      box-shadow:
-        0 5px 20px
-        rgba(
-          0,
-          0,
-          0,
-          0.18
-        ) !important;
-    }
-
-
-    body.varex-dark h1,
-    body.varex-dark h2,
-    body.varex-dark h3,
-    body.varex-dark h4,
-    body.varex-dark h5,
-    body.varex-dark h6,
-    body.varex-dark .hero h1,
-    body.varex-dark .page-name h2,
-    body.varex-dark .panel h2,
-    body.varex-dark .card h2,
-    body.varex-dark .card h3,
-    body.varex-dark .stat strong {
-
-      color:
-        #ffffff !important;
-    }
-
-
-    body.varex-dark p,
-    body.varex-dark small,
-    body.varex-dark label,
-    body.varex-dark .muted,
-    body.varex-dark .hero p,
-    body.varex-dark .page-name small,
-    body.varex-dark .stat span {
-
-      color:
-        #cbd5e1 !important;
-    }
-
-
-    body.varex-dark input,
-    body.varex-dark select,
-    body.varex-dark textarea {
-
-      background:
-        #0e2039 !important;
-
-      border-color:
-        #35506f !important;
-
-      color:
-        #ffffff !important;
-    }
-
-
-    body.varex-dark input::placeholder,
-    body.varex-dark textarea::placeholder {
-
-      color:
-        #8293aa !important;
-    }
-
-
-    body.varex-dark input:focus,
-    body.varex-dark select:focus,
-    body.varex-dark textarea:focus {
-
-      border-color:
-        #6b8bb1 !important;
-
-      box-shadow:
-        0 0 0 3px
-        rgba(
-          96,
-          165,
-          250,
-          0.10
-        ) !important;
-    }
-
-
-    body.varex-dark table {
-
-      background:
-        #132641 !important;
-
-      color:
-        #f8fafc !important;
-    }
-
-
-    body.varex-dark thead,
-    body.varex-dark th {
-
-      background:
-        #0e2039 !important;
-
-      color:
-        #dbeafe !important;
-
-      border-color:
-        #29415f !important;
-    }
-
-
-    body.varex-dark td {
-
-      background:
-        #132641 !important;
-
-      color:
-        #e2e8f0 !important;
-
-      border-color:
-        #29415f !important;
-    }
-
-
-    body.varex-dark tbody tr:hover td {
-
-      background:
-        #182e4c !important;
-    }
-
-
-    body.varex-dark .chip,
-    body.varex-dark .info-chip {
-
-      background:
-        #162b48 !important;
-
-      border-color:
-        #304967 !important;
-
-      color:
-        #cbd5e1 !important;
-    }
-
-
-    body.varex-dark .chip strong,
-    body.varex-dark .info-chip strong {
-
-      color:
-        #ffffff !important;
-    }
-
-
-    body.varex-dark .page-icon {
-
-      background:
-        #1b3150 !important;
-
-      color:
-        #ffffff !important;
-    }
-
-
-    body.varex-dark .note,
-    body.varex-dark .system-info,
-    body.varex-dark .security-note,
-    body.varex-dark .security-status,
-    body.varex-dark .summary {
-
-      background:
-        #10233d !important;
-
-      border-color:
-        #2b4463 !important;
-
-      color:
-        #dbeafe !important;
-    }
-
-
-    body.varex-dark .switch-row,
-    body.varex-dark .filters {
-
-      border-color:
-        #29415f !important;
-    }
-
-
-    body.varex-dark .switch-row {
-
-      color:
-        #e2e8f0 !important;
-    }
-
-
-    body.varex-dark .secondary,
-    body.varex-dark .mini,
-    body.varex-dark .reset {
-
-      background:
-        #1a3150 !important;
-
-      border-color:
-        #35506f !important;
-
-      color:
-        #f8fafc !important;
-    }
-
-
-    body.varex-dark .secondary:hover,
-    body.varex-dark .mini:hover,
-    body.varex-dark .reset:hover {
-
-      background:
-        #203b5e !important;
-    }
-
-
-    body.varex-dark .primary,
-    body.varex-dark .save {
-
-      background:
-        linear-gradient(
-          135deg,
-          #244a78,
-          #18345a
-        ) !important;
-
-      color:
-        #ffffff !important;
-    }
-
-
-    body.varex-dark .modal {
-
-      background:
-        rgba(
-          2,
-          8,
-          23,
-          0.76
-        ) !important;
-    }
-
-
-    body.varex-dark .empty {
-
-      color:
-        #94a3b8 !important;
-    }
-
-
-    /*
-    ==================================================
-    SAME NAVY COLOR ON ALL PAGES
-    ==================================================
-    */
-
-    body.varex-dark .sidebar {
-
-      background:
-        #172554 !important;
-
-      color:
-        #ffffff !important;
-    }
-
-
-    body.varex-dark .sidebar .brand {
-
-      background:
-        #172554 !important;
-
-      border-color:
-        rgba(
-          255,
-          255,
-          255,
-          0.10
-        ) !important;
-    }
-
-
-    body.varex-dark .sidebar .logo {
-
-      color:
-        #ffffff !important;
-    }
-
-
-    body.varex-dark .sidebar .brand-small {
-
-      color:
-        #e2e8f0 !important;
-    }
-
-
-    body.varex-dark .sidebar .system-status {
-
-      color:
-        #d1fae5 !important;
-    }
-
-
-    body.varex-dark .sidebar .nav a {
-
-      color:
-        #dbeafe !important;
-    }
-
-
-    body.varex-dark .sidebar .nav a:hover {
-
-      background:
-        rgba(
-          255,
-          255,
-          255,
-          0.08
-        ) !important;
-
-      color:
-        #ffffff !important;
-    }
-
-
-    body.varex-dark .sidebar .nav a.active {
-
-      background:
-        #ffffff !important;
-
-      color:
-        #172554 !important;
-
-      box-shadow:
-        0 5px 15px
-        rgba(
-          0,
-          0,
-          0,
-          0.18
-        ) !important;
-    }
-
-
-    body.varex-dark .varex-sidebar-actions {
-
-      border-color:
-        rgba(
-          255,
-          255,
-          255,
-          0.12
-        ) !important;
-    }
-
-
-    body.varex-dark .varex-theme-button {
-
-      background:
-        rgba(
-          255,
-          255,
-          255,
-          0.08
-        ) !important;
-
-      color:
-        #dbeafe !important;
-    }
-
-
-    body.varex-dark .varex-theme-button:hover {
-
-      background:
-        rgba(
-          255,
-          255,
-          255,
-          0.14
-        ) !important;
-
-      color:
-        #ffffff !important;
-    }
-
-
-    body.varex-dark .varex-logout-button {
-
-      background:
-        rgba(
-          220,
-          38,
-          38,
-          0.14
-        ) !important;
-
-      color:
-        #fecaca !important;
-    }
-
-
-    body.varex-dark .varex-logout-button:hover {
-
-      background:
-        #dc2626 !important;
-
-      color:
-        #ffffff !important;
-    }
-
-
-    body.varex-dark hr {
-
-      border-color:
-        #29415f !important;
-    }
-
-
-    body.varex-dark ::-webkit-scrollbar {
-
-      width:
-        8px;
-
-      height:
-        8px;
-    }
-
-
-    body.varex-dark ::-webkit-scrollbar-track {
-
-      background:
-        #0b192d;
-    }
-
-
-    body.varex-dark ::-webkit-scrollbar-thumb {
-
-      background:
-        #324b69;
-
-      border-radius:
-        10px;
-    }
-
-
-    body.varex-dark ::-webkit-scrollbar-thumb:hover {
-
-      background:
-        #45617f;
-    }
-
-  `;
-
-
-  document.head.appendChild(
-    style
-  );
 }
 
 
-/* =========================================================
-   CURRENT USER
-========================================================= */
+/* =========================================
+   ESCAPE HTML
+========================================= */
 
-function varexShowCurrentUser() {
+function escapeHTML(
+value
+){
 
-  const user =
-    VAREX.getCurrentUser();
+const div=
+document.createElement(
+"div"
+);
 
+div.textContent=
+value==null
+?
+""
+:
+String(value);
 
-  if (!user) {
+return div.innerHTML;
 
-    return;
-  }
+}
 
+function escapeAttribute(
+value
+){
 
-  document
-    .querySelectorAll(
-      ".info-chip,.chip"
-    )
-    .forEach(
-      function (el) {
+return String(
+value==null
+?
+""
+:
+value
+)
+.replace(
+/\\/g,
+"\\\\"
+)
+.replace(
+/'/g,
+"\\'"
+)
+.replace(
+/"/g,
+"&quot;"
+);
 
-        if (
-          el.textContent.includes(
-            "المستخدم"
-          )
-        ) {
-
-          const strong =
-            el.querySelector(
-              "strong"
-            );
-
-
-          if (strong) {
-
-            strong.textContent =
-              user.name ||
-              user.username ||
-              "المستخدم";
-          }
-        }
-      }
-    );
 }
 
 
-/* =========================================================
-   START VAREX UI
-========================================================= */
-
-function varexStartUI() {
-
-  const publicPage =
-    VAREX.isLoginPage() ||
-    VAREX.isRegisterPage() ||
-    VAREX.isVerifyEmailPage();
-
-
-  if (publicPage) {
-
-    return;
-  }
-
-
-  /*
-  أولاً نثبت تنسيق القائمة.
-  */
-
-  varexInstallSharedStyles();
-
-
-  /*
-  بعدها نبني القائمة.
-  */
-
-  varexBuildMenu();
-
-
-  /*
-  نطبق الوضع الليلي أو النهاري.
-  */
-
-  varexApplyTheme(
-    varexGetTheme()
-  );
-
-
-  /*
-  نظهر المستخدم الحالي.
-  */
-
-  varexShowCurrentUser();
-
-
-  /*
-  وأخيراً نعيد القائمة الكحلية
-  لنفس مكانها السابق.
-  */
-
-  varexInstallSidebarScroll();
-}
-
-
-/* =========================================================
-   SAVE POSITION BEFORE LEAVING PAGE
-========================================================= */
+/* =========================================
+   MODAL BACKDROP
+========================================= */
 
 window.addEventListener(
-  "pagehide",
-  function () {
+"click",
+event=>{
 
-    varexSaveSidebarScroll();
-  }
+const customerModal=
+document.getElementById(
+"customerModal"
+);
+
+const detailsModal=
+document.getElementById(
+"detailsModal"
+);
+
+if(
+event.target===
+customerModal
+){
+
+closeCustomerModal();
+
+}
+
+if(
+event.target===
+detailsModal
+){
+
+closeDetailsModal();
+
+}
+
+}
 );
 
 
-window.addEventListener(
-  "beforeunload",
-  function () {
+/* =========================================
+   KEYBOARD
+========================================= */
 
-    varexSaveSidebarScroll();
-  }
+document.addEventListener(
+"keydown",
+event=>{
+
+if(
+event.key==="Escape"
+){
+
+closeCustomerModal();
+closeDetailsModal();
+
+}
+
+}
 );
 
 
-/* =========================================================
-   RUN
-========================================================= */
+/* =========================================
+   START
+========================================= */
 
-if (
-  document.readyState ===
-  "loading"
-) {
+renderCustomers();
 
-  document.addEventListener(
-    "DOMContentLoaded",
-    varexStartUI
-  );
-
-} else {
-
-  varexStartUI();
+window.addEventListener(
+"focus",
+()=>{
+renderCustomers();
+loadCurrentUser();
 }
+);
+
+window.addEventListener(
+"storage",
+()=>{
+renderCustomers();
+loadCurrentUser();
+}
+);
+
+</script>
+
+</body>
+</html>
