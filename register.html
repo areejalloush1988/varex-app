@@ -589,6 +589,7 @@ class="form-control"
 type="password"
 autocomplete="new-password"
 placeholder="أدخل كلمة المرور"
+minlength="8"
 required
 >
 
@@ -604,7 +605,7 @@ aria-label="إظهار كلمة المرور"
 </div>
 
 <div class="password-info">
-كلمة المرور يجب أن تحتوي على 6 أحرف أو أرقام على الأقل.
+كلمة المرور يجب أن تحتوي على 8 أحرف على الأقل، وتتضمن حرفاً إنجليزياً كبيراً وحرفاً إنجليزياً صغيراً.
 </div>
 
 </div>
@@ -625,6 +626,7 @@ class="form-control"
 type="password"
 autocomplete="new-password"
 placeholder="أعد إدخال كلمة المرور"
+minlength="8"
 required
 >
 
@@ -792,10 +794,30 @@ showMessage(
 return;
 }
 
-if(password.length<6){
+/* =========================================================
+   PASSWORD RULES — NEW ACCOUNTS ONLY
+========================================================= */
+
+if(password.length<8){
 showMessage(
 "error",
-"كلمة المرور يجب أن تحتوي على 6 أحرف على الأقل."
+"كلمة المرور يجب أن تحتوي على 8 أحرف على الأقل."
+);
+return;
+}
+
+if(!/[A-Z]/.test(password)){
+showMessage(
+"error",
+"كلمة المرور يجب أن تحتوي على حرف إنجليزي كبير واحد على الأقل."
+);
+return;
+}
+
+if(!/[a-z]/.test(password)){
+showMessage(
+"error",
+"كلمة المرور يجب أن تحتوي على حرف إنجليزي صغير واحد على الأقل."
 );
 return;
 }
@@ -822,11 +844,6 @@ return;
 /* منع الضغط مرتين */
 
 button.disabled=true;
-
-/*
-لا نغير النص الموجود على الزر.
-يبقى شكله كما هو أثناء تنفيذ الطلب.
-*/
 
 try{
 
@@ -856,10 +873,7 @@ resetButton();
 return;
 }
 
-/*
-إذا كان الحساب يحتاج تأكيد البريد الإلكتروني
-نضمن حفظ بيانات الحساب المطلوبة لصفحة التحقق.
-*/
+/* تأكيد البريد الإلكتروني */
 
 if(result.needsEmailConfirmation===true){
 
@@ -886,14 +900,6 @@ username:username
 
 }
 
-/*
-التوقف الهادئ لمدة ثانيتين.
-لا رسالة.
-لا سبينر.
-لا تغيير للنص.
-ثم الانتقال إلى صفحة رمز التحقق.
-*/
-
 showMessage("","");
 
 await wait(2000);
@@ -903,11 +909,7 @@ window.location.replace("./verify-email.html");
 return;
 }
 
-/*
-إذا كان Supabase يؤكد البريد مباشرة
-ولا يحتاج إلى OTP.
-نعطي أيضاً مهلة هادئة قبل فتح النظام.
-*/
+/* الحساب المؤكد مباشرة */
 
 showMessage("","");
 
