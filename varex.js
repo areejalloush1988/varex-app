@@ -1,10 +1,9 @@
 /* =========================================================
    VAREX CORE
-   SUPABASE AUTH + EMAIL OTP + LOCAL BUSINESS DATA
-   + SUBSCRIPTION & LICENSE SYSTEM
 ========================================================= */
-
-const VAREX={config:{supabaseUrl:"https://eibadfdqzpeigccfdipt.supabase.co",supabaseKey:"sb_publishable__xRe4q10zwB2coiWu7wVrQ_9CimA336"},keys:{products:"varex_products",sales:"varex_sales",customers:"varex_customers",suppliers:"varex_suppliers",employees:"varex_employees",transactions:"varexTransactions",settings:"varex_settings",heldSales:"varex_held_sales",session:"varex_session",rememberedUser:"varex_remembered_user",cachedUser:"varex_cached_user",pendingVerification:"varex_pending_verification",subscription:"varex_subscription",subscriptionGate:"varex_subscription_gate"},
+const VAREX={
+config:{supabaseUrl:"https://eibadfdqzpeigccfdipt.supabase.co",supabaseKey:"sb_publishable__xRe4q10zwB2coiWu7wVrQ_9CimA336"},
+keys:{products:"varex_products",sales:"varex_sales",customers:"varex_customers",suppliers:"varex_suppliers",employees:"varex_employees",transactions:"varexTransactions",settings:"varex_settings",heldSales:"varex_held_sales",session:"varex_session",rememberedUser:"varex_remembered_user",cachedUser:"varex_cached_user",pendingVerification:"varex_pending_verification",subscription:"varex_subscription",subscriptionGate:"varex_subscription_gate"},
 
 getData(k){try{const x=JSON.parse(localStorage.getItem(k)||"[]");return Array.isArray(x)?x:[]}catch(e){console.error(e);return[]}},
 saveData(k,d){try{localStorage.setItem(k,JSON.stringify(Array.isArray(d)?d:[]));return true}catch(e){console.error(e);return false}},
@@ -29,9 +28,7 @@ let data={};
 try{data=await r.json()}catch(e){}
 if(!r.ok){
 const err=new Error(data.msg||data.message||data.error_description||data.error||"تعذر الاتصال بخدمة الحسابات.");
-err.status=r.status;
-err.data=data;
-throw err
+err.status=r.status;err.data=data;throw err
 }
 return data
 },
@@ -43,7 +40,7 @@ if(m.includes("invalid login credentials"))return"البريد الإلكترو�
 if(m.includes("email not confirmed"))return"البريد الإلكتروني غير مؤكد. يرجى إدخال رمز التحقق المرسل إلى بريدك.";
 if(m.includes("token has expired")||m.includes("otp expired"))return"انتهت صلاحية رمز التحقق. اضغط إعادة إرسال الرمز.";
 if(m.includes("invalid token")||m.includes("invalid otp")||m.includes("token is invalid"))return"رمز التحقق غير صحيح.";
-if(m.includes("password")&&m.includes("6"))return"كلمة المرور لا تحقق متطلبات الأمان.";
+if(m.includes("password"))return"كلمة المرور لا تحقق متطلبات الأمان.";
 if(m.includes("rate limit")||m.includes("too many requests"))return"تم إجراء محاولات كثيرة. يرجى الانتظار قليلاً.";
 return e?.message||"حدث خطأ في خدمة الحسابات."
 },
@@ -60,15 +57,10 @@ try{localStorage.setItem(this.keys.pendingVerification,JSON.stringify(x));return
 },
 
 getPendingVerification(){
-try{
-const x=JSON.parse(localStorage.getItem(this.keys.pendingVerification)||"null");
-return x&&typeof x==="object"?x:null
-}catch(e){return null}
+try{const x=JSON.parse(localStorage.getItem(this.keys.pendingVerification)||"null");return x&&typeof x==="object"?x:null}catch(e){return null}
 },
 
-clearPendingVerification(){
-try{localStorage.removeItem(this.keys.pendingVerification)}catch(e){}
-},
+clearPendingVerification(){try{localStorage.removeItem(this.keys.pendingVerification)}catch(e){}},
 
 async createUser(user={}){
 const name=this.cleanText(user.name);
@@ -93,33 +85,22 @@ return{success:true,user:this.getSafeUser(d.user),needsEmailConfirmation:false,m
 }
 
 return{success:true,user:this.getSafeUser(d.user),needsEmailConfirmation:true,email,message:"تم إنشاء الحساب. أرسلنا رمز التحقق إلى بريدك الإلكتروني."}
-
 }catch(e){
 return{success:false,message:this.mapAuthError(e)}
 }
 },
 
 async verifyEmailOtp(email,token){
-const mail=this.normalizeEmail(email);
-const code=this.cleanText(token).replace(/\s+/g,"");
-
+const mail=this.normalizeEmail(email),code=this.cleanText(token).replace(/\s+/g,"");
 if(!mail)return{success:false,message:"البريد الإلكتروني غير موجود."};
 if(!code)return{success:false,message:"يرجى إدخال رمز التحقق."};
 
 try{
 const d=await this.authFetch("/auth/v1/verify",{method:"POST",body:JSON.stringify({type:"signup",email:mail,token:code})});
-
 if(!d?.user)return{success:false,message:"تعذر تأكيد البريد الإلكتروني."};
 
 if(d?.access_token){
-this.storeSession({
-access_token:d.access_token,
-refresh_token:d.refresh_token,
-expires_in:d.expires_in,
-expires_at:d.expires_at,
-token_type:d.token_type,
-user:d.user
-},false)
+this.storeSession({access_token:d.access_token,refresh_token:d.refresh_token,expires_in:d.expires_in,expires_at:d.expires_at,token_type:d.token_type,user:d.user},false)
 }
 
 this.clearPendingVerification();
@@ -130,7 +111,6 @@ sessionStorage.removeItem("varex_authenticated");
 localStorage.removeItem("varex_authenticated");
 
 return{success:true,user:this.getSafeUser(d.user),message:"تم تأكيد البريد الإلكتروني بنجاح. يمكنك الآن تسجيل الدخول."}
-
 }catch(e){
 return{success:false,message:this.mapAuthError(e)}
 }
@@ -139,7 +119,6 @@ return{success:false,message:this.mapAuthError(e)}
 async resendConfirmation(email){
 const mail=this.normalizeEmail(email);
 if(!mail)return{success:false,message:"البريد الإلكتروني غير موجود."};
-
 try{
 await this.authFetch("/auth/v1/resend",{method:"POST",body:JSON.stringify({type:"signup",email:mail})});
 return{success:true,message:"تم إرسال رمز تحقق جديد إلى بريدك الإلكتروني."}
@@ -149,15 +128,12 @@ return{success:false,message:this.mapAuthError(e)}
 },
 
 async login(login,password,remember=false){
-const identifier=this.cleanText(login);
-const pw=String(password||"");
-
+const identifier=this.cleanText(login),pw=String(password||"");
 if(!identifier||!pw)return{success:false,message:"يرجى إدخال البريد الإلكتروني وكلمة المرور."};
 if(!identifier.includes("@"))return{success:false,message:"حالياً سجّل الدخول بالبريد الإلكتروني."};
 
 try{
 const d=await this.authFetch("/auth/v1/token?grant_type=password",{method:"POST",body:JSON.stringify({email:this.normalizeEmail(identifier),password:pw})});
-
 if(!d.access_token||!d.user)return{success:false,message:"تعذر إنشاء جلسة المستخدم."};
 
 this.storeSession(d,remember);
@@ -165,23 +141,13 @@ localStorage.setItem(this.keys.rememberedUser,remember?identifier:"");
 this.clearPendingVerification();
 
 return{success:true,user:this.getSafeUser(d.user)}
-
 }catch(e){
 return{success:false,message:this.mapAuthError(e)}
 }
 },
 
 storeSession(s,remember=false){
-const x={
-access_token:s.access_token,
-refresh_token:s.refresh_token,
-expires_in:s.expires_in,
-expires_at:s.expires_at||Math.floor(Date.now()/1000)+(s.expires_in||3600),
-token_type:s.token_type||"bearer",
-user:s.user,
-remember:Boolean(remember)
-};
-
+const x={access_token:s.access_token,refresh_token:s.refresh_token,expires_in:s.expires_in,expires_at:s.expires_at||Math.floor(Date.now()/1000)+(s.expires_in||3600),token_type:s.token_type||"bearer",user:s.user,remember:Boolean(remember)};
 const str=JSON.stringify(x);
 
 if(remember){
@@ -193,45 +159,30 @@ localStorage.removeItem(this.keys.session)
 }
 
 localStorage.setItem(this.keys.cachedUser,JSON.stringify(this.getSafeUser(s.user)));
-
 return x
 },
 
 getSession(){
 const raw=sessionStorage.getItem(this.keys.session)||localStorage.getItem(this.keys.session);
 if(!raw)return null;
-
 try{
 const s=JSON.parse(raw);
 return(s?.access_token&&s?.user)?s:null
-}catch(e){
-return null
-}
+}catch(e){return null}
 },
 
-isLoggedIn(){
-return!!this.getSession()
-},
+isLoggedIn(){return!!this.getSession()},
 
 getCurrentUser(){
 const s=this.getSession();
-
 if(s?.user)return this.getSafeUser(s.user);
-
-try{
-return JSON.parse(localStorage.getItem(this.keys.cachedUser)||"null")
-}catch(e){
-return null
-}
+try{return JSON.parse(localStorage.getItem(this.keys.cachedUser)||"null")}catch(e){return null}
 },
 
-getRememberedUser(){
-return localStorage.getItem(this.keys.rememberedUser)||""
-},
+getRememberedUser(){return localStorage.getItem(this.keys.rememberedUser)||""},
 
 async refreshSession(){
 const s=this.getSession();
-
 if(!s?.refresh_token)return false;
 if((s.expires_at||0)>Math.floor(Date.now()/1000)+60)return true;
 
@@ -260,21 +211,13 @@ localStorage.removeItem(this.keys.cachedUser);
 sessionStorage.removeItem("varex_authenticated");
 localStorage.removeItem("varex_authenticated");
 
-if(redirect){
-location.replace("./login.html")
-}
-
+if(redirect)location.replace("./login.html");
 return true
 },
 
 requireLogin(){
 if(this.isLoginPage()||this.isRegisterPage()||this.isVerifyEmailPage())return true;
-
-if(!this.isLoggedIn()){
-location.replace("./login.html");
-return false
-}
-
+if(!this.isLoggedIn()){location.replace("./login.html");return false}
 this.refreshSession();
 return true
 },
@@ -293,7 +236,6 @@ return false
 
 async requestPasswordReset(email){
 const mail=this.normalizeEmail(email);
-
 if(!mail)return{success:false,message:"يرجى إدخال البريد الإلكتروني."};
 
 try{
@@ -306,21 +248,16 @@ return{success:false,message:this.mapAuthError(e)}
 
 async updateCurrentUser(changes={}){
 const s=this.getSession();
-
 if(!s)return{success:false,message:"لا يوجد مستخدم مسجل الدخول."};
 
 const body={};
 
-if(changes.email!==undefined){
-body.email=this.normalizeEmail(changes.email)
-}
+if(changes.email!==undefined)body.email=this.normalizeEmail(changes.email);
 
 const data={};
 
 ["name","username","role"].forEach(k=>{
-if(changes[k]!==undefined){
-data[k]=this.cleanText(changes[k])
-}
+if(changes[k]!==undefined)data[k]=this.cleanText(changes[k])
 });
 
 if(Object.keys(data).length){
@@ -331,78 +268,51 @@ try{
 const u=await this.authFetch("/auth/v1/user",{method:"PUT",body:JSON.stringify(body)});
 s.user=u;
 this.storeSession(s,s.remember);
-
 return{success:true,user:this.getSafeUser(u)}
-
 }catch(e){
 return{success:false,message:this.mapAuthError(e)}
 }
 },
 
 async changePassword(currentPassword,newPassword){
-if(String(newPassword||"").length<6){
-return{success:false,message:"كلمة المرور الجديدة يجب أن تحتوي على 6 أحرف على الأقل."}
-}
+if(String(newPassword||"").length<6)return{success:false,message:"كلمة المرور الجديدة يجب أن تحتوي على 6 أحرف على الأقل."};
 
 const s=this.getSession();
-
-if(!s){
-return{success:false,message:"يجب تسجيل الدخول أولاً."}
-}
+if(!s)return{success:false,message:"يجب تسجيل الدخول أولاً."};
 
 try{
 const u=await this.authFetch("/auth/v1/user",{method:"PUT",body:JSON.stringify({password:String(newPassword)})});
 s.user=u;
 this.storeSession(s,s.remember);
-
 return{success:true,message:"تم تغيير كلمة المرور بنجاح."}
-
 }catch(e){
 return{success:false,message:this.mapAuthError(e)}
 }
 },
 
 /* =========================================================
-   SUBSCRIPTION & LICENSE
+   SUBSCRIPTION
 ========================================================= */
 
 getSubscription(){
-const defaults={plan:"",planName:"",status:"inactive",billingType:"",price:0,currency:"AED",startedAt:"",expiresAt:"",lifetime:false,licenseKey:"",paymentStatus:"unpaid",updatedAt:""};
-
+const d={plan:"",planName:"",status:"inactive",billingType:"",price:0,currency:"AED",startedAt:"",expiresAt:"",lifetime:false,licenseKey:"",paymentStatus:"unpaid",updatedAt:""};
 try{
 const x=JSON.parse(localStorage.getItem(this.keys.subscription)||"null");
-
-if(x&&typeof x==="object"&&!Array.isArray(x)){
-return{...defaults,...x}
-}
-}catch(e){
-console.error(e)
-}
-
-return{...defaults}
+return x&&typeof x==="object"&&!Array.isArray(x)?{...d,...x}:{...d}
+}catch(e){return{...d}}
 },
 
 saveSubscription(data={}){
 const x={...this.getSubscription(),...data,updatedAt:this.now()};
-
-try{
-localStorage.setItem(this.keys.subscription,JSON.stringify(x));
-return x
-}catch(e){
-console.error(e);
-return false
-}
+try{localStorage.setItem(this.keys.subscription,JSON.stringify(x));return x}catch(e){return false}
 },
 
 generateLicenseKey(){
 const chars="ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
 let result="VAREX";
-
 for(let g=0;g<4;g++){
 result+="-";
-for(let i=0;i<4;i++){
-result+=chars[Math.floor(Math.random()*chars.length)]
-}
+for(let i=0;i<4;i++)result+=chars[Math.floor(Math.random()*chars.length)]
 }
 return result
 },
@@ -410,9 +320,7 @@ return result
 activateSubscription(options={}){
 const type=String(options.billingType||options.type||"monthly");
 const now=new Date();
-
-let expiresAt="";
-let lifetime=false;
+let expiresAt="",lifetime=false;
 
 if(type==="monthly"){
 const expiry=new Date(now);
@@ -423,8 +331,7 @@ const expiry=new Date(now);
 expiry.setFullYear(expiry.getFullYear()+1);
 expiresAt=expiry.toISOString()
 }else if(type==="lifetime"){
-lifetime=true;
-expiresAt=""
+lifetime=true
 }
 
 return this.saveSubscription({
@@ -442,13 +349,8 @@ licenseKey:options.licenseKey||this.generateLicenseKey()
 })
 },
 
-cancelSubscription(){
-return this.saveSubscription({...this.getSubscription(),status:"cancelled"})
-},
-
-expireSubscription(){
-return this.saveSubscription({...this.getSubscription(),status:"expired"})
-},
+cancelSubscription(){return this.saveSubscription({...this.getSubscription(),status:"cancelled"})},
+expireSubscription(){return this.saveSubscription({...this.getSubscription(),status:"expired"})},
 
 isSubscriptionActive(){
 const s=this.getSubscription();
@@ -484,12 +386,7 @@ return Math.max(0,Math.ceil((expiry.getTime()-Date.now())/86400000))
 
 getSubscriptionStatus(){
 const subscription=this.getSubscription();
-
-return{
-...subscription,
-active:this.isSubscriptionActive(),
-daysRemaining:this.getSubscriptionDaysRemaining()
-}
+return{...subscription,active:this.isSubscriptionActive(),daysRemaining:this.getSubscriptionDaysRemaining()}
 },
 
 isSubscriptionPage(){return location.pathname.toLowerCase().endsWith("subscription.html")},
@@ -510,7 +407,6 @@ return true
 },
 
 requireSubscription(){
-
 if(!this.isSubscriptionGateEnabled())return true;
 
 if(
@@ -519,9 +415,7 @@ this.isRegisterPage()||
 this.isVerifyEmailPage()||
 this.isSubscriptionPage()||
 this.isSubscriptionSuccessPage()
-){
-return true
-}
+)return true;
 
 if(!this.isLoggedIn()){
 location.replace("./login.html");
@@ -537,7 +431,7 @@ return true
 },
 
 /* =========================================================
-   DATA
+   BUSINESS DATA
 ========================================================= */
 
 getProducts(){return this.getData(this.keys.products)},
@@ -554,8 +448,7 @@ return x
 },
 
 updateProduct(id,c={}){
-const a=this.getProducts();
-const i=a.findIndex(x=>String(x.id)===String(id));
+const a=this.getProducts(),i=a.findIndex(x=>String(x.id)===String(id));
 if(i<0)return false;
 a[i]={...a[i],...c,id:a[i].id,updatedAt:this.now()};
 this.saveProducts(a);
@@ -563,15 +456,13 @@ return a[i]
 },
 
 deleteProduct(id){
-const a=this.getProducts();
-const b=a.filter(x=>String(x.id)!==String(id));
+const a=this.getProducts(),b=a.filter(x=>String(x.id)!==String(id));
 this.saveProducts(b);
 return b.length!==a.length
 },
 
 adjustStock(id,n){
-const a=this.getProducts();
-const i=a.findIndex(x=>String(x.id)===String(id));
+const a=this.getProducts(),i=a.findIndex(x=>String(x.id)===String(id));
 if(i<0)return false;
 a[i].quantity=Math.max(0,this.toNumber(a[i].quantity)+this.toNumber(n));
 a[i].updatedAt=this.now();
@@ -592,8 +483,7 @@ return x
 },
 
 deleteSale(id){
-const a=this.getSales();
-const b=a.filter(x=>String(x.id)!==String(id));
+const a=this.getSales(),b=a.filter(x=>String(x.id)!==String(id));
 this.saveSales(b);
 return b.length!==a.length
 },
@@ -601,9 +491,7 @@ return b.length!==a.length
 completeSale(s={}){
 const items=Array.isArray(s.items)?s.items:[];
 
-if(!items.length){
-return{success:false,message:"لا توجد منتجات في الفاتورة."}
-}
+if(!items.length)return{success:false,message:"لا توجد منتجات في الفاتورة."};
 
 const p=this.getProducts();
 
@@ -627,6 +515,7 @@ p[i].updatedAt=this.now()
 }
 
 this.saveProducts(p);
+
 return{success:true,sale:this.addSale(s)}
 },
 
@@ -650,7 +539,12 @@ deleteEmployee(id){return this._delete(this.keys.employees,id)},
 
 getTransactions(){return this.getData(this.keys.transactions)},
 saveTransactions(x){return this.saveData(this.keys.transactions,x)},
-addTransaction(x={}){x={...x,amount:this.positiveNumber(x.amount),date:x.date||this.today()};return this._add(this.keys.transactions,"TRX",x)},
+
+addTransaction(x={}){
+x={...x,amount:this.positiveNumber(x.amount),date:x.date||this.today()};
+return this._add(this.keys.transactions,"TRX",x)
+},
+
 updateTransaction(id,c={}){return this._update(this.keys.transactions,id,c)},
 deleteTransaction(id){return this._delete(this.keys.transactions,id)},
 
@@ -669,8 +563,7 @@ return o
 },
 
 _update(k,id,c={}){
-const a=this.getData(k);
-const i=a.findIndex(x=>String(x.id)===String(id));
+const a=this.getData(k),i=a.findIndex(x=>String(x.id)===String(id));
 if(i<0)return false;
 a[i]={...a[i],...c,id:a[i].id,updatedAt:this.now()};
 this.saveData(k,a);
@@ -678,8 +571,7 @@ return a[i]
 },
 
 _delete(k,id){
-const a=this.getData(k);
-const b=a.filter(x=>String(x.id)!==String(id));
+const a=this.getData(k),b=a.filter(x=>String(x.id)!==String(id));
 this.saveData(k,b);
 return b.length!==a.length
 },
@@ -700,11 +592,7 @@ return{...d,...l,...p}
 saveSettings(s={}){
 const d={...this.getSettings(),...s,updatedAt:this.now()};
 const ok=this.saveObject(this.keys.settings,d);
-
-try{
-localStorage.setItem("varexSettings",JSON.stringify(d))
-}catch(e){}
-
+try{localStorage.setItem("varexSettings",JSON.stringify(d))}catch(e){}
 return ok
 },
 
@@ -721,35 +609,16 @@ return s.taxEnabled===false?0:this.positiveNumber(v)*this.toNumber(s.taxRate,5)/
 
 getTodaySales(){
 const t=this.today();
-
-return this.getSales().filter(
-s=>this.normalizeDate(
-s.createdAt||
-s.date||
-s.saleDate||
-s.invoiceDate||
-""
-)===t
-)
+return this.getSales().filter(s=>this.normalizeDate(s.createdAt||s.date||s.saleDate||s.invoiceDate||"")===t)
 },
 
 getTodaySalesTotal(){
-return this.getTodaySales().reduce(
-(a,s)=>a+this.toNumber(
-s.total??
-s.grandTotal??
-s.finalTotal??
-s.netTotal??
-s.amount??
-0
-),0)
+return this.getTodaySales().reduce((a,s)=>a+this.toNumber(s.total??s.grandTotal??s.finalTotal??s.netTotal??s.amount??0),0)
 },
 
 getStockAlerts(){
 const l=this.toNumber(this.getSettings().lowStockLimit,5);
-return this.getProducts().filter(
-p=>this.toNumber(p.quantity)<=this.toNumber(p.minimumStock,l)
-)
+return this.getProducts().filter(p=>this.toNumber(p.quantity)<=this.toNumber(p.minimumStock,l))
 },
 
 initialize(){
@@ -765,17 +634,11 @@ this.keys.heldSales
 if(localStorage.getItem(k)===null)localStorage.setItem(k,"[]")
 });
 
-if(localStorage.getItem(this.keys.settings)===null){
-this.saveSettings(this.getSettings())
-}
-
-if(localStorage.getItem(this.keys.subscriptionGate)===null){
-localStorage.setItem(this.keys.subscriptionGate,"false")
-}
+if(localStorage.getItem(this.keys.settings)===null)this.saveSettings(this.getSettings());
+if(localStorage.getItem(this.keys.subscriptionGate)===null)localStorage.setItem(this.keys.subscriptionGate,"false");
 
 return true
 }
-
 };
 
 VAREX.initialize();
@@ -809,16 +672,12 @@ const VAREX_MENU=[
 
 const VAREX_SIDEBAR_SCROLL_KEY="varex_sidebar_scroll_position";
 
-function varexGetSidebar(){
-return document.querySelector(".sidebar")
-}
+function varexGetSidebar(){return document.querySelector(".sidebar")}
 
 function varexSaveSidebarScroll(){
 const sidebar=varexGetSidebar();
 if(!sidebar)return;
-
 const value=String(sidebar.scrollTop||0);
-
 try{
 sessionStorage.setItem(VAREX_SIDEBAR_SCROLL_KEY,value);
 localStorage.setItem(VAREX_SIDEBAR_SCROLL_KEY,value)
@@ -860,10 +719,7 @@ if(!nav)return;
 let current=location.pathname.split("/").pop().toLowerCase();
 
 if(!current)current="index.html";
-
-if(current==="subscription-success.html"){
-current="subscription.html"
-}
+if(current==="subscription-success.html")current="subscription.html";
 
 nav.innerHTML=VAREX_MENU.map(item=>{
 const[file,icon,title]=item;
@@ -890,6 +746,7 @@ const nav=document.querySelector(".sidebar .nav");
 if(!nav)return;
 
 const box=document.createElement("div");
+
 box.className="varex-sidebar-actions";
 
 box.innerHTML=`
@@ -943,35 +800,20 @@ overlay.innerHTML=`
 <div class="varex-logout-card" id="varexLogoutCard">
 
 <div class="varex-logout-logo-wrap">
-
-<div class="varex-logo-window">
-
 <img
-src="./varex-icon-512.png"
+src="./varex-logout-logo.png"
 alt="VAREX"
 class="varex-logout-logo"
 id="varexLogoutLogo"
 >
-
-</div>
-
-<div
-class="varex-logout-fallback-logo"
-id="varexLogoutFallbackLogo">
-VX
-</div>
-
+<div class="varex-logout-fallback-logo" id="varexLogoutFallbackLogo">VX</div>
 </div>
 
 <div class="varex-logout-loader" id="varexLogoutLoader"></div>
 
-<div class="varex-logout-success-icon" id="varexLogoutSuccessIcon">
-✓
-</div>
+<div class="varex-logout-success-icon" id="varexLogoutSuccessIcon">✓</div>
 
-<h2 class="varex-logout-title" id="varexLogoutTitle">
-تسجيل الخروج
-</h2>
+<h2 class="varex-logout-title" id="varexLogoutTitle">تسجيل الخروج</h2>
 
 <p class="varex-logout-message" id="varexLogoutMessage">
 هل تريد تسجيل الخروج من VAREX؟
@@ -998,33 +840,24 @@ id="varexLogoutCancel">
 </button>
 
 </div>
-
 </div>
 
 <div class="varex-logout-transition" id="varexLogoutTransition">
 
 <div class="varex-logout-transition-logo">
 
-<div class="varex-transition-image-box">
-
-<div class="varex-transition-logo-window">
-
+<div class="varex-transition-logo-circle">
 <img
-src="./varex-icon-512.png"
+src="./varex-logout-logo.png"
 alt="VAREX"
 class="varex-transition-image"
 >
-
 </div>
 
-</div>
-
-<div>VAREX</div>
+<div class="varex-transition-word">VAREX</div>
 
 </div>
-
 </div>
-
 `;
 
 document.body.appendChild(overlay);
@@ -1035,20 +868,14 @@ logo?.addEventListener("error",()=>{
 logo.style.display="none";
 
 const fallback=document.getElementById("varexLogoutFallbackLogo");
-
-if(fallback){
-fallback.style.display="flex"
-}
+if(fallback)fallback.style.display="flex"
 });
 
 document.getElementById("varexLogoutCancel")?.addEventListener("click",varexCloseLogoutDialog);
 document.getElementById("varexLogoutConfirm")?.addEventListener("click",varexRunLogoutSequence);
 
 overlay.addEventListener("click",event=>{
-if(
-event.target===overlay&&
-!overlay.classList.contains("processing")
-){
+if(event.target===overlay&&!overlay.classList.contains("processing")){
 varexCloseLogoutDialog()
 }
 });
@@ -1066,7 +893,7 @@ varexCloseLogoutDialog()
 
 
 /* =========================================================
-   LOGOUT ACTIONS
+   LOGOUT DIALOG
 ========================================================= */
 
 function varexOpenLogoutDialog(){
@@ -1077,44 +904,38 @@ if(!overlay)return;
 
 varexLogoutInProgress=false;
 
-overlay.classList.remove(
-"processing",
-"finished",
-"leaving"
-);
+overlay.classList.remove("processing","finished","leaving");
 
-document
-.getElementById("varexLogoutCard")
-?.classList.remove("success");
+document.getElementById("varexLogoutCard")?.classList.remove("success");
+document.getElementById("varexLogoutTransition")?.classList.remove("show");
 
-document
-.getElementById("varexLogoutTransition")
-?.classList.remove("show");
+const title=document.getElementById("varexLogoutTitle");
+const message=document.getElementById("varexLogoutMessage");
+const actions=document.getElementById("varexLogoutActions");
+const loader=document.getElementById("varexLogoutLoader");
+const success=document.getElementById("varexLogoutSuccessIcon");
+const progress=document.getElementById("varexLogoutProgress");
+const bar=document.getElementById("varexLogoutProgressBar");
 
-document.getElementById("varexLogoutTitle").textContent="تسجيل الخروج";
+if(title)title.textContent="تسجيل الخروج";
+if(message)message.textContent="هل تريد تسجيل الخروج من VAREX؟";
+if(actions)actions.style.display="flex";
+if(loader)loader.style.display="none";
+if(success)success.style.display="none";
+if(progress)progress.style.display="none";
+if(bar)bar.style.width="0%";
 
-document.getElementById("varexLogoutMessage").textContent=
-"هل تريد تسجيل الخروج من VAREX؟";
+overlay.classList.add("show");
 
-document.getElementById("varexLogoutActions").style.display="flex";
-
-document.getElementById("varexLogoutLoader").style.display="none";
-
-document.getElementById("varexLogoutSuccessIcon").style.display="none";
-
-document.getElementById("varexLogoutProgress").style.display="none";
-
-document.getElementById("varexLogoutProgressBar").style.width="0%";
-
-overlay.classList.add("show")
+setTimeout(()=>{
+document.getElementById("varexLogoutConfirm")?.focus()
+},150)
 }
 
 function varexCloseLogoutDialog(){
-
 const overlay=document.getElementById("varexLogoutOverlay");
 
 if(!overlay)return;
-
 if(overlay.classList.contains("processing"))return;
 
 overlay.classList.remove("show")
@@ -1124,12 +945,7 @@ function varexLogoutWait(ms){
 return new Promise(resolve=>setTimeout(resolve,ms))
 }
 
-function varexSetLogoutStatus(
-titleText,
-messageText,
-progressValue,
-mode="loading"
-){
+function varexSetLogoutStatus(titleText,messageText,progressValue,mode="loading"){
 
 const title=document.getElementById("varexLogoutTitle");
 const message=document.getElementById("varexLogoutMessage");
@@ -1164,12 +980,8 @@ card?.classList.remove("success")
 ========================================================= */
 
 function varexPlayLogoutSound(){
-
 try{
-
-const AudioClass=
-window.AudioContext||
-window.webkitAudioContext;
+const AudioClass=window.AudioContext||window.webkitAudioContext;
 
 if(!AudioClass)return;
 
@@ -1181,8 +993,7 @@ const start=context.currentTime;
 [659.25,.14,.18],
 [783.99,.29,.20],
 [1046.5,.46,.32]
-]
-.forEach(([frequency,delay,duration])=>{
+].forEach(([frequency,delay,duration])=>{
 
 const oscillator=context.createOscillator();
 const gain=context.createGain();
@@ -1191,23 +1002,14 @@ oscillator.type="sine";
 oscillator.frequency.value=frequency;
 
 gain.gain.setValueAtTime(.0001,start+delay);
-
-gain.gain.exponentialRampToValueAtTime(
-.055,
-start+delay+.025
-);
-
-gain.gain.exponentialRampToValueAtTime(
-.0001,
-start+delay+duration
-);
+gain.gain.exponentialRampToValueAtTime(.055,start+delay+.025);
+gain.gain.exponentialRampToValueAtTime(.0001,start+delay+duration);
 
 oscillator.connect(gain);
 gain.connect(context.destination);
 
 oscillator.start(start+delay);
 oscillator.stop(start+delay+duration+.04)
-
 });
 
 setTimeout(()=>{
@@ -1236,11 +1038,8 @@ const progress=document.getElementById("varexLogoutProgress");
 const transition=document.getElementById("varexLogoutTransition");
 
 if(!overlay){
-
 varexLogoutInProgress=false;
-
 await VAREX.logout(true);
-
 return
 }
 
@@ -1257,15 +1056,9 @@ varexSetLogoutStatus(
 );
 
 const savingDelay=varexLogoutWait(1750);
+const logoutProcess=VAREX.logout(false).catch(()=>true);
 
-const logoutProcess=
-VAREX.logout(false)
-.catch(()=>true);
-
-await Promise.all([
-savingDelay,
-logoutProcess
-]);
+await Promise.all([savingDelay,logoutProcess]);
 
 varexSetLogoutStatus(
 "تم تسجيل الخروج بنجاح",
@@ -1280,9 +1073,7 @@ overlay.classList.add("finished");
 
 await varexLogoutWait(900);
 
-if(transition){
-transition.classList.add("show")
-}
+if(transition)transition.classList.add("show");
 
 overlay.classList.add("leaving");
 
@@ -1306,12 +1097,9 @@ style.id="varexSharedStyles";
 
 style.textContent=`
 
-:root{
---sidebar-width:265px!important;
-}
+:root{--sidebar-width:265px!important}
 
 html{height:100%}
-
 body{min-height:100%}
 
 .main{
@@ -1354,10 +1142,6 @@ flex:none!important;
 
 .sidebar .nav{
 position:relative!important;
-top:auto!important;
-right:auto!important;
-bottom:auto!important;
-left:auto!important;
 width:100%!important;
 height:auto!important;
 min-height:0!important;
@@ -1365,7 +1149,6 @@ max-height:none!important;
 display:block!important;
 overflow:visible!important;
 padding:16px 14px 0!important;
-touch-action:auto!important;
 }
 
 .sidebar .nav a{
@@ -1383,7 +1166,6 @@ border-radius:11px!important;
 font-family:inherit!important;
 font-size:14px!important;
 font-weight:600!important;
-line-height:1.4!important;
 white-space:nowrap!important;
 text-decoration:none!important;
 background:rgba(255,255,255,.055)!important;
@@ -1393,8 +1175,7 @@ border-left:1px solid rgba(255,255,255,.08)!important;
 border-right:1px solid rgba(0,0,0,.10)!important;
 border-bottom:3px solid rgba(5,14,37,.44)!important;
 box-shadow:none!important;
-transform:translateY(0)!important;
-transition:transform .10s ease,background .16s ease,border-color .16s ease,color .16s ease!important;
+transition:.15s!important;
 }
 
 .sidebar .nav a:hover{
@@ -1403,27 +1184,12 @@ color:#fff!important;
 transform:translateY(-1px)!important;
 }
 
-.sidebar .nav a:active{
-transform:translateY(2px)!important;
-border-bottom-width:1px!important;
-margin-bottom:10px!important;
-background:rgba(255,255,255,.15)!important;
-}
-
 .sidebar .nav a.active{
 background:#fff!important;
 color:#172554!important;
 font-weight:700!important;
-border-top:1px solid #fff!important;
-border-left:1px solid #f8fafc!important;
-border-right:1px solid #cbd5e1!important;
+border-color:#fff!important;
 border-bottom:3px solid #94a3b8!important;
-box-shadow:none!important;
-}
-
-.sidebar .nav a.active:hover{
-background:#f8fafc!important;
-color:#172554!important;
 }
 
 .sidebar .nav a.active .nav-icon,
@@ -1434,7 +1200,6 @@ color:#172554!important;
 .sidebar .nav .nav-label{
 font-size:14px!important;
 font-weight:600!important;
-white-space:nowrap!important;
 }
 
 .sidebar .nav .nav-icon{
@@ -1482,18 +1247,9 @@ font-size:14px;
 font-weight:700;
 cursor:pointer;
 white-space:nowrap;
-box-shadow:none!important;
 }
 
-.varex-theme-button{
-background:#fff!important;
-color:#172554!important;
-border-top:1px solid #fff!important;
-border-left:1px solid #f8fafc!important;
-border-right:1px solid #cbd5e1!important;
-border-bottom:3px solid #94a3b8!important;
-}
-
+.varex-theme-button,
 .varex-logout-button{
 background:#fff!important;
 color:#172554!important;
@@ -1520,14 +1276,15 @@ color:#172554;
 }
 
 .varex-sidebar-bottom-space{
+display:block;
+width:100%;
 height:90px;
 min-height:90px;
+pointer-events:none;
 }
 
 
-/* =========================================================
-   LOGOUT OVERLAY
-========================================================= */
+/* ===== LOGOUT OVERLAY ===== */
 
 .varex-logout-overlay{
 position:fixed;
@@ -1537,9 +1294,9 @@ display:flex;
 align-items:center;
 justify-content:center;
 padding:24px;
-background:rgba(4,12,32,.70);
-backdrop-filter:blur(10px);
--webkit-backdrop-filter:blur(10px);
+background:rgba(4,12,32,.76);
+backdrop-filter:blur(11px);
+-webkit-backdrop-filter:blur(11px);
 opacity:0;
 visibility:hidden;
 pointer-events:none;
@@ -1552,58 +1309,77 @@ visibility:visible;
 pointer-events:auto;
 }
 
+
+/* ===== LOGOUT CARD ===== */
+
 .varex-logout-card{
 position:relative;
-width:min(560px,calc(100vw - 44px));
-min-height:410px;
-padding:40px 40px 34px;
-border-radius:27px;
+width:min(600px,calc(100vw - 40px));
+min-height:430px;
+padding:38px 42px 35px;
+border-radius:28px;
 background:linear-gradient(160deg,#fff 0%,#f8fafc 100%);
-border:1px solid rgba(255,255,255,.90);
+border:1px solid rgba(255,255,255,.92);
 box-shadow:
-0 34px 100px rgba(2,8,23,.40),
-0 12px 34px rgba(15,23,42,.20);
+0 38px 110px rgba(2,8,23,.45),
+0 14px 40px rgba(15,23,42,.20);
 display:flex;
 flex-direction:column;
 align-items:center;
 justify-content:center;
 text-align:center;
 overflow:hidden;
+transform:scale(.94) translateY(15px);
+opacity:0;
+transition:
+transform .38s cubic-bezier(.18,.89,.32,1.25),
+opacity .25s ease;
+}
+
+.varex-logout-overlay.show .varex-logout-card{
+transform:scale(1) translateY(0);
+opacity:1;
 }
 
 
 /* =========================================================
-   LOGO — VISUAL CENTER FIX
+   NEW VAREX LOGO
 ========================================================= */
 
 .varex-logout-logo-wrap{
 position:relative!important;
-z-index:2!important;
-width:112px!important;
-height:112px!important;
-min-width:112px!important;
-min-height:112px!important;
-max-width:112px!important;
-max-height:112px!important;
-margin:0 auto 28px!important;
-padding:0!important;
+z-index:3!important;
+
+width:118px!important;
+height:118px!important;
+
+min-width:118px!important;
+min-height:118px!important;
+
+max-width:118px!important;
+max-height:118px!important;
+
+margin:0 auto 26px!important;
+
 border-radius:50%!important;
-background:linear-gradient(145deg,#172554,#213765)!important;
-box-shadow:
-0 9px 0 #0f1d43,
-0 20px 34px rgba(23,37,84,.30)!important;
+
 overflow:hidden!important;
-display:block!important;
+
+background:#0b1833!important;
+
+border:1px solid rgba(255,255,255,.15)!important;
+
+box-shadow:
+0 8px 0 #09152f,
+0 19px 34px rgba(23,37,84,.36)!important;
 }
 
-.varex-logo-window{
-position:absolute!important;
-inset:0!important;
-width:100%!important;
-height:100%!important;
-overflow:hidden!important;
-border-radius:50%!important;
-}
+
+/*
+الصورة الجديدة مربعة، لذلك نكبّرها قليلاً
+حتى تختفي الحواف البيضاء الخارجية ويصبح
+الشعار نفسه داخل الدائرة تماماً.
+*/
 
 .varex-logout-logo,
 #varexLogoutLogo{
@@ -1613,14 +1389,11 @@ position:absolute!important;
 top:50%!important;
 left:50%!important;
 
-right:auto!important;
-bottom:auto!important;
+width:126%!important;
+height:126%!important;
 
-width:150px!important;
-height:150px!important;
-
-min-width:150px!important;
-min-height:150px!important;
+min-width:126%!important;
+min-height:126%!important;
 
 max-width:none!important;
 max-height:none!important;
@@ -1628,45 +1401,29 @@ max-height:none!important;
 margin:0!important;
 padding:0!important;
 
-border:0!important;
-border-radius:0!important;
+transform:translate(-50%,-50%)!important;
 
 object-fit:cover!important;
+object-position:center center!important;
 
-/*
-   54% بدلاً من 50% لنعالج الفراغ البصري
-   الموجود داخل ملف PNG نفسه.
-*/
-object-position:50% 54%!important;
-
-transform:
-translate(-50%,-50%)
-scale(1.17)!important;
-
-transform-origin:center center!important;
-
-vertical-align:middle!important;
-float:none!important;
+border:0!important;
+border-radius:0!important;
 }
 
 .varex-logout-fallback-logo{
 display:none;
 position:absolute!important;
 inset:0!important;
-width:100%!important;
-height:100%!important;
 align-items:center!important;
 justify-content:center!important;
-font-size:28px!important;
+font-size:30px!important;
 font-weight:900!important;
 color:#fff!important;
 direction:ltr!important;
 }
 
 
-/* =========================================================
-   LOADER
-========================================================= */
+/* ===== LOADER ===== */
 
 .varex-logout-loader{
 display:none;
@@ -1685,6 +1442,9 @@ animation:varexLogoutSpin .72s linear infinite;
 to{transform:rotate(360deg)}
 }
 
+
+/* ===== SUCCESS ===== */
+
 .varex-logout-success-icon{
 display:none;
 position:relative;
@@ -1702,24 +1462,31 @@ font-size:29px;
 font-weight:900;
 }
 
+
+/* ===== TEXT ===== */
+
 .varex-logout-title{
 position:relative;
 z-index:2;
-font-size:25px;
+font-size:26px;
 font-weight:900;
 color:#172554;
-margin:0 0 11px;
+margin:0 0 12px;
 }
 
 .varex-logout-message{
 position:relative;
 z-index:2;
-max-width:410px;
+max-width:430px;
 font-size:13px;
+font-weight:500;
 line-height:1.9;
 color:#64748b;
 margin:0;
 }
+
+
+/* ===== PROGRESS ===== */
 
 .varex-logout-progress{
 display:none;
@@ -1741,6 +1508,9 @@ background:linear-gradient(90deg,#172554,#31548c);
 transition:width .65s ease;
 }
 
+
+/* ===== BUTTONS ===== */
+
 .varex-logout-actions{
 position:relative;
 z-index:2;
@@ -1752,12 +1522,13 @@ margin-top:32px;
 
 .varex-logout-actions button{
 flex:1;
-height:52px;
+height:54px;
 border-radius:12px;
 font-family:inherit;
 font-size:13px;
 font-weight:800;
 cursor:pointer;
+transition:.12s;
 }
 
 .varex-logout-confirm{
@@ -1767,6 +1538,11 @@ border:1px solid #172554;
 box-shadow:
 0 7px 0 #0f1d43,
 0 14px 22px rgba(23,37,84,.22);
+}
+
+.varex-logout-confirm:active{
+transform:translateY(5px);
+box-shadow:0 1px 0 #0f1d43;
 }
 
 .varex-logout-cancel{
@@ -1779,9 +1555,7 @@ box-shadow:
 }
 
 
-/* =========================================================
-   TRANSITION
-========================================================= */
+/* ===== TRANSITION ===== */
 
 .varex-logout-transition{
 position:absolute;
@@ -1790,11 +1564,14 @@ z-index:50;
 display:flex;
 align-items:center;
 justify-content:center;
+
 background:
 radial-gradient(circle at center,rgba(59,130,246,.20),transparent 38%),
 linear-gradient(145deg,#172554,#0f1d43);
+
 transform:translateX(-105%);
-transition:transform .72s cubic-bezier(.65,.05,.22,1);
+transition:
+transform .72s cubic-bezier(.65,.05,.22,1);
 }
 
 .varex-logout-transition.show{
@@ -1806,79 +1583,109 @@ display:flex;
 flex-direction:column;
 align-items:center;
 justify-content:center;
-gap:15px;
+gap:18px;
 }
 
-.varex-transition-image-box{
+.varex-transition-logo-circle{
 position:relative!important;
-width:112px!important;
-height:112px!important;
-min-width:112px!important;
-min-height:112px!important;
-overflow:hidden!important;
-border-radius:50%!important;
-}
 
-.varex-transition-logo-window{
-position:absolute!important;
-inset:0!important;
-width:100%!important;
-height:100%!important;
-overflow:hidden!important;
+width:126px!important;
+height:126px!important;
+
 border-radius:50%!important;
+
+overflow:hidden!important;
+
+background:#0b1833!important;
+
+box-shadow:
+0 18px 38px rgba(0,0,0,.35)!important;
 }
 
 .varex-transition-image{
 display:block!important;
+
 position:absolute!important;
 
 top:50%!important;
 left:50%!important;
 
-width:150px!important;
-height:150px!important;
-
-min-width:150px!important;
-min-height:150px!important;
+width:126%!important;
+height:126%!important;
 
 max-width:none!important;
 max-height:none!important;
 
-margin:0!important;
-padding:0!important;
+transform:
+translate(-50%,-50%)!important;
 
 object-fit:cover!important;
-object-position:50% 54%!important;
-
-transform:
-translate(-50%,-50%)
-scale(1.17)!important;
-
-transform-origin:center center!important;
-
-filter:
-drop-shadow(0 10px 25px rgba(0,0,0,.28));
+object-position:center center!important;
 }
 
-.varex-logout-transition-logo > div:last-child{
-font-size:36px;
-font-weight:900;
-letter-spacing:7px;
-color:#fff;
-direction:ltr;
+.varex-transition-word{
+font-size:37px!important;
+font-weight:900!important;
+letter-spacing:8px!important;
+color:#fff!important;
+direction:ltr!important;
 }
 
 
-/* =========================================================
-   MOBILE
-========================================================= */
+/* ===== DARK MODE LOGOUT ===== */
+
+body.varex-dark .varex-logout-overlay{
+background:rgba(1,6,18,.82);
+}
+
+body.varex-dark .varex-logout-card{
+background:linear-gradient(160deg,#132641,#0f2039);
+border-color:#29415f;
+}
+
+body.varex-dark .varex-logout-title{
+color:#fff!important;
+}
+
+body.varex-dark .varex-logout-message{
+color:#cbd5e1!important;
+}
+
+body.varex-dark .varex-logout-progress{
+background:#29415f!important;
+}
+
+body.varex-dark .varex-logout-loader{
+border-color:#29415f!important;
+border-top-color:#fff!important;
+}
+
+body.varex-dark .varex-logout-cancel{
+background:#172c48!important;
+color:#fff!important;
+border-color:#35506f!important;
+box-shadow:0 6px 0 #091728!important;
+}
+
+
+/* ===== MOBILE ===== */
 
 @media(max-width:600px){
 
 .varex-logout-card{
-width:calc(100vw - 28px);
-min-height:390px;
-padding:34px 22px 28px;
+width:calc(100vw - 26px);
+min-height:410px;
+padding:32px 22px 28px;
+border-radius:24px;
+}
+
+.varex-logout-logo-wrap{
+width:105px!important;
+height:105px!important;
+min-width:105px!important;
+min-height:105px!important;
+max-width:105px!important;
+max-height:105px!important;
 }
 
 .varex-logout-actions{
@@ -1890,25 +1697,47 @@ width:100%;
 flex:none;
 }
 
-.varex-logout-logo-wrap{
-width:100px!important;
-height:100px!important;
-min-width:100px!important;
-min-height:100px!important;
-max-width:100px!important;
-max-height:100px!important;
+.varex-logout-title{
+font-size:23px;
 }
 
-.varex-logout-logo,
-#varexLogoutLogo{
-width:136px!important;
-height:136px!important;
-min-width:136px!important;
-min-height:136px!important;
-object-position:50% 54%!important;
-transform:
-translate(-50%,-50%)
-scale(1.17)!important;
+.varex-transition-logo-circle{
+width:108px!important;
+height:108px!important;
+}
+
+}
+
+
+/* ===== TABLET ===== */
+
+@media(max-width:850px){
+
+.sidebar{
+position:fixed!important;
+right:0!important;
+top:0!important;
+bottom:0!important;
+width:var(--sidebar-width)!important;
+height:100dvh!important;
+display:block!important;
+overflow-y:auto!important;
+}
+
+.sidebar .nav{
+display:block!important;
+overflow:visible!important;
+padding:16px 14px 0!important;
+}
+
+.sidebar .nav a{
+width:100%!important;
+min-width:0!important;
+margin:0 0 8px!important;
+}
+
+.main{
+margin-right:var(--sidebar-width)!important;
 }
 
 }
@@ -1924,7 +1753,6 @@ document.head.appendChild(style)
 ========================================================= */
 
 function varexInstallSidebarScroll(){
-
 const sidebar=varexGetSidebar();
 
 if(!sidebar)return;
@@ -1934,48 +1762,18 @@ varexRestoreSidebarScroll();
 let saveTimer=null;
 
 sidebar.addEventListener("scroll",()=>{
-
 clearTimeout(saveTimer);
-
-saveTimer=setTimeout(
-varexSaveSidebarScroll,
-25
-)
-
+saveTimer=setTimeout(varexSaveSidebarScroll,25)
 },{passive:true});
 
-sidebar
-.querySelectorAll("a[href]")
-.forEach(link=>{
-
-link.addEventListener(
-"pointerdown",
-varexSaveSidebarScroll,
-{passive:true}
-);
-
-link.addEventListener(
-"touchstart",
-varexSaveSidebarScroll,
-{passive:true}
-);
-
-link.addEventListener(
-"click",
-varexSaveSidebarScroll
-)
-
+sidebar.querySelectorAll("a[href]").forEach(link=>{
+link.addEventListener("pointerdown",varexSaveSidebarScroll,{passive:true});
+link.addEventListener("touchstart",varexSaveSidebarScroll,{passive:true});
+link.addEventListener("click",varexSaveSidebarScroll)
 });
 
-window.addEventListener(
-"pagehide",
-varexSaveSidebarScroll
-);
-
-window.addEventListener(
-"beforeunload",
-varexSaveSidebarScroll
-)
+window.addEventListener("pagehide",varexSaveSidebarScroll);
+window.addEventListener("beforeunload",varexSaveSidebarScroll)
 }
 
 
@@ -1984,62 +1782,33 @@ varexSaveSidebarScroll
 ========================================================= */
 
 function varexGetTheme(){
+const saved=localStorage.getItem("varex_theme");
 
-const saved=
-localStorage.getItem("varex_theme");
-
-if(
-saved==="dark"||
-saved==="light"
-){
-return saved
-}
+if(saved==="dark"||saved==="light")return saved;
 
 return(
 window.matchMedia&&
-window.matchMedia(
-"(prefers-color-scheme: dark)"
-).matches
+window.matchMedia("(prefers-color-scheme: dark)").matches
 )
 ?"dark"
 :"light"
 }
 
 function varexApplyTheme(theme){
-
-document.documentElement
-.setAttribute(
-"data-varex-theme",
-theme
-);
-
-document.documentElement
-.setAttribute(
-"data-theme",
-theme
-);
+document.documentElement.setAttribute("data-varex-theme",theme);
+document.documentElement.setAttribute("data-theme",theme);
 
 if(document.body){
-
-document.body.classList.toggle(
-"varex-dark",
-theme==="dark"
-)
-
+document.body.classList.toggle("varex-dark",theme==="dark")
 }
 
-localStorage.setItem(
-"varex_theme",
-theme
-);
+localStorage.setItem("varex_theme",theme);
 
 varexInstallDarkStyles();
-
 varexUpdateThemeButton()
 }
 
 function varexToggleTheme(){
-
 varexApplyTheme(
 varexGetTheme()==="dark"
 ?"light"
@@ -2048,33 +1817,12 @@ varexGetTheme()==="dark"
 }
 
 function varexUpdateThemeButton(){
+const dark=varexGetTheme()==="dark";
+const icon=document.getElementById("varexThemeIcon");
+const text=document.getElementById("varexThemeText");
 
-const dark=
-varexGetTheme()==="dark";
-
-const icon=
-document.getElementById(
-"varexThemeIcon"
-);
-
-const text=
-document.getElementById(
-"varexThemeText"
-);
-
-if(icon){
-icon.textContent=
-dark
-?"☀️"
-:"🌙"
-}
-
-if(text){
-text.textContent=
-dark
-?"الوضع النهاري"
-:"الوضع الليلي"
-}
+if(icon)icon.textContent=dark?"☀️":"🌙";
+if(text)text.textContent=dark?"الوضع النهاري":"الوضع الليلي"
 }
 
 
@@ -2151,9 +1899,37 @@ border-color:#35506f!important;
 color:#fff!important;
 }
 
+body.varex-dark input::placeholder,
+body.varex-dark textarea::placeholder{
+color:#8293aa!important;
+}
+
+body.varex-dark table{
+background:#132641!important;
+color:#f8fafc!important;
+}
+
+body.varex-dark thead,
+body.varex-dark th{
+background:#0e2039!important;
+color:#dbeafe!important;
+border-color:#29415f!important;
+}
+
+body.varex-dark td{
+background:#132641!important;
+color:#e2e8f0!important;
+border-color:#29415f!important;
+}
+
 body.varex-dark .chip,
 body.varex-dark .info-chip{
 background:#fff!important;
+color:#172554!important;
+}
+
+body.varex-dark .chip strong,
+body.varex-dark .info-chip strong{
 color:#172554!important;
 }
 
@@ -2168,8 +1944,18 @@ linear-gradient(
 color:#fff!important;
 }
 
+body.varex-dark .sidebar .nav a{
+background:rgba(255,255,255,.05)!important;
+color:#dbeafe!important;
+}
+
 body.varex-dark .sidebar .nav a.active{
 background:#fff!important;
+color:#172554!important;
+}
+
+body.varex-dark .sidebar .nav a.active .nav-icon,
+body.varex-dark .sidebar .nav a.active .nav-label{
 color:#172554!important;
 }
 
@@ -2184,46 +1970,10 @@ background:#fff!important;
 color:#172554!important;
 }
 
-body.varex-dark .varex-logout-card{
-background:
-linear-gradient(
-160deg,
-#132641,
-#0f2039
-)!important;
-border-color:#29415f!important;
-}
-
-body.varex-dark .varex-logout-title{
-color:#fff!important;
-}
-
-body.varex-dark .varex-logout-message{
-color:#cbd5e1!important;
-}
-
-body.varex-dark .varex-logout-progress{
-background:#29415f!important;
-}
-
-body.varex-dark .varex-logout-progress-bar{
-background:
-linear-gradient(
-90deg,
-#60a5fa,
-#dbeafe
-)!important;
-}
-
-body.varex-dark .varex-logout-loader{
-border-color:#29415f!important;
-border-top-color:#fff!important;
-}
-
-body.varex-dark .varex-logout-cancel{
-background:#172c48!important;
-color:#fff!important;
-border-color:#35506f!important;
+body.varex-dark .varex-power-icon{
+background:#f8fafc!important;
+color:#172554!important;
+border-color:#172554!important;
 }
 
 `;
@@ -2242,75 +1992,48 @@ const user=VAREX.getCurrentUser();
 
 if(!user)return;
 
-document
-.querySelectorAll(
-".info-chip,.chip"
-)
-.forEach(el=>{
+document.querySelectorAll(".info-chip,.chip").forEach(el=>{
 
-if(
-el.textContent.includes(
-"المستخدم"
-)
-){
+if(el.textContent.includes("المستخدم")){
 
-const strong=
-el.querySelector("strong");
+const strong=el.querySelector("strong");
 
 if(strong){
-
 strong.textContent=
 user.name||
 user.username||
 "المستخدم"
-
 }
 
 }
-
 });
 
-const sidebarName=
-document.getElementById(
-"sidebarUserName"
-);
+const sidebarName=document.getElementById("sidebarUserName");
 
 if(sidebarName){
-
 sidebarName.textContent=
 user.name||
 user.username||
 user.email||
 "المستخدم"
-
 }
 
-const sidebarRole=
-document.getElementById(
-"sidebarUserRole"
-);
+const sidebarRole=document.getElementById("sidebarUserRole");
 
 if(sidebarRole){
-
 sidebarRole.textContent=
 user.role||
 "مستخدم"
-
 }
 
-const topUser=
-document.getElementById(
-"topUserName"
-);
+const topUser=document.getElementById("topUserName");
 
 if(topUser){
-
 topUser.textContent=
 user.name||
 user.username||
 user.email||
 "المستخدم"
-
 }
 }
 
@@ -2331,25 +2054,13 @@ if(publicPage)return;
 if(!VAREX.requireSubscription())return;
 
 varexBuildMenu();
-
-varexApplyTheme(
-varexGetTheme()
-);
-
+varexApplyTheme(varexGetTheme());
 varexShowCurrentUser();
-
 varexInstallSidebarScroll()
 }
 
 if(document.readyState==="loading"){
-
-document.addEventListener(
-"DOMContentLoaded",
-varexStartUI
-)
-
+document.addEventListener("DOMContentLoaded",varexStartUI)
 }else{
-
 varexStartUI()
-
 }
