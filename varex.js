@@ -4,414 +4,214 @@
    + SUBSCRIPTION & LICENSE SYSTEM
 ========================================================= */
 
-const VAREX={
+const VAREX={config:{supabaseUrl:"https://eibadfdqzpeigccfdipt.supabase.co",supabaseKey:"sb_publishable__xRe4q10zwB2coiWu7wVrQ_9CimA336"},keys:{products:"varex_products",sales:"varex_sales",customers:"varex_customers",suppliers:"varex_suppliers",employees:"varex_employees",transactions:"varexTransactions",settings:"varex_settings",heldSales:"varex_held_sales",session:"varex_session",rememberedUser:"varex_remembered_user",cachedUser:"varex_cached_user",pendingVerification:"varex_pending_verification",subscription:"varex_subscription",subscriptionGate:"varex_subscription_gate"},
 
-config:{
-supabaseUrl:"https://eibadfdqzpeigccfdipt.supabase.co",
-supabaseKey:"sb_publishable__xRe4q10zwB2coiWu7wVrQ_9CimA336"
-},
-
-keys:{
-products:"varex_products",
-sales:"varex_sales",
-customers:"varex_customers",
-suppliers:"varex_suppliers",
-employees:"varex_employees",
-transactions:"varexTransactions",
-settings:"varex_settings",
-heldSales:"varex_held_sales",
-session:"varex_session",
-rememberedUser:"varex_remembered_user",
-cachedUser:"varex_cached_user",
-pendingVerification:"varex_pending_verification",
-subscription:"varex_subscription",
-subscriptionGate:"varex_subscription_gate"
-},
-
-getData(k){
-try{
-const x=JSON.parse(localStorage.getItem(k)||"[]");
-return Array.isArray(x)?x:[]
-}catch(e){
-console.error(e);
-return[]
-}
-},
-
-saveData(k,d){
-try{
-localStorage.setItem(k,JSON.stringify(Array.isArray(d)?d:[]));
-return true
-}catch(e){
-console.error(e);
-return false
-}
-},
-
-getObject(k,f={}){
-try{
-const x=JSON.parse(localStorage.getItem(k)||"null");
-return x&&typeof x==="object"&&!Array.isArray(x)?{...f,...x}:{...f}
-}catch(e){
-return{...f}
-}
-},
-
-saveObject(k,d){
-try{
-localStorage.setItem(k,JSON.stringify(d||{}));
-return true
-}catch(e){
-console.error(e);
-return false
-}
-},
-
-generateId(p="VRX"){
-return`${p}-${Date.now()}-${Math.floor(Math.random()*1e6)}`
-},
-
-toNumber(v,f=0){
-v=Number(v);
-return Number.isFinite(v)?v:f
-},
-
-positiveNumber(v){
-return Math.max(0,this.toNumber(v))
-},
-
-cleanText(v){
-return String(v??"").trim()
-},
-
-now(){
-return new Date().toISOString()
-},
-
-today(){
-const d=new Date();
-return`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`
-},
-
-normalizeDate(v){
-if(!v)return"";
-const d=new Date(v);
-if(Number.isNaN(d.getTime()))return String(v).slice(0,10);
-return`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`
-},
-
-normalizeEmail(v){
-return this.cleanText(v).toLowerCase()
-},
-
-normalizeUsername(v){
-return this.cleanText(v).toLowerCase()
-},
+getData(k){try{const x=JSON.parse(localStorage.getItem(k)||"[]");return Array.isArray(x)?x:[]}catch(e){console.error(e);return[]}},
+saveData(k,d){try{localStorage.setItem(k,JSON.stringify(Array.isArray(d)?d:[]));return true}catch(e){console.error(e);return false}},
+getObject(k,f={}){try{const x=JSON.parse(localStorage.getItem(k)||"null");return x&&typeof x==="object"&&!Array.isArray(x)?{...f,...x}:{...f}}catch(e){return{...f}}},
+saveObject(k,d){try{localStorage.setItem(k,JSON.stringify(d||{}));return true}catch(e){console.error(e);return false}},
+generateId(p="VRX"){return`${p}-${Date.now()}-${Math.floor(Math.random()*1e6)}`},
+toNumber(v,f=0){v=Number(v);return Number.isFinite(v)?v:f},
+positiveNumber(v){return Math.max(0,this.toNumber(v))},
+cleanText(v){return String(v??"").trim()},
+now(){return new Date().toISOString()},
+today(){const d=new Date();return`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`},
+normalizeDate(v){if(!v)return"";const d=new Date(v);if(Number.isNaN(d.getTime()))return String(v).slice(0,10);return`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`},
+normalizeEmail(v){return this.cleanText(v).toLowerCase()},
+normalizeUsername(v){return this.cleanText(v).toLowerCase()},
 
 async authFetch(path,opt={}){
-const h={
-apikey:this.config.supabaseKey,
-"Content-Type":"application/json",
-...(opt.headers||{})
-};
-
+const h={apikey:this.config.supabaseKey,"Content-Type":"application/json",...(opt.headers||{})};
 const s=this.getSession();
-
-if(s?.access_token){
-h.Authorization=`Bearer ${s.access_token}`
-}
-
-const r=await fetch(
-this.config.supabaseUrl+path,
-{...opt,headers:h}
-);
-
+if(s?.access_token)h.Authorization=`Bearer ${s.access_token}`;
+const r=await fetch(this.config.supabaseUrl+path,{...opt,headers:h});
 let data={};
-
-try{
-data=await r.json()
-}catch(e){}
-
+try{data=await r.json()}catch(e){}
 if(!r.ok){
-const err=new Error(
-data.msg||
-data.message||
-data.error_description||
-data.error||
-"تعذر الاتصال بخدمة الحسابات."
-);
-
-err.status=r.status;
-err.data=data;
-throw err
+const err=new Error(data.msg||data.message||data.error_description||data.error||"تعذر الاتصال بخدمة الحسابات.");
+err.status=r.status;err.data=data;throw err
 }
-
 return data
 },
 
 mapAuthError(e){
 const m=String(e?.message||"").toLowerCase();
-
-if(
-m.includes("already registered")||
-m.includes("already been registered")||
-m.includes("user already registered")
-)
-return"البريد الإلكتروني مستخدم بالفعل.";
-
-if(m.includes("invalid login credentials"))
-return"البريد الإلكتروني أو كلمة المرور غير صحيحة.";
-
-if(m.includes("email not confirmed"))
-return"البريد الإلكتروني غير مؤكد. يرجى إدخال رمز التحقق المرسل إلى بريدك.";
-
-if(
-m.includes("token has expired")||
-m.includes("otp expired")
-)
-return"انتهت صلاحية رمز التحقق. اضغط إعادة إرسال الرمز.";
-
-if(
-m.includes("invalid token")||
-m.includes("invalid otp")||
-m.includes("token is invalid")
-)
-return"رمز التحقق غير صحيح.";
-
-if(
-m.includes("password")&&
-m.includes("6")
-)
-return"كلمة المرور لا تحقق متطلبات الأمان.";
-
-if(
-m.includes("rate limit")||
-m.includes("too many requests")
-)
-return"تم إجراء محاولات كثيرة. يرجى الانتظار قليلاً.";
-
+if(m.includes("already registered")||m.includes("already been registered")||m.includes("user already registered"))return"البريد الإلكتروني مستخدم بالفعل.";
+if(m.includes("invalid login credentials"))return"البريد الإلكتروني أو كلمة المرور غير صحيحة.";
+if(m.includes("email not confirmed"))return"البريد الإلكتروني غير مؤكد. يرجى إدخال رمز التحقق المرسل إلى بريدك.";
+if(m.includes("token has expired")||m.includes("otp expired"))return"انتهت صلاحية رمز التحقق. اضغط إعادة إرسال الرمز.";
+if(m.includes("invalid token")||m.includes("invalid otp")||m.includes("token is invalid"))return"رمز التحقق غير صحيح.";
+if(m.includes("password")&&m.includes("6"))return"كلمة المرور لا تحقق متطلبات الأمان.";
+if(m.includes("rate limit")||m.includes("too many requests"))return"تم إجراء محاولات كثيرة. يرجى الانتظار قليلاً.";
 return e?.message||"حدث خطأ في خدمة الحسابات."
 },
 
 getSafeUser(u){
 if(!u)return null;
-
 const md=u.user_metadata||{};
-
-return{
-id:u.id,
-name:md.name||md.full_name||u.name||"المستخدم",
-username:md.username||u.username||"",
-email:u.email||"",
-role:md.role||u.role||"مستخدم",
-status:"نشط",
-createdAt:u.created_at||u.createdAt||"",
-lastLogin:u.last_sign_in_at||u.lastLogin||""
-}
+return{id:u.id,name:md.name||md.full_name||u.name||"المستخدم",username:md.username||u.username||"",email:u.email||"",role:md.role||u.role||"مستخدم",status:"نشط",createdAt:u.created_at||u.createdAt||"",lastLogin:u.last_sign_in_at||u.lastLogin||""}
 },
 
 setPendingVerification(data={}){
-const x={
-email:this.normalizeEmail(data.email),
-name:this.cleanText(data.name),
-username:this.normalizeUsername(data.username),
-createdAt:this.now()
-};
-
-try{
-localStorage.setItem(
-this.keys.pendingVerification,
-JSON.stringify(x)
-);
-return x
-}catch(e){
-return null
-}
+const x={email:this.normalizeEmail(data.email),name:this.cleanText(data.name),username:this.normalizeUsername(data.username),createdAt:this.now()};
+try{localStorage.setItem(this.keys.pendingVerification,JSON.stringify(x));return x}catch(e){return null}
 },
 
 getPendingVerification(){
-try{
-const x=JSON.parse(
-localStorage.getItem(
-this.keys.pendingVerification
-)||"null"
-);
-return x&&typeof x==="object"?x:null
-}catch(e){
-return null
-}
+try{const x=JSON.parse(localStorage.getItem(this.keys.pendingVerification)||"null");return x&&typeof x==="object"?x:null}catch(e){return null}
 },
 
 clearPendingVerification(){
-try{
-localStorage.removeItem(
-this.keys.pendingVerification
-)
-}catch(e){}
+try{localStorage.removeItem(this.keys.pendingVerification)}catch(e){}
 },
 
-/* =========================================================
-   CREATE NEW ACCOUNT
-========================================================= */
-
 async createUser(user={}){
-const name=this.cleanText(user.name);
-const username=this.normalizeUsername(user.username);
-const email=this.normalizeEmail(user.email);
-const password=String(user.password||"");
+const name=this.cleanText(user.name),username=this.normalizeUsername(user.username),email=this.normalizeEmail(user.email),password=String(user.password||"");
 
-if(!name){
-return{
-success:false,
-message:"الاسم الكامل مطلوب."
-}
-}
-
-if(username.length<3){
-return{
-success:false,
-message:"اسم المستخدم يجب أن يحتوي على 3 أحرف على الأقل."
-}
-}
-
-if(
-!/^[^\s@]+@[^\s@]+\.[^\s@]+$/
-.test(email)
-){
-return{
-success:false,
-message:"يرجى إدخال بريد إلكتروني صحيح."
-}
-}
-
-if(password.length<8){
-return{
-success:false,
-message:"كلمة المرور يجب أن تحتوي على 8 أحرف على الأقل."
-}
-}
-
-if(!/[A-Z]/.test(password)){
-return{
-success:false,
-message:"كلمة المرور يجب أن تحتوي على حرف إنجليزي كبير واحد على الأقل."
-}
-}
-
-if(!/[a-z]/.test(password)){
-return{
-success:false,
-message:"كلمة المرور يجب أن تحتوي على حرف إنجليزي صغير واحد على الأقل."
-}
-}
+if(!name)return{success:false,message:"الاسم الكامل مطلوب."};
+if(username.length<3)return{success:false,message:"اسم المستخدم يجب أن يحتوي على 3 أحرف على الأقل."};
+if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))return{success:false,message:"يرجى إدخال بريد إلكتروني صحيح."};
+if(password.length<8)return{success:false,message:"كلمة المرور يجب أن تحتوي على 8 أحرف على الأقل."};
+if(!/[A-Z]/.test(password))return{success:false,message:"كلمة المرور يجب أن تحتوي على حرف إنجليزي كبير واحد على الأقل."};
+if(!/[a-z]/.test(password))return{success:false,message:"كلمة المرور يجب أن تحتوي على حرف إنجليزي صغير واحد على الأقل."};
 
 try{
-const d=await this.authFetch(
-"/auth/v1/signup",
-{
-method:"POST",
-body:JSON.stringify({
-email,
-password,
-data:{
-name,
-full_name:name,
-username,
-role:"مستخدم"
-}
-})
-}
-);
-
-this.setPendingVerification({
-email,
-name,
-username
-});
+const d=await this.authFetch("/auth/v1/signup",{method:"POST",body:JSON.stringify({email,password,data:{name,full_name:name,username,role:"مستخدم"}})});
+this.setPendingVerification({email,name,username});
 
 if(d?.session?.access_token){
-this.storeSession(
-d.session,
-false
-);
-
-return{
-success:true,
-user:this.getSafeUser(d.user),
-needsEmailConfirmation:false,
-message:"تم إنشاء الحساب وتأكيد البريد الإلكتروني."
-}
+this.storeSession(d.session,false);
+return{success:true,user:this.getSafeUser(d.user),needsEmailConfirmation:false,message:"تم إنشاء الحساب وتأكيد البريد الإلكتروني."}
 }
 
-return{
-success:true,
-user:this.getSafeUser(d.user),
-needsEmailConfirmation:true,
-email,
-message:"تم إنشاء الحساب. أرسلنا رمز التحقق إلى بريدك الإلكتروني."
-}
+return{success:true,user:this.getSafeUser(d.user),needsEmailConfirmation:true,email,message:"تم إنشاء الحساب. أرسلنا رمز التحقق إلى بريدك الإلكتروني."}
 
 }catch(e){
-return{
-success:false,
-message:this.mapAuthError(e)
-}
+return{success:false,message:this.mapAuthError(e)}
 }
 },
 
 async verifyEmailOtp(email,token){
-const mail=this.normalizeEmail(email);
-const code=this.cleanText(token).replace(/\s+/g,"");
-
-if(!mail){
-return{
-success:false,
-message:"البريد الإلكتروني غير موجود."
-}
-}
-
-if(!code){
-return{
-success:false,
-message:"يرجى إدخال رمز التحقق."
-}
-}
+const mail=this.normalizeEmail(email),code=this.cleanText(token).replace(/\s+/g,"");
+if(!mail)return{success:false,message:"البريد الإلكتروني غير موجود."};
+if(!code)return{success:false,message:"يرجى إدخال رمز التحقق."};
 
 try{
-const d=await this.authFetch(
-"/auth/v1/verify",
-{
-method:"POST",
-body:JSON.stringify({
-type:"signup",
-email:mail,
-token:code
-})
-}
-);
-
-if(!d?.user){
-return{
-success:false,
-message:"تعذر تأكيد البريد الإلكتروني."
-}
-}
+const d=await this.authFetch("/auth/v1/verify",{method:"POST",body:JSON.stringify({type:"signup",email:mail,token:code})});
+if(!d?.user)return{success:false,message:"تعذر تأكيد البريد الإلكتروني."};
 
 if(d?.access_token){
-this.storeSession(
-{
-access_token:d.access_token,
-refresh_token:d.refresh_token,
-expires_in:d.expires_in,
-expires_at:d.expires_at,
-token_type:d.token_type,
-user:d.user
-},
-false
-)
+this.storeSession({access_token:d.access_token,refresh_token:d.refresh_token,expires_in:d.expires_in,expires_at:d.expires_at,token_type:d.token_type,user:d.user},false)
 }
 
 this.clearPendingVerification();
+sessionStorage.removeItem(this.keys.session);
+localStorage.removeItem(this.keys.session);
+localStorage.removeItem(this.keys.cachedUser);
+sessionStorage.removeItem("varex_authenticated");
+localStorage.removeItem("varex_authenticated");
+
+return{success:true,user:this.getSafeUser(d.user),message:"تم تأكيد البريد الإلكتروني بنجاح. يمكنك الآن تسجيل الدخول."}
+
+}catch(e){
+return{success:false,message:this.mapAuthError(e)}
+}
+},
+
+async resendConfirmation(email){
+const mail=this.normalizeEmail(email);
+if(!mail)return{success:false,message:"البريد الإلكتروني غير موجود."};
+
+try{
+await this.authFetch("/auth/v1/resend",{method:"POST",body:JSON.stringify({type:"signup",email:mail})});
+return{success:true,message:"تم إرسال رمز تحقق جديد إلى بريدك الإلكتروني."}
+}catch(e){
+return{success:false,message:this.mapAuthError(e)}
+}
+},
+
+async login(login,password,remember=false){
+const identifier=this.cleanText(login),pw=String(password||"");
+
+if(!identifier||!pw)return{success:false,message:"يرجى إدخال البريد الإلكتروني وكلمة المرور."};
+if(!identifier.includes("@"))return{success:false,message:"حالياً سجّل الدخول بالبريد الإلكتروني."};
+
+try{
+const d=await this.authFetch("/auth/v1/token?grant_type=password",{method:"POST",body:JSON.stringify({email:this.normalizeEmail(identifier),password:pw})});
+
+if(!d.access_token||!d.user)return{success:false,message:"تعذر إنشاء جلسة المستخدم."};
+
+this.storeSession(d,remember);
+localStorage.setItem(this.keys.rememberedUser,remember?identifier:"");
+this.clearPendingVerification();
+
+return{success:true,user:this.getSafeUser(d.user)}
+
+}catch(e){
+return{success:false,message:this.mapAuthError(e)}
+}
+},
+
+storeSession(s,remember=false){
+const x={access_token:s.access_token,refresh_token:s.refresh_token,expires_in:s.expires_in,expires_at:s.expires_at||Math.floor(Date.now()/1000)+(s.expires_in||3600),token_type:s.token_type||"bearer",user:s.user,remember:Boolean(remember)};
+const str=JSON.stringify(x);
+
+if(remember){
+localStorage.setItem(this.keys.session,str);
+sessionStorage.removeItem(this.keys.session)
+}else{
+sessionStorage.setItem(this.keys.session,str);
+localStorage.removeItem(this.keys.session)
+}
+
+localStorage.setItem(this.keys.cachedUser,JSON.stringify(this.getSafeUser(s.user)));
+return x
+},
+
+getSession(){
+const raw=sessionStorage.getItem(this.keys.session)||localStorage.getItem(this.keys.session);
+if(!raw)return null;
+try{
+const s=JSON.parse(raw);
+return(s?.access_token&&s?.user)?s:null
+}catch(e){
+return null
+}
+},
+
+isLoggedIn(){return!!this.getSession()},
+
+getCurrentUser(){
+const s=this.getSession();
+if(s?.user)return this.getSafeUser(s.user);
+try{return JSON.parse(localStorage.getItem(this.keys.cachedUser)||"null")}catch(e){return null}
+},
+
+getRememberedUser(){return localStorage.getItem(this.keys.rememberedUser)||""},
+
+async refreshSession(){
+const s=this.getSession();
+if(!s?.refresh_token)return false;
+if((s.expires_at||0)>Math.floor(Date.now()/1000)+60)return true;
+
+try{
+const d=await this.authFetch("/auth/v1/token?grant_type=refresh_token",{method:"POST",body:JSON.stringify({refresh_token:s.refresh_token})});
+this.storeSession(d,s.remember);
+return true
+}catch(e){
+this.logout(false);
+return false
+}
+},
+
+async logout(redirect=true){
+const s=this.getSession();
+
+try{
+if(s?.access_token){
+await this.authFetch("/auth/v1/logout",{method:"POST"})
+}
+}catch(e){}
 
 sessionStorage.removeItem(this.keys.session);
 localStorage.removeItem(this.keys.session);
@@ -419,310 +219,18 @@ localStorage.removeItem(this.keys.cachedUser);
 sessionStorage.removeItem("varex_authenticated");
 localStorage.removeItem("varex_authenticated");
 
-return{
-success:true,
-user:this.getSafeUser(d.user),
-message:"تم تأكيد البريد الإلكتروني بنجاح. يمكنك الآن تسجيل الدخول."
-}
-
-}catch(e){
-return{
-success:false,
-message:this.mapAuthError(e)
-}
-}
-},
-
-async resendConfirmation(email){
-const mail=this.normalizeEmail(email);
-
-if(!mail){
-return{
-success:false,
-message:"البريد الإلكتروني غير موجود."
-}
-}
-
-try{
-await this.authFetch(
-"/auth/v1/resend",
-{
-method:"POST",
-body:JSON.stringify({
-type:"signup",
-email:mail
-})
-}
-);
-
-return{
-success:true,
-message:"تم إرسال رمز تحقق جديد إلى بريدك الإلكتروني."
-}
-
-}catch(e){
-return{
-success:false,
-message:this.mapAuthError(e)
-}
-}
-},
-
-/* =========================================================
-   LOGIN
-========================================================= */
-
-async login(login,password,remember=false){
-const identifier=this.cleanText(login);
-const pw=String(password||"");
-
-if(!identifier||!pw){
-return{
-success:false,
-message:"يرجى إدخال البريد الإلكتروني وكلمة المرور."
-}
-}
-
-if(!identifier.includes("@")){
-return{
-success:false,
-message:"حالياً سجّل الدخول بالبريد الإلكتروني."
-}
-}
-
-try{
-const d=await this.authFetch(
-"/auth/v1/token?grant_type=password",
-{
-method:"POST",
-body:JSON.stringify({
-email:this.normalizeEmail(identifier),
-password:pw
-})
-}
-);
-
-if(!d.access_token||!d.user){
-return{
-success:false,
-message:"تعذر إنشاء جلسة المستخدم."
-}
-}
-
-this.storeSession(
-d,
-remember
-);
-
-localStorage.setItem(
-this.keys.rememberedUser,
-remember?identifier:""
-);
-
-this.clearPendingVerification();
-
-return{
-success:true,
-user:this.getSafeUser(d.user)
-}
-
-}catch(e){
-return{
-success:false,
-message:this.mapAuthError(e)
-}
-}
-},
-
-storeSession(s,remember=false){
-const x={
-access_token:s.access_token,
-refresh_token:s.refresh_token,
-expires_in:s.expires_in,
-expires_at:s.expires_at||
-Math.floor(Date.now()/1000)+(s.expires_in||3600),
-token_type:s.token_type||"bearer",
-user:s.user,
-remember:Boolean(remember)
-};
-
-const str=JSON.stringify(x);
-
-if(remember){
-localStorage.setItem(
-this.keys.session,
-str
-);
-sessionStorage.removeItem(
-this.keys.session
-)
-}else{
-sessionStorage.setItem(
-this.keys.session,
-str
-);
-localStorage.removeItem(
-this.keys.session
-)
-}
-
-localStorage.setItem(
-this.keys.cachedUser,
-JSON.stringify(
-this.getSafeUser(s.user)
-)
-);
-
-return x
-},
-
-getSession(){
-const raw=
-sessionStorage.getItem(this.keys.session)||
-localStorage.getItem(this.keys.session);
-
-if(!raw)return null;
-
-try{
-const s=JSON.parse(raw);
-
-return(
-s?.access_token&&
-s?.user
-)?s:null
-}catch(e){
-return null
-}
-},
-
-isLoggedIn(){
-return!!this.getSession()
-},
-
-getCurrentUser(){
-const s=this.getSession();
-
-if(s?.user){
-return this.getSafeUser(
-s.user
-)
-}
-
-try{
-return JSON.parse(
-localStorage.getItem(
-this.keys.cachedUser
-)||"null"
-)
-}catch(e){
-return null
-}
-},
-
-getRememberedUser(){
-return localStorage.getItem(
-this.keys.rememberedUser
-)||""
-},
-
-async refreshSession(){
-const s=this.getSession();
-
-if(!s?.refresh_token){
-return false
-}
-
-if(
-(s.expires_at||0)>
-Math.floor(Date.now()/1000)+60
-){
-return true
-}
-
-try{
-const d=await this.authFetch(
-"/auth/v1/token?grant_type=refresh_token",
-{
-method:"POST",
-body:JSON.stringify({
-refresh_token:s.refresh_token
-})
-}
-);
-
-this.storeSession(
-d,
-s.remember
-);
-
-return true
-
-}catch(e){
-this.logout(false);
-return false
-}
-},
-
-/* =========================================================
-   LOGOUT CORE
-========================================================= */
-
-async logout(redirect=true){
-const s=this.getSession();
-
-try{
-if(s?.access_token){
-await this.authFetch(
-"/auth/v1/logout",
-{
-method:"POST"
-}
-)
-}
-}catch(e){}
-
-sessionStorage.removeItem(
-this.keys.session
-);
-
-localStorage.removeItem(
-this.keys.session
-);
-
-localStorage.removeItem(
-this.keys.cachedUser
-);
-
-sessionStorage.removeItem(
-"varex_authenticated"
-);
-
-localStorage.removeItem(
-"varex_authenticated"
-);
-
 if(redirect){
-location.replace(
-"./login.html"
-)
+location.replace("./login.html")
 }
 
 return true
 },
 
 requireLogin(){
-if(
-this.isLoginPage()||
-this.isRegisterPage()||
-this.isVerifyEmailPage()
-){
-return true
-}
+if(this.isLoginPage()||this.isRegisterPage()||this.isVerifyEmailPage())return true;
 
 if(!this.isLoggedIn()){
-location.replace(
-"./login.html"
-);
+location.replace("./login.html");
 return false
 }
 
@@ -730,194 +238,72 @@ this.refreshSession();
 return true
 },
 
-isLoginPage(){
-return location.pathname
-.toLowerCase()
-.endsWith("login.html")
-},
-
-isRegisterPage(){
-return location.pathname
-.toLowerCase()
-.endsWith("register.html")
-},
-
-isVerifyEmailPage(){
-return location.pathname
-.toLowerCase()
-.endsWith("verify-email.html")
-},
+isLoginPage(){return location.pathname.toLowerCase().endsWith("login.html")},
+isRegisterPage(){return location.pathname.toLowerCase().endsWith("register.html")},
+isVerifyEmailPage(){return location.pathname.toLowerCase().endsWith("verify-email.html")},
 
 redirectLoggedUser(){
-if(
-(
-this.isLoginPage()||
-this.isRegisterPage()
-)&&
-this.isLoggedIn()
-){
-location.replace(
-"./index.html"
-);
+if((this.isLoginPage()||this.isRegisterPage())&&this.isLoggedIn()){
+location.replace("./index.html");
 return true
 }
-
 return false
 },
 
 async requestPasswordReset(email){
 const mail=this.normalizeEmail(email);
-
-if(!mail){
-return{
-success:false,
-message:"يرجى إدخال البريد الإلكتروني."
-}
-}
+if(!mail)return{success:false,message:"يرجى إدخال البريد الإلكتروني."};
 
 try{
-await this.authFetch(
-"/auth/v1/recover",
-{
-method:"POST",
-body:JSON.stringify({
-email:mail
-})
-}
-);
-
-return{
-success:true,
-message:"تم إرسال تعليمات استعادة كلمة المرور إلى بريدك الإلكتروني."
-}
-
+await this.authFetch("/auth/v1/recover",{method:"POST",body:JSON.stringify({email:mail})});
+return{success:true,message:"تم إرسال تعليمات استعادة كلمة المرور إلى بريدك الإلكتروني."}
 }catch(e){
-return{
-success:false,
-message:this.mapAuthError(e)
-}
+return{success:false,message:this.mapAuthError(e)}
 }
 },
 
 async updateCurrentUser(changes={}){
 const s=this.getSession();
-
-if(!s){
-return{
-success:false,
-message:"لا يوجد مستخدم مسجل الدخول."
-}
-}
+if(!s)return{success:false,message:"لا يوجد مستخدم مسجل الدخول."};
 
 const body={};
 
-if(changes.email!==undefined){
-body.email=this.normalizeEmail(
-changes.email
-)
-}
+if(changes.email!==undefined)body.email=this.normalizeEmail(changes.email);
 
 const data={};
 
-[
-"name",
-"username",
-"role"
-]
-.forEach(k=>{
-if(changes[k]!==undefined){
-data[k]=this.cleanText(
-changes[k]
-)
-}
+["name","username","role"].forEach(k=>{
+if(changes[k]!==undefined)data[k]=this.cleanText(changes[k])
 });
 
 if(Object.keys(data).length){
-body.data={
-...(s.user.user_metadata||{}),
-...data
-}
+body.data={...(s.user.user_metadata||{}),...data}
 }
 
 try{
-const u=await this.authFetch(
-"/auth/v1/user",
-{
-method:"PUT",
-body:JSON.stringify(body)
-}
-);
-
+const u=await this.authFetch("/auth/v1/user",{method:"PUT",body:JSON.stringify(body)});
 s.user=u;
-
-this.storeSession(
-s,
-s.remember
-);
-
-return{
-success:true,
-user:this.getSafeUser(u)
-}
-
+this.storeSession(s,s.remember);
+return{success:true,user:this.getSafeUser(u)}
 }catch(e){
-return{
-success:false,
-message:this.mapAuthError(e)
-}
+return{success:false,message:this.mapAuthError(e)}
 }
 },
 
-async changePassword(
-currentPassword,
-newPassword
-){
-if(
-String(newPassword||"").length<6
-){
-return{
-success:false,
-message:"كلمة المرور الجديدة يجب أن تحتوي على 6 أحرف على الأقل."
-}
-}
+async changePassword(currentPassword,newPassword){
+if(String(newPassword||"").length<6)return{success:false,message:"كلمة المرور الجديدة يجب أن تحتوي على 6 أحرف على الأقل."};
 
 const s=this.getSession();
 
-if(!s){
-return{
-success:false,
-message:"يجب تسجيل الدخول أولاً."
-}
-}
+if(!s)return{success:false,message:"يجب تسجيل الدخول أولاً."};
 
 try{
-const u=await this.authFetch(
-"/auth/v1/user",
-{
-method:"PUT",
-body:JSON.stringify({
-password:String(newPassword)
-})
-}
-);
-
+const u=await this.authFetch("/auth/v1/user",{method:"PUT",body:JSON.stringify({password:String(newPassword)})});
 s.user=u;
-
-this.storeSession(
-s,
-s.remember
-);
-
-return{
-success:true,
-message:"تم تغيير كلمة المرور بنجاح."
-}
-
+this.storeSession(s,s.remember);
+return{success:true,message:"تم تغيير كلمة المرور بنجاح."}
 }catch(e){
-return{
-success:false,
-message:this.mapAuthError(e)
-}
+return{success:false,message:this.mapAuthError(e)}
 }
 },
 
@@ -926,59 +312,23 @@ message:this.mapAuthError(e)
 ========================================================= */
 
 getSubscription(){
-const defaults={
-plan:"",
-planName:"",
-status:"inactive",
-billingType:"",
-price:0,
-currency:"AED",
-startedAt:"",
-expiresAt:"",
-lifetime:false,
-licenseKey:"",
-paymentStatus:"unpaid",
-updatedAt:""
-};
+const defaults={plan:"",planName:"",status:"inactive",billingType:"",price:0,currency:"AED",startedAt:"",expiresAt:"",lifetime:false,licenseKey:"",paymentStatus:"unpaid",updatedAt:""};
 
 try{
-const x=JSON.parse(
-localStorage.getItem(
-this.keys.subscription
-)||"null"
-);
-
-if(
-x&&
-typeof x==="object"&&
-!Array.isArray(x)
-){
-return{
-...defaults,
-...x
-}
-}
+const x=JSON.parse(localStorage.getItem(this.keys.subscription)||"null");
+if(x&&typeof x==="object"&&!Array.isArray(x))return{...defaults,...x}
 }catch(e){
 console.error(e)
 }
 
-return{
-...defaults
-}
+return{...defaults}
 },
 
 saveSubscription(data={}){
-const x={
-...this.getSubscription(),
-...data,
-updatedAt:this.now()
-};
+const x={...this.getSubscription(),...data,updatedAt:this.now()};
 
 try{
-localStorage.setItem(
-this.keys.subscription,
-JSON.stringify(x)
-);
+localStorage.setItem(this.keys.subscription,JSON.stringify(x));
 return x
 }catch(e){
 console.error(e);
@@ -987,20 +337,13 @@ return false
 },
 
 generateLicenseKey(){
-const chars=
-"ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-
+const chars="ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
 let result="VAREX";
 
 for(let g=0;g<4;g++){
 result+="-";
-
 for(let i=0;i<4;i++){
-result+=chars[
-Math.floor(
-Math.random()*chars.length
-)
-]
+result+=chars[Math.floor(Math.random()*chars.length)]
 }
 }
 
@@ -1008,12 +351,7 @@ return result
 },
 
 activateSubscription(options={}){
-const type=String(
-options.billingType||
-options.type||
-"monthly"
-);
-
+const type=String(options.billingType||options.type||"monthly");
 const now=new Date();
 
 let expiresAt="";
@@ -1021,99 +359,54 @@ let lifetime=false;
 
 if(type==="monthly"){
 const expiry=new Date(now);
-expiry.setMonth(
-expiry.getMonth()+1
-);
+expiry.setMonth(expiry.getMonth()+1);
 expiresAt=expiry.toISOString()
-}
-
-else if(type==="yearly"){
+}else if(type==="yearly"){
 const expiry=new Date(now);
-expiry.setFullYear(
-expiry.getFullYear()+1
-);
+expiry.setFullYear(expiry.getFullYear()+1);
 expiresAt=expiry.toISOString()
-}
-
-else if(type==="lifetime"){
+}else if(type==="lifetime"){
 lifetime=true;
 expiresAt=""
 }
 
 return this.saveSubscription({
 plan:options.plan||"business",
-planName:
-options.planName||
-"VAREX Business",
+planName:options.planName||"VAREX Business",
 billingType:type,
-price:this.positiveNumber(
-options.price
-),
-currency:
-options.currency||
-"AED",
+price:this.positiveNumber(options.price),
+currency:options.currency||"AED",
 status:"active",
-paymentStatus:
-options.paymentStatus||
-"paid",
-startedAt:
-now.toISOString(),
+paymentStatus:options.paymentStatus||"paid",
+startedAt:now.toISOString(),
 expiresAt,
 lifetime,
-licenseKey:
-options.licenseKey||
-this.generateLicenseKey()
+licenseKey:options.licenseKey||this.generateLicenseKey()
 })
 },
 
 cancelSubscription(){
-return this.saveSubscription({
-...this.getSubscription(),
-status:"cancelled"
-})
+return this.saveSubscription({...this.getSubscription(),status:"cancelled"})
 },
 
 expireSubscription(){
-return this.saveSubscription({
-...this.getSubscription(),
-status:"expired"
-})
+return this.saveSubscription({...this.getSubscription(),status:"expired"})
 },
 
 isSubscriptionActive(){
 const s=this.getSubscription();
 
-if(s.status!=="active"){
-return false
-}
+if(s.status!=="active")return false;
 
-if(
-s.lifetime===true||
-s.billingType==="lifetime"
-){
-return true
-}
+if(s.lifetime===true||s.billingType==="lifetime")return true;
 
-if(!s.expiresAt){
-return false
-}
+if(!s.expiresAt)return false;
 
-const expiry=new Date(
-s.expiresAt
-);
+const expiry=new Date(s.expiresAt);
 
-if(
-Number.isNaN(
-expiry.getTime()
-)
-){
-return false
-}
+if(Number.isNaN(expiry.getTime()))return false;
 
-if(
-expiry.getTime()<=
-Date.now()
-){
+if(expiry.getTime()<=Date.now()){
 this.expireSubscription();
 return false
 }
@@ -1124,97 +417,46 @@ return true
 getSubscriptionDaysRemaining(){
 const s=this.getSubscription();
 
-if(
-s.lifetime===true||
-s.billingType==="lifetime"
-){
-return Infinity
-}
+if(s.lifetime===true||s.billingType==="lifetime")return Infinity;
 
-if(!s.expiresAt){
-return 0
-}
+if(!s.expiresAt)return 0;
 
-const expiry=new Date(
-s.expiresAt
-);
+const expiry=new Date(s.expiresAt);
 
-if(
-Number.isNaN(
-expiry.getTime()
-)
-){
-return 0
-}
+if(Number.isNaN(expiry.getTime()))return 0;
 
-return Math.max(
-0,
-Math.ceil(
-(
-expiry.getTime()-
-Date.now()
-)/
-86400000
-)
-)
+return Math.max(0,Math.ceil((expiry.getTime()-Date.now())/86400000))
 },
 
 getSubscriptionStatus(){
-const subscription=
-this.getSubscription();
+const subscription=this.getSubscription();
 
 return{
 ...subscription,
 active:this.isSubscriptionActive(),
-daysRemaining:
-this.getSubscriptionDaysRemaining()
+daysRemaining:this.getSubscriptionDaysRemaining()
 }
 },
 
-isSubscriptionPage(){
-return location.pathname
-.toLowerCase()
-.endsWith(
-"subscription.html"
-)
-},
-
-isSubscriptionSuccessPage(){
-return location.pathname
-.toLowerCase()
-.endsWith(
-"subscription-success.html"
-)
-},
+isSubscriptionPage(){return location.pathname.toLowerCase().endsWith("subscription.html")},
+isSubscriptionSuccessPage(){return location.pathname.toLowerCase().endsWith("subscription-success.html")},
 
 isSubscriptionGateEnabled(){
-return localStorage.getItem(
-this.keys.subscriptionGate
-)==="true"
+return localStorage.getItem(this.keys.subscriptionGate)==="true"
 },
 
 enableSubscriptionGate(){
-localStorage.setItem(
-this.keys.subscriptionGate,
-"true"
-);
+localStorage.setItem(this.keys.subscriptionGate,"true");
 return true
 },
 
 disableSubscriptionGate(){
-localStorage.setItem(
-this.keys.subscriptionGate,
-"false"
-);
+localStorage.setItem(this.keys.subscriptionGate,"false");
 return true
 },
 
 requireSubscription(){
-if(
-!this.isSubscriptionGateEnabled()
-){
-return true
-}
+if(!this.isSubscriptionGateEnabled())return true;
 
 if(
 this.isLoginPage()||
@@ -1222,21 +464,15 @@ this.isRegisterPage()||
 this.isVerifyEmailPage()||
 this.isSubscriptionPage()||
 this.isSubscriptionSuccessPage()
-){
-return true
-}
+)return true;
 
 if(!this.isLoggedIn()){
-location.replace(
-"./login.html"
-);
+location.replace("./login.html");
 return false
 }
 
 if(!this.isSubscriptionActive()){
-location.replace(
-"./subscription.html"
-);
+location.replace("./subscription.html");
 return false
 }
 
@@ -1247,36 +483,13 @@ return true
    PRODUCTS
 ========================================================= */
 
-getProducts(){
-return this.getData(
-this.keys.products
-)
-},
-
-saveProducts(x){
-return this.saveData(
-this.keys.products,
-x
-)
-},
-
-getProductById(id){
-return this.getProducts()
-.find(
-x=>
-String(x.id)===
-String(id)
-)||null
-},
+getProducts(){return this.getData(this.keys.products)},
+saveProducts(x){return this.saveData(this.keys.products,x)},
+getProductById(id){return this.getProducts().find(x=>String(x.id)===String(id))||null},
 
 findProductByBarcode(b){
 b=this.cleanText(b);
-
-return this.getProducts()
-.find(
-x=>
-this.cleanText(x.barcode)===b
-)||null
+return this.getProducts().find(x=>this.cleanText(x.barcode)===b)||null
 },
 
 addProduct(p={}){
@@ -1284,110 +497,48 @@ const a=this.getProducts();
 
 const x={
 ...p,
-id:
-p.id||
-this.generateId("PRD"),
-name:
-this.cleanText(
-p.name||
-p.productName
-),
-quantity:
-this.positiveNumber(
-p.quantity
-),
-price:
-this.positiveNumber(
-p.price||
-p.salePrice
-),
-cost:
-this.positiveNumber(
-p.cost||
-p.costPrice
-),
-createdAt:
-p.createdAt||
-this.now(),
-updatedAt:
-this.now()
+id:p.id||this.generateId("PRD"),
+name:this.cleanText(p.name||p.productName),
+quantity:this.positiveNumber(p.quantity),
+price:this.positiveNumber(p.price||p.salePrice),
+cost:this.positiveNumber(p.cost||p.costPrice),
+createdAt:p.createdAt||this.now(),
+updatedAt:this.now()
 };
 
 a.push(x);
 this.saveProducts(a);
-
 return x
 },
 
 updateProduct(id,c={}){
 const a=this.getProducts();
+const i=a.findIndex(x=>String(x.id)===String(id));
 
-const i=a.findIndex(
-x=>
-String(x.id)===
-String(id)
-);
+if(i<0)return false;
 
-if(i<0){
-return false
-}
-
-a[i]={
-...a[i],
-...c,
-id:a[i].id,
-updatedAt:this.now()
-};
-
+a[i]={...a[i],...c,id:a[i].id,updatedAt:this.now()};
 this.saveProducts(a);
-
 return a[i]
 },
 
 deleteProduct(id){
 const a=this.getProducts();
-
-const b=a.filter(
-x=>
-String(x.id)!==
-String(id)
-);
-
+const b=a.filter(x=>String(x.id)!==String(id));
 this.saveProducts(b);
-
-return(
-b.length!==
-a.length
-)
+return b.length!==a.length
 },
 
 adjustStock(id,n){
 const a=this.getProducts();
+const i=a.findIndex(x=>String(x.id)===String(id));
 
-const i=a.findIndex(
-x=>
-String(x.id)===
-String(id)
-);
+if(i<0)return false;
 
-if(i<0){
-return false
-}
-
-a[i].quantity=
-Math.max(
-0,
-this.toNumber(
-a[i].quantity
-)+
-this.toNumber(n)
-);
-
-a[i].updatedAt=
-this.now();
+a[i].quantity=Math.max(0,this.toNumber(a[i].quantity)+this.toNumber(n));
+a[i].updatedAt=this.now();
 
 this.saveProducts(a);
-
 return a[i]
 },
 
@@ -1395,51 +546,23 @@ return a[i]
    SALES
 ========================================================= */
 
-getSales(){
-return this.getData(
-this.keys.sales
-)
-},
-
-saveSales(x){
-return this.saveData(
-this.keys.sales,
-x
-)
-},
-
-getSaleById(id){
-return this.getSales()
-.find(
-x=>
-String(x.id)===
-String(id)
-)||null
-},
+getSales(){return this.getData(this.keys.sales)},
+saveSales(x){return this.saveData(this.keys.sales,x)},
+getSaleById(id){return this.getSales().find(x=>String(x.id)===String(id))||null},
 
 addSale(s={}){
 const a=this.getSales();
 
 const x={
 ...s,
-id:
-s.id||
-this.generateId("SAL"),
-invoiceNumber:
-s.invoiceNumber||
-`INV-${Date.now()}`,
-createdAt:
-s.createdAt||
-this.now(),
-date:
-s.date||
-this.now(),
-updatedAt:
-this.now()
+id:s.id||this.generateId("SAL"),
+invoiceNumber:s.invoiceNumber||`INV-${Date.now()}`,
+createdAt:s.createdAt||this.now(),
+date:s.date||this.now(),
+updatedAt:this.now()
 };
 
 a.push(x);
-
 this.saveSales(a);
 
 return x
@@ -1447,317 +570,100 @@ return x
 
 deleteSale(id){
 const a=this.getSales();
-
-const b=a.filter(
-x=>
-String(x.id)!==
-String(id)
-);
+const b=a.filter(x=>String(x.id)!==String(id));
 
 this.saveSales(b);
 
-return(
-b.length!==
-a.length
-)
+return b.length!==a.length
 },
 
 completeSale(s={}){
-const items=
-Array.isArray(s.items)
-?s.items
-:[];
+const items=Array.isArray(s.items)?s.items:[];
 
 if(!items.length){
-return{
-success:false,
-message:"لا توجد منتجات في الفاتورة."
-}
+return{success:false,message:"لا توجد منتجات في الفاتورة."}
 }
 
 const p=this.getProducts();
 
 for(const x of items){
-const i=p.findIndex(
-y=>
-String(y.id)===
-String(
-x.productId||
-x.id
-)
-);
+const i=p.findIndex(y=>String(y.id)===String(x.productId||x.id));
+const q=this.positiveNumber(x.quantity||x.qty||1);
 
-const q=this.positiveNumber(
-x.quantity||
-x.qty||
-1
-);
-
-if(
-i>=0&&
-q>
-this.toNumber(
-p[i].quantity
-)
-){
-return{
-success:false,
-message:
-"الكمية غير متوفرة للمنتج: "+
-(p[i].name||"")
-}
+if(i>=0&&q>this.toNumber(p[i].quantity)){
+return{success:false,message:"الكمية غير متوفرة للمنتج: "+(p[i].name||"")}
 }
 }
 
 for(const x of items){
-const i=p.findIndex(
-y=>
-String(y.id)===
-String(
-x.productId||
-x.id
-)
-);
-
-const q=this.positiveNumber(
-x.quantity||
-x.qty||
-1
-);
+const i=p.findIndex(y=>String(y.id)===String(x.productId||x.id));
+const q=this.positiveNumber(x.quantity||x.qty||1);
 
 if(i>=0){
-p[i].quantity=
-Math.max(
-0,
-this.toNumber(
-p[i].quantity
-)-q
-);
-
-p[i].updatedAt=
-this.now()
+p[i].quantity=Math.max(0,this.toNumber(p[i].quantity)-q);
+p[i].updatedAt=this.now()
 }
 }
 
 this.saveProducts(p);
 
-return{
-success:true,
-sale:this.addSale(s)
-}
+return{success:true,sale:this.addSale(s)}
 },
 
 /* =========================================================
    CUSTOMERS
 ========================================================= */
 
-getCustomers(){
-return this.getData(
-this.keys.customers
-)
-},
-
-saveCustomers(x){
-return this.saveData(
-this.keys.customers,
-x
-)
-},
-
-addCustomer(x={}){
-return this._add(
-this.keys.customers,
-"CUS",
-x
-)
-},
-
-updateCustomer(id,c={}){
-return this._update(
-this.keys.customers,
-id,
-c
-)
-},
-
-deleteCustomer(id){
-return this._delete(
-this.keys.customers,
-id
-)
-},
+getCustomers(){return this.getData(this.keys.customers)},
+saveCustomers(x){return this.saveData(this.keys.customers,x)},
+addCustomer(x={}){return this._add(this.keys.customers,"CUS",x)},
+updateCustomer(id,c={}){return this._update(this.keys.customers,id,c)},
+deleteCustomer(id){return this._delete(this.keys.customers,id)},
 
 /* =========================================================
    SUPPLIERS
 ========================================================= */
 
-getSuppliers(){
-return this.getData(
-this.keys.suppliers
-)
-},
-
-saveSuppliers(x){
-return this.saveData(
-this.keys.suppliers,
-x
-)
-},
-
-addSupplier(x={}){
-return this._add(
-this.keys.suppliers,
-"SUP",
-x
-)
-},
-
-updateSupplier(id,c={}){
-return this._update(
-this.keys.suppliers,
-id,
-c
-)
-},
-
-deleteSupplier(id){
-return this._delete(
-this.keys.suppliers,
-id
-)
-},
+getSuppliers(){return this.getData(this.keys.suppliers)},
+saveSuppliers(x){return this.saveData(this.keys.suppliers,x)},
+addSupplier(x={}){return this._add(this.keys.suppliers,"SUP",x)},
+updateSupplier(id,c={}){return this._update(this.keys.suppliers,id,c)},
+deleteSupplier(id){return this._delete(this.keys.suppliers,id)},
 
 /* =========================================================
    EMPLOYEES
 ========================================================= */
 
-getEmployees(){
-return this.getData(
-this.keys.employees
-)
-},
-
-saveEmployees(x){
-return this.saveData(
-this.keys.employees,
-x
-)
-},
-
-addEmployee(x={}){
-return this._add(
-this.keys.employees,
-"EMP",
-x
-)
-},
-
-updateEmployee(id,c={}){
-return this._update(
-this.keys.employees,
-id,
-c
-)
-},
-
-deleteEmployee(id){
-return this._delete(
-this.keys.employees,
-id
-)
-},
+getEmployees(){return this.getData(this.keys.employees)},
+saveEmployees(x){return this.saveData(this.keys.employees,x)},
+addEmployee(x={}){return this._add(this.keys.employees,"EMP",x)},
+updateEmployee(id,c={}){return this._update(this.keys.employees,id,c)},
+deleteEmployee(id){return this._delete(this.keys.employees,id)},
 
 /* =========================================================
    TRANSACTIONS
 ========================================================= */
 
-getTransactions(){
-return this.getData(
-this.keys.transactions
-)
-},
-
-saveTransactions(x){
-return this.saveData(
-this.keys.transactions,
-x
-)
-},
+getTransactions(){return this.getData(this.keys.transactions)},
+saveTransactions(x){return this.saveData(this.keys.transactions,x)},
 
 addTransaction(x={}){
-x={
-...x,
-amount:
-this.positiveNumber(
-x.amount
-),
-date:
-x.date||
-this.today()
-};
-
-return this._add(
-this.keys.transactions,
-"TRX",
-x
-)
+x={...x,amount:this.positiveNumber(x.amount),date:x.date||this.today()};
+return this._add(this.keys.transactions,"TRX",x)
 },
 
-updateTransaction(id,c={}){
-return this._update(
-this.keys.transactions,
-id,
-c
-)
-},
-
-deleteTransaction(id){
-return this._delete(
-this.keys.transactions,
-id
-)
-},
+updateTransaction(id,c={}){return this._update(this.keys.transactions,id,c)},
+deleteTransaction(id){return this._delete(this.keys.transactions,id)},
 
 /* =========================================================
    HELD SALES
 ========================================================= */
 
-getHeldSales(){
-return this.getData(
-this.keys.heldSales
-)
-},
-
-saveHeldSales(x){
-return this.saveData(
-this.keys.heldSales,
-x
-)
-},
-
-holdSale(x={}){
-return this._add(
-this.keys.heldSales,
-"HOLD",
-x
-)
-},
-
-removeHeldSale(id){
-return this._delete(
-this.keys.heldSales,
-id
-)
-},
-
-getHeldSaleById(id){
-return this.getHeldSales()
-.find(
-x=>
-String(x.id)===
-String(id)
-)||null
-},
+getHeldSales(){return this.getData(this.keys.heldSales)},
+saveHeldSales(x){return this.saveData(this.keys.heldSales,x)},
+holdSale(x={}){return this._add(this.keys.heldSales,"HOLD",x)},
+removeHeldSale(id){return this._delete(this.keys.heldSales,id)},
+getHeldSaleById(id){return this.getHeldSales().find(x=>String(x.id)===String(id))||null},
 
 /* =========================================================
    GENERIC HELPERS
@@ -1765,44 +671,19 @@ String(id)
 
 _add(k,p,x={}){
 const a=this.getData(k);
-
-const o={
-...x,
-id:
-x.id||
-this.generateId(p),
-createdAt:
-x.createdAt||
-this.now(),
-updatedAt:
-this.now()
-};
-
+const o={...x,id:x.id||this.generateId(p),createdAt:x.createdAt||this.now(),updatedAt:this.now()};
 a.push(o);
 this.saveData(k,a);
-
 return o
 },
 
 _update(k,id,c={}){
 const a=this.getData(k);
+const i=a.findIndex(x=>String(x.id)===String(id));
 
-const i=a.findIndex(
-x=>
-String(x.id)===
-String(id)
-);
+if(i<0)return false;
 
-if(i<0){
-return false
-}
-
-a[i]={
-...a[i],
-...c,
-id:a[i].id,
-updatedAt:this.now()
-};
+a[i]={...a[i],...c,id:a[i].id,updatedAt:this.now()};
 
 this.saveData(k,a);
 
@@ -1811,19 +692,11 @@ return a[i]
 
 _delete(k,id){
 const a=this.getData(k);
-
-const b=a.filter(
-x=>
-String(x.id)!==
-String(id)
-);
+const b=a.filter(x=>String(x.id)!==String(id));
 
 this.saveData(k,b);
 
-return(
-b.length!==
-a.length
-)
+return b.length!==a.length
 },
 
 /* =========================================================
@@ -1831,63 +704,28 @@ a.length
 ========================================================= */
 
 getSettings(){
-const d={
-businessName:"VAREX",
-currency:"AED",
-currencySymbol:"د.إ",
-taxEnabled:true,
-taxRate:5,
-lowStockLimit:5,
-language:"ar"
-};
-
-const p=this.getObject(
-this.keys.settings,
-{}
-);
+const d={businessName:"VAREX",currency:"AED",currencySymbol:"د.إ",taxEnabled:true,taxRate:5,lowStockLimit:5,language:"ar"};
+const p=this.getObject(this.keys.settings,{});
 
 let l={};
 
 try{
-const x=JSON.parse(
-localStorage.getItem(
-"varexSettings"
-)||"null"
-);
+const x=JSON.parse(localStorage.getItem("varexSettings")||"null");
 
-if(
-x&&
-typeof x==="object"&&
-!Array.isArray(x)
-){
+if(x&&typeof x==="object"&&!Array.isArray(x)){
 l=x
 }
 }catch(e){}
 
-return{
-...d,
-...l,
-...p
-}
+return{...d,...l,...p}
 },
 
 saveSettings(s={}){
-const d={
-...this.getSettings(),
-...s,
-updatedAt:this.now()
-};
-
-const ok=this.saveObject(
-this.keys.settings,
-d
-);
+const d={...this.getSettings(),...s,updatedAt:this.now()};
+const ok=this.saveObject(this.keys.settings,d);
 
 try{
-localStorage.setItem(
-"varexSettings",
-JSON.stringify(d)
-)
+localStorage.setItem("varexSettings",JSON.stringify(d))
 }catch(e){}
 
 return ok
@@ -1895,84 +733,35 @@ return ok
 
 money(v){
 const s=this.getSettings();
-
-const sym=
-this.cleanText(
-s.currencySymbol
-)||
-(
-s.currency==="AED"
-?"د.إ"
-:s.currency
-);
-
+const sym=this.cleanText(s.currencySymbol)||(s.currency==="AED"?"د.إ":s.currency);
 return`${this.toNumber(v).toFixed(2)} ${sym}`
 },
 
 calculateTax(v){
 const s=this.getSettings();
-
-return(
-s.taxEnabled===false
-)
-?0:
-this.positiveNumber(v)*
-this.toNumber(
-s.taxRate,
-5
-)/100
+return s.taxEnabled===false?0:this.positiveNumber(v)*this.toNumber(s.taxRate,5)/100
 },
 
 getTodaySales(){
 const t=this.today();
 
-return this.getSales()
-.filter(
-s=>
-this.normalizeDate(
-s.createdAt||
-s.date||
-s.saleDate||
-s.invoiceDate||
-""
-)===t
+return this.getSales().filter(
+s=>this.normalizeDate(s.createdAt||s.date||s.saleDate||s.invoiceDate||"")===t
 )
 },
 
 getTodaySalesTotal(){
-return this.getTodaySales()
-.reduce(
-(a,s)=>
-a+
-this.toNumber(
-s.total??
-s.grandTotal??
-s.finalTotal??
-s.netTotal??
-s.amount??
-0
-),
+return this.getTodaySales().reduce(
+(a,s)=>a+this.toNumber(s.total??s.grandTotal??s.finalTotal??s.netTotal??s.amount??0),
 0
 )
 },
 
 getStockAlerts(){
-const l=this.toNumber(
-this.getSettings()
-.lowStockLimit,
-5
-);
+const l=this.toNumber(this.getSettings().lowStockLimit,5);
 
-return this.getProducts()
-.filter(
-p=>
-this.toNumber(
-p.quantity
-)<=
-this.toNumber(
-p.minimumStock,
-l
-)
+return this.getProducts().filter(
+p=>this.toNumber(p.quantity)<=this.toNumber(p.minimumStock,l)
 )
 },
 
@@ -1985,38 +774,18 @@ this.keys.suppliers,
 this.keys.employees,
 this.keys.transactions,
 this.keys.heldSales
-]
-.forEach(k=>{
-if(
-localStorage.getItem(k)===
-null
-){
-localStorage.setItem(
-k,
-"[]"
-)
+].forEach(k=>{
+if(localStorage.getItem(k)===null){
+localStorage.setItem(k,"[]")
 }
 });
 
-if(
-localStorage.getItem(
-this.keys.settings
-)===null
-){
-this.saveSettings(
-this.getSettings()
-)
+if(localStorage.getItem(this.keys.settings)===null){
+this.saveSettings(this.getSettings())
 }
 
-if(
-localStorage.getItem(
-this.keys.subscriptionGate
-)===null
-){
-localStorage.setItem(
-this.keys.subscriptionGate,
-"false"
-)
+if(localStorage.getItem(this.keys.subscriptionGate)===null){
+localStorage.setItem(this.keys.subscriptionGate,"false")
 }
 
 return true
@@ -2030,9 +799,7 @@ return true
 ========================================================= */
 
 VAREX.initialize();
-
-window.VAREX=
-VAREX;
+window.VAREX=VAREX;
 
 
 /* =========================================================
@@ -2060,50 +827,27 @@ const VAREX_MENU=[
 ["setting.html","⚙️","الإعدادات"]
 ];
 
-
-const VAREX_SIDEBAR_SCROLL_KEY=
-"varex_sidebar_scroll_position";
-
+const VAREX_SIDEBAR_SCROLL_KEY="varex_sidebar_scroll_position";
 
 function varexGetSidebar(){
-return document.querySelector(
-".sidebar"
-)
+return document.querySelector(".sidebar")
 }
 
-
-/* =========================================================
-   SIDEBAR SCROLL
-========================================================= */
-
 function varexSaveSidebarScroll(){
-const sidebar=
-varexGetSidebar();
+const sidebar=varexGetSidebar();
 
 if(!sidebar)return;
 
-const value=
-String(
-sidebar.scrollTop||0
-);
+const value=String(sidebar.scrollTop||0);
 
 try{
-sessionStorage.setItem(
-VAREX_SIDEBAR_SCROLL_KEY,
-value
-);
-
-localStorage.setItem(
-VAREX_SIDEBAR_SCROLL_KEY,
-value
-)
+sessionStorage.setItem(VAREX_SIDEBAR_SCROLL_KEY,value);
+localStorage.setItem(VAREX_SIDEBAR_SCROLL_KEY,value)
 }catch(e){}
 }
 
-
 function varexRestoreSidebarScroll(){
-const sidebar=
-varexGetSidebar();
+const sidebar=varexGetSidebar();
 
 if(!sidebar)return;
 
@@ -2111,46 +855,26 @@ let saved=0;
 
 try{
 saved=Number(
-sessionStorage.getItem(
-VAREX_SIDEBAR_SCROLL_KEY
-)||
-localStorage.getItem(
-VAREX_SIDEBAR_SCROLL_KEY
-)||
+sessionStorage.getItem(VAREX_SIDEBAR_SCROLL_KEY)||
+localStorage.getItem(VAREX_SIDEBAR_SCROLL_KEY)||
 0
 )
 }catch(e){}
 
-if(
-!Number.isFinite(saved)||
-saved<0
-){
+if(!Number.isFinite(saved)||saved<0){
 saved=0
 }
 
 const restore=()=>{
-const max=Math.max(
-0,
-sidebar.scrollHeight-
-sidebar.clientHeight
-);
-
-sidebar.scrollTop=
-Math.min(
-saved,
-max
-)
+const max=Math.max(0,sidebar.scrollHeight-sidebar.clientHeight);
+sidebar.scrollTop=Math.min(saved,max)
 };
 
-requestAnimationFrame(
-()=>requestAnimationFrame(
-()=>{
+requestAnimationFrame(()=>requestAnimationFrame(()=>{
 restore();
 setTimeout(restore,40);
 setTimeout(restore,120)
-}
-)
-)
+}))
 }
 
 
@@ -2159,44 +883,23 @@ setTimeout(restore,120)
 ========================================================= */
 
 function varexBuildMenu(){
-const nav=
-document.querySelector(
-".sidebar .nav"
-);
+const nav=document.querySelector(".sidebar .nav");
 
 if(!nav)return;
 
-let current=
-location.pathname
-.split("/")
-.pop()
-.toLowerCase();
+let current=location.pathname.split("/").pop().toLowerCase();
 
 if(!current){
 current="index.html"
 }
 
-if(
-current===
-"subscription-success.html"
-){
+if(current==="subscription-success.html"){
 current="subscription.html"
 }
 
-nav.innerHTML=
-VAREX_MENU
-.map(item=>{
-const[
-file,
-icon,
-title
-]=item;
-
-const active=
-current===
-file.toLowerCase()
-?" active"
-:"";
+nav.innerHTML=VAREX_MENU.map(item=>{
+const[file,icon,title]=item;
+const active=current===file.toLowerCase()?" active":"";
 
 return`
 <a href="./${file}" class="${active.trim()}">
@@ -2204,8 +907,7 @@ return`
 <span class="nav-label">${title}</span>
 </a>
 `
-})
-.join("");
+}).join("");
 
 varexAddSidebarActions()
 }
@@ -2216,98 +918,44 @@ varexAddSidebarActions()
 ========================================================= */
 
 function varexAddSidebarActions(){
-const nav=
-document.querySelector(
-".sidebar .nav"
-);
+const nav=document.querySelector(".sidebar .nav");
 
 if(!nav)return;
 
-const box=
-document.createElement(
-"div"
-);
+const box=document.createElement("div");
 
-box.className=
-"varex-sidebar-actions";
+box.className="varex-sidebar-actions";
 
 box.innerHTML=`
 
-<button
-type="button"
-class="varex-theme-button"
-id="varexThemeButton">
-
-<span
-class="nav-icon"
-id="varexThemeIcon">
-🌙
-</span>
-
-<span
-id="varexThemeText">
-الوضع الليلي
-</span>
-
+<button type="button" class="varex-theme-button" id="varexThemeButton">
+<span class="nav-icon" id="varexThemeIcon">🌙</span>
+<span id="varexThemeText">الوضع الليلي</span>
 </button>
 
-
-<button
-type="button"
-class="varex-logout-button"
-id="varexLogoutButton">
-
-<span
-class="varex-power-icon">
-⏻
-</span>
-
-<span>
-تسجيل الخروج
-</span>
-
+<button type="button" class="varex-logout-button" id="varexLogoutButton">
+<span class="varex-power-icon">⏻</span>
+<span>تسجيل الخروج</span>
 </button>
 
-
-<div
-class="varex-sidebar-bottom-space"
-aria-hidden="true">
-</div>
+<div class="varex-sidebar-bottom-space" aria-hidden="true"></div>
 
 `;
 
 nav.appendChild(box);
 
 varexInstallSharedStyles();
-
 varexInstallLogoutUI();
 
-
-document
-.getElementById(
-"varexThemeButton"
-)
-?.addEventListener(
-"click",
-()=>{
+document.getElementById("varexThemeButton")?.addEventListener("click",()=>{
 varexSaveSidebarScroll();
 varexToggleTheme()
-}
-);
+});
 
-
-document
-.getElementById(
-"varexLogoutButton"
-)
-?.addEventListener(
-"click",
-()=>{
+document.getElementById("varexLogoutButton")?.addEventListener("click",()=>{
 varexSaveSidebarScroll();
 varexOpenLogoutDialog()
-}
-);
-
+});
 
 varexUpdateThemeButton()
 }
@@ -2319,24 +967,14 @@ varexUpdateThemeButton()
 
 function varexInstallLogoutUI(){
 
-if(
-document.getElementById(
-"varexLogoutOverlay"
-)
-){
+if(document.getElementById("varexLogoutOverlay")){
 return
 }
 
-const overlay=
-document.createElement(
-"div"
-);
+const overlay=document.createElement("div");
 
-overlay.id=
-"varexLogoutOverlay";
-
-overlay.className=
-"varex-logout-overlay";
+overlay.id="varexLogoutOverlay";
+overlay.className="varex-logout-overlay";
 
 overlay.innerHTML=`
 
@@ -2350,25 +988,25 @@ aria-labelledby="varexLogoutTitle">
 <div class="varex-logout-logo-wrap">
 
 <img
-src="./varex-icon-192.png"
+src="./varex-icon-512.png"
 alt="VAREX"
 class="varex-logout-logo"
-onerror="this.style.display='none';document.getElementById('varexLogoutFallbackLogo').style.display='flex';">
+id="varexLogoutLogo"
+onerror="this.style.display='none';document.getElementById('varexLogoutFallbackLogo').style.display='flex';"
+>
 
 <div
 class="varex-logout-fallback-logo"
 id="varexLogoutFallbackLogo">
-V
+VX
 </div>
 
 </div>
-
 
 <div
 class="varex-logout-loader"
 id="varexLogoutLoader">
 </div>
-
 
 <div
 class="varex-logout-success-icon"
@@ -2376,24 +1014,17 @@ id="varexLogoutSuccessIcon">
 ✓
 </div>
 
-
 <h2
 class="varex-logout-title"
 id="varexLogoutTitle">
-
 تسجيل الخروج
-
 </h2>
-
 
 <p
 class="varex-logout-message"
 id="varexLogoutMessage">
-
 هل تريد تسجيل الخروج من VAREX؟
-
 </p>
-
 
 <div
 class="varex-logout-progress"
@@ -2406,7 +1037,6 @@ id="varexLogoutProgressBar">
 
 </div>
 
-
 <div
 class="varex-logout-actions"
 id="varexLogoutActions">
@@ -2415,19 +1045,14 @@ id="varexLogoutActions">
 type="button"
 class="varex-logout-confirm"
 id="varexLogoutConfirm">
-
 نعم، تسجيل الخروج
-
 </button>
-
 
 <button
 type="button"
 class="varex-logout-cancel"
 id="varexLogoutCancel">
-
 إلغاء
-
 </button>
 
 </div>
@@ -2441,12 +1066,10 @@ id="varexLogoutTransition">
 <div class="varex-logout-transition-logo">
 
 <img
-src="./varex-icon-192.png"
+src="./varex-icon-512.png"
 alt="VAREX">
 
-<div>
-VAREX
-</div>
+<div>VAREX</div>
 
 </div>
 
@@ -2454,58 +1077,32 @@ VAREX
 
 `;
 
-document.body.appendChild(
-overlay
-);
+document.body.appendChild(overlay);
 
+document.getElementById("varexLogoutCancel")
+?.addEventListener("click",varexCloseLogoutDialog);
 
-document
-.getElementById(
-"varexLogoutCancel"
-)
-?.addEventListener(
-"click",
-varexCloseLogoutDialog
-);
+document.getElementById("varexLogoutConfirm")
+?.addEventListener("click",varexRunLogoutSequence);
 
-
-document
-.getElementById(
-"varexLogoutConfirm"
-)
-?.addEventListener(
-"click",
-varexRunLogoutSequence
-);
-
-
-overlay.addEventListener(
-"click",
-event=>{
+overlay.addEventListener("click",event=>{
 if(
-event.target===overlay &&
-!overlay.classList.contains(
-"processing"
-)
-){
-varexCloseLogoutDialog()
-}
-}
-);
-
-
-document.addEventListener(
-"keydown",
-event=>{
-if(
-event.key==="Escape" &&
-overlay.classList.contains("show") &&
+event.target===overlay&&
 !overlay.classList.contains("processing")
 ){
 varexCloseLogoutDialog()
 }
+});
+
+document.addEventListener("keydown",event=>{
+if(
+event.key==="Escape"&&
+overlay.classList.contains("show")&&
+!overlay.classList.contains("processing")
+){
+varexCloseLogoutDialog()
 }
-);
+});
 
 }
 
@@ -2516,57 +1113,20 @@ varexCloseLogoutDialog()
 
 function varexOpenLogoutDialog(){
 
-const overlay=
-document.getElementById(
-"varexLogoutOverlay"
-);
-
-const card=
-document.getElementById(
-"varexLogoutCard"
-);
-
-const title=
-document.getElementById(
-"varexLogoutTitle"
-);
-
-const message=
-document.getElementById(
-"varexLogoutMessage"
-);
-
-const actions=
-document.getElementById(
-"varexLogoutActions"
-);
-
-const loader=
-document.getElementById(
-"varexLogoutLoader"
-);
-
-const success=
-document.getElementById(
-"varexLogoutSuccessIcon"
-);
-
-const progress=
-document.getElementById(
-"varexLogoutProgress"
-);
-
-const bar=
-document.getElementById(
-"varexLogoutProgressBar"
-);
-
-const transition=
-document.getElementById(
-"varexLogoutTransition"
-);
+const overlay=document.getElementById("varexLogoutOverlay");
+const card=document.getElementById("varexLogoutCard");
+const title=document.getElementById("varexLogoutTitle");
+const message=document.getElementById("varexLogoutMessage");
+const actions=document.getElementById("varexLogoutActions");
+const loader=document.getElementById("varexLogoutLoader");
+const success=document.getElementById("varexLogoutSuccessIcon");
+const progress=document.getElementById("varexLogoutProgress");
+const bar=document.getElementById("varexLogoutProgressBar");
+const transition=document.getElementById("varexLogoutTransition");
 
 if(!overlay)return;
+
+varexLogoutInProgress=false;
 
 overlay.classList.remove(
 "processing",
@@ -2574,59 +1134,42 @@ overlay.classList.remove(
 "leaving"
 );
 
-card?.classList.remove(
-"success"
-);
+card?.classList.remove("success");
+transition?.classList.remove("show");
 
-transition?.classList.remove(
-"show"
-);
+if(title){
+title.textContent="تسجيل الخروج"
+}
 
-title.textContent=
-"تسجيل الخروج";
-
-message.textContent=
-"هل تريد تسجيل الخروج من VAREX؟";
+if(message){
+message.textContent="هل تريد تسجيل الخروج من VAREX؟"
+}
 
 if(actions){
-actions.style.display=
-"flex"
+actions.style.display="flex"
 }
 
 if(loader){
-loader.style.display=
-"none"
+loader.style.display="none"
 }
 
 if(success){
-success.style.display=
-"none"
+success.style.display="none"
 }
 
 if(progress){
-progress.style.display=
-"none"
+progress.style.display="none"
 }
 
 if(bar){
-bar.style.width=
-"0%"
+bar.style.width="0%"
 }
 
-overlay.classList.add(
-"show"
-);
+overlay.classList.add("show");
 
-setTimeout(
-()=>{
-document
-.getElementById(
-"varexLogoutConfirm"
-)
-?.focus()
-},
-150
-);
+setTimeout(()=>{
+document.getElementById("varexLogoutConfirm")?.focus()
+},150)
 
 }
 
@@ -2637,42 +1180,24 @@ document
 
 function varexCloseLogoutDialog(){
 
-const overlay=
-document.getElementById(
-"varexLogoutOverlay"
-);
+const overlay=document.getElementById("varexLogoutOverlay");
 
 if(!overlay)return;
 
-if(
-overlay.classList.contains(
-"processing"
-)
-){
+if(overlay.classList.contains("processing")){
 return
 }
 
-overlay.classList.remove(
-"show"
-);
-
+overlay.classList.remove("show")
 }
 
 
 /* =========================================================
-   LOGOUT WAIT
+   WAIT
 ========================================================= */
 
 function varexLogoutWait(ms){
-
-return new Promise(
-resolve=>
-setTimeout(
-resolve,
-ms
-)
-)
-
+return new Promise(resolve=>setTimeout(resolve,ms))
 }
 
 
@@ -2687,82 +1212,48 @@ progressValue,
 mode="loading"
 ){
 
-const title=
-document.getElementById(
-"varexLogoutTitle"
-);
-
-const message=
-document.getElementById(
-"varexLogoutMessage"
-);
-
-const loader=
-document.getElementById(
-"varexLogoutLoader"
-);
-
-const success=
-document.getElementById(
-"varexLogoutSuccessIcon"
-);
-
-const bar=
-document.getElementById(
-"varexLogoutProgressBar"
-);
-
-const card=
-document.getElementById(
-"varexLogoutCard"
-);
+const title=document.getElementById("varexLogoutTitle");
+const message=document.getElementById("varexLogoutMessage");
+const loader=document.getElementById("varexLogoutLoader");
+const success=document.getElementById("varexLogoutSuccessIcon");
+const bar=document.getElementById("varexLogoutProgressBar");
+const card=document.getElementById("varexLogoutCard");
 
 if(title){
-title.textContent=
-titleText
+title.textContent=titleText
 }
 
 if(message){
-message.textContent=
-messageText
+message.textContent=messageText
 }
 
 if(bar){
-bar.style.width=
-`${progressValue}%`
+bar.style.width=`${progressValue}%`
 }
 
 if(mode==="success"){
 
 if(loader){
-loader.style.display=
-"none"
+loader.style.display="none"
 }
 
 if(success){
-success.style.display=
-"flex"
+success.style.display="flex"
 }
 
-card?.classList.add(
-"success"
-);
+card?.classList.add("success")
 
 }else{
 
 if(success){
-success.style.display=
-"none"
+success.style.display="none"
 }
 
 if(loader){
-loader.style.display=
-"block"
+loader.style.display="block"
 }
 
-card?.classList.remove(
-"success"
-);
+card?.classList.remove("success")
 
 }
 
@@ -2785,33 +1276,22 @@ if(!AudioClass){
 return
 }
 
-const context=
-new AudioClass();
-
-const start=
-context.currentTime;
-
+const context=new AudioClass();
+const start=context.currentTime;
 
 [
-[523.25,0,.17],
-[659.25,.15,.19],
-[783.99,.31,.22],
-[1046.5,.49,.35]
+[523.25,0,.16],
+[659.25,.14,.18],
+[783.99,.29,.20],
+[1046.5,.46,.32]
 ]
-.forEach(
-([frequency,delay,duration])=>{
+.forEach(([frequency,delay,duration])=>{
 
-const oscillator=
-context.createOscillator();
+const oscillator=context.createOscillator();
+const gain=context.createGain();
 
-const gain=
-context.createGain();
-
-oscillator.type=
-"sine";
-
-oscillator.frequency.value=
-frequency;
+oscillator.type="sine";
+oscillator.frequency.value=frequency;
 
 gain.gain.setValueAtTime(
 .0001,
@@ -2828,34 +1308,17 @@ gain.gain.exponentialRampToValueAtTime(
 start+delay+duration
 );
 
-oscillator.connect(
-gain
-);
+oscillator.connect(gain);
+gain.connect(context.destination);
 
-gain.connect(
-context.destination
-);
+oscillator.start(start+delay);
+oscillator.stop(start+delay+duration+.04)
 
-oscillator.start(
-start+delay
-);
+});
 
-oscillator.stop(
-start+delay+duration+.04
-);
-
-}
-);
-
-
-setTimeout(
-()=>{
-context.close().catch(
-()=>{}
-)
-},
-1400
-);
+setTimeout(()=>{
+context.close().catch(()=>{})
+},1300)
 
 }catch(e){}
 
@@ -2864,131 +1327,70 @@ context.close().catch(
 
 /* =========================================================
    RUN LOGOUT SEQUENCE
+   فقط:
+   1 - جاري حفظ البيانات
+   2 - تم تسجيل الخروج بنجاح
 ========================================================= */
 
-let varexLogoutInProgress=
-false;
-
+let varexLogoutInProgress=false;
 
 async function varexRunLogoutSequence(){
 
-if(
-varexLogoutInProgress
-){
+if(varexLogoutInProgress){
 return
 }
 
-varexLogoutInProgress=
-true;
+varexLogoutInProgress=true;
 
-
-const overlay=
-document.getElementById(
-"varexLogoutOverlay"
-);
-
-const actions=
-document.getElementById(
-"varexLogoutActions"
-);
-
-const progress=
-document.getElementById(
-"varexLogoutProgress"
-);
-
-const transition=
-document.getElementById(
-"varexLogoutTransition"
-);
-
+const overlay=document.getElementById("varexLogoutOverlay");
+const actions=document.getElementById("varexLogoutActions");
+const progress=document.getElementById("varexLogoutProgress");
+const transition=document.getElementById("varexLogoutTransition");
 
 if(!overlay){
-varexLogoutInProgress=
-false;
+varexLogoutInProgress=false;
 await VAREX.logout(true);
 return
 }
 
-
-overlay.classList.add(
-"processing"
-);
-
+overlay.classList.add("processing");
 
 if(actions){
-actions.style.display=
-"none"
+actions.style.display="none"
 }
-
 
 if(progress){
-progress.style.display=
-"block"
+progress.style.display="block"
 }
 
 
-/* STEP 1 — SAVE DATA */
+/* =========================================================
+   المرحلة الأولى
+========================================================= */
 
 varexSetLogoutStatus(
 "جاري حفظ البيانات...",
-"يتم حفظ آخر التغييرات وتأمين بيانات الجلسة.",
-25,
+"يرجى الانتظار لحظات.",
+38,
 "loading"
 );
 
-
-await varexLogoutWait(
-520
-);
-
-
-/* STEP 2 — SAVED */
-
-varexSetLogoutStatus(
-"تم حفظ البيانات",
-"تم حفظ بياناتك بنجاح.",
-48,
-"success"
-);
-
-
-await varexLogoutWait(
-380
-);
-
-
-/* STEP 3 — LOGOUT */
-
-varexSetLogoutStatus(
-"جاري تسجيل الخروج...",
-"يتم إنهاء جلسة VAREX بشكل آمن.",
-72,
-"loading"
-);
-
-
-const minimumWait=
-varexLogoutWait(
-850
-);
+const savingDelay=
+varexLogoutWait(1750);
 
 const logoutProcess=
-VAREX.logout(
-false
-)
-.catch(
-()=>true
-);
-
+VAREX.logout(false)
+.catch(()=>true);
 
 await Promise.all([
-minimumWait,
+savingDelay,
 logoutProcess
 ]);
 
 
-/* STEP 4 — DONE */
+/* =========================================================
+   المرحلة الثانية
+========================================================= */
 
 varexSetLogoutStatus(
 "تم تسجيل الخروج بنجاح",
@@ -2997,44 +1399,26 @@ varexSetLogoutStatus(
 "success"
 );
 
-
 varexPlayLogoutSound();
 
+overlay.classList.add("finished");
 
-overlay.classList.add(
-"finished"
-);
-
-
-await varexLogoutWait(
-650
-);
+await varexLogoutWait(900);
 
 
-/* FINAL PAGE TRANSITION */
+/* =========================================================
+   الانتقال إلى تسجيل الدخول
+========================================================= */
 
 if(transition){
-
-transition.classList.add(
-"show"
-);
-
+transition.classList.add("show")
 }
 
+overlay.classList.add("leaving");
 
-overlay.classList.add(
-"leaving"
-);
+await varexLogoutWait(760);
 
-
-await varexLogoutWait(
-780
-);
-
-
-location.replace(
-"./login.html"
-);
+location.replace("./login.html")
 
 }
 
@@ -3045,21 +1429,13 @@ location.replace(
 
 function varexInstallSharedStyles(){
 
-if(
-document.getElementById(
-"varexSharedStyles"
-)
-){
+if(document.getElementById("varexSharedStyles")){
 return
 }
 
-const style=
-document.createElement(
-"style"
-);
+const style=document.createElement("style");
 
-style.id=
-"varexSharedStyles";
+style.id="varexSharedStyles";
 
 style.textContent=`
 
@@ -3076,14 +1452,11 @@ min-height:100%;
 }
 
 .main{
-margin-right:
-var(--sidebar-width)!important;
+margin-right:var(--sidebar-width)!important;
 }
 
 
-/* =========================================================
-   SIDEBAR
-========================================================= */
+/* SIDEBAR */
 
 .sidebar{
 position:fixed!important;
@@ -3136,9 +1509,7 @@ touch-action:auto!important;
 }
 
 
-/* =========================================================
-   MENU CARDS
-========================================================= */
+/* MENU CARDS */
 
 .sidebar .nav a{
 width:100%!important;
@@ -3232,9 +1603,7 @@ flex-shrink:0!important;
 }
 
 
-/* =========================================================
-   FOOTER
-========================================================= */
+/* FOOTER */
 
 .sidebar-footer{
 position:relative!important;
@@ -3247,9 +1616,7 @@ justify-content:center!important;
 }
 
 
-/* =========================================================
-   ACTION AREA
-========================================================= */
+/* SIDEBAR ACTIONS */
 
 .varex-sidebar-actions{
 width:100%;
@@ -3284,9 +1651,7 @@ border-color .16s ease;
 }
 
 
-/* =========================================================
-   THEME BUTTON
-========================================================= */
+/* THEME BUTTON */
 
 .varex-theme-button{
 background:#fff!important;
@@ -3310,9 +1675,7 @@ margin-bottom:11px;
 }
 
 
-/* =========================================================
-   LOGOUT SIDEBAR BUTTON
-========================================================= */
+/* LOGOUT SIDEBAR BUTTON */
 
 .varex-logout-button{
 background:#fff!important;
@@ -3362,15 +1725,11 @@ pointer-events:none;
 }
 
 
-/* =========================================================
-   SCROLLBAR
-========================================================= */
+/* SCROLLBAR */
 
 .sidebar{
 scrollbar-width:thin;
-scrollbar-color:
-rgba(255,255,255,.23)
-transparent;
+scrollbar-color:rgba(255,255,255,.23) transparent;
 }
 
 .sidebar::-webkit-scrollbar{
@@ -3396,7 +1755,7 @@ display:none!important;
 
 
 /* =========================================================
-   CUSTOM LOGOUT OVERLAY
+   LOGOUT OVERLAY
 ========================================================= */
 
 .varex-logout-overlay{
@@ -3407,12 +1766,9 @@ display:flex;
 align-items:center;
 justify-content:center;
 padding:24px;
-background:
-rgba(4,12,32,.68);
-backdrop-filter:
-blur(9px);
--webkit-backdrop-filter:
-blur(9px);
+background:rgba(4,12,32,.70);
+backdrop-filter:blur(10px);
+-webkit-backdrop-filter:blur(10px);
 opacity:0;
 visibility:hidden;
 pointer-events:none;
@@ -3429,120 +1785,167 @@ pointer-events:auto;
 
 
 /* =========================================================
-   LOGOUT CARD
+   LARGE LOGOUT CARD
 ========================================================= */
 
 .varex-logout-card{
 position:relative;
+
 width:min(
-450px,
-calc(100vw - 40px)
+560px,
+calc(100vw - 44px)
 );
-min-height:360px;
+
+min-height:410px;
+
 padding:
-32px 30px 28px;
-border-radius:24px;
+40px 40px 34px;
+
+border-radius:27px;
+
 background:
 linear-gradient(
 160deg,
 #ffffff 0%,
 #f8fafc 100%
 );
+
 border:
 1px solid
-rgba(255,255,255,.88);
+rgba(255,255,255,.90);
+
 box-shadow:
-0 30px 90px
-rgba(2,8,23,.35),
-0 10px 30px
-rgba(15,23,42,.18);
+0 34px 100px rgba(2,8,23,.40),
+0 12px 34px rgba(15,23,42,.20);
+
 display:flex;
 flex-direction:column;
 align-items:center;
 justify-content:center;
+
 text-align:center;
+
 transform:
-perspective(1100px)
+perspective(1200px)
 rotateX(7deg)
 scale(.90)
-translateY(22px);
+translateY(24px);
+
 opacity:0;
+
 transition:
-transform .38s
-cubic-bezier(.18,.89,.32,1.28),
+transform .40s cubic-bezier(.18,.89,.32,1.28),
 opacity .25s ease;
+
 overflow:hidden;
 }
 
 .varex-logout-overlay.show
 .varex-logout-card{
 transform:
-perspective(1100px)
+perspective(1200px)
 rotateX(0)
 scale(1)
 translateY(0);
+
 opacity:1;
 }
 
 .varex-logout-card:before{
 content:"";
 position:absolute;
-top:-85px;
-left:-75px;
-width:200px;
-height:200px;
+top:-100px;
+left:-85px;
+width:230px;
+height:230px;
 border-radius:50%;
-background:
-rgba(37,99,235,.055);
+background:rgba(37,99,235,.055);
 pointer-events:none;
 }
 
 .varex-logout-card:after{
 content:"";
 position:absolute;
-right:-90px;
-bottom:-100px;
-width:235px;
-height:235px;
+right:-105px;
+bottom:-115px;
+width:270px;
+height:270px;
 border-radius:50%;
-background:
-rgba(23,37,84,.045);
+background:rgba(23,37,84,.045);
 pointer-events:none;
 }
 
 
 /* =========================================================
-   LOGOUT LOGO
+   LOGOUT LOGO — PERFECTLY CENTERED
 ========================================================= */
 
 .varex-logout-logo-wrap{
 position:relative;
 z-index:2;
-width:82px;
-height:82px;
-margin-bottom:20px;
+
+width:100px;
+height:100px;
+
+min-width:100px;
+min-height:100px;
+
+margin:
+0 auto 27px;
+
 border-radius:50%;
+
 background:
 linear-gradient(
 145deg,
 #172554,
 #213765
 );
+
 display:flex;
 align-items:center;
 justify-content:center;
-box-shadow:
-0 8px 0 #0f1d43,
-0 17px 28px
-rgba(23,37,84,.27);
+
+padding:10px;
+
 overflow:hidden;
+
+box-shadow:
+0 9px 0 #0f1d43,
+0 20px 34px rgba(23,37,84,.30);
 }
 
 .varex-logout-logo{
-width:66px;
-height:66px;
-object-fit:contain;
+display:block!important;
+
+position:static!important;
+
+width:78px!important;
+height:78px!important;
+
+min-width:78px!important;
+min-height:78px!important;
+
+max-width:78px!important;
+max-height:78px!important;
+
+margin:0!important;
+padding:0!important;
+
+object-fit:contain!important;
+object-position:center center!important;
+
+transform:none!important;
+
+top:auto!important;
+right:auto!important;
+bottom:auto!important;
+left:auto!important;
+
 border-radius:50%;
+
+align-self:center!important;
+justify-self:center!important;
 }
 
 .varex-logout-fallback-logo{
@@ -3551,29 +1954,38 @@ width:100%;
 height:100%;
 align-items:center;
 justify-content:center;
-font-size:30px;
+font-size:27px;
 font-weight:900;
+letter-spacing:1px;
 color:#fff;
 direction:ltr;
 }
 
 
 /* =========================================================
-   LOGOUT LOADER
+   LOADER
 ========================================================= */
 
 .varex-logout-loader{
 display:none;
+
 position:relative;
 z-index:2;
-width:48px;
-height:48px;
-margin-bottom:17px;
+
+width:52px;
+height:52px;
+
+margin:
+2px auto 20px;
+
 border-radius:50%;
+
 border:
 4px solid #dbe3ef;
+
 border-top-color:
 #172554;
+
 animation:
 varexLogoutSpin
 .72s linear infinite;
@@ -3581,8 +1993,7 @@ varexLogoutSpin
 
 @keyframes varexLogoutSpin{
 to{
-transform:
-rotate(360deg);
+transform:rotate(360deg);
 }
 }
 
@@ -3593,39 +2004,50 @@ rotate(360deg);
 
 .varex-logout-success-icon{
 display:none;
+
 position:relative;
 z-index:2;
-width:50px;
-height:50px;
-margin-bottom:16px;
+
+width:56px;
+height:56px;
+
+margin:
+2px auto 19px;
+
 border-radius:50%;
+
 align-items:center;
 justify-content:center;
+
 background:#dcfce7;
 border:2px solid #22c55e;
+
 color:#15803d;
-font-size:26px;
+
+font-size:29px;
 font-weight:900;
+
 animation:
 varexLogoutSuccess
 .42s ease both;
 }
 
 @keyframes varexLogoutSuccess{
+
 0%{
-transform:
-scale(.55);
+transform:scale(.55);
 opacity:0;
 }
+
 65%{
-transform:
-scale(1.13);
+transform:scale(1.13);
 }
+
 100%{
-transform:
-scale(1);
+transform:scale(1);
 opacity:1;
 }
+
 }
 
 
@@ -3636,22 +2058,33 @@ opacity:1;
 .varex-logout-title{
 position:relative;
 z-index:2;
+
 font-family:inherit;
-font-size:22px;
+
+font-size:25px;
 font-weight:900;
+
 color:#172554;
-margin:0 0 9px;
+
+margin:
+0 0 11px;
 }
 
 .varex-logout-message{
 position:relative;
 z-index:2;
-max-width:350px;
+
+max-width:410px;
+
 font-family:inherit;
-font-size:12px;
+
+font-size:13px;
 font-weight:500;
+
 line-height:1.9;
+
 color:#64748b;
+
 margin:0;
 }
 
@@ -3662,28 +2095,38 @@ margin:0;
 
 .varex-logout-progress{
 display:none;
+
 position:relative;
 z-index:2;
-width:88%;
-height:7px;
-margin-top:23px;
+
+width:84%;
+
+height:8px;
+
+margin-top:27px;
+
 border-radius:30px;
+
 background:#e2e8f0;
+
 overflow:hidden;
 }
 
 .varex-logout-progress-bar{
 width:0;
 height:100%;
+
 border-radius:30px;
+
 background:
 linear-gradient(
 90deg,
 #172554,
 #31548c
 );
+
 transition:
-width .45s ease;
+width .65s ease;
 }
 
 
@@ -3694,20 +2137,30 @@ width .45s ease;
 .varex-logout-actions{
 position:relative;
 z-index:2;
+
 width:100%;
+
 display:flex;
-gap:12px;
-margin-top:28px;
+
+gap:14px;
+
+margin-top:32px;
 }
 
 .varex-logout-actions button{
 flex:1;
-height:48px;
-border-radius:11px;
+
+height:52px;
+
+border-radius:12px;
+
 font-family:inherit;
-font-size:12px;
+
+font-size:13px;
 font-weight:800;
+
 cursor:pointer;
+
 transition:
 transform .11s ease,
 box-shadow .11s ease,
@@ -3721,61 +2174,61 @@ linear-gradient(
 #172554,
 #213765
 );
+
 color:#fff;
-border:1px solid #172554;
+
+border:
+1px solid #172554;
+
 box-shadow:
-0 6px 0 #0f1d43,
-0 12px 18px
-rgba(23,37,84,.20);
+0 7px 0 #0f1d43,
+0 14px 22px rgba(23,37,84,.22);
 }
 
 .varex-logout-confirm:hover{
-transform:
-translateY(-1px);
+transform:translateY(-1px);
 }
 
 .varex-logout-confirm:active{
-transform:
-translateY(4px);
+transform:translateY(5px);
 box-shadow:
 0 1px 0 #0f1d43;
 }
 
 .varex-logout-cancel{
 background:#fff;
+
 color:#172554;
-border:1px solid #cbd5e1;
+
+border:
+1px solid #cbd5e1;
+
 box-shadow:
-0 5px 0 #cbd5e1,
-0 10px 16px
-rgba(15,23,42,.09);
+0 6px 0 #cbd5e1,
+0 12px 18px rgba(15,23,42,.09);
 }
 
 .varex-logout-cancel:hover{
 background:#f8fafc;
-transform:
-translateY(-1px);
+transform:translateY(-1px);
 }
 
 .varex-logout-cancel:active{
-transform:
-translateY(3px);
+transform:translateY(4px);
 box-shadow:
 0 2px 0 #cbd5e1;
 }
 
 
 /* =========================================================
-   FINISHED CARD
+   FINISHED
 ========================================================= */
 
 .varex-logout-overlay.finished
 .varex-logout-card{
 box-shadow:
-0 32px 100px
-rgba(2,8,23,.40),
-0 0 0 1px
-rgba(34,197,94,.08);
+0 34px 105px rgba(2,8,23,.43),
+0 0 0 1px rgba(34,197,94,.10);
 }
 
 
@@ -3787,9 +2240,11 @@ rgba(34,197,94,.08);
 position:absolute;
 inset:0;
 z-index:50;
+
 display:flex;
 align-items:center;
 justify-content:center;
+
 background:
 radial-gradient(
 circle at center,
@@ -3801,27 +2256,33 @@ linear-gradient(
 #172554,
 #0f1d43
 );
+
 transform:
 translateX(-105%);
+
 transition:
 transform .72s
 cubic-bezier(.65,.05,.22,1);
 }
 
 .varex-logout-transition.show{
-transform:
-translateX(0);
+transform:translateX(0);
 }
 
 .varex-logout-transition-logo{
 display:flex;
 flex-direction:column;
 align-items:center;
-gap:14px;
+justify-content:center;
+
+gap:15px;
+
 opacity:0;
+
 transform:
 scale(.82)
 rotateY(-25deg);
+
 transition:
 opacity .38s ease .25s,
 transform .48s ease .20s;
@@ -3830,15 +2291,23 @@ transform .48s ease .20s;
 .varex-logout-transition.show
 .varex-logout-transition-logo{
 opacity:1;
+
 transform:
 scale(1)
 rotateY(0);
 }
 
 .varex-logout-transition-logo img{
-width:82px;
-height:82px;
+display:block;
+
+width:92px;
+height:92px;
+
 object-fit:contain;
+object-position:center;
+
+margin:auto;
+
 filter:
 drop-shadow(
 0 10px 25px
@@ -3847,56 +2316,53 @@ rgba(0,0,0,.28)
 }
 
 .varex-logout-transition-logo div{
-font-size:34px;
+font-size:36px;
 font-weight:900;
+
 letter-spacing:7px;
+
 color:#fff;
+
 direction:ltr;
 }
 
 
 /* =========================================================
-   DARK MODE LOGOUT
+   DARK LOGOUT
 ========================================================= */
 
-body.varex-dark
-.varex-logout-overlay{
-background:
-rgba(1,6,18,.78);
+body.varex-dark .varex-logout-overlay{
+background:rgba(1,6,18,.80);
 }
 
-body.varex-dark
-.varex-logout-card{
+body.varex-dark .varex-logout-card{
 background:
 linear-gradient(
 160deg,
 #132641,
 #0f2039
 );
-border-color:
-#29415f;
+
+border-color:#29415f;
+
 box-shadow:
-0 30px 100px
-rgba(0,0,0,.55);
+0 34px 105px
+rgba(0,0,0,.58);
 }
 
-body.varex-dark
-.varex-logout-title{
+body.varex-dark .varex-logout-title{
 color:#fff;
 }
 
-body.varex-dark
-.varex-logout-message{
+body.varex-dark .varex-logout-message{
 color:#cbd5e1;
 }
 
-body.varex-dark
-.varex-logout-progress{
+body.varex-dark .varex-logout-progress{
 background:#29415f;
 }
 
-body.varex-dark
-.varex-logout-progress-bar{
+body.varex-dark .varex-logout-progress-bar{
 background:
 linear-gradient(
 90deg,
@@ -3905,23 +2371,20 @@ linear-gradient(
 );
 }
 
-body.varex-dark
-.varex-logout-loader{
+body.varex-dark .varex-logout-loader{
 border-color:#29415f;
 border-top-color:#fff;
 }
 
-body.varex-dark
-.varex-logout-cancel{
+body.varex-dark .varex-logout-cancel{
 background:#172c48;
 color:#fff;
 border-color:#35506f;
 box-shadow:
-0 5px 0 #091728;
+0 6px 0 #091728;
 }
 
-body.varex-dark
-.varex-logout-cancel:hover{
+body.varex-dark .varex-logout-cancel:hover{
 background:#1d3656;
 }
 
@@ -3937,8 +2400,7 @@ position:fixed!important;
 right:0!important;
 top:0!important;
 bottom:0!important;
-width:
-var(--sidebar-width)!important;
+width:var(--sidebar-width)!important;
 height:100dvh!important;
 display:block!important;
 overflow-y:auto!important;
@@ -3957,8 +2419,7 @@ margin:0 0 8px!important;
 }
 
 .main{
-margin-right:
-var(--sidebar-width)!important;
+margin-right:var(--sidebar-width)!important;
 }
 
 }
@@ -3968,15 +2429,13 @@ var(--sidebar-width)!important;
    MOBILE LOGOUT
 ========================================================= */
 
-@media(max-width:520px){
+@media(max-width:600px){
 
 .varex-logout-card{
-width:
-calc(100vw - 28px);
-min-height:350px;
-padding:
-28px 20px 24px;
-border-radius:21px;
+width:calc(100vw - 28px);
+min-height:390px;
+padding:34px 22px 28px;
+border-radius:23px;
 }
 
 .varex-logout-actions{
@@ -3989,22 +2448,30 @@ flex:none;
 }
 
 .varex-logout-logo-wrap{
-width:74px;
-height:74px;
+width:88px;
+height:88px;
+min-width:88px;
+min-height:88px;
 }
 
 .varex-logout-logo{
-width:58px;
-height:58px;
+width:68px!important;
+height:68px!important;
+min-width:68px!important;
+min-height:68px!important;
+max-width:68px!important;
+max-height:68px!important;
+}
+
+.varex-logout-title{
+font-size:22px;
 }
 
 }
 
 `;
 
-document.head.appendChild(
-style
-)
+document.head.appendChild(style)
 
 }
 
@@ -4014,8 +2481,8 @@ style
 ========================================================= */
 
 function varexInstallSidebarScroll(){
-const sidebar=
-varexGetSidebar();
+
+const sidebar=varexGetSidebar();
 
 if(!sidebar)return;
 
@@ -4023,44 +2490,23 @@ varexRestoreSidebarScroll();
 
 let saveTimer=null;
 
-sidebar.addEventListener(
-"scroll",
-()=>{
-clearTimeout(
-saveTimer
-);
+sidebar.addEventListener("scroll",()=>{
+clearTimeout(saveTimer);
+saveTimer=setTimeout(varexSaveSidebarScroll,25)
+},{passive:true});
 
-saveTimer=
-setTimeout(
-varexSaveSidebarScroll,
-25
-)
-},
-{
-passive:true
-}
-);
-
-sidebar
-.querySelectorAll(
-"a[href]"
-)
-.forEach(link=>{
+sidebar.querySelectorAll("a[href]").forEach(link=>{
 
 link.addEventListener(
 "pointerdown",
 varexSaveSidebarScroll,
-{
-passive:true
-}
+{passive:true}
 );
 
 link.addEventListener(
 "touchstart",
 varexSaveSidebarScroll,
-{
-passive:true
-}
+{passive:true}
 );
 
 link.addEventListener(
@@ -4079,6 +2525,7 @@ window.addEventListener(
 "beforeunload",
 varexSaveSidebarScroll
 )
+
 }
 
 
@@ -4087,15 +2534,13 @@ varexSaveSidebarScroll
 ========================================================= */
 
 function varexGetTheme(){
+
 const saved=
 localStorage.getItem(
 "varex_theme"
 );
 
-if(
-saved==="dark"||
-saved==="light"
-){
+if(saved==="dark"||saved==="light"){
 return saved
 }
 
@@ -4107,27 +2552,28 @@ window.matchMedia(
 )
 ?"dark"
 :"light"
+
 }
 
-
 function varexApplyTheme(theme){
-document.documentElement
-.setAttribute(
+
+document.documentElement.setAttribute(
 "data-varex-theme",
 theme
 );
 
-document.documentElement
-.setAttribute(
+document.documentElement.setAttribute(
 "data-theme",
 theme
 );
 
 if(document.body){
+
 document.body.classList.toggle(
 "varex-dark",
 theme==="dark"
 )
+
 }
 
 localStorage.setItem(
@@ -4136,21 +2582,22 @@ theme
 );
 
 varexInstallDarkStyles();
-
 varexUpdateThemeButton()
+
 }
 
-
 function varexToggleTheme(){
+
 varexApplyTheme(
 varexGetTheme()==="dark"
 ?"light"
 :"dark"
 )
+
 }
 
-
 function varexUpdateThemeButton(){
+
 const dark=
 varexGetTheme()==="dark";
 
@@ -4177,6 +2624,7 @@ dark
 ?"الوضع النهاري"
 :"الوضع الليلي"
 }
+
 }
 
 
@@ -4186,21 +2634,13 @@ dark
 
 function varexInstallDarkStyles(){
 
-if(
-document.getElementById(
-"varexDarkStyles"
-)
-){
+if(document.getElementById("varexDarkStyles")){
 return
 }
 
-const style=
-document.createElement(
-"style"
-);
+const style=document.createElement("style");
 
-style.id=
-"varexDarkStyles";
+style.id="varexDarkStyles";
 
 style.textContent=`
 
@@ -4384,9 +2824,6 @@ body.varex-dark .empty{
 color:#94a3b8!important;
 }
 
-
-/* SIDEBAR DARK */
-
 body.varex-dark .sidebar{
 background:
 linear-gradient(
@@ -4444,21 +2881,16 @@ color:#fff!important;
 body.varex-dark .sidebar .nav a:active{
 background:
 rgba(255,255,255,.14)!important;
-border-bottom-width:
-1px!important;
+border-bottom-width:1px!important;
 }
 
 body.varex-dark .sidebar .nav a.active{
 background:#fff!important;
 color:#172554!important;
-border-top:
-1px solid #fff!important;
-border-left:
-1px solid #f8fafc!important;
-border-right:
-1px solid #cbd5e1!important;
-border-bottom:
-3px solid #94a3b8!important;
+border-top:1px solid #fff!important;
+border-left:1px solid #f8fafc!important;
+border-right:1px solid #cbd5e1!important;
+border-bottom:3px solid #94a3b8!important;
 box-shadow:none!important;
 }
 
@@ -4481,14 +2913,10 @@ rgba(255,255,255,.12)!important;
 body.varex-dark .varex-theme-button{
 background:#172554!important;
 color:#fff!important;
-border-top:
-1px solid #324675!important;
-border-left:
-1px solid #293d6c!important;
-border-right:
-1px solid #0d193b!important;
-border-bottom:
-3px solid #08132f!important;
+border-top:1px solid #324675!important;
+border-left:1px solid #293d6c!important;
+border-right:1px solid #0d193b!important;
+border-bottom:3px solid #08132f!important;
 box-shadow:none!important;
 }
 
@@ -4505,14 +2933,10 @@ border-bottom-width:1px!important;
 body.varex-dark .varex-logout-button{
 background:#fff!important;
 color:#172554!important;
-border-top:
-1px solid #fff!important;
-border-left:
-1px solid #f8fafc!important;
-border-right:
-1px solid #cbd5e1!important;
-border-bottom:
-3px solid #94a3b8!important;
+border-top:1px solid #fff!important;
+border-left:1px solid #f8fafc!important;
+border-right:1px solid #cbd5e1!important;
+border-bottom:3px solid #94a3b8!important;
 box-shadow:none!important;
 }
 
@@ -4556,9 +2980,7 @@ background:#45617f;
 
 `;
 
-document.head.appendChild(
-style
-)
+document.head.appendChild(style)
 
 }
 
@@ -4568,25 +2990,16 @@ style
 ========================================================= */
 
 function varexShowCurrentUser(){
-const user=
-VAREX.getCurrentUser();
+
+const user=VAREX.getCurrentUser();
 
 if(!user)return;
 
-document
-.querySelectorAll(
-".info-chip,.chip"
-)
-.forEach(el=>{
-if(
-el.textContent.includes(
-"المستخدم"
-)
-){
-const strong=
-el.querySelector(
-"strong"
-);
+document.querySelectorAll(".info-chip,.chip").forEach(el=>{
+
+if(el.textContent.includes("المستخدم")){
+
+const strong=el.querySelector("strong");
 
 if(strong){
 strong.textContent=
@@ -4594,7 +3007,9 @@ user.name||
 user.username||
 "المستخدم"
 }
+
 }
+
 });
 
 const sidebarName=
@@ -4633,6 +3048,7 @@ user.username||
 user.email||
 "المستخدم"
 }
+
 }
 
 
@@ -4651,9 +3067,7 @@ if(publicPage){
 return
 }
 
-if(
-!VAREX.requireSubscription()
-){
+if(!VAREX.requireSubscription()){
 return
 }
 
@@ -4674,14 +3088,15 @@ varexInstallSidebarScroll()
    START
 ========================================================= */
 
-if(
-document.readyState===
-"loading"
-){
+if(document.readyState==="loading"){
+
 document.addEventListener(
 "DOMContentLoaded",
 varexStartUI
 )
+
 }else{
+
 varexStartUI()
+
 }
