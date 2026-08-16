@@ -29,7 +29,9 @@ let data={};
 try{data=await r.json()}catch(e){}
 if(!r.ok){
 const err=new Error(data.msg||data.message||data.error_description||data.error||"تعذر الاتصال بخدمة الحسابات.");
-err.status=r.status;err.data=data;throw err
+err.status=r.status;
+err.data=data;
+throw err
 }
 return data
 },
@@ -58,7 +60,10 @@ try{localStorage.setItem(this.keys.pendingVerification,JSON.stringify(x));return
 },
 
 getPendingVerification(){
-try{const x=JSON.parse(localStorage.getItem(this.keys.pendingVerification)||"null");return x&&typeof x==="object"?x:null}catch(e){return null}
+try{
+const x=JSON.parse(localStorage.getItem(this.keys.pendingVerification)||"null");
+return x&&typeof x==="object"?x:null
+}catch(e){return null}
 },
 
 clearPendingVerification(){
@@ -66,7 +71,10 @@ try{localStorage.removeItem(this.keys.pendingVerification)}catch(e){}
 },
 
 async createUser(user={}){
-const name=this.cleanText(user.name),username=this.normalizeUsername(user.username),email=this.normalizeEmail(user.email),password=String(user.password||"");
+const name=this.cleanText(user.name);
+const username=this.normalizeUsername(user.username);
+const email=this.normalizeEmail(user.email);
+const password=String(user.password||"");
 
 if(!name)return{success:false,message:"الاسم الكامل مطلوب."};
 if(username.length<3)return{success:false,message:"اسم المستخدم يجب أن يحتوي على 3 أحرف على الأقل."};
@@ -92,16 +100,26 @@ return{success:false,message:this.mapAuthError(e)}
 },
 
 async verifyEmailOtp(email,token){
-const mail=this.normalizeEmail(email),code=this.cleanText(token).replace(/\s+/g,"");
+const mail=this.normalizeEmail(email);
+const code=this.cleanText(token).replace(/\s+/g,"");
+
 if(!mail)return{success:false,message:"البريد الإلكتروني غير موجود."};
 if(!code)return{success:false,message:"يرجى إدخال رمز التحقق."};
 
 try{
 const d=await this.authFetch("/auth/v1/verify",{method:"POST",body:JSON.stringify({type:"signup",email:mail,token:code})});
+
 if(!d?.user)return{success:false,message:"تعذر تأكيد البريد الإلكتروني."};
 
 if(d?.access_token){
-this.storeSession({access_token:d.access_token,refresh_token:d.refresh_token,expires_in:d.expires_in,expires_at:d.expires_at,token_type:d.token_type,user:d.user},false)
+this.storeSession({
+access_token:d.access_token,
+refresh_token:d.refresh_token,
+expires_in:d.expires_in,
+expires_at:d.expires_at,
+token_type:d.token_type,
+user:d.user
+},false)
 }
 
 this.clearPendingVerification();
@@ -120,6 +138,7 @@ return{success:false,message:this.mapAuthError(e)}
 
 async resendConfirmation(email){
 const mail=this.normalizeEmail(email);
+
 if(!mail)return{success:false,message:"البريد الإلكتروني غير موجود."};
 
 try{
@@ -131,7 +150,8 @@ return{success:false,message:this.mapAuthError(e)}
 },
 
 async login(login,password,remember=false){
-const identifier=this.cleanText(login),pw=String(password||"");
+const identifier=this.cleanText(login);
+const pw=String(password||"");
 
 if(!identifier||!pw)return{success:false,message:"يرجى إدخال البريد الإلكتروني وكلمة المرور."};
 if(!identifier.includes("@"))return{success:false,message:"حالياً سجّل الدخول بالبريد الإلكتروني."};
@@ -153,7 +173,16 @@ return{success:false,message:this.mapAuthError(e)}
 },
 
 storeSession(s,remember=false){
-const x={access_token:s.access_token,refresh_token:s.refresh_token,expires_in:s.expires_in,expires_at:s.expires_at||Math.floor(Date.now()/1000)+(s.expires_in||3600),token_type:s.token_type||"bearer",user:s.user,remember:Boolean(remember)};
+const x={
+access_token:s.access_token,
+refresh_token:s.refresh_token,
+expires_in:s.expires_in,
+expires_at:s.expires_at||Math.floor(Date.now()/1000)+(s.expires_in||3600),
+token_type:s.token_type||"bearer",
+user:s.user,
+remember:Boolean(remember)
+};
+
 const str=JSON.stringify(x);
 
 if(remember){
@@ -165,12 +194,14 @@ localStorage.removeItem(this.keys.session)
 }
 
 localStorage.setItem(this.keys.cachedUser,JSON.stringify(this.getSafeUser(s.user)));
+
 return x
 },
 
 getSession(){
 const raw=sessionStorage.getItem(this.keys.session)||localStorage.getItem(this.keys.session);
 if(!raw)return null;
+
 try{
 const s=JSON.parse(raw);
 return(s?.access_token&&s?.user)?s:null
@@ -179,19 +210,31 @@ return null
 }
 },
 
-isLoggedIn(){return!!this.getSession()},
+isLoggedIn(){
+return!!this.getSession()
+},
 
 getCurrentUser(){
 const s=this.getSession();
+
 if(s?.user)return this.getSafeUser(s.user);
-try{return JSON.parse(localStorage.getItem(this.keys.cachedUser)||"null")}catch(e){return null}
+
+try{
+return JSON.parse(localStorage.getItem(this.keys.cachedUser)||"null")
+}catch(e){
+return null
+}
 },
 
-getRememberedUser(){return localStorage.getItem(this.keys.rememberedUser)||""},
+getRememberedUser(){
+return localStorage.getItem(this.keys.rememberedUser)||""
+},
 
 async refreshSession(){
 const s=this.getSession();
+
 if(!s?.refresh_token)return false;
+
 if((s.expires_at||0)>Math.floor(Date.now()/1000)+60)return true;
 
 try{
@@ -235,23 +278,34 @@ return false
 }
 
 this.refreshSession();
+
 return true
 },
 
-isLoginPage(){return location.pathname.toLowerCase().endsWith("login.html")},
-isRegisterPage(){return location.pathname.toLowerCase().endsWith("register.html")},
-isVerifyEmailPage(){return location.pathname.toLowerCase().endsWith("verify-email.html")},
+isLoginPage(){
+return location.pathname.toLowerCase().endsWith("login.html")
+},
+
+isRegisterPage(){
+return location.pathname.toLowerCase().endsWith("register.html")
+},
+
+isVerifyEmailPage(){
+return location.pathname.toLowerCase().endsWith("verify-email.html")
+},
 
 redirectLoggedUser(){
 if((this.isLoginPage()||this.isRegisterPage())&&this.isLoggedIn()){
 location.replace("./index.html");
 return true
 }
+
 return false
 },
 
 async requestPasswordReset(email){
 const mail=this.normalizeEmail(email);
+
 if(!mail)return{success:false,message:"يرجى إدخال البريد الإلكتروني."};
 
 try{
@@ -264,16 +318,21 @@ return{success:false,message:this.mapAuthError(e)}
 
 async updateCurrentUser(changes={}){
 const s=this.getSession();
+
 if(!s)return{success:false,message:"لا يوجد مستخدم مسجل الدخول."};
 
 const body={};
 
-if(changes.email!==undefined)body.email=this.normalizeEmail(changes.email);
+if(changes.email!==undefined){
+body.email=this.normalizeEmail(changes.email)
+}
 
 const data={};
 
 ["name","username","role"].forEach(k=>{
-if(changes[k]!==undefined)data[k]=this.cleanText(changes[k])
+if(changes[k]!==undefined){
+data[k]=this.cleanText(changes[k])
+}
 });
 
 if(Object.keys(data).length){
@@ -284,24 +343,32 @@ try{
 const u=await this.authFetch("/auth/v1/user",{method:"PUT",body:JSON.stringify(body)});
 s.user=u;
 this.storeSession(s,s.remember);
+
 return{success:true,user:this.getSafeUser(u)}
+
 }catch(e){
 return{success:false,message:this.mapAuthError(e)}
 }
 },
 
 async changePassword(currentPassword,newPassword){
-if(String(newPassword||"").length<6)return{success:false,message:"كلمة المرور الجديدة يجب أن تحتوي على 6 أحرف على الأقل."};
+if(String(newPassword||"").length<6){
+return{success:false,message:"كلمة المرور الجديدة يجب أن تحتوي على 6 أحرف على الأقل."}
+}
 
 const s=this.getSession();
 
-if(!s)return{success:false,message:"يجب تسجيل الدخول أولاً."};
+if(!s){
+return{success:false,message:"يجب تسجيل الدخول أولاً."}
+}
 
 try{
 const u=await this.authFetch("/auth/v1/user",{method:"PUT",body:JSON.stringify({password:String(newPassword)})});
 s.user=u;
 this.storeSession(s,s.remember);
+
 return{success:true,message:"تم تغيير كلمة المرور بنجاح."}
+
 }catch(e){
 return{success:false,message:this.mapAuthError(e)}
 }
@@ -312,11 +379,27 @@ return{success:false,message:this.mapAuthError(e)}
 ========================================================= */
 
 getSubscription(){
-const defaults={plan:"",planName:"",status:"inactive",billingType:"",price:0,currency:"AED",startedAt:"",expiresAt:"",lifetime:false,licenseKey:"",paymentStatus:"unpaid",updatedAt:""};
+const defaults={
+plan:"",
+planName:"",
+status:"inactive",
+billingType:"",
+price:0,
+currency:"AED",
+startedAt:"",
+expiresAt:"",
+lifetime:false,
+licenseKey:"",
+paymentStatus:"unpaid",
+updatedAt:""
+};
 
 try{
 const x=JSON.parse(localStorage.getItem(this.keys.subscription)||"null");
-if(x&&typeof x==="object"&&!Array.isArray(x))return{...defaults,...x}
+
+if(x&&typeof x==="object"&&!Array.isArray(x)){
+return{...defaults,...x}
+}
 }catch(e){
 console.error(e)
 }
@@ -342,6 +425,7 @@ let result="VAREX";
 
 for(let g=0;g<4;g++){
 result+="-";
+
 for(let i=0;i<4;i++){
 result+=chars[Math.floor(Math.random()*chars.length)]
 }
@@ -438,8 +522,13 @@ daysRemaining:this.getSubscriptionDaysRemaining()
 }
 },
 
-isSubscriptionPage(){return location.pathname.toLowerCase().endsWith("subscription.html")},
-isSubscriptionSuccessPage(){return location.pathname.toLowerCase().endsWith("subscription-success.html")},
+isSubscriptionPage(){
+return location.pathname.toLowerCase().endsWith("subscription.html")
+},
+
+isSubscriptionSuccessPage(){
+return location.pathname.toLowerCase().endsWith("subscription-success.html")
+},
 
 isSubscriptionGateEnabled(){
 return localStorage.getItem(this.keys.subscriptionGate)==="true"
@@ -464,7 +553,9 @@ this.isRegisterPage()||
 this.isVerifyEmailPage()||
 this.isSubscriptionPage()||
 this.isSubscriptionSuccessPage()
-)return true;
+){
+return true
+}
 
 if(!this.isLoggedIn()){
 location.replace("./login.html");
@@ -483,9 +574,17 @@ return true
    PRODUCTS
 ========================================================= */
 
-getProducts(){return this.getData(this.keys.products)},
-saveProducts(x){return this.saveData(this.keys.products,x)},
-getProductById(id){return this.getProducts().find(x=>String(x.id)===String(id))||null},
+getProducts(){
+return this.getData(this.keys.products)
+},
+
+saveProducts(x){
+return this.saveData(this.keys.products,x)
+},
+
+getProductById(id){
+return this.getProducts().find(x=>String(x.id)===String(id))||null
+},
 
 findProductByBarcode(b){
 b=this.cleanText(b);
@@ -508,6 +607,7 @@ updatedAt:this.now()
 
 a.push(x);
 this.saveProducts(a);
+
 return x
 },
 
@@ -518,14 +618,18 @@ const i=a.findIndex(x=>String(x.id)===String(id));
 if(i<0)return false;
 
 a[i]={...a[i],...c,id:a[i].id,updatedAt:this.now()};
+
 this.saveProducts(a);
+
 return a[i]
 },
 
 deleteProduct(id){
 const a=this.getProducts();
 const b=a.filter(x=>String(x.id)!==String(id));
+
 this.saveProducts(b);
+
 return b.length!==a.length
 },
 
@@ -539,6 +643,7 @@ a[i].quantity=Math.max(0,this.toNumber(a[i].quantity)+this.toNumber(n));
 a[i].updatedAt=this.now();
 
 this.saveProducts(a);
+
 return a[i]
 },
 
@@ -546,9 +651,17 @@ return a[i]
    SALES
 ========================================================= */
 
-getSales(){return this.getData(this.keys.sales)},
-saveSales(x){return this.saveData(this.keys.sales,x)},
-getSaleById(id){return this.getSales().find(x=>String(x.id)===String(id))||null},
+getSales(){
+return this.getData(this.keys.sales)
+},
+
+saveSales(x){
+return this.saveData(this.keys.sales,x)
+},
+
+getSaleById(id){
+return this.getSales().find(x=>String(x.id)===String(id))||null
+},
 
 addSale(s={}){
 const a=this.getSales();
@@ -563,6 +676,7 @@ updatedAt:this.now()
 };
 
 a.push(x);
+
 this.saveSales(a);
 
 return x
@@ -591,7 +705,10 @@ const i=p.findIndex(y=>String(y.id)===String(x.productId||x.id));
 const q=this.positiveNumber(x.quantity||x.qty||1);
 
 if(i>=0&&q>this.toNumber(p[i].quantity)){
-return{success:false,message:"الكمية غير متوفرة للمنتج: "+(p[i].name||"")}
+return{
+success:false,
+message:"الكمية غير متوفرة للمنتج: "+(p[i].name||"")
+}
 }
 }
 
@@ -614,56 +731,127 @@ return{success:true,sale:this.addSale(s)}
    CUSTOMERS
 ========================================================= */
 
-getCustomers(){return this.getData(this.keys.customers)},
-saveCustomers(x){return this.saveData(this.keys.customers,x)},
-addCustomer(x={}){return this._add(this.keys.customers,"CUS",x)},
-updateCustomer(id,c={}){return this._update(this.keys.customers,id,c)},
-deleteCustomer(id){return this._delete(this.keys.customers,id)},
+getCustomers(){
+return this.getData(this.keys.customers)
+},
+
+saveCustomers(x){
+return this.saveData(this.keys.customers,x)
+},
+
+addCustomer(x={}){
+return this._add(this.keys.customers,"CUS",x)
+},
+
+updateCustomer(id,c={}){
+return this._update(this.keys.customers,id,c)
+},
+
+deleteCustomer(id){
+return this._delete(this.keys.customers,id)
+},
 
 /* =========================================================
    SUPPLIERS
 ========================================================= */
 
-getSuppliers(){return this.getData(this.keys.suppliers)},
-saveSuppliers(x){return this.saveData(this.keys.suppliers,x)},
-addSupplier(x={}){return this._add(this.keys.suppliers,"SUP",x)},
-updateSupplier(id,c={}){return this._update(this.keys.suppliers,id,c)},
-deleteSupplier(id){return this._delete(this.keys.suppliers,id)},
+getSuppliers(){
+return this.getData(this.keys.suppliers)
+},
+
+saveSuppliers(x){
+return this.saveData(this.keys.suppliers,x)
+},
+
+addSupplier(x={}){
+return this._add(this.keys.suppliers,"SUP",x)
+},
+
+updateSupplier(id,c={}){
+return this._update(this.keys.suppliers,id,c)
+},
+
+deleteSupplier(id){
+return this._delete(this.keys.suppliers,id)
+},
 
 /* =========================================================
    EMPLOYEES
 ========================================================= */
 
-getEmployees(){return this.getData(this.keys.employees)},
-saveEmployees(x){return this.saveData(this.keys.employees,x)},
-addEmployee(x={}){return this._add(this.keys.employees,"EMP",x)},
-updateEmployee(id,c={}){return this._update(this.keys.employees,id,c)},
-deleteEmployee(id){return this._delete(this.keys.employees,id)},
+getEmployees(){
+return this.getData(this.keys.employees)
+},
+
+saveEmployees(x){
+return this.saveData(this.keys.employees,x)
+},
+
+addEmployee(x={}){
+return this._add(this.keys.employees,"EMP",x)
+},
+
+updateEmployee(id,c={}){
+return this._update(this.keys.employees,id,c)
+},
+
+deleteEmployee(id){
+return this._delete(this.keys.employees,id)
+},
 
 /* =========================================================
    TRANSACTIONS
 ========================================================= */
 
-getTransactions(){return this.getData(this.keys.transactions)},
-saveTransactions(x){return this.saveData(this.keys.transactions,x)},
+getTransactions(){
+return this.getData(this.keys.transactions)
+},
+
+saveTransactions(x){
+return this.saveData(this.keys.transactions,x)
+},
 
 addTransaction(x={}){
-x={...x,amount:this.positiveNumber(x.amount),date:x.date||this.today()};
+x={
+...x,
+amount:this.positiveNumber(x.amount),
+date:x.date||this.today()
+};
+
 return this._add(this.keys.transactions,"TRX",x)
 },
 
-updateTransaction(id,c={}){return this._update(this.keys.transactions,id,c)},
-deleteTransaction(id){return this._delete(this.keys.transactions,id)},
+updateTransaction(id,c={}){
+return this._update(this.keys.transactions,id,c)
+},
+
+deleteTransaction(id){
+return this._delete(this.keys.transactions,id)
+},
 
 /* =========================================================
    HELD SALES
 ========================================================= */
 
-getHeldSales(){return this.getData(this.keys.heldSales)},
-saveHeldSales(x){return this.saveData(this.keys.heldSales,x)},
-holdSale(x={}){return this._add(this.keys.heldSales,"HOLD",x)},
-removeHeldSale(id){return this._delete(this.keys.heldSales,id)},
-getHeldSaleById(id){return this.getHeldSales().find(x=>String(x.id)===String(id))||null},
+getHeldSales(){
+return this.getData(this.keys.heldSales)
+},
+
+saveHeldSales(x){
+return this.saveData(this.keys.heldSales,x)
+},
+
+holdSale(x={}){
+return this._add(this.keys.heldSales,"HOLD",x)
+},
+
+removeHeldSale(id){
+return this._delete(this.keys.heldSales,id)
+},
+
+getHeldSaleById(id){
+return this.getHeldSales().find(x=>String(x.id)===String(id))||null
+},
 
 /* =========================================================
    GENERIC HELPERS
@@ -671,9 +859,17 @@ getHeldSaleById(id){return this.getHeldSales().find(x=>String(x.id)===String(id)
 
 _add(k,p,x={}){
 const a=this.getData(k);
-const o={...x,id:x.id||this.generateId(p),createdAt:x.createdAt||this.now(),updatedAt:this.now()};
+
+const o={
+...x,
+id:x.id||this.generateId(p),
+createdAt:x.createdAt||this.now(),
+updatedAt:this.now()
+};
+
 a.push(o);
 this.saveData(k,a);
+
 return o
 },
 
@@ -683,7 +879,12 @@ const i=a.findIndex(x=>String(x.id)===String(id));
 
 if(i<0)return false;
 
-a[i]={...a[i],...c,id:a[i].id,updatedAt:this.now()};
+a[i]={
+...a[i],
+...c,
+id:a[i].id,
+updatedAt:this.now()
+};
 
 this.saveData(k,a);
 
@@ -704,7 +905,16 @@ return b.length!==a.length
 ========================================================= */
 
 getSettings(){
-const d={businessName:"VAREX",currency:"AED",currencySymbol:"د.إ",taxEnabled:true,taxRate:5,lowStockLimit:5,language:"ar"};
+const d={
+businessName:"VAREX",
+currency:"AED",
+currencySymbol:"د.إ",
+taxEnabled:true,
+taxRate:5,
+lowStockLimit:5,
+language:"ar"
+};
+
 const p=this.getObject(this.keys.settings,{});
 
 let l={};
@@ -717,11 +927,20 @@ l=x
 }
 }catch(e){}
 
-return{...d,...l,...p}
+return{
+...d,
+...l,
+...p
+}
 },
 
 saveSettings(s={}){
-const d={...this.getSettings(),...s,updatedAt:this.now()};
+const d={
+...this.getSettings(),
+...s,
+updatedAt:this.now()
+};
+
 const ok=this.saveObject(this.keys.settings,d);
 
 try{
@@ -734,25 +953,42 @@ return ok
 money(v){
 const s=this.getSettings();
 const sym=this.cleanText(s.currencySymbol)||(s.currency==="AED"?"د.إ":s.currency);
+
 return`${this.toNumber(v).toFixed(2)} ${sym}`
 },
 
 calculateTax(v){
 const s=this.getSettings();
-return s.taxEnabled===false?0:this.positiveNumber(v)*this.toNumber(s.taxRate,5)/100
+
+return s.taxEnabled===false
+?0
+:this.positiveNumber(v)*this.toNumber(s.taxRate,5)/100
 },
 
 getTodaySales(){
 const t=this.today();
 
 return this.getSales().filter(
-s=>this.normalizeDate(s.createdAt||s.date||s.saleDate||s.invoiceDate||"")===t
+s=>this.normalizeDate(
+s.createdAt||
+s.date||
+s.saleDate||
+s.invoiceDate||
+""
+)===t
 )
 },
 
 getTodaySalesTotal(){
 return this.getTodaySales().reduce(
-(a,s)=>a+this.toNumber(s.total??s.grandTotal??s.finalTotal??s.netTotal??s.amount??0),
+(a,s)=>a+this.toNumber(
+s.total??
+s.grandTotal??
+s.finalTotal??
+s.netTotal??
+s.amount??
+0
+),
 0
 )
 },
@@ -774,7 +1010,8 @@ this.keys.suppliers,
 this.keys.employees,
 this.keys.transactions,
 this.keys.heldSales
-].forEach(k=>{
+]
+.forEach(k=>{
 if(localStorage.getItem(k)===null){
 localStorage.setItem(k,"[]")
 }
@@ -898,8 +1135,13 @@ current="subscription.html"
 }
 
 nav.innerHTML=VAREX_MENU.map(item=>{
+
 const[file,icon,title]=item;
-const active=current===file.toLowerCase()?" active":"";
+
+const active=
+current===file.toLowerCase()
+?" active"
+:"";
 
 return`
 <a href="./${file}" class="${active.trim()}">
@@ -907,6 +1149,7 @@ return`
 <span class="nav-label">${title}</span>
 </a>
 `
+
 }).join("");
 
 varexAddSidebarActions()
@@ -928,17 +1171,42 @@ box.className="varex-sidebar-actions";
 
 box.innerHTML=`
 
-<button type="button" class="varex-theme-button" id="varexThemeButton">
-<span class="nav-icon" id="varexThemeIcon">🌙</span>
-<span id="varexThemeText">الوضع الليلي</span>
+<button
+type="button"
+class="varex-theme-button"
+id="varexThemeButton">
+
+<span
+class="nav-icon"
+id="varexThemeIcon">
+🌙
+</span>
+
+<span id="varexThemeText">
+الوضع الليلي
+</span>
+
 </button>
 
-<button type="button" class="varex-logout-button" id="varexLogoutButton">
-<span class="varex-power-icon">⏻</span>
-<span>تسجيل الخروج</span>
+<button
+type="button"
+class="varex-logout-button"
+id="varexLogoutButton">
+
+<span class="varex-power-icon">
+⏻
+</span>
+
+<span>
+تسجيل الخروج
+</span>
+
 </button>
 
-<div class="varex-sidebar-bottom-space" aria-hidden="true"></div>
+<div
+class="varex-sidebar-bottom-space"
+aria-hidden="true">
+</div>
 
 `;
 
@@ -947,14 +1215,22 @@ nav.appendChild(box);
 varexInstallSharedStyles();
 varexInstallLogoutUI();
 
-document.getElementById("varexThemeButton")?.addEventListener("click",()=>{
+document
+.getElementById("varexThemeButton")
+?.addEventListener("click",()=>{
+
 varexSaveSidebarScroll();
 varexToggleTheme()
+
 });
 
-document.getElementById("varexLogoutButton")?.addEventListener("click",()=>{
+document
+.getElementById("varexLogoutButton")
+?.addEventListener("click",()=>{
+
 varexSaveSidebarScroll();
 varexOpenLogoutDialog()
+
 });
 
 varexUpdateThemeButton()
@@ -1065,9 +1341,14 @@ id="varexLogoutTransition">
 
 <div class="varex-logout-transition-logo">
 
+<div class="varex-transition-image-box">
+
 <img
 src="./varex-icon-512.png"
-alt="VAREX">
+alt="VAREX"
+class="varex-transition-image">
+
+</div>
 
 <div>VAREX</div>
 
@@ -1079,22 +1360,33 @@ alt="VAREX">
 
 document.body.appendChild(overlay);
 
-document.getElementById("varexLogoutCancel")
-?.addEventListener("click",varexCloseLogoutDialog);
+document
+.getElementById("varexLogoutCancel")
+?.addEventListener(
+"click",
+varexCloseLogoutDialog
+);
 
-document.getElementById("varexLogoutConfirm")
-?.addEventListener("click",varexRunLogoutSequence);
+document
+.getElementById("varexLogoutConfirm")
+?.addEventListener(
+"click",
+varexRunLogoutSequence
+);
 
 overlay.addEventListener("click",event=>{
+
 if(
 event.target===overlay&&
 !overlay.classList.contains("processing")
 ){
 varexCloseLogoutDialog()
 }
+
 });
 
 document.addEventListener("keydown",event=>{
+
 if(
 event.key==="Escape"&&
 overlay.classList.contains("show")&&
@@ -1102,6 +1394,7 @@ overlay.classList.contains("show")&&
 ){
 varexCloseLogoutDialog()
 }
+
 });
 
 }
@@ -1113,16 +1406,55 @@ varexCloseLogoutDialog()
 
 function varexOpenLogoutDialog(){
 
-const overlay=document.getElementById("varexLogoutOverlay");
-const card=document.getElementById("varexLogoutCard");
-const title=document.getElementById("varexLogoutTitle");
-const message=document.getElementById("varexLogoutMessage");
-const actions=document.getElementById("varexLogoutActions");
-const loader=document.getElementById("varexLogoutLoader");
-const success=document.getElementById("varexLogoutSuccessIcon");
-const progress=document.getElementById("varexLogoutProgress");
-const bar=document.getElementById("varexLogoutProgressBar");
-const transition=document.getElementById("varexLogoutTransition");
+const overlay=
+document.getElementById(
+"varexLogoutOverlay"
+);
+
+const card=
+document.getElementById(
+"varexLogoutCard"
+);
+
+const title=
+document.getElementById(
+"varexLogoutTitle"
+);
+
+const message=
+document.getElementById(
+"varexLogoutMessage"
+);
+
+const actions=
+document.getElementById(
+"varexLogoutActions"
+);
+
+const loader=
+document.getElementById(
+"varexLogoutLoader"
+);
+
+const success=
+document.getElementById(
+"varexLogoutSuccessIcon"
+);
+
+const progress=
+document.getElementById(
+"varexLogoutProgress"
+);
+
+const bar=
+document.getElementById(
+"varexLogoutProgressBar"
+);
+
+const transition=
+document.getElementById(
+"varexLogoutTransition"
+);
 
 if(!overlay)return;
 
@@ -1135,6 +1467,7 @@ overlay.classList.remove(
 );
 
 card?.classList.remove("success");
+
 transition?.classList.remove("show");
 
 if(title){
@@ -1168,7 +1501,13 @@ bar.style.width="0%"
 overlay.classList.add("show");
 
 setTimeout(()=>{
-document.getElementById("varexLogoutConfirm")?.focus()
+
+document
+.getElementById(
+"varexLogoutConfirm"
+)
+?.focus()
+
 },150)
 
 }
@@ -1180,15 +1519,25 @@ document.getElementById("varexLogoutConfirm")?.focus()
 
 function varexCloseLogoutDialog(){
 
-const overlay=document.getElementById("varexLogoutOverlay");
+const overlay=
+document.getElementById(
+"varexLogoutOverlay"
+);
 
 if(!overlay)return;
 
-if(overlay.classList.contains("processing")){
+if(
+overlay.classList.contains(
+"processing"
+)
+){
 return
 }
 
-overlay.classList.remove("show")
+overlay.classList.remove(
+"show"
+)
+
 }
 
 
@@ -1197,7 +1546,15 @@ overlay.classList.remove("show")
 ========================================================= */
 
 function varexLogoutWait(ms){
-return new Promise(resolve=>setTimeout(resolve,ms))
+
+return new Promise(
+resolve=>
+setTimeout(
+resolve,
+ms
+)
+)
+
 }
 
 
@@ -1212,48 +1569,82 @@ progressValue,
 mode="loading"
 ){
 
-const title=document.getElementById("varexLogoutTitle");
-const message=document.getElementById("varexLogoutMessage");
-const loader=document.getElementById("varexLogoutLoader");
-const success=document.getElementById("varexLogoutSuccessIcon");
-const bar=document.getElementById("varexLogoutProgressBar");
-const card=document.getElementById("varexLogoutCard");
+const title=
+document.getElementById(
+"varexLogoutTitle"
+);
+
+const message=
+document.getElementById(
+"varexLogoutMessage"
+);
+
+const loader=
+document.getElementById(
+"varexLogoutLoader"
+);
+
+const success=
+document.getElementById(
+"varexLogoutSuccessIcon"
+);
+
+const bar=
+document.getElementById(
+"varexLogoutProgressBar"
+);
+
+const card=
+document.getElementById(
+"varexLogoutCard"
+);
 
 if(title){
-title.textContent=titleText
+title.textContent=
+titleText
 }
 
 if(message){
-message.textContent=messageText
+message.textContent=
+messageText
 }
 
 if(bar){
-bar.style.width=`${progressValue}%`
+bar.style.width=
+`${progressValue}%`
 }
 
 if(mode==="success"){
 
 if(loader){
-loader.style.display="none"
+loader.style.display=
+"none"
 }
 
 if(success){
-success.style.display="flex"
+success.style.display=
+"flex"
 }
 
-card?.classList.add("success")
+card?.classList.add(
+"success"
+)
 
 }else{
 
 if(success){
-success.style.display="none"
+success.style.display=
+"none"
 }
 
 if(loader){
-loader.style.display="block"
+loader.style.display=
+"block"
 }
 
-card?.classList.remove("success")
+card?.classList.remove(
+"success"
+)
 
 }
 
@@ -1276,8 +1667,11 @@ if(!AudioClass){
 return
 }
 
-const context=new AudioClass();
-const start=context.currentTime;
+const context=
+new AudioClass();
+
+const start=
+context.currentTime;
 
 [
 [523.25,0,.16],
@@ -1285,13 +1679,20 @@ const start=context.currentTime;
 [783.99,.29,.20],
 [1046.5,.46,.32]
 ]
-.forEach(([frequency,delay,duration])=>{
+.forEach(
+([frequency,delay,duration])=>{
 
-const oscillator=context.createOscillator();
-const gain=context.createGain();
+const oscillator=
+context.createOscillator();
 
-oscillator.type="sine";
-oscillator.frequency.value=frequency;
+const gain=
+context.createGain();
+
+oscillator.type=
+"sine";
+
+oscillator.frequency.value=
+frequency;
 
 gain.gain.setValueAtTime(
 .0001,
@@ -1308,17 +1709,33 @@ gain.gain.exponentialRampToValueAtTime(
 start+delay+duration
 );
 
-oscillator.connect(gain);
-gain.connect(context.destination);
+oscillator.connect(
+gain
+);
 
-oscillator.start(start+delay);
-oscillator.stop(start+delay+duration+.04)
+gain.connect(
+context.destination
+);
 
-});
+oscillator.start(
+start+delay
+);
 
-setTimeout(()=>{
-context.close().catch(()=>{})
-},1300)
+oscillator.stop(
+start+delay+duration+.04
+);
+
+}
+);
+
+setTimeout(
+()=>{
+context.close().catch(
+()=>{}
+)
+},
+1300
+);
 
 }catch(e){}
 
@@ -1326,10 +1743,7 @@ context.close().catch(()=>{})
 
 
 /* =========================================================
-   RUN LOGOUT SEQUENCE
-   فقط:
-   1 - جاري حفظ البيانات
-   2 - تم تسجيل الخروج بنجاح
+   LOGOUT SEQUENCE
 ========================================================= */
 
 let varexLogoutInProgress=false;
@@ -1342,31 +1756,53 @@ return
 
 varexLogoutInProgress=true;
 
-const overlay=document.getElementById("varexLogoutOverlay");
-const actions=document.getElementById("varexLogoutActions");
-const progress=document.getElementById("varexLogoutProgress");
-const transition=document.getElementById("varexLogoutTransition");
+const overlay=
+document.getElementById(
+"varexLogoutOverlay"
+);
+
+const actions=
+document.getElementById(
+"varexLogoutActions"
+);
+
+const progress=
+document.getElementById(
+"varexLogoutProgress"
+);
+
+const transition=
+document.getElementById(
+"varexLogoutTransition"
+);
 
 if(!overlay){
+
 varexLogoutInProgress=false;
-await VAREX.logout(true);
+
+await VAREX.logout(
+true
+);
+
 return
 }
 
-overlay.classList.add("processing");
+overlay.classList.add(
+"processing"
+);
 
 if(actions){
-actions.style.display="none"
+actions.style.display=
+"none"
 }
 
 if(progress){
-progress.style.display="block"
+progress.style.display=
+"block"
 }
 
 
-/* =========================================================
-   المرحلة الأولى
-========================================================= */
+/* جاري حفظ البيانات */
 
 varexSetLogoutStatus(
 "جاري حفظ البيانات...",
@@ -1376,11 +1812,17 @@ varexSetLogoutStatus(
 );
 
 const savingDelay=
-varexLogoutWait(1750);
+varexLogoutWait(
+1750
+);
 
 const logoutProcess=
-VAREX.logout(false)
-.catch(()=>true);
+VAREX.logout(
+false
+)
+.catch(
+()=>true
+);
 
 await Promise.all([
 savingDelay,
@@ -1388,9 +1830,7 @@ logoutProcess
 ]);
 
 
-/* =========================================================
-   المرحلة الثانية
-========================================================= */
+/* تم تسجيل الخروج */
 
 varexSetLogoutStatus(
 "تم تسجيل الخروج بنجاح",
@@ -1401,24 +1841,36 @@ varexSetLogoutStatus(
 
 varexPlayLogoutSound();
 
-overlay.classList.add("finished");
+overlay.classList.add(
+"finished"
+);
 
-await varexLogoutWait(900);
+await varexLogoutWait(
+900
+);
 
 
-/* =========================================================
-   الانتقال إلى تسجيل الدخول
-========================================================= */
+/* الانتقال */
 
 if(transition){
-transition.classList.add("show")
+
+transition.classList.add(
+"show"
+)
+
 }
 
-overlay.classList.add("leaving");
+overlay.classList.add(
+"leaving"
+);
 
-await varexLogoutWait(760);
+await varexLogoutWait(
+760
+);
 
-location.replace("./login.html")
+location.replace(
+"./login.html"
+)
 
 }
 
@@ -1429,13 +1881,21 @@ location.replace("./login.html")
 
 function varexInstallSharedStyles(){
 
-if(document.getElementById("varexSharedStyles")){
+if(
+document.getElementById(
+"varexSharedStyles"
+)
+){
 return
 }
 
-const style=document.createElement("style");
+const style=
+document.createElement(
+"style"
+);
 
-style.id="varexSharedStyles";
+style.id=
+"varexSharedStyles";
 
 style.textContent=`
 
@@ -1452,11 +1912,14 @@ min-height:100%;
 }
 
 .main{
-margin-right:var(--sidebar-width)!important;
+margin-right:
+var(--sidebar-width)!important;
 }
 
 
-/* SIDEBAR */
+/* =========================================================
+   SIDEBAR
+========================================================= */
 
 .sidebar{
 position:fixed!important;
@@ -1479,7 +1942,9 @@ overscroll-behavior-x:none!important;
 touch-action:pan-y!important;
 scroll-behavior:auto!important;
 z-index:1000!important;
-box-shadow:-4px 0 18px rgba(15,29,67,.10)!important;
+box-shadow:
+-4px 0 18px
+rgba(15,29,67,.10)!important;
 }
 
 .sidebar .brand{
@@ -1509,7 +1974,9 @@ touch-action:auto!important;
 }
 
 
-/* MENU CARDS */
+/* =========================================================
+   MENU CARDS
+========================================================= */
 
 .sidebar .nav a{
 width:100%!important;
@@ -1529,14 +1996,24 @@ font-weight:600!important;
 line-height:1.4!important;
 white-space:nowrap!important;
 text-decoration:none!important;
-background:rgba(255,255,255,.055)!important;
+background:
+rgba(255,255,255,.055)!important;
 color:#dbeafe!important;
-border-top:1px solid rgba(255,255,255,.12)!important;
-border-left:1px solid rgba(255,255,255,.08)!important;
-border-right:1px solid rgba(0,0,0,.10)!important;
-border-bottom:3px solid rgba(5,14,37,.44)!important;
+border-top:
+1px solid
+rgba(255,255,255,.12)!important;
+border-left:
+1px solid
+rgba(255,255,255,.08)!important;
+border-right:
+1px solid
+rgba(0,0,0,.10)!important;
+border-bottom:
+3px solid
+rgba(5,14,37,.44)!important;
 box-shadow:none!important;
-transform:translateY(0)!important;
+transform:
+translateY(0)!important;
 transition:
 transform .10s ease,
 background .16s ease,
@@ -1545,26 +2022,36 @@ color .16s ease!important;
 }
 
 .sidebar .nav a:hover{
-background:rgba(255,255,255,.11)!important;
+background:
+rgba(255,255,255,.11)!important;
 color:#fff!important;
-transform:translateY(-1px)!important;
+transform:
+translateY(-1px)!important;
 }
 
 .sidebar .nav a:active{
-transform:translateY(2px)!important;
-border-bottom-width:1px!important;
-margin-bottom:10px!important;
-background:rgba(255,255,255,.15)!important;
+transform:
+translateY(2px)!important;
+border-bottom-width:
+1px!important;
+margin-bottom:
+10px!important;
+background:
+rgba(255,255,255,.15)!important;
 }
 
 .sidebar .nav a.active{
 background:#fff!important;
 color:#172554!important;
 font-weight:700!important;
-border-top:1px solid #fff!important;
-border-left:1px solid #f8fafc!important;
-border-right:1px solid #cbd5e1!important;
-border-bottom:3px solid #94a3b8!important;
+border-top:
+1px solid #fff!important;
+border-left:
+1px solid #f8fafc!important;
+border-right:
+1px solid #cbd5e1!important;
+border-bottom:
+3px solid #94a3b8!important;
 box-shadow:none!important;
 }
 
@@ -1575,7 +2062,8 @@ color:#172554!important;
 
 .sidebar .nav a.active:active{
 background:#f1f5f9!important;
-border-bottom-width:1px!important;
+border-bottom-width:
+1px!important;
 }
 
 .sidebar .nav a.active .nav-icon,
@@ -1603,7 +2091,9 @@ flex-shrink:0!important;
 }
 
 
-/* FOOTER */
+/* =========================================================
+   FOOTER
+========================================================= */
 
 .sidebar-footer{
 position:relative!important;
@@ -1616,13 +2106,17 @@ justify-content:center!important;
 }
 
 
-/* SIDEBAR ACTIONS */
+/* =========================================================
+   SIDEBAR ACTIONS
+========================================================= */
 
 .varex-sidebar-actions{
 width:100%;
 margin-top:18px;
 padding-top:15px;
-border-top:1px solid rgba(255,255,255,.12);
+border-top:
+1px solid
+rgba(255,255,255,.12);
 }
 
 .varex-sidebar-actions button{
@@ -1650,52 +2144,62 @@ color .16s ease,
 border-color .16s ease;
 }
 
-
-/* THEME BUTTON */
-
 .varex-theme-button{
 background:#fff!important;
 color:#172554!important;
-border-top:1px solid #fff!important;
-border-left:1px solid #f8fafc!important;
-border-right:1px solid #cbd5e1!important;
-border-bottom:3px solid #94a3b8!important;
+border-top:
+1px solid #fff!important;
+border-left:
+1px solid #f8fafc!important;
+border-right:
+1px solid #cbd5e1!important;
+border-bottom:
+3px solid #94a3b8!important;
 }
 
 .varex-theme-button:hover{
 background:#f1f5f9!important;
 color:#172554!important;
-transform:translateY(-1px);
+transform:
+translateY(-1px);
 }
 
 .varex-theme-button:active{
-transform:translateY(2px);
-border-bottom-width:1px!important;
-margin-bottom:11px;
+transform:
+translateY(2px);
+border-bottom-width:
+1px!important;
+margin-bottom:
+11px;
 }
-
-
-/* LOGOUT SIDEBAR BUTTON */
 
 .varex-logout-button{
 background:#fff!important;
 color:#172554!important;
-border-top:1px solid #fff!important;
-border-left:1px solid #f8fafc!important;
-border-right:1px solid #cbd5e1!important;
-border-bottom:3px solid #94a3b8!important;
+border-top:
+1px solid #fff!important;
+border-left:
+1px solid #f8fafc!important;
+border-right:
+1px solid #cbd5e1!important;
+border-bottom:
+3px solid #94a3b8!important;
 }
 
 .varex-logout-button:hover{
 background:#f1f5f9!important;
 color:#172554!important;
-transform:translateY(-1px);
+transform:
+translateY(-1px);
 }
 
 .varex-logout-button:active{
-transform:translateY(2px);
-border-bottom-width:1px!important;
-margin-bottom:11px;
+transform:
+translateY(2px);
+border-bottom-width:
+1px!important;
+margin-bottom:
+11px;
 }
 
 .varex-power-icon{
@@ -1703,7 +2207,8 @@ width:29px;
 height:29px;
 min-width:29px;
 min-height:29px;
-border:2px solid #172554;
+border:
+2px solid #172554;
 border-radius:50%;
 display:flex;
 align-items:center;
@@ -1725,11 +2230,15 @@ pointer-events:none;
 }
 
 
-/* SCROLLBAR */
+/* =========================================================
+   SCROLLBAR
+========================================================= */
 
 .sidebar{
 scrollbar-width:thin;
-scrollbar-color:rgba(255,255,255,.23) transparent;
+scrollbar-color:
+rgba(255,255,255,.23)
+transparent;
 }
 
 .sidebar::-webkit-scrollbar{
@@ -1741,12 +2250,14 @@ background:transparent;
 }
 
 .sidebar::-webkit-scrollbar-thumb{
-background:rgba(255,255,255,.23);
+background:
+rgba(255,255,255,.23);
 border-radius:10px;
 }
 
 .sidebar::-webkit-scrollbar-thumb:hover{
-background:rgba(255,255,255,.38);
+background:
+rgba(255,255,255,.38);
 }
 
 .sidebar .nav::-webkit-scrollbar{
@@ -1766,9 +2277,12 @@ display:flex;
 align-items:center;
 justify-content:center;
 padding:24px;
-background:rgba(4,12,32,.70);
-backdrop-filter:blur(10px);
--webkit-backdrop-filter:blur(10px);
+background:
+rgba(4,12,32,.70);
+backdrop-filter:
+blur(10px);
+-webkit-backdrop-filter:
+blur(10px);
 opacity:0;
 visibility:hidden;
 pointer-events:none;
@@ -1815,8 +2329,10 @@ border:
 rgba(255,255,255,.90);
 
 box-shadow:
-0 34px 100px rgba(2,8,23,.40),
-0 12px 34px rgba(15,23,42,.20);
+0 34px 100px
+rgba(2,8,23,.40),
+0 12px 34px
+rgba(15,23,42,.20);
 
 display:flex;
 flex-direction:column;
@@ -1834,7 +2350,8 @@ translateY(24px);
 opacity:0;
 
 transition:
-transform .40s cubic-bezier(.18,.89,.32,1.28),
+transform .40s
+cubic-bezier(.18,.89,.32,1.28),
 opacity .25s ease;
 
 overflow:hidden;
@@ -1859,7 +2376,8 @@ left:-85px;
 width:230px;
 height:230px;
 border-radius:50%;
-background:rgba(37,99,235,.055);
+background:
+rgba(37,99,235,.055);
 pointer-events:none;
 }
 
@@ -1871,94 +2389,170 @@ bottom:-115px;
 width:270px;
 height:270px;
 border-radius:50%;
-background:rgba(23,37,84,.045);
+background:
+rgba(23,37,84,.045);
 pointer-events:none;
 }
 
 
 /* =========================================================
-   LOGOUT LOGO — PERFECTLY CENTERED
+   VAREX LOGO
+   FORCED EXACT CENTER
 ========================================================= */
 
 .varex-logout-logo-wrap{
-position:relative;
-z-index:2;
+position:relative!important;
 
-width:100px;
-height:100px;
+z-index:2!important;
 
-min-width:100px;
-min-height:100px;
+width:104px!important;
+height:104px!important;
+
+min-width:104px!important;
+min-height:104px!important;
+
+max-width:104px!important;
+max-height:104px!important;
 
 margin:
-0 auto 27px;
+0 auto 28px!important;
 
-border-radius:50%;
+padding:0!important;
+
+border-radius:50%!important;
 
 background:
 linear-gradient(
 145deg,
 #172554,
 #213765
-);
+)!important;
 
-display:flex;
-align-items:center;
-justify-content:center;
+display:block!important;
 
-padding:10px;
-
-overflow:hidden;
+overflow:hidden!important;
 
 box-shadow:
 0 9px 0 #0f1d43,
-0 20px 34px rgba(23,37,84,.30);
+0 20px 34px
+rgba(23,37,84,.30)!important;
+
+transform:none!important;
 }
 
+
+/*
+   أهم تعديل:
+   الصورة لا تعتمد على Flex أو Grid.
+   مركزها مربوط هندسياً بمنتصف الدائرة.
+*/
+
+.varex-logout-logo-wrap
 .varex-logout-logo{
+
 display:block!important;
 
-position:static!important;
+position:absolute!important;
 
-width:78px!important;
-height:78px!important;
+top:50%!important;
+left:50%!important;
 
-min-width:78px!important;
-min-height:78px!important;
+right:auto!important;
+bottom:auto!important;
 
-max-width:78px!important;
-max-height:78px!important;
+width:80px!important;
+height:80px!important;
+
+min-width:80px!important;
+min-height:80px!important;
+
+max-width:80px!important;
+max-height:80px!important;
 
 margin:0!important;
 padding:0!important;
 
+transform:
+translate(-50%,-50%)!important;
+
+transform-origin:
+center center!important;
+
 object-fit:contain!important;
-object-position:center center!important;
 
-transform:none!important;
+object-position:
+50% 50%!important;
 
-top:auto!important;
-right:auto!important;
-bottom:auto!important;
-left:auto!important;
+border:0!important;
+
+border-radius:50%!important;
+
+vertical-align:middle!important;
+
+float:none!important;
+
+inset:auto!important;
+
+}
+
+
+/*
+   Override نهائي لأي CSS موجود
+   داخل صفحات النظام.
+*/
+
+#varexLogoutLogo{
+
+position:absolute!important;
+
+top:50%!important;
+left:50%!important;
+
+width:80px!important;
+height:80px!important;
+
+margin:0!important;
+
+transform:
+translate(-50%,-50%)!important;
+
+object-position:
+center center!important;
+
+}
+
+
+.varex-logout-fallback-logo{
+
+display:none;
+
+position:absolute!important;
+
+top:50%!important;
+left:50%!important;
+
+width:78px!important;
+height:78px!important;
+
+margin:0!important;
+
+transform:
+translate(-50%,-50%)!important;
+
+align-items:center;
+justify-content:center;
 
 border-radius:50%;
 
-align-self:center!important;
-justify-self:center!important;
-}
-
-.varex-logout-fallback-logo{
-display:none;
-width:100%;
-height:100%;
-align-items:center;
-justify-content:center;
 font-size:27px;
 font-weight:900;
+
 letter-spacing:1px;
+
 color:#fff;
+
 direction:ltr;
+
 }
 
 
@@ -1968,24 +2562,17 @@ direction:ltr;
 
 .varex-logout-loader{
 display:none;
-
 position:relative;
 z-index:2;
-
 width:52px;
 height:52px;
-
 margin:
 2px auto 20px;
-
 border-radius:50%;
-
 border:
 4px solid #dbe3ef;
-
 border-top-color:
 #172554;
-
 animation:
 varexLogoutSpin
 .72s linear infinite;
@@ -1993,7 +2580,8 @@ varexLogoutSpin
 
 @keyframes varexLogoutSpin{
 to{
-transform:rotate(360deg);
+transform:
+rotate(360deg);
 }
 }
 
@@ -2004,29 +2592,21 @@ transform:rotate(360deg);
 
 .varex-logout-success-icon{
 display:none;
-
 position:relative;
 z-index:2;
-
 width:56px;
 height:56px;
-
 margin:
 2px auto 19px;
-
 border-radius:50%;
-
 align-items:center;
 justify-content:center;
-
 background:#dcfce7;
-border:2px solid #22c55e;
-
+border:
+2px solid #22c55e;
 color:#15803d;
-
 font-size:29px;
 font-weight:900;
-
 animation:
 varexLogoutSuccess
 .42s ease both;
@@ -2035,16 +2615,19 @@ varexLogoutSuccess
 @keyframes varexLogoutSuccess{
 
 0%{
-transform:scale(.55);
+transform:
+scale(.55);
 opacity:0;
 }
 
 65%{
-transform:scale(1.13);
+transform:
+scale(1.13);
 }
 
 100%{
-transform:scale(1);
+transform:
+scale(1);
 opacity:1;
 }
 
@@ -2058,14 +2641,10 @@ opacity:1;
 .varex-logout-title{
 position:relative;
 z-index:2;
-
 font-family:inherit;
-
 font-size:25px;
 font-weight:900;
-
 color:#172554;
-
 margin:
 0 0 11px;
 }
@@ -2073,18 +2652,12 @@ margin:
 .varex-logout-message{
 position:relative;
 z-index:2;
-
 max-width:410px;
-
 font-family:inherit;
-
 font-size:13px;
 font-weight:500;
-
 line-height:1.9;
-
 color:#64748b;
-
 margin:0;
 }
 
@@ -2095,36 +2668,26 @@ margin:0;
 
 .varex-logout-progress{
 display:none;
-
 position:relative;
 z-index:2;
-
 width:84%;
-
 height:8px;
-
 margin-top:27px;
-
 border-radius:30px;
-
 background:#e2e8f0;
-
 overflow:hidden;
 }
 
 .varex-logout-progress-bar{
 width:0;
 height:100%;
-
 border-radius:30px;
-
 background:
 linear-gradient(
 90deg,
 #172554,
 #31548c
 );
-
 transition:
 width .65s ease;
 }
@@ -2137,30 +2700,20 @@ width .65s ease;
 .varex-logout-actions{
 position:relative;
 z-index:2;
-
 width:100%;
-
 display:flex;
-
 gap:14px;
-
 margin-top:32px;
 }
 
 .varex-logout-actions button{
 flex:1;
-
 height:52px;
-
 border-radius:12px;
-
 font-family:inherit;
-
 font-size:13px;
 font-weight:800;
-
 cursor:pointer;
-
 transition:
 transform .11s ease,
 box-shadow .11s ease,
@@ -2174,47 +2727,47 @@ linear-gradient(
 #172554,
 #213765
 );
-
 color:#fff;
-
 border:
 1px solid #172554;
-
 box-shadow:
 0 7px 0 #0f1d43,
-0 14px 22px rgba(23,37,84,.22);
+0 14px 22px
+rgba(23,37,84,.22);
 }
 
 .varex-logout-confirm:hover{
-transform:translateY(-1px);
+transform:
+translateY(-1px);
 }
 
 .varex-logout-confirm:active{
-transform:translateY(5px);
+transform:
+translateY(5px);
 box-shadow:
 0 1px 0 #0f1d43;
 }
 
 .varex-logout-cancel{
 background:#fff;
-
 color:#172554;
-
 border:
 1px solid #cbd5e1;
-
 box-shadow:
 0 6px 0 #cbd5e1,
-0 12px 18px rgba(15,23,42,.09);
+0 12px 18px
+rgba(15,23,42,.09);
 }
 
 .varex-logout-cancel:hover{
 background:#f8fafc;
-transform:translateY(-1px);
+transform:
+translateY(-1px);
 }
 
 .varex-logout-cancel:active{
-transform:translateY(4px);
+transform:
+translateY(4px);
 box-shadow:
 0 2px 0 #cbd5e1;
 }
@@ -2227,8 +2780,10 @@ box-shadow:
 .varex-logout-overlay.finished
 .varex-logout-card{
 box-shadow:
-0 34px 105px rgba(2,8,23,.43),
-0 0 0 1px rgba(34,197,94,.10);
+0 34px 105px
+rgba(2,8,23,.43),
+0 0 0 1px
+rgba(34,197,94,.10);
 }
 
 
@@ -2240,11 +2795,9 @@ box-shadow:
 position:absolute;
 inset:0;
 z-index:50;
-
 display:flex;
 align-items:center;
 justify-content:center;
-
 background:
 radial-gradient(
 circle at center,
@@ -2256,17 +2809,16 @@ linear-gradient(
 #172554,
 #0f1d43
 );
-
 transform:
 translateX(-105%);
-
 transition:
 transform .72s
 cubic-bezier(.65,.05,.22,1);
 }
 
 .varex-logout-transition.show{
-transform:translateX(0);
+transform:
+translateX(0);
 }
 
 .varex-logout-transition-logo{
@@ -2274,15 +2826,11 @@ display:flex;
 flex-direction:column;
 align-items:center;
 justify-content:center;
-
 gap:15px;
-
 opacity:0;
-
 transform:
 scale(.82)
 rotateY(-25deg);
-
 transition:
 opacity .38s ease .25s,
 transform .48s ease .20s;
@@ -2291,38 +2839,77 @@ transform .48s ease .20s;
 .varex-logout-transition.show
 .varex-logout-transition-logo{
 opacity:1;
-
 transform:
 scale(1)
 rotateY(0);
 }
 
-.varex-logout-transition-logo img{
-display:block;
 
-width:92px;
-height:92px;
+/* صندوق مستقل لشعار شاشة الانتقال */
 
-object-fit:contain;
-object-position:center;
+.varex-transition-image-box{
+position:relative!important;
 
-margin:auto;
+width:100px!important;
+height:100px!important;
+
+min-width:100px!important;
+min-height:100px!important;
+
+display:block!important;
+
+margin:0 auto!important;
+
+padding:0!important;
+
+overflow:visible!important;
+}
+
+
+/* نفس التثبيت الهندسي */
+
+.varex-transition-image{
+
+display:block!important;
+
+position:absolute!important;
+
+top:50%!important;
+left:50%!important;
+
+right:auto!important;
+bottom:auto!important;
+
+width:92px!important;
+height:92px!important;
+
+max-width:92px!important;
+max-height:92px!important;
+
+margin:0!important;
+padding:0!important;
+
+transform:
+translate(-50%,-50%)!important;
+
+object-fit:contain!important;
+object-position:
+50% 50%!important;
 
 filter:
 drop-shadow(
 0 10px 25px
 rgba(0,0,0,.28)
 );
+
 }
 
-.varex-logout-transition-logo div{
+
+.varex-logout-transition-logo > div:last-child{
 font-size:36px;
 font-weight:900;
-
 letter-spacing:7px;
-
 color:#fff;
-
 direction:ltr;
 }
 
@@ -2331,38 +2918,43 @@ direction:ltr;
    DARK LOGOUT
 ========================================================= */
 
-body.varex-dark .varex-logout-overlay{
-background:rgba(1,6,18,.80);
+body.varex-dark
+.varex-logout-overlay{
+background:
+rgba(1,6,18,.80);
 }
 
-body.varex-dark .varex-logout-card{
+body.varex-dark
+.varex-logout-card{
 background:
 linear-gradient(
 160deg,
 #132641,
 #0f2039
 );
-
 border-color:#29415f;
-
 box-shadow:
 0 34px 105px
 rgba(0,0,0,.58);
 }
 
-body.varex-dark .varex-logout-title{
+body.varex-dark
+.varex-logout-title{
 color:#fff;
 }
 
-body.varex-dark .varex-logout-message{
+body.varex-dark
+.varex-logout-message{
 color:#cbd5e1;
 }
 
-body.varex-dark .varex-logout-progress{
+body.varex-dark
+.varex-logout-progress{
 background:#29415f;
 }
 
-body.varex-dark .varex-logout-progress-bar{
+body.varex-dark
+.varex-logout-progress-bar{
 background:
 linear-gradient(
 90deg,
@@ -2371,12 +2963,14 @@ linear-gradient(
 );
 }
 
-body.varex-dark .varex-logout-loader{
+body.varex-dark
+.varex-logout-loader{
 border-color:#29415f;
 border-top-color:#fff;
 }
 
-body.varex-dark .varex-logout-cancel{
+body.varex-dark
+.varex-logout-cancel{
 background:#172c48;
 color:#fff;
 border-color:#35506f;
@@ -2384,7 +2978,8 @@ box-shadow:
 0 6px 0 #091728;
 }
 
-body.varex-dark .varex-logout-cancel:hover{
+body.varex-dark
+.varex-logout-cancel:hover{
 background:#1d3656;
 }
 
@@ -2400,8 +2995,10 @@ position:fixed!important;
 right:0!important;
 top:0!important;
 bottom:0!important;
-width:var(--sidebar-width)!important;
-height:100dvh!important;
+width:
+var(--sidebar-width)!important;
+height:
+100dvh!important;
 display:block!important;
 overflow-y:auto!important;
 }
@@ -2409,32 +3006,37 @@ overflow-y:auto!important;
 .sidebar .nav{
 display:block!important;
 overflow:visible!important;
-padding:16px 14px 0!important;
+padding:
+16px 14px 0!important;
 }
 
 .sidebar .nav a{
 width:100%!important;
 min-width:0!important;
-margin:0 0 8px!important;
+margin:
+0 0 8px!important;
 }
 
 .main{
-margin-right:var(--sidebar-width)!important;
+margin-right:
+var(--sidebar-width)!important;
 }
 
 }
 
 
 /* =========================================================
-   MOBILE LOGOUT
+   MOBILE
 ========================================================= */
 
 @media(max-width:600px){
 
 .varex-logout-card{
-width:calc(100vw - 28px);
+width:
+calc(100vw - 28px);
 min-height:390px;
-padding:34px 22px 28px;
+padding:
+34px 22px 28px;
 border-radius:23px;
 }
 
@@ -2448,19 +3050,37 @@ flex:none;
 }
 
 .varex-logout-logo-wrap{
-width:88px;
-height:88px;
-min-width:88px;
-min-height:88px;
+
+width:92px!important;
+height:92px!important;
+
+min-width:92px!important;
+min-height:92px!important;
+
+max-width:92px!important;
+max-height:92px!important;
+
 }
 
-.varex-logout-logo{
-width:68px!important;
-height:68px!important;
-min-width:68px!important;
-min-height:68px!important;
-max-width:68px!important;
-max-height:68px!important;
+.varex-logout-logo-wrap
+.varex-logout-logo,
+#varexLogoutLogo{
+
+width:70px!important;
+height:70px!important;
+
+min-width:70px!important;
+min-height:70px!important;
+
+max-width:70px!important;
+max-height:70px!important;
+
+top:50%!important;
+left:50%!important;
+
+transform:
+translate(-50%,-50%)!important;
+
 }
 
 .varex-logout-title{
@@ -2471,7 +3091,9 @@ font-size:22px;
 
 `;
 
-document.head.appendChild(style)
+document.head.appendChild(
+style
+)
 
 }
 
@@ -2482,7 +3104,8 @@ document.head.appendChild(style)
 
 function varexInstallSidebarScroll(){
 
-const sidebar=varexGetSidebar();
+const sidebar=
+varexGetSidebar();
 
 if(!sidebar)return;
 
@@ -2490,23 +3113,47 @@ varexRestoreSidebarScroll();
 
 let saveTimer=null;
 
-sidebar.addEventListener("scroll",()=>{
-clearTimeout(saveTimer);
-saveTimer=setTimeout(varexSaveSidebarScroll,25)
-},{passive:true});
+sidebar.addEventListener(
+"scroll",
+()=>{
 
-sidebar.querySelectorAll("a[href]").forEach(link=>{
+clearTimeout(
+saveTimer
+);
+
+saveTimer=
+setTimeout(
+varexSaveSidebarScroll,
+25
+)
+
+},
+{
+passive:true
+}
+);
+
+sidebar
+.querySelectorAll(
+"a[href]"
+)
+.forEach(
+link=>{
 
 link.addEventListener(
 "pointerdown",
 varexSaveSidebarScroll,
-{passive:true}
+{
+passive:true
+}
 );
 
 link.addEventListener(
 "touchstart",
 varexSaveSidebarScroll,
-{passive:true}
+{
+passive:true
+}
 );
 
 link.addEventListener(
@@ -2514,7 +3161,8 @@ link.addEventListener(
 varexSaveSidebarScroll
 )
 
-});
+}
+);
 
 window.addEventListener(
 "pagehide",
@@ -2540,7 +3188,10 @@ localStorage.getItem(
 "varex_theme"
 );
 
-if(saved==="dark"||saved==="light"){
+if(
+saved==="dark"||
+saved==="light"
+){
 return saved
 }
 
@@ -2557,12 +3208,14 @@ window.matchMedia(
 
 function varexApplyTheme(theme){
 
-document.documentElement.setAttribute(
+document.documentElement
+.setAttribute(
 "data-varex-theme",
 theme
 );
 
-document.documentElement.setAttribute(
+document.documentElement
+.setAttribute(
 "data-theme",
 theme
 );
@@ -2582,6 +3235,7 @@ theme
 );
 
 varexInstallDarkStyles();
+
 varexUpdateThemeButton()
 
 }
@@ -2634,13 +3288,21 @@ dark
 
 function varexInstallDarkStyles(){
 
-if(document.getElementById("varexDarkStyles")){
+if(
+document.getElementById(
+"varexDarkStyles"
+)
+){
 return
 }
 
-const style=document.createElement("style");
+const style=
+document.createElement(
+"style"
+);
 
-style.id="varexDarkStyles";
+style.id=
+"varexDarkStyles";
 
 style.textContent=`
 
@@ -2881,16 +3543,21 @@ color:#fff!important;
 body.varex-dark .sidebar .nav a:active{
 background:
 rgba(255,255,255,.14)!important;
-border-bottom-width:1px!important;
+border-bottom-width:
+1px!important;
 }
 
 body.varex-dark .sidebar .nav a.active{
 background:#fff!important;
 color:#172554!important;
-border-top:1px solid #fff!important;
-border-left:1px solid #f8fafc!important;
-border-right:1px solid #cbd5e1!important;
-border-bottom:3px solid #94a3b8!important;
+border-top:
+1px solid #fff!important;
+border-left:
+1px solid #f8fafc!important;
+border-right:
+1px solid #cbd5e1!important;
+border-bottom:
+3px solid #94a3b8!important;
 box-shadow:none!important;
 }
 
@@ -2913,10 +3580,14 @@ rgba(255,255,255,.12)!important;
 body.varex-dark .varex-theme-button{
 background:#172554!important;
 color:#fff!important;
-border-top:1px solid #324675!important;
-border-left:1px solid #293d6c!important;
-border-right:1px solid #0d193b!important;
-border-bottom:3px solid #08132f!important;
+border-top:
+1px solid #324675!important;
+border-left:
+1px solid #293d6c!important;
+border-right:
+1px solid #0d193b!important;
+border-bottom:
+3px solid #08132f!important;
 box-shadow:none!important;
 }
 
@@ -2927,16 +3598,21 @@ color:#fff!important;
 
 body.varex-dark .varex-theme-button:active{
 background:#203765!important;
-border-bottom-width:1px!important;
+border-bottom-width:
+1px!important;
 }
 
 body.varex-dark .varex-logout-button{
 background:#fff!important;
 color:#172554!important;
-border-top:1px solid #fff!important;
-border-left:1px solid #f8fafc!important;
-border-right:1px solid #cbd5e1!important;
-border-bottom:3px solid #94a3b8!important;
+border-top:
+1px solid #fff!important;
+border-left:
+1px solid #f8fafc!important;
+border-right:
+1px solid #cbd5e1!important;
+border-bottom:
+3px solid #94a3b8!important;
 box-shadow:none!important;
 }
 
@@ -2947,7 +3623,8 @@ color:#172554!important;
 
 body.varex-dark .varex-logout-button:active{
 background:#e2e8f0!important;
-border-bottom-width:1px!important;
+border-bottom-width:
+1px!important;
 }
 
 body.varex-dark .varex-power-icon{
@@ -2980,7 +3657,9 @@ background:#45617f;
 
 `;
 
-document.head.appendChild(style)
+document.head.appendChild(
+style
+)
 
 }
 
@@ -2991,26 +3670,42 @@ document.head.appendChild(style)
 
 function varexShowCurrentUser(){
 
-const user=VAREX.getCurrentUser();
+const user=
+VAREX.getCurrentUser();
 
 if(!user)return;
 
-document.querySelectorAll(".info-chip,.chip").forEach(el=>{
+document
+.querySelectorAll(
+".info-chip,.chip"
+)
+.forEach(
+el=>{
 
-if(el.textContent.includes("المستخدم")){
+if(
+el.textContent.includes(
+"المستخدم"
+)
+){
 
-const strong=el.querySelector("strong");
+const strong=
+el.querySelector(
+"strong"
+);
 
 if(strong){
+
 strong.textContent=
 user.name||
 user.username||
 "المستخدم"
-}
 
 }
 
-});
+}
+
+}
+);
 
 const sidebarName=
 document.getElementById(
@@ -3018,11 +3713,13 @@ document.getElementById(
 );
 
 if(sidebarName){
+
 sidebarName.textContent=
 user.name||
 user.username||
 user.email||
 "المستخدم"
+
 }
 
 const sidebarRole=
@@ -3031,9 +3728,11 @@ document.getElementById(
 );
 
 if(sidebarRole){
+
 sidebarRole.textContent=
 user.role||
 "مستخدم"
+
 }
 
 const topUser=
@@ -3042,11 +3741,13 @@ document.getElementById(
 );
 
 if(topUser){
+
 topUser.textContent=
 user.name||
 user.username||
 user.email||
 "المستخدم"
+
 }
 
 }
@@ -3067,7 +3768,9 @@ if(publicPage){
 return
 }
 
-if(!VAREX.requireSubscription()){
+if(
+!VAREX.requireSubscription()
+){
 return
 }
 
@@ -3088,7 +3791,10 @@ varexInstallSidebarScroll()
    START
 ========================================================= */
 
-if(document.readyState==="loading"){
+if(
+document.readyState===
+"loading"
+){
 
 document.addEventListener(
 "DOMContentLoaded",
