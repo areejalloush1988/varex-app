@@ -2,7 +2,6 @@
 const VAREX={
 config:{supabaseUrl:"https://eibadfdqzpeigccfdipt.supabase.co",supabaseKey:"sb_publishable__xRe4q10zwB2coiWu7wVrQ_9CimA336"},
 keys:{products:"varex_products",sales:"varex_sales",customers:"varex_customers",suppliers:"varex_suppliers",employees:"varex_employees",transactions:"varexTransactions",settings:"varex_settings",heldSales:"varex_held_sales",session:"varex_session",rememberedUser:"varex_remembered_user",cachedUser:"varex_cached_user",pendingVerification:"varex_pending_verification",subscription:"varex_subscription",subscriptionGate:"varex_subscription_gate",staffUsers:"varexUsers",staffSession:"varex_staff_session",deviceAuth:"varex_device_authorized",deviceOwner:"varex_device_owner"},
-
 getData(k){try{const x=JSON.parse(localStorage.getItem(k)||"[]");return Array.isArray(x)?x:[]}catch(e){return[]}},
 saveData(k,d){try{localStorage.setItem(k,JSON.stringify(Array.isArray(d)?d:[]));return true}catch(e){return false}},
 getObject(k,f={}){try{const x=JSON.parse(localStorage.getItem(k)||"null");return x&&typeof x==="object"&&!Array.isArray(x)?{...f,...x}:{...f}}catch(e){return{...f}}},
@@ -52,13 +51,8 @@ localStorage.setItem(this.keys.pendingVerification,JSON.stringify(x));
 return x
 },
 
-getPendingVerification(){
-try{return JSON.parse(localStorage.getItem(this.keys.pendingVerification)||"null")}catch(e){return null}
-},
-
-clearPendingVerification(){
-localStorage.removeItem(this.keys.pendingVerification)
-},
+getPendingVerification(){try{return JSON.parse(localStorage.getItem(this.keys.pendingVerification)||"null")}catch(e){return null}},
+clearPendingVerification(){localStorage.removeItem(this.keys.pendingVerification)},
 
 async createUser(u={}){
 const name=this.cleanText(u.name),username=this.normalizeUsername(u.username),email=this.normalizeEmail(u.email),password=String(u.password||"");
@@ -70,9 +64,7 @@ try{
 const d=await this.authFetch("/auth/v1/signup",{method:"POST",body:JSON.stringify({email,password,data:{name,full_name:name,username,role:"مالك"}})});
 this.setPendingVerification({email,name,username});
 return{success:true,user:this.getSafeUser(d.user),needsEmailConfirmation:!d?.session?.access_token,email,message:d?.session?.access_token?"تم إنشاء الحساب.":"تم إنشاء الحساب. أرسلنا رمز التحقق إلى بريدك الإلكتروني."}
-}catch(e){
-return{success:false,message:this.mapAuthError(e)}
-}
+}catch(e){return{success:false,message:this.mapAuthError(e)}}
 },
 
 async verifyEmailOtp(email,token){
@@ -82,18 +74,14 @@ this.clearPendingVerification();
 sessionStorage.removeItem(this.keys.session);
 localStorage.removeItem(this.keys.session);
 return{success:true,user:this.getSafeUser(d.user),message:"تم تأكيد البريد الإلكتروني بنجاح."}
-}catch(e){
-return{success:false,message:this.mapAuthError(e)}
-}
+}catch(e){return{success:false,message:this.mapAuthError(e)}}
 },
 
 async resendConfirmation(email){
 try{
 await this.authFetch("/auth/v1/resend",{method:"POST",body:JSON.stringify({type:"signup",email:this.normalizeEmail(email)})});
 return{success:true,message:"تم إرسال رمز تحقق جديد."}
-}catch(e){
-return{success:false,message:this.mapAuthError(e)}
-}
+}catch(e){return{success:false,message:this.mapAuthError(e)}}
 },
 
 authorizeDevice(user){
@@ -104,84 +92,40 @@ localStorage.setItem(this.keys.deviceOwner,JSON.stringify(x));
 return x
 },
 
-isDeviceAuthorized(){
-return localStorage.getItem(this.keys.deviceAuth)==="true"&&!!this.getDeviceOwner()
-},
-
-getDeviceOwner(){
-try{
-const x=JSON.parse(localStorage.getItem(this.keys.deviceOwner)||"null");
-return x&&typeof x==="object"?x:null
-}catch(e){
-return null
-}
-},
-
-removeDeviceAuthorization(){
-localStorage.removeItem(this.keys.deviceAuth);
-localStorage.removeItem(this.keys.deviceOwner);
-this.clearStaffSession()
-},
+isDeviceAuthorized(){return localStorage.getItem(this.keys.deviceAuth)==="true"&&!!this.getDeviceOwner()},
+getDeviceOwner(){try{const x=JSON.parse(localStorage.getItem(this.keys.deviceOwner)||"null");return x&&typeof x==="object"?x:null}catch(e){return null}},
+removeDeviceAuthorization(){localStorage.removeItem(this.keys.deviceAuth);localStorage.removeItem(this.keys.deviceOwner);this.clearStaffSession()},
 
 async login(login,password,remember=false){
 const email=this.normalizeEmail(login);
 if(!email||!password)return{success:false,message:"يرجى إدخال البريد الإلكتروني وكلمة المرور."};
-
 try{
-const d=await this.authFetch("/auth/v1/token?grant_type=password",{
-method:"POST",
-body:JSON.stringify({email,password:String(password)})
-});
-
+const d=await this.authFetch("/auth/v1/token?grant_type=password",{method:"POST",body:JSON.stringify({email,password:String(password)})});
 if(!d.access_token||!d.user)return{success:false,message:"تعذر إنشاء جلسة المستخدم."};
-
 this.storeSession(d,true);
 localStorage.setItem(this.keys.rememberedUser,remember?email:"");
 this.authorizeDevice(d.user);
 this.clearPendingVerification();
 this.clearStaffSession();
-
 return{success:true,user:this.getSafeUser(d.user)}
-}catch(e){
-return{success:false,message:this.mapAuthError(e)}
-}
+}catch(e){return{success:false,message:this.mapAuthError(e)}}
 },
 
 async verifyOwnerPassword(password){
 const owner=this.getDeviceOwner();
 if(!owner?.email)return{success:false,message:"هذا الجهاز غير مرتبط بحساب المنشأة."};
 if(!password)return{success:false,message:"أدخل كلمة مرور المالك."};
-
 try{
-const d=await this.authFetch("/auth/v1/token?grant_type=password",{
-method:"POST",
-body:JSON.stringify({email:owner.email,password:String(password)})
-});
-
+const d=await this.authFetch("/auth/v1/token?grant_type=password",{method:"POST",body:JSON.stringify({email:owner.email,password:String(password)})});
 if(!d?.access_token||!d?.user)return{success:false,message:"تعذر التحقق من حساب المالك."};
-
 this.storeSession(d,true);
 this.authorizeDevice(d.user);
-
 return{success:true,user:this.getSafeUser(d.user)}
-}catch(e){
-return{success:false,message:this.mapAuthError(e)}
-}
+}catch(e){return{success:false,message:this.mapAuthError(e)}}
 },
 
 storeSession(s,remember=true){
-const x={
-access_token:s.access_token,
-refresh_token:s.refresh_token,
-expires_in:s.expires_in,
-expires_at:s.expires_at||Math.floor(Date.now()/1000)+(s.expires_in||3600),
-token_type:s.token_type||"bearer",
-user:s.user,
-remember:Boolean(remember)
-};
-
-const str=JSON.stringify(x);
-
+const x={access_token:s.access_token,refresh_token:s.refresh_token,expires_in:s.expires_in,expires_at:s.expires_at||Math.floor(Date.now()/1000)+(s.expires_in||3600),token_type:s.token_type||"bearer",user:s.user,remember:Boolean(remember)},str=JSON.stringify(x);
 if(remember){
 localStorage.setItem(this.keys.session,str);
 sessionStorage.removeItem(this.keys.session)
@@ -189,7 +133,6 @@ sessionStorage.removeItem(this.keys.session)
 sessionStorage.setItem(this.keys.session,str);
 localStorage.removeItem(this.keys.session)
 }
-
 localStorage.setItem(this.keys.cachedUser,JSON.stringify(this.getSafeUser(s.user)));
 return x
 },
@@ -197,48 +140,27 @@ return x
 getSession(){
 const raw=sessionStorage.getItem(this.keys.session)||localStorage.getItem(this.keys.session);
 if(!raw)return null;
-try{
-const s=JSON.parse(raw);
-return s?.access_token&&s?.user?s:null
-}catch(e){
-return null
-}
+try{const s=JSON.parse(raw);return s?.access_token&&s?.user?s:null}catch(e){return null}
 },
 
-isLoggedIn(){
-return!!this.getSession()
-},
+isLoggedIn(){return!!this.getSession()},
 
 getCurrentUser(){
 const s=this.getSession();
 if(s?.user)return this.getSafeUser(s.user);
-
 const d=this.getDeviceOwner();
 if(d)return{id:d.ownerId,name:d.name,username:d.username,email:d.email,role:"مالك"};
-
-try{
-return JSON.parse(localStorage.getItem(this.keys.cachedUser)||"null")
-}catch(e){
-return null
-}
+try{return JSON.parse(localStorage.getItem(this.keys.cachedUser)||"null")}catch(e){return null}
 },
 
-getRememberedUser(){
-return localStorage.getItem(this.keys.rememberedUser)||""
-},
+getRememberedUser(){return localStorage.getItem(this.keys.rememberedUser)||""},
 
 async refreshSession(){
 const s=this.getSession();
 if(!s?.refresh_token)return false;
-
 if((s.expires_at||0)>Math.floor(Date.now()/1000)+60)return true;
-
 try{
-const d=await this.authFetch("/auth/v1/token?grant_type=refresh_token",{
-method:"POST",
-body:JSON.stringify({refresh_token:s.refresh_token})
-});
-
+const d=await this.authFetch("/auth/v1/token?grant_type=refresh_token",{method:"POST",body:JSON.stringify({refresh_token:s.refresh_token})});
 this.storeSession(d,true);
 this.authorizeDevice(d.user);
 return true
@@ -251,43 +173,28 @@ return false
 
 async logout(redirect=true){
 const s=this.getSession();
-
-try{
-if(s?.access_token){
-await this.authFetch("/auth/v1/logout",{method:"POST"})
-}
-}catch(e){}
-
+try{if(s?.access_token)await this.authFetch("/auth/v1/logout",{method:"POST"})}catch(e){}
 this.removeDeviceAuthorization();
-
 sessionStorage.removeItem(this.keys.session);
 localStorage.removeItem(this.keys.session);
 localStorage.removeItem(this.keys.cachedUser);
-
 sessionStorage.removeItem("varex_authenticated");
 localStorage.removeItem("varex_authenticated");
-
-if(redirect){
-location.replace("./login.html")
-}
-
+if(redirect)location.replace("./login.html");
 return true
 },
 
 requireLogin(){
 if(this.isLoginPage()||this.isRegisterPage()||this.isVerifyEmailPage())return true;
-
 if(this.isDeviceAuthorized()){
 if(this.isLoggedIn())this.refreshSession();
 return true
 }
-
 if(this.isLoggedIn()){
 const u=this.getSession()?.user;
 if(u)this.authorizeDevice(u);
 return true
 }
-
 location.replace("./login.html");
 return false
 },
@@ -306,584 +213,210 @@ return false
 
 async requestPasswordReset(email){
 try{
-await this.authFetch("/auth/v1/recover",{
-method:"POST",
-body:JSON.stringify({email:this.normalizeEmail(email)})
-});
-
+await this.authFetch("/auth/v1/recover",{method:"POST",body:JSON.stringify({email:this.normalizeEmail(email)})});
 return{success:true,message:"تم إرسال تعليمات استعادة كلمة المرور."}
-}catch(e){
-return{success:false,message:this.mapAuthError(e)}
-}
+}catch(e){return{success:false,message:this.mapAuthError(e)}}
 },
 
 async updateCurrentUser(c={}){
 const s=this.getSession();
-
 if(!s)return{success:false,message:"يجب التحقق من حساب المالك أولاً."};
-
 const body={},data={};
-
-if(c.email!==undefined){
-body.email=this.normalizeEmail(c.email)
-}
-
-["name","username","role"].forEach(k=>{
-if(c[k]!==undefined){
-data[k]=this.cleanText(c[k])
-}
-});
-
-if(Object.keys(data).length){
-body.data={...(s.user.user_metadata||{}),...data}
-}
-
+if(c.email!==undefined)body.email=this.normalizeEmail(c.email);
+["name","username","role"].forEach(k=>{if(c[k]!==undefined)data[k]=this.cleanText(c[k])});
+if(Object.keys(data).length)body.data={...(s.user.user_metadata||{}),...data};
 try{
-const u=await this.authFetch("/auth/v1/user",{
-method:"PUT",
-body:JSON.stringify(body)
-});
-
+const u=await this.authFetch("/auth/v1/user",{method:"PUT",body:JSON.stringify(body)});
 s.user=u;
 this.storeSession(s,true);
 this.authorizeDevice(u);
-
 return{success:true,user:this.getSafeUser(u)}
-}catch(e){
-return{success:false,message:this.mapAuthError(e)}
-}
+}catch(e){return{success:false,message:this.mapAuthError(e)}}
 },
 
 async changePassword(c,n){
-if(String(n||"").length<6){
-return{success:false,message:"كلمة المرور الجديدة يجب أن تحتوي على 6 أحرف على الأقل."}
-}
-
+if(String(n||"").length<6)return{success:false,message:"كلمة المرور الجديدة يجب أن تحتوي على 6 أحرف على الأقل."};
 try{
 const s=this.getSession();
-
-if(!s){
-return{success:false,message:"يجب تسجيل الدخول بحساب المالك أولاً."}
-}
-
-const u=await this.authFetch("/auth/v1/user",{
-method:"PUT",
-body:JSON.stringify({password:String(n)})
-});
-
+if(!s)return{success:false,message:"يجب تسجيل الدخول بحساب المالك أولاً."};
+const u=await this.authFetch("/auth/v1/user",{method:"PUT",body:JSON.stringify({password:String(n)})});
 s.user=u;
 this.storeSession(s,true);
-
 return{success:true,message:"تم تغيير كلمة المرور بنجاح."}
-}catch(e){
-return{success:false,message:this.mapAuthError(e)}
-}
+}catch(e){return{success:false,message:this.mapAuthError(e)}}
 },
 
-/* ========================================================= INTERNAL USERS ========================================================= */
-
-getStaffUsers(){
-try{
-const x=JSON.parse(localStorage.getItem(this.keys.staffUsers)||"[]");
-return Array.isArray(x)?x:[]
-}catch(e){
-return[]
-}
-},
-
-saveStaffUsers(x){
-localStorage.setItem(this.keys.staffUsers,JSON.stringify(Array.isArray(x)?x:[]));
-return true
-},
-
-getActiveStaffUsers(){
-return this.getStaffUsers().filter(x=>x.status!=="disabled")
-},
-
-getStaffSession(){
-try{
-const x=JSON.parse(sessionStorage.getItem(this.keys.staffSession)||"null");
-return x&&typeof x==="object"?x:null
-}catch(e){
-return null
-}
-},
+/* INTERNAL USERS */
+getStaffUsers(){try{const x=JSON.parse(localStorage.getItem(this.keys.staffUsers)||"[]");return Array.isArray(x)?x:[]}catch(e){return[]}},
+saveStaffUsers(x){localStorage.setItem(this.keys.staffUsers,JSON.stringify(Array.isArray(x)?x:[]));return true},
+getActiveStaffUsers(){return this.getStaffUsers().filter(x=>x.status!=="disabled")},
+getStaffSession(){try{const x=JSON.parse(sessionStorage.getItem(this.keys.staffSession)||"null");return x&&typeof x==="object"?x:null}catch(e){return null}},
 
 setStaffSession(u){
-const x={
-id:u.id,
-name:u.name||"المستخدم",
-email:u.email||"",
-username:u.username||"",
-role:u.role||"custom",
-permissions:Array.isArray(u.permissions)?u.permissions:[],
-isOwner:!!u.isOwner,
-loginAt:this.now()
-};
-
+const x={id:u.id,name:u.name||"المستخدم",email:u.email||"",username:u.username||"",role:u.role||"custom",permissions:Array.isArray(u.permissions)?u.permissions:[],isOwner:!!u.isOwner,loginAt:this.now()};
 sessionStorage.setItem(this.keys.staffSession,JSON.stringify(x));
 return x
 },
 
-clearStaffSession(){
-sessionStorage.removeItem(this.keys.staffSession)
-},
-
-getActiveOperator(){
-return this.getStaffSession()
-},
-
-roleName(r){
-return{
-owner:"المالك",
-manager:"المدير",
-accountant:"المحاسب",
-cashier:"الكاشير",
-custom:"مستخدم"
-}[r]||"مستخدم"
-},
+clearStaffSession(){sessionStorage.removeItem(this.keys.staffSession)},
+getActiveOperator(){return this.getStaffSession()},
+roleName(r){return{owner:"المالك",manager:"المدير",accountant:"المحاسب",cashier:"الكاشير",custom:"مستخدم"}[r]||"مستخدم"},
 
 getOwnerOperator(){
 const d=this.getDeviceOwner(),u=this.getCurrentUser()||{};
-
-return{
-id:"owner",
-name:d?.name||u.name||"مالك المنشأة",
-email:d?.email||u.email||"",
-username:d?.username||u.username||"owner",
-role:"owner",
-permissions:["*"],
-isOwner:true
-}
+return{id:"owner",name:d?.name||u.name||"مالك المنشأة",email:d?.email||u.email||"",username:d?.username||u.username||"owner",role:"owner",permissions:["*"],isOwner:true}
 },
 
 async hashPassword(v){
 const text=String(v||"");
-
 if(window.crypto?.subtle){
-const b=new TextEncoder().encode(text);
-const h=await crypto.subtle.digest("SHA-256",b);
-
-return Array.from(new Uint8Array(h))
-.map(x=>x.toString(16).padStart(2,"0"))
-.join("")
+const b=new TextEncoder().encode(text),h=await crypto.subtle.digest("SHA-256",b);
+return Array.from(new Uint8Array(h)).map(x=>x.toString(16).padStart(2,"0")).join("")
 }
-
 let h=5381;
-
-for(let i=0;i<text.length;i++){
-h=((h<<5)+h)^text.charCodeAt(i)
-}
-
+for(let i=0;i<text.length;i++)h=((h<<5)+h)^text.charCodeAt(i);
 return"fallback-"+(h>>>0).toString(16)
 },
 
 async setStaffPassword(email,password){
-const a=this.getStaffUsers();
-const mail=this.normalizeEmail(email);
-const i=a.findIndex(x=>this.normalizeEmail(x.email)===mail);
-
+const a=this.getStaffUsers(),mail=this.normalizeEmail(email),i=a.findIndex(x=>this.normalizeEmail(x.email)===mail);
 if(i<0)return false;
-
 a[i].passwordHash=await this.hashPassword(password);
 a[i].passwordUpdatedAt=this.now();
-
-if(!a[i].username){
-a[i].username=this.normalizeUsername(
-(a[i].name||mail.split("@")[0]).replace(/\s+/g,".")
-)
-}
-
+if(!a[i].username)a[i].username=this.normalizeUsername((a[i].name||mail.split("@")[0]).replace(/\s+/g,"."));
 this.saveStaffUsers(a);
 return true
 },
 
 async verifyStaffPassword(u,password){
-if(!u?.passwordHash){
-return{
-success:false,
-message:"لم يتم تعيين كلمة مرور لهذا المستخدم. عدّل المستخدم وحدد كلمة مرور ثم احفظ."
-}
-}
-
+if(!u?.passwordHash)return{success:false,message:"لم يتم تعيين كلمة مرور لهذا المستخدم. عدّل المستخدم وحدد كلمة مرور ثم احفظ."};
 const h=await this.hashPassword(password);
-
-return h===u.passwordHash
-?{success:true}
-:{success:false,message:"كلمة المرور غير صحيحة."}
+return h===u.passwordHash?{success:true}:{success:false,message:"كلمة المرور غير صحيحة."}
 },
 
 hasPermission(p){
 const u=this.getStaffSession();
-
 if(!u)return false;
-
-if(u.isOwner||u.permissions?.includes("*")){
-return true
-}
-
+if(u.isOwner||u.permissions?.includes("*"))return true;
 return Array.isArray(u.permissions)&&u.permissions.includes(p)
 },
 
-/* ========================================================= SUBSCRIPTION ========================================================= */
-
-getSubscription(){
-const d={
-plan:"",
-planName:"",
-status:"inactive",
-billingType:"",
-price:0,
-currency:"AED",
-startedAt:"",
-expiresAt:"",
-lifetime:false,
-licenseKey:"",
-paymentStatus:"unpaid",
-updatedAt:""
-};
-
-try{
-const x=JSON.parse(localStorage.getItem(this.keys.subscription)||"null");
-
-return x&&typeof x==="object"&&!Array.isArray(x)
-?{...d,...x}
-:{...d}
-}catch(e){
-return{...d}
-}
-},
-
-saveSubscription(d={}){
-const x={
-...this.getSubscription(),
-...d,
-updatedAt:this.now()
-};
-
-localStorage.setItem(this.keys.subscription,JSON.stringify(x));
-return x
-},
-
-generateLicenseKey(){
-const c="ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-let r="VAREX";
-
-for(let g=0;g<4;g++){
-r+="-";
-
-for(let i=0;i<4;i++){
-r+=c[Math.floor(Math.random()*c.length)]
-}
-}
-
-return r
-},
+/* SUBSCRIPTION */
+getSubscription(){const d={plan:"",planName:"",status:"inactive",billingType:"",price:0,currency:"AED",startedAt:"",expiresAt:"",lifetime:false,licenseKey:"",paymentStatus:"unpaid",updatedAt:""};try{const x=JSON.parse(localStorage.getItem(this.keys.subscription)||"null");return x&&typeof x==="object"&&!Array.isArray(x)?{...d,...x}:{...d}}catch(e){return{...d}}},
+saveSubscription(d={}){const x={...this.getSubscription(),...d,updatedAt:this.now()};localStorage.setItem(this.keys.subscription,JSON.stringify(x));return x},
+generateLicenseKey(){const c="ABCDEFGHJKLMNPQRSTUVWXYZ23456789";let r="VAREX";for(let g=0;g<4;g++){r+="-";for(let i=0;i<4;i++)r+=c[Math.floor(Math.random()*c.length)]}return r},
 
 activateSubscription(o={}){
-const type=String(o.billingType||o.type||"monthly");
-const now=new Date();
-
-let expiresAt="";
-let lifetime=false;
-
-if(type==="monthly"){
-const e=new Date(now);
-e.setMonth(e.getMonth()+1);
-expiresAt=e.toISOString()
-}else if(type==="yearly"){
-const e=new Date(now);
-e.setFullYear(e.getFullYear()+1);
-expiresAt=e.toISOString()
-}else if(type==="trial"){
-const e=new Date(now);
-e.setDate(e.getDate()+7);
-expiresAt=e.toISOString()
-}else if(type==="lifetime"){
-lifetime=true
-}
-
-return this.saveSubscription({
-plan:o.plan||"business",
-planName:o.planName||"VAREX Business",
-billingType:type,
-price:this.positiveNumber(o.price),
-currency:o.currency||"AED",
-status:"active",
-paymentStatus:o.paymentStatus||"paid",
-startedAt:now.toISOString(),
-expiresAt,
-lifetime,
-licenseKey:o.licenseKey||this.generateLicenseKey()
-})
+const type=String(o.billingType||o.type||"monthly"),now=new Date();
+let expiresAt="",lifetime=false;
+if(type==="monthly"){const e=new Date(now);e.setMonth(e.getMonth()+1);expiresAt=e.toISOString()}
+else if(type==="yearly"){const e=new Date(now);e.setFullYear(e.getFullYear()+1);expiresAt=e.toISOString()}
+else if(type==="trial"){const e=new Date(now);e.setDate(e.getDate()+7);expiresAt=e.toISOString()}
+else if(type==="lifetime")lifetime=true;
+return this.saveSubscription({plan:o.plan||"business",planName:o.planName||"VAREX Business",billingType:type,price:this.positiveNumber(o.price),currency:o.currency||"AED",status:"active",paymentStatus:o.paymentStatus||"paid",startedAt:now.toISOString(),expiresAt,lifetime,licenseKey:o.licenseKey||this.generateLicenseKey()})
 },
 
-cancelSubscription(){
-return this.saveSubscription({
-...this.getSubscription(),
-status:"cancelled"
-})
-},
-
-expireSubscription(){
-return this.saveSubscription({
-...this.getSubscription(),
-status:"expired"
-})
-},
+cancelSubscription(){return this.saveSubscription({...this.getSubscription(),status:"cancelled"})},
+expireSubscription(){return this.saveSubscription({...this.getSubscription(),status:"expired"})},
 
 isSubscriptionActive(){
 const s=this.getSubscription();
-
-if(s.status!=="active"){
-return false
-}
-
-if(s.lifetime||s.billingType==="lifetime"){
-return true
-}
-
-if(!s.expiresAt){
-return false
-}
-
+if(s.status!=="active")return false;
+if(s.lifetime||s.billingType==="lifetime")return true;
+if(!s.expiresAt)return false;
 const e=new Date(s.expiresAt);
-
-if(Number.isNaN(e.getTime())){
-return false
-}
-
-if(e<=Date.now()){
-this.expireSubscription();
-return false
-}
-
+if(Number.isNaN(e.getTime()))return false;
+if(e<=Date.now()){this.expireSubscription();return false}
 return true
 },
 
 getSubscriptionDaysRemaining(){
 const s=this.getSubscription();
-
-if(s.lifetime||s.billingType==="lifetime"){
-return Infinity
-}
-
-if(!s.expiresAt){
-return 0
-}
-
+if(s.lifetime||s.billingType==="lifetime")return Infinity;
+if(!s.expiresAt)return 0;
 const e=new Date(s.expiresAt);
-
-return Number.isNaN(e.getTime())
-?0
-:Math.max(0,Math.ceil((e-Date.now())/86400000))
+return Number.isNaN(e.getTime())?0:Math.max(0,Math.ceil((e-Date.now())/86400000))
 },
 
-getSubscriptionStatus(){
-return{
-...this.getSubscription(),
-active:this.isSubscriptionActive(),
-daysRemaining:this.getSubscriptionDaysRemaining()
-}
-},
-
-isSubscriptionPage(){
-return location.pathname.toLowerCase().endsWith("subscription.html")
-},
-
-isSubscriptionSuccessPage(){
-return location.pathname.toLowerCase().endsWith("subscription-success.html")
-},
-
-isSubscriptionGateEnabled(){
-return localStorage.getItem(this.keys.subscriptionGate)==="true"
-},
-
-enableSubscriptionGate(){
-localStorage.setItem(this.keys.subscriptionGate,"true");
-return true
-},
-
-disableSubscriptionGate(){
-localStorage.setItem(this.keys.subscriptionGate,"false");
-return true
-},
+getSubscriptionStatus(){return{...this.getSubscription(),active:this.isSubscriptionActive(),daysRemaining:this.getSubscriptionDaysRemaining()}},
+isSubscriptionPage(){return location.pathname.toLowerCase().endsWith("subscription.html")},
+isSubscriptionSuccessPage(){return location.pathname.toLowerCase().endsWith("subscription-success.html")},
+isSubscriptionGateEnabled(){return localStorage.getItem(this.keys.subscriptionGate)==="true"},
+enableSubscriptionGate(){localStorage.setItem(this.keys.subscriptionGate,"true");return true},
+disableSubscriptionGate(){localStorage.setItem(this.keys.subscriptionGate,"false");return true},
 
 requireSubscription(){
-if(!this.isSubscriptionGateEnabled()){
-return true
-}
-
-if(
-this.isLoginPage()||
-this.isRegisterPage()||
-this.isVerifyEmailPage()||
-this.isSubscriptionPage()||
-this.isSubscriptionSuccessPage()
-){
-return true
-}
-
-if(!this.isSubscriptionActive()){
-location.replace("./subscription.html");
-return false
-}
-
+if(!this.isSubscriptionGateEnabled())return true;
+if(this.isLoginPage()||this.isRegisterPage()||this.isVerifyEmailPage()||this.isSubscriptionPage()||this.isSubscriptionSuccessPage())return true;
+if(!this.isSubscriptionActive()){location.replace("./subscription.html");return false}
 return true
 },
 
-/* ========================================================= BUSINESS DATA ========================================================= */
-
+/* BUSINESS DATA */
 getProducts(){return this.getData(this.keys.products)},
 saveProducts(x){return this.saveData(this.keys.products,x)},
-
-getProductById(id){
-return this.getProducts().find(x=>String(x.id)===String(id))||null
-},
-
-findProductByBarcode(b){
-return this.getProducts().find(x=>this.cleanText(x.barcode)===this.cleanText(b))||null
-},
+getProductById(id){return this.getProducts().find(x=>String(x.id)===String(id))||null},
+findProductByBarcode(b){return this.getProducts().find(x=>this.cleanText(x.barcode)===this.cleanText(b))||null},
 
 addProduct(p={}){
-const a=this.getProducts();
-
-const x={
-...p,
-id:p.id||this.generateId("PRD"),
-name:this.cleanText(p.name||p.productName),
-quantity:this.positiveNumber(p.quantity),
-price:this.positiveNumber(p.price||p.salePrice),
-cost:this.positiveNumber(p.cost||p.costPrice),
-createdAt:p.createdAt||this.now(),
-updatedAt:this.now()
-};
-
-a.push(x);
-this.saveProducts(a);
-
-return x
+const a=this.getProducts(),x={...p,id:p.id||this.generateId("PRD"),name:this.cleanText(p.name||p.productName),quantity:this.positiveNumber(p.quantity),price:this.positiveNumber(p.price||p.salePrice),cost:this.positiveNumber(p.cost||p.costPrice),createdAt:p.createdAt||this.now(),updatedAt:this.now()};
+a.push(x);this.saveProducts(a);return x
 },
 
 updateProduct(id,c={}){
-const a=this.getProducts();
-const i=a.findIndex(x=>String(x.id)===String(id));
-
+const a=this.getProducts(),i=a.findIndex(x=>String(x.id)===String(id));
 if(i<0)return false;
-
-a[i]={
-...a[i],
-...c,
-id:a[i].id,
-updatedAt:this.now()
-};
-
+a[i]={...a[i],...c,id:a[i].id,updatedAt:this.now()};
 this.saveProducts(a);
-
 return a[i]
 },
 
 deleteProduct(id){
-const a=this.getProducts();
-const b=a.filter(x=>String(x.id)!==String(id));
-
+const a=this.getProducts(),b=a.filter(x=>String(x.id)!==String(id));
 this.saveProducts(b);
-
 return b.length!==a.length
 },
 
 adjustStock(id,n){
-const a=this.getProducts();
-const i=a.findIndex(x=>String(x.id)===String(id));
-
+const a=this.getProducts(),i=a.findIndex(x=>String(x.id)===String(id));
 if(i<0)return false;
-
-a[i].quantity=Math.max(
-0,
-this.toNumber(a[i].quantity)+this.toNumber(n)
-);
-
+a[i].quantity=Math.max(0,this.toNumber(a[i].quantity)+this.toNumber(n));
 this.saveProducts(a);
-
 return a[i]
 },
 
 getSales(){return this.getData(this.keys.sales)},
 saveSales(x){return this.saveData(this.keys.sales,x)},
-
-getSaleById(id){
-return this.getSales().find(x=>String(x.id)===String(id))||null
-},
+getSaleById(id){return this.getSales().find(x=>String(x.id)===String(id))||null},
 
 addSale(s={}){
-const a=this.getSales();
-
-const x={
-...s,
-id:s.id||this.generateId("SAL"),
-invoiceNumber:s.invoiceNumber||`INV-${Date.now()}`,
-createdAt:s.createdAt||this.now(),
-date:s.date||this.now(),
-updatedAt:this.now()
-};
-
-a.push(x);
-this.saveSales(a);
-
-return x
+const a=this.getSales(),x={...s,id:s.id||this.generateId("SAL"),invoiceNumber:s.invoiceNumber||`INV-${Date.now()}`,createdAt:s.createdAt||this.now(),date:s.date||this.now(),updatedAt:this.now()};
+a.push(x);this.saveSales(a);return x
 },
 
 deleteSale(id){
-const a=this.getSales();
-const b=a.filter(x=>String(x.id)!==String(id));
-
+const a=this.getSales(),b=a.filter(x=>String(x.id)!==String(id));
 this.saveSales(b);
-
 return b.length!==a.length
 },
 
 completeSale(s={}){
 const items=Array.isArray(s.items)?s.items:[];
-
-if(!items.length){
-return{
-success:false,
-message:"لا توجد منتجات في الفاتورة."
-}
-}
-
+if(!items.length)return{success:false,message:"لا توجد منتجات في الفاتورة."};
 const p=this.getProducts();
 
 for(const x of items){
-const i=p.findIndex(y=>String(y.id)===String(x.productId||x.id));
-const q=this.positiveNumber(x.quantity||x.qty||1);
-
-if(i>=0&&q>this.toNumber(p[i].quantity)){
-return{
-success:false,
-message:"الكمية غير متوفرة للمنتج: "+(p[i].name||"")
-}
-}
+const i=p.findIndex(y=>String(y.id)===String(x.productId||x.id)),q=this.positiveNumber(x.quantity||x.qty||1);
+if(i>=0&&q>this.toNumber(p[i].quantity))return{success:false,message:"الكمية غير متوفرة للمنتج: "+(p[i].name||"")}
 }
 
 for(const x of items){
-const i=p.findIndex(y=>String(y.id)===String(x.productId||x.id));
-const q=this.positiveNumber(x.quantity||x.qty||1);
-
-if(i>=0){
-p[i].quantity=Math.max(
-0,
-this.toNumber(p[i].quantity)-q
-)
-}
+const i=p.findIndex(y=>String(y.id)===String(x.productId||x.id)),q=this.positiveNumber(x.quantity||x.qty||1);
+if(i>=0)p[i].quantity=Math.max(0,this.toNumber(p[i].quantity)-q)
 }
 
 this.saveProducts(p);
-
-return{
-success:true,
-sale:this.addSale(s)
-}
+return{success:true,sale:this.addSale(s)}
 },
 
 getCustomers(){return this.getData(this.keys.customers)},
@@ -906,215 +439,78 @@ deleteEmployee(id){return this._delete(this.keys.employees,id)},
 
 getTransactions(){return this.getData(this.keys.transactions)},
 saveTransactions(x){return this.saveData(this.keys.transactions,x)},
+addTransaction(x={}){return this._add(this.keys.transactions,"TRX",{...x,amount:this.positiveNumber(x.amount),date:x.date||this.today()})},
+updateTransaction(id,c={}){return this._update(this.keys.transactions,id,c)},
+deleteTransaction(id){return this._delete(this.keys.transactions,id)},
 
-addTransaction(x={}){
-return this._add(
-this.keys.transactions,
-"TRX",
-{
-...x,
-amount:this.positiveNumber(x.amount),
-date:x.date||this.today()
-}
-)
-},
-
-updateTransaction(id,c={}){
-return this._update(this.keys.transactions,id,c)
-},
-
-deleteTransaction(id){
-return this._delete(this.keys.transactions,id)
-},
-
-getHeldSales(){
-return this.getData(this.keys.heldSales)
-},
-
-saveHeldSales(x){
-return this.saveData(this.keys.heldSales,x)
-},
-
-holdSale(x={}){
-return this._add(this.keys.heldSales,"HOLD",x)
-},
-
-removeHeldSale(id){
-return this._delete(this.keys.heldSales,id)
-},
+getHeldSales(){return this.getData(this.keys.heldSales)},
+saveHeldSales(x){return this.saveData(this.keys.heldSales,x)},
+holdSale(x={}){return this._add(this.keys.heldSales,"HOLD",x)},
+removeHeldSale(id){return this._delete(this.keys.heldSales,id)},
 
 _add(k,p,x={}){
-const a=this.getData(k);
-
-const o={
-...x,
-id:x.id||this.generateId(p),
-createdAt:x.createdAt||this.now(),
-updatedAt:this.now()
-};
-
-a.push(o);
-this.saveData(k,a);
-
-return o
+const a=this.getData(k),o={...x,id:x.id||this.generateId(p),createdAt:x.createdAt||this.now(),updatedAt:this.now()};
+a.push(o);this.saveData(k,a);return o
 },
 
 _update(k,id,c={}){
-const a=this.getData(k);
-const i=a.findIndex(x=>String(x.id)===String(id));
-
+const a=this.getData(k),i=a.findIndex(x=>String(x.id)===String(id));
 if(i<0)return false;
-
-a[i]={
-...a[i],
-...c,
-id:a[i].id,
-updatedAt:this.now()
-};
-
+a[i]={...a[i],...c,id:a[i].id,updatedAt:this.now()};
 this.saveData(k,a);
-
 return a[i]
 },
 
 _delete(k,id){
-const a=this.getData(k);
-const b=a.filter(x=>String(x.id)!==String(id));
-
+const a=this.getData(k),b=a.filter(x=>String(x.id)!==String(id));
 this.saveData(k,b);
-
 return b.length!==a.length
 },
 
 getSettings(){
-const d={
-businessName:"VAREX",
-currency:"AED",
-currencySymbol:"د.إ",
-taxEnabled:true,
-taxRate:5,
-lowStockLimit:5,
-language:"ar"
-};
-
-const p=this.getObject(this.keys.settings,{});
-
+const d={businessName:"VAREX",currency:"AED",currencySymbol:"د.إ",taxEnabled:true,taxRate:5,lowStockLimit:5,language:"ar"},p=this.getObject(this.keys.settings,{});
 let l={};
-
-try{
-l=JSON.parse(localStorage.getItem("varexSettings")||"null")||{}
-}catch(e){}
-
-return{
-...d,
-...l,
-...p
-}
+try{l=JSON.parse(localStorage.getItem("varexSettings")||"null")||{}}catch(e){}
+return{...d,...l,...p}
 },
 
 saveSettings(s={}){
-const d={
-...this.getSettings(),
-...s,
-updatedAt:this.now()
-};
-
+const d={...this.getSettings(),...s,updatedAt:this.now()};
 this.saveObject(this.keys.settings,d);
-
-localStorage.setItem(
-"varexSettings",
-JSON.stringify(d)
-);
-
+localStorage.setItem("varexSettings",JSON.stringify(d));
 return true
 },
 
 money(v){
-const s=this.getSettings();
-
-const sym=
-this.cleanText(s.currencySymbol)||
-(s.currency==="AED"?"د.إ":s.currency);
-
+const s=this.getSettings(),sym=this.cleanText(s.currencySymbol)||(s.currency==="AED"?"د.إ":s.currency);
 return`${this.formatNumber(v,2)} ${sym}`
 },
 
 calculateTax(v){
 const s=this.getSettings();
-
-return s.taxEnabled===false
-?0
-:this.positiveNumber(v)*this.toNumber(s.taxRate,5)/100
+return s.taxEnabled===false?0:this.positiveNumber(v)*this.toNumber(s.taxRate,5)/100
 },
 
 getTodaySales(){
 const t=this.today();
-
-return this.getSales().filter(
-s=>
-this.normalizeDate(
-s.createdAt||
-s.date||
-s.saleDate||
-s.invoiceDate||
-""
-)===t
-)
+return this.getSales().filter(s=>this.normalizeDate(s.createdAt||s.date||s.saleDate||s.invoiceDate||"")===t)
 },
 
 getTodaySalesTotal(){
-return this.getTodaySales().reduce(
-(a,s)=>
-a+
-this.toNumber(
-s.total??
-s.grandTotal??
-s.finalTotal??
-s.netTotal??
-s.amount??
-0
-),
-0
-)
+return this.getTodaySales().reduce((a,s)=>a+this.toNumber(s.total??s.grandTotal??s.finalTotal??s.netTotal??s.amount??0),0)
 },
 
 getStockAlerts(){
-const l=this.toNumber(
-this.getSettings().lowStockLimit,
-5
-);
-
-return this.getProducts().filter(
-p=>
-this.toNumber(p.quantity)<=
-this.toNumber(p.minimumStock,l)
-)
+const l=this.toNumber(this.getSettings().lowStockLimit,5);
+return this.getProducts().filter(p=>this.toNumber(p.quantity)<=this.toNumber(p.minimumStock,l))
 },
 
 initialize(){
-[
-this.keys.products,
-this.keys.sales,
-this.keys.customers,
-this.keys.suppliers,
-this.keys.employees,
-this.keys.transactions,
-this.keys.heldSales
-]
-.forEach(k=>{
-if(localStorage.getItem(k)===null){
-localStorage.setItem(k,"[]")
-}
+[this.keys.products,this.keys.sales,this.keys.customers,this.keys.suppliers,this.keys.employees,this.keys.transactions,this.keys.heldSales].forEach(k=>{
+if(localStorage.getItem(k)===null)localStorage.setItem(k,"[]")
 });
-
-if(localStorage.getItem(this.keys.settings)===null){
-this.saveSettings(this.getSettings())
-}
-
-if(localStorage.getItem(this.keys.subscriptionGate)===null){
-localStorage.setItem(this.keys.subscriptionGate,"false")
-}
-
+if(localStorage.getItem(this.keys.settings)===null)this.saveSettings(this.getSettings());
+if(localStorage.getItem(this.keys.subscriptionGate)===null)localStorage.setItem(this.keys.subscriptionGate,"false");
 return true
 }
 };
@@ -1122,29 +518,11 @@ return true
 VAREX.initialize();
 window.VAREX=VAREX;
 
+/* ========================================================= HELPERS ========================================================= */
+function varexWait(ms){return new Promise(resolve=>setTimeout(resolve,ms))}
 
 /* ========================================================= PERMISSIONS ========================================================= */
-
-const VAREX_PERMISSION_MAP={
-"index.html":"dashboard",
-"pos.html":"pos",
-"products.html":"products",
-"purchases.html":"products",
-"transfers.html":"products",
-"customers.html":"customers",
-"suppliers.html":"suppliers",
-"accounts.html":"accounts",
-"expenses.html":"accounts",
-"shifts.html":"pos",
-"employees.html":"employees",
-"branches.html":"settings",
-"reports.html":"reports",
-"notifications.html":"dashboard",
-"activity.html":"users",
-"users.html":"users",
-"subscription.html":"__owner__",
-"setting.html":"settings"
-};
+const VAREX_PERMISSION_MAP={"index.html":"dashboard","pos.html":"pos","products.html":"products","purchases.html":"products","transfers.html":"products","customers.html":"customers","suppliers.html":"suppliers","accounts.html":"accounts","expenses.html":"accounts","shifts.html":"pos","employees.html":"employees","branches.html":"settings","reports.html":"reports","notifications.html":"dashboard","activity.html":"users","users.html":"users","subscription.html":"__owner__","setting.html":"settings"};
 
 const VAREX_MENU=[
 ["index.html","▦","لوحة التحكم"],
@@ -1167,91 +545,58 @@ const VAREX_MENU=[
 ["setting.html","⚙️","الإعدادات"]
 ];
 
-function varexCurrentFile(){
-return location.pathname.split("/").pop().toLowerCase()||"index.html"
-}
+function varexCurrentFile(){return location.pathname.split("/").pop().toLowerCase()||"index.html"}
 
 function varexCanOpen(file){
 const u=VAREX.getStaffSession();
-
 if(!u)return false;
-
 if(u.isOwner)return true;
-
 const p=VAREX_PERMISSION_MAP[file];
-
 if(!p)return true;
-
 if(p==="__owner__")return false;
-
 return u.permissions?.includes(p)
 }
 
 function varexFirstAllowedPage(){
-for(const [f] of VAREX_MENU){
-if(varexCanOpen(f))return f
-}
-
+for(const [f] of VAREX_MENU)if(varexCanOpen(f))return f;
 return"index.html"
 }
 
 function varexCheckCurrentPermission(){
 const u=VAREX.getStaffSession();
-
 if(!u)return false;
-
-if(varexCanOpen(varexCurrentFile())){
-return true
-}
-
+if(varexCanOpen(varexCurrentFile()))return true;
 location.replace("./"+varexFirstAllowedPage());
-
 return false
 }
 
-
 /* ========================================================= STAFF LOGIN ========================================================= */
-
 let varexSelectedStaffId=null;
+let varexStaffLogoutRunning=false;
 
 function varexInstallStaffUI(){
-
 if(document.getElementById("varexStaffOverlay"))return;
 
 const o=document.createElement("div");
-
 o.id="varexStaffOverlay";
 o.className="varex-staff-overlay";
 
 o.innerHTML=`
 <div class="varex-staff-card">
 
-<div class="varex-staff-brand">
-VAREX
-</div>
+<div class="varex-staff-brand">VAREX</div>
 
-<h2>
-من سيستخدم النظام؟
-</h2>
+<h2>من سيستخدم النظام؟</h2>
 
 <p class="varex-staff-sub">
 اختر حسابك ثم أدخل كلمة المرور.
 </p>
 
-<div
-class="varex-staff-list"
-id="varexStaffList">
-</div>
+<div class="varex-staff-list" id="varexStaffList"></div>
 
-<div
-class="varex-staff-password"
-id="varexStaffPasswordBox">
+<div class="varex-staff-password" id="varexStaffPasswordBox">
 
-<div
-class="varex-selected-user"
-id="varexSelectedStaff">
-—
-</div>
+<div class="varex-selected-user" id="varexSelectedStaff">—</div>
 
 <input
 id="varexStaffPassword"
@@ -1259,10 +604,7 @@ type="password"
 autocomplete="current-password"
 placeholder="كلمة المرور">
 
-<div
-class="varex-staff-error"
-id="varexStaffError">
-</div>
+<div class="varex-staff-error" id="varexStaffError"></div>
 
 <div class="varex-staff-login-actions">
 
@@ -1284,391 +626,431 @@ id="varexStaffError">
 document.body.appendChild(o);
 
 document.getElementById("varexStaffBackBtn").onclick=()=>{
-
 varexSelectedStaffId=null;
-
-document
-.getElementById("varexStaffPasswordBox")
-.classList.remove("show");
-
-document
-.getElementById("varexStaffPassword")
-.value="";
-
-document
-.getElementById("varexStaffError")
-.textContent=""
-
+document.getElementById("varexStaffPasswordBox").classList.remove("show");
+document.getElementById("varexStaffPassword").value="";
+document.getElementById("varexStaffError").textContent=""
 };
 
-document.getElementById("varexStaffLoginBtn").onclick=
-varexLoginSelectedStaff;
+document.getElementById("varexStaffLoginBtn").onclick=varexLoginSelectedStaff;
 
-document
-.getElementById("varexStaffPassword")
-.addEventListener("keydown",e=>{
-if(e.key==="Enter"){
-varexLoginSelectedStaff()
-}
+document.getElementById("varexStaffPassword").addEventListener("keydown",e=>{
+if(e.key==="Enter")varexLoginSelectedStaff()
 })
-
 }
-
 
 function varexRenderStaffUsers(){
-
 varexInstallStaffUI();
 
-const list=
-document.getElementById("varexStaffList");
+const list=document.getElementById("varexStaffList");
+const owner=VAREX.getOwnerOperator();
+const users=VAREX.getActiveStaffUsers();
 
-const owner=
-VAREX.getOwnerOperator();
-
-const users=
-VAREX.getActiveStaffUsers();
-
-list.innerHTML=`
-
-<button
-class="varex-staff-user owner"
-onclick="varexSelectStaff('__owner__')">
-
-<span class="varex-staff-avatar">
-👑
-</span>
-
+list.innerHTML=
+`<button class="varex-staff-user owner" onclick="varexSelectStaff('__owner__')">
+<span class="varex-staff-avatar">👑</span>
 <span>
-
-<strong>
-${varexEsc(owner.name)}
-</strong>
-
-<small>
-المالك / Owner
-</small>
-
+<strong>${varexEsc(owner.name)}</strong>
+<small>المالك / Owner</small>
 </span>
-
-</button>
-
-`+
+</button>`+
 
 users.map(u=>`
-
-<button
-class="varex-staff-user"
-onclick="varexSelectStaff('${varexEscAttr(u.id)}')">
-
+<button class="varex-staff-user" onclick="varexSelectStaff('${varexEscAttr(u.id)}')">
 <span class="varex-staff-avatar">
-${
-u.role==="cashier"
-?"🛒"
-:u.role==="accountant"
-?"💰"
-:u.role==="manager"
-?"👔"
-:"👤"
-}
+${u.role==="cashier"?"🛒":u.role==="accountant"?"💰":u.role==="manager"?"👔":"👤"}
 </span>
-
 <span>
-
-<strong>
-${varexEsc(u.name||u.username||"المستخدم")}
-</strong>
-
-<small>
-${VAREX.roleName(u.role)}
-</small>
-
+<strong>${varexEsc(u.name||u.username||"المستخدم")}</strong>
+<small>${VAREX.roleName(u.role)}</small>
 </span>
-
 </button>
-
 `).join("")
-
 }
-
 
 function varexOpenStaffGate(){
-
 varexRenderStaffUsers();
 
-document
-.getElementById("varexStaffPasswordBox")
-?.classList.remove("show");
+document.getElementById("varexStaffPasswordBox")?.classList.remove("show");
 
-const pass=
-document.getElementById("varexStaffPassword");
+const pass=document.getElementById("varexStaffPassword");
+const err=document.getElementById("varexStaffError");
+const btn=document.getElementById("varexStaffLoginBtn");
 
-if(pass){
-pass.value=""
-}
+if(pass)pass.value="";
+if(err)err.textContent="";
 
-const err=
-document.getElementById("varexStaffError");
-
-if(err){
-err.textContent=""
+if(btn){
+btn.disabled=false;
+btn.classList.remove("varex-login-processing","varex-login-success");
+btn.textContent="دخول إلى VAREX"
 }
 
 varexSelectedStaffId=null;
 
-document
-.getElementById("varexStaffOverlay")
-?.classList.add("show");
+document.getElementById("varexStaffOverlay")?.classList.remove("varex-login-leaving");
+document.getElementById("varexStaffOverlay")?.classList.add("show");
 
 document.body.style.overflow="hidden"
-
 }
-
 
 function varexCloseStaffGate(){
-
-document
-.getElementById("varexStaffOverlay")
-?.classList.remove("show");
-
+document.getElementById("varexStaffOverlay")?.classList.remove("show");
 document.body.style.overflow=""
-
 }
 
-
 function varexSelectStaff(id){
-
 varexSelectedStaffId=id;
 
 const u=
 id==="__owner__"
 ?VAREX.getOwnerOperator()
-:VAREX.getStaffUsers()
-.find(
-x=>
-String(x.id)===
-String(id)
-);
+:VAREX.getStaffUsers().find(x=>String(x.id)===String(id));
 
-if(
-!u||
-u.status==="disabled"
-){
-return
-}
+if(!u||u.status==="disabled")return;
 
-document
-.getElementById("varexSelectedStaff")
-.textContent=
+document.getElementById("varexSelectedStaff").textContent=
 `${u.name||"المستخدم"} — ${VAREX.roleName(u.role)}`;
 
-document
-.getElementById("varexStaffPassword")
-.value="";
+document.getElementById("varexStaffPassword").value="";
+document.getElementById("varexStaffError").textContent="";
 
-document
-.getElementById("varexStaffError")
-.textContent="";
+document.getElementById("varexStaffPasswordBox").classList.add("show");
 
-document
-.getElementById("varexStaffPasswordBox")
-.classList.add("show");
-
-setTimeout(
-()=>
-document
-.getElementById("varexStaffPassword")
-?.focus(),
-80
-)
-
+setTimeout(()=>{
+document.getElementById("varexStaffPassword")?.focus()
+},120)
 }
-
 
 async function varexLoginSelectedStaff(){
 
-const pass=
-document
-.getElementById("varexStaffPassword")
-.value;
-
-const err=
-document
-.getElementById("varexStaffError");
-
-const btn=
-document
-.getElementById("varexStaffLoginBtn");
+const pass=document.getElementById("varexStaffPassword").value;
+const err=document.getElementById("varexStaffError");
+const btn=document.getElementById("varexStaffLoginBtn");
 
 if(!pass){
-
-err.textContent=
-"أدخل كلمة المرور.";
-
+err.textContent="أدخل كلمة المرور.";
 return
-
 }
+
+if(btn.disabled)return;
+
+err.textContent="";
 
 btn.disabled=true;
+btn.classList.remove("varex-login-success");
+btn.classList.add("varex-login-processing");
 
-btn.textContent=
-"جاري التحقق...";
+btn.innerHTML=`
+<span class="varex-mini-spinner"></span>
+<span>جاري تسجيل الدخول...</span>
+`;
 
+await varexWait(850);
 
-if(
-varexSelectedStaffId===
-"__owner__"
-){
+let result=null;
 
-const r=
-await VAREX.verifyOwnerPassword(
-pass
-);
+if(varexSelectedStaffId==="__owner__"){
 
-btn.disabled=false;
+result=await VAREX.verifyOwnerPassword(pass);
 
-btn.textContent=
-"دخول إلى VAREX";
-
-if(!r.success){
-
-err.textContent=
-r.message;
-
-return
-
+if(result.success){
+VAREX.setStaffSession(VAREX.getOwnerOperator())
 }
-
-VAREX.setStaffSession(
-VAREX.getOwnerOperator()
-)
 
 }else{
 
-const u=
-VAREX.getStaffUsers()
-.find(
-x=>
-String(x.id)===
-String(varexSelectedStaffId)
+const u=VAREX.getStaffUsers().find(
+x=>String(x.id)===String(varexSelectedStaffId)
 );
 
 if(!u){
 
 btn.disabled=false;
-
-btn.textContent=
-"دخول إلى VAREX";
-
-return
-
-}
-
-const r=
-await VAREX.verifyStaffPassword(
-u,
-pass
-);
-
-btn.disabled=false;
-
-btn.textContent=
-"دخول إلى VAREX";
-
-if(!r.success){
-
-err.textContent=
-r.message;
+btn.classList.remove("varex-login-processing");
+btn.textContent="دخول إلى VAREX";
 
 return
-
 }
 
-u.lastLogin=
-new Date()
-.toLocaleString("ar-AE");
+result=await VAREX.verifyStaffPassword(u,pass);
 
-const a=
-VAREX.getStaffUsers();
+if(result.success){
 
-const i=
-a.findIndex(
-x=>
-String(x.id)===
-String(u.id)
-);
+u.lastLogin=new Date().toLocaleString("ar-AE");
+
+const a=VAREX.getStaffUsers();
+const i=a.findIndex(x=>String(x.id)===String(u.id));
 
 if(i>=0){
+a[i].lastLogin=u.lastLogin;
+VAREX.saveStaffUsers(a)
+}
 
-a[i].lastLogin=
-u.lastLogin;
-
-VAREX.saveStaffUsers(
-a
-)
+VAREX.setStaffSession(u)
 
 }
 
-VAREX.setStaffSession(
-u
-)
-
 }
+
+if(!result?.success){
+
+await varexWait(350);
+
+btn.disabled=false;
+btn.classList.remove("varex-login-processing");
+btn.textContent="دخول إلى VAREX";
+
+err.textContent=result?.message||"تعذر تسجيل الدخول.";
+
+return
+}
+
+await varexWait(450);
+
+btn.classList.remove("varex-login-processing");
+btn.classList.add("varex-login-success");
+
+btn.innerHTML=`
+<span>✓</span>
+<span>تم تسجيل الدخول بنجاح</span>
+`;
+
+await varexWait(950);
+
+const overlay=document.getElementById("varexStaffOverlay");
+
+overlay?.classList.add("varex-login-leaving");
+
+await varexWait(550);
 
 varexCloseStaffGate();
 
+overlay?.classList.remove("varex-login-leaving");
+
+btn.disabled=false;
+btn.classList.remove("varex-login-success");
+btn.textContent="دخول إلى VAREX";
+
 varexBuildMenu();
-
 varexInstallTopSwitchUserButton();
-
 varexShowCurrentUser();
-
 varexCheckCurrentPermission()
-
 }
 
-
-/* تبديل المستخدم مباشرة */
 function varexSwitchUser(){
-
 VAREX.clearStaffSession();
-
 varexOpenStaffGate()
-
 }
 
+async function varexLogoutCurrentUser(){
 
-window.varexSwitchUser=
-varexSwitchUser;
+if(varexStaffLogoutRunning)return;
 
+const current=VAREX.getStaffSession();
 
-/* ========================================================= STAFF LOGOUT ANIMATION ========================================================= */
-
-let varexStaffLogoutRunning=false;
-
-
-function varexInstallStaffLogoutUI(){
-
-if(
-document.getElementById(
-"varexStaffLogoutOverlay"
-)
-){
+if(!current){
+varexOpenStaffGate();
 return
 }
 
-const o=
-document.createElement(
-"div"
+varexStaffLogoutRunning=true;
+
+const button=document.getElementById("varexStaffLogoutButton");
+
+if(button){
+button.disabled=true;
+button.classList.add("varex-button-pressing")
+}
+
+/* حركة ضغط الزر */
+await varexWait(900);
+
+if(button){
+button.classList.remove("varex-button-pressing")
+}
+
+varexInstallStaffLogoutUI();
+
+const overlay=document.getElementById("varexStaffLogoutOverlay");
+const loader=document.getElementById("varexStaffLogoutLoader");
+const success=document.getElementById("varexStaffLogoutSuccess");
+const title=document.getElementById("varexStaffLogoutTitle");
+const message=document.getElementById("varexStaffLogoutMessage");
+const bar=document.getElementById("varexStaffLogoutProgressBar");
+
+overlay.classList.remove(
+"varex-staff-logout-leaving",
+"success"
 );
 
-o.id=
-"varexStaffLogoutOverlay";
+overlay.classList.add("show");
 
-o.className=
-"varex-staff-logout-overlay";
+document.body.style.overflow="hidden";
+
+loader.style.display="block";
+success.style.display="none";
+
+title.textContent="جاري حفظ البيانات والإعدادات...";
+message.textContent="يرجى الانتظار حتى يتم إنهاء جلسة المستخدم بشكل آمن.";
+
+bar.style.width="5%";
+
+await varexWait(650);
+bar.style.width="18%";
+
+await varexWait(650);
+bar.style.width="34%";
+
+try{
+
+localStorage.setItem(
+"varex_last_staff_logout",
+JSON.stringify({
+id:current.id||"",
+name:current.name||"",
+role:current.role||"",
+loggedOutAt:new Date().toISOString()
+})
+);
+
+VAREX.saveSettings(
+VAREX.getSettings()
+);
+
+}catch(e){}
+
+await varexWait(700);
+bar.style.width="52%";
+
+await varexWait(700);
+bar.style.width="71%";
+
+await varexWait(650);
+bar.style.width="88%";
+
+await varexWait(500);
+bar.style.width="100%";
+
+await varexWait(500);
+
+VAREX.clearStaffSession();
+
+loader.style.display="none";
+success.style.display="flex";
+
+title.textContent="تم تسجيل خروج المستخدم بنجاح";
+message.textContent="يمكن الآن اختيار مستخدم آخر للدخول إلى VAREX.";
+
+overlay.classList.add("success");
+
+await varexWait(1200);
+
+overlay.classList.add("varex-staff-logout-leaving");
+
+await varexWait(550);
+
+overlay.classList.remove(
+"show",
+"success",
+"varex-staff-logout-leaving"
+);
+
+document.body.style.overflow="";
+
+if(button){
+button.disabled=false
+}
+
+varexStaffLogoutRunning=false;
+
+varexOpenStaffGate()
+}
+
+window.varexSwitchUser=varexSwitchUser;
+window.varexLogoutCurrentUser=varexLogoutCurrentUser;
+
+function varexInitStaffAccess(){
+
+const session=VAREX.getStaffSession();
+const users=VAREX.getActiveStaffUsers();
+
+if(session){
+
+if(session.isOwner){
+return varexCheckCurrentPermission()
+}
+
+const fresh=users.find(
+x=>String(x.id)===String(session.id)
+);
+
+if(!fresh){
+
+VAREX.clearStaffSession();
+varexOpenStaffGate();
+
+return false
+}
+
+session.permissions=
+Array.isArray(fresh.permissions)
+?fresh.permissions
+:[];
+
+session.role=fresh.role;
+session.name=fresh.name;
+session.username=fresh.username||"";
+
+VAREX.setStaffSession(session);
+
+return varexCheckCurrentPermission()
+
+}
+
+varexOpenStaffGate();
+
+return false
+}
+
+function varexInstallStaffPasswordCapture(){
+
+if(window.__varexStaffPasswordCapture)return;
+
+window.__varexStaffPasswordCapture=true;
+
+document.addEventListener("click",e=>{
+
+const b=e.target?.closest?.("button");
+const oc=String(b?.getAttribute?.("onclick")||"");
+
+if(!b||!oc.includes("saveUser"))return;
+
+const pass=document.getElementById("temporaryPassword")?.value||"";
+const email=document.getElementById("userEmail")?.value?.trim()||"";
+
+if(pass&&email){
+
+setTimeout(()=>{
+VAREX.setStaffPassword(email,pass)
+},200)
+
+}
+
+},true)
+}
+
+/* ========================================================= STAFF LOGOUT ANIMATION ========================================================= */
+function varexInstallStaffLogoutUI(){
+
+if(document.getElementById("varexStaffLogoutOverlay"))return;
+
+const o=document.createElement("div");
+
+o.id="varexStaffLogoutOverlay";
+o.className="varex-staff-logout-overlay";
 
 o.innerHTML=`
-
 <div class="varex-staff-logout-card">
 
 <div class="varex-staff-logout-brand">
@@ -1686,14 +1068,12 @@ id="varexStaffLogoutSuccess">
 ✓
 </div>
 
-<h2
-id="varexStaffLogoutTitle">
-جاري حفظ الإعدادات والبيانات...
+<h2 id="varexStaffLogoutTitle">
+جاري حفظ البيانات والإعدادات...
 </h2>
 
-<p
-id="varexStaffLogoutMessage">
-يرجى الانتظار لحظات قبل تسجيل خروج المستخدم.
+<p id="varexStaffLogoutMessage">
+يرجى الانتظار.
 </p>
 
 <div class="varex-staff-logout-progress">
@@ -1708,390 +1088,28 @@ id="varexStaffLogoutProgressBar">
 </div>
 `;
 
-document.body.appendChild(
-o
-)
-
+document.body.appendChild(o)
 }
-
-
-function varexWait(ms){
-
-return new Promise(
-resolve=>
-setTimeout(
-resolve,
-ms
-)
-)
-
-}
-
-
-async function varexLogoutCurrentUser(){
-
-if(
-varexStaffLogoutRunning
-){
-return
-}
-
-const current=
-VAREX.getStaffSession();
-
-if(!current){
-
-varexOpenStaffGate();
-
-return
-
-}
-
-varexInstallStaffLogoutUI();
-
-const overlay=
-document.getElementById(
-"varexStaffLogoutOverlay"
-);
-
-const loader=
-document.getElementById(
-"varexStaffLogoutLoader"
-);
-
-const success=
-document.getElementById(
-"varexStaffLogoutSuccess"
-);
-
-const title=
-document.getElementById(
-"varexStaffLogoutTitle"
-);
-
-const message=
-document.getElementById(
-"varexStaffLogoutMessage"
-);
-
-const bar=
-document.getElementById(
-"varexStaffLogoutProgressBar"
-);
-
-varexStaffLogoutRunning=true;
-
-document.body.style.overflow=
-"hidden";
-
-overlay.classList.remove(
-"success"
-);
-
-overlay.classList.add(
-"show"
-);
-
-loader.style.display=
-"block";
-
-success.style.display=
-"none";
-
-title.textContent=
-"جاري حفظ الإعدادات والبيانات...";
-
-message.textContent=
-"يرجى الانتظار لحظات قبل تسجيل خروج المستخدم.";
-
-bar.style.width=
-"12%";
-
-
-/* حفظ آخر معلومات الجلسة قبل الخروج */
-try{
-
-localStorage.setItem(
-"varex_last_staff_logout",
-JSON.stringify({
-id:current.id||"",
-name:current.name||"",
-role:current.role||"",
-loggedOutAt:new Date().toISOString()
-})
-);
-
-const settings=
-VAREX.getSettings();
-
-VAREX.saveSettings(
-settings
-)
-
-}catch(e){}
-
-
-await varexWait(
-650
-);
-
-bar.style.width=
-"48%";
-
-
-await varexWait(
-650
-);
-
-bar.style.width=
-"78%";
-
-
-await varexWait(
-650
-);
-
-bar.style.width=
-"100%";
-
-
-VAREX.clearStaffSession();
-
-
-await varexWait(
-180
-);
-
-
-overlay.classList.add(
-"success"
-);
-
-loader.style.display=
-"none";
-
-success.style.display=
-"flex";
-
-title.textContent=
-"تم تسجيل خروج المستخدم بنجاح";
-
-message.textContent=
-"يمكن الآن اختيار مستخدم آخر للدخول إلى VAREX.";
-
-
-await varexWait(
-850
-);
-
-
-overlay.classList.remove(
-"show"
-);
-
-overlay.classList.remove(
-"success"
-);
-
-document.body.style.overflow=
-"";
-
-
-varexStaffLogoutRunning=false;
-
-
-/* بعد نجاح تسجيل الخروج نفتح قائمة المستخدمين */
-varexOpenStaffGate()
-
-}
-
-
-window.varexLogoutCurrentUser=
-varexLogoutCurrentUser;
-
-
-/* ========================================================= STAFF ACCESS INITIALIZATION ========================================================= */
-
-function varexInitStaffAccess(){
-
-const session=
-VAREX.getStaffSession();
-
-const users=
-VAREX.getActiveStaffUsers();
-
-if(session){
-
-if(session.isOwner){
-
-return varexCheckCurrentPermission()
-
-}
-
-const fresh=
-users.find(
-x=>
-String(x.id)===
-String(session.id)
-);
-
-if(!fresh){
-
-VAREX.clearStaffSession();
-
-varexOpenStaffGate();
-
-return false
-
-}
-
-session.permissions=
-Array.isArray(
-fresh.permissions
-)
-?fresh.permissions
-:[];
-
-session.role=
-fresh.role;
-
-session.name=
-fresh.name;
-
-session.username=
-fresh.username||"";
-
-VAREX.setStaffSession(
-session
-);
-
-return varexCheckCurrentPermission()
-
-}
-
-varexOpenStaffGate();
-
-return false
-
-}
-
-
-/* حفظ كلمة مرور المستخدم الداخلي */
-function varexInstallStaffPasswordCapture(){
-
-if(
-window.__varexStaffPasswordCapture
-){
-return
-}
-
-window.__varexStaffPasswordCapture=
-true;
-
-document.addEventListener(
-"click",
-e=>{
-
-const b=
-e.target?.closest?.(
-"button"
-);
-
-const oc=
-String(
-b?.getAttribute?.(
-"onclick"
-)||
-""
-);
-
-if(
-!b||
-!oc.includes(
-"saveUser"
-)
-){
-return
-}
-
-const pass=
-document
-.getElementById(
-"temporaryPassword"
-)
-?.value||
-"";
-
-const email=
-document
-.getElementById(
-"userEmail"
-)
-?.value
-?.trim()||
-"";
-
-if(
-pass&&
-email
-){
-
-setTimeout(
-()=>
-VAREX.setStaffPassword(
-email,
-pass
-),
-200
-)
-
-}
-
-},
-true
-)
-
-}
-
 
 /* ========================================================= CONFIRM ========================================================= */
-
 let varexConfirmResolve=null;
 let varexConfirmBypass=false;
 
-
 function varexInstallConfirmUI(){
 
-if(
-document.getElementById(
-"varexConfirmOverlay"
-)
-){
-return
-}
+if(document.getElementById("varexConfirmOverlay"))return;
 
-const o=
-document.createElement(
-"div"
-);
+const o=document.createElement("div");
 
-o.id=
-"varexConfirmOverlay";
-
-o.className=
-"varex-confirm-overlay";
+o.id="varexConfirmOverlay";
+o.className="varex-confirm-overlay";
 
 o.innerHTML=`
-
 <div class="varex-confirm-card">
 
-<div class="varex-confirm-brand">
-VAREX
-</div>
+<div class="varex-confirm-brand">VAREX</div>
 
-<div class="varex-confirm-icon">
-!
-</div>
+<div class="varex-confirm-icon">!</div>
 
 <h2 id="varexConfirmTitle">
 تأكيد العملية
@@ -2116,45 +1134,20 @@ VAREX
 </div>
 `;
 
-document.body.appendChild(
-o
-);
+document.body.appendChild(o);
 
-document
-.getElementById(
-"varexConfirmYes"
-)
-.onclick=
-()=>
-varexCloseConfirm(
-true
-);
+document.getElementById("varexConfirmYes").onclick=
+()=>varexCloseConfirm(true);
 
-document
-.getElementById(
-"varexConfirmNo"
-)
-.onclick=
-()=>
-varexCloseConfirm(
-false
-)
-
+document.getElementById("varexConfirmNo").onclick=
+()=>varexCloseConfirm(false)
 }
 
-
-function varexOpenConfirm(
-m,
-o={}
-){
+function varexOpenConfirm(m,o={}){
 
 varexInstallConfirmUI();
 
-document
-.getElementById(
-"varexConfirmTitle"
-)
-.textContent=
+document.getElementById("varexConfirmTitle").textContent=
 o.title||
 (
 String(m).includes("حذف")
@@ -2164,19 +1157,10 @@ String(m).includes("حذف")
 :"تأكيد العملية"
 );
 
-document
-.getElementById(
-"varexConfirmMessage"
-)
-.textContent=
-m||
-"هل تريد متابعة العملية؟";
+document.getElementById("varexConfirmMessage").textContent=
+m||"هل تريد متابعة العملية؟";
 
-document
-.getElementById(
-"varexConfirmYes"
-)
-.textContent=
+document.getElementById("varexConfirmYes").textContent=
 o.confirmText||
 (
 String(m).includes("حذف")
@@ -2184,193 +1168,81 @@ String(m).includes("حذف")
 :"تأكيد"
 );
 
-document
-.getElementById(
-"varexConfirmOverlay"
-)
-.classList.add(
-"show"
-)
-
+document.getElementById("varexConfirmOverlay").classList.add("show")
 }
-
 
 function varexCloseConfirm(r){
 
-document
-.getElementById(
-"varexConfirmOverlay"
-)
-?.classList.remove(
-"show"
-);
+document.getElementById("varexConfirmOverlay")?.classList.remove("show");
 
-if(
-varexConfirmResolve
-){
+if(varexConfirmResolve){
 
-const x=
-varexConfirmResolve;
+const x=varexConfirmResolve;
 
 varexConfirmResolve=null;
 
-x(
-!!r
-)
+x(!!r)
 
 }
-
 }
 
+function varexConfirm(m,o={}){
+return new Promise(r=>{
+varexConfirmResolve=r;
+varexOpenConfirm(m,o)
+})
+}
 
-function varexConfirm(
-m,
-o={}
-){
+window.varexConfirm=VAREX.confirm=varexConfirm;
 
-return new Promise(
-r=>{
+window.confirm=function(m){
 
-varexConfirmResolve=
-r;
+if(varexConfirmBypass)return true;
 
 varexOpenConfirm(
-m,
-o
-)
-
-}
-)
-
-}
-
-
-window.varexConfirm=
-VAREX.confirm=
-varexConfirm;
-
-
-window.confirm=
-function(m){
-
-if(
-varexConfirmBypass
-){
-return true
-}
-
-varexOpenConfirm(
-m||
-"هل تريد متابعة العملية؟"
+m||"هل تريد متابعة العملية؟"
 );
 
 return false
-
 };
-
 
 function varexLooksLikeConfirmAction(el){
 
-const t=
-String(
-el?.textContent||
-el?.value||
-""
-)
-.toLowerCase();
+const t=String(el?.textContent||el?.value||"").toLowerCase();
+const c=String(el?.className||"").toLowerCase();
+const oc=String(el?.getAttribute?.("onclick")||"").toLowerCase();
 
-const c=
-String(
-el?.className||
-""
-)
-.toLowerCase();
-
-const oc=
-String(
-el?.getAttribute?.(
-"onclick"
-)||
-""
-)
-.toLowerCase();
-
-return(
-oc.includes(
-"confirm("
-)||
-[
-"حذف",
-"مسح",
-"إلغاء",
-"الغاء",
-"استعادة",
-"إعادة",
-"delete",
-"remove",
-"cancel",
-"reset"
-]
-.some(
-w=>
-t.includes(w)||
-c.includes(w)
-)
-)
-
+return oc.includes("confirm(")||
+["حذف","مسح","إلغاء","الغاء","استعادة","إعادة","delete","remove","cancel","reset"]
+.some(w=>t.includes(w)||c.includes(w))
 }
-
 
 function varexGuessConfirmMessage(el){
 
-const t=
-String(
-el?.textContent||
-""
-);
+const t=String(el?.textContent||"");
 
-if(
-t.includes("حذف")||
-t.includes("مسح")
-){
+if(t.includes("حذف")||t.includes("مسح")){
 return"هل تريد حذف هذا العنصر؟"
 }
 
-if(
-t.includes("إلغاء")||
-t.includes("الغاء")
-){
+if(t.includes("إلغاء")||t.includes("الغاء")){
 return"هل تريد إلغاء هذه العملية؟"
 }
 
 return"هل تريد متابعة هذه العملية؟"
-
 }
-
 
 function varexInstallConfirmInterceptor(){
 
-if(
-window.__varexConfirmInterceptorInstalled
-){
-return
-}
+if(window.__varexConfirmInterceptorInstalled)return;
 
-window.__varexConfirmInterceptorInstalled=
-true;
+window.__varexConfirmInterceptorInstalled=true;
 
-document.addEventListener(
-"click",
-async e=>{
+document.addEventListener("click",async e=>{
 
-if(
-varexConfirmBypass
-){
-return
-}
+if(varexConfirmBypass)return;
 
-const t=
-e.target?.closest?.(
+const t=e.target?.closest?.(
 "button,a,[role='button'],input[type='button'],input[type='submit']"
 );
 
@@ -2379,37 +1251,22 @@ if(
 t.closest(
 "#varexConfirmOverlay,#varexLogoutOverlay,#varexStaffOverlay,#varexStaffLogoutOverlay"
 )||
-!varexLooksLikeConfirmAction(
-t
-)
+!varexLooksLikeConfirmAction(t)
 ){
 return
 }
 
 e.preventDefault();
-
 e.stopPropagation();
-
 e.stopImmediatePropagation();
 
-if(
-!await varexConfirm(
-varexGuessConfirmMessage(
-t
-)
-)
-){
-return
-}
+if(!await varexConfirm(varexGuessConfirmMessage(t)))return;
 
-varexConfirmBypass=
-true;
+varexConfirmBypass=true;
 
-const old=
-window.confirm;
+const old=window.confirm;
 
-window.confirm=
-()=>true;
+window.confirm=()=>true;
 
 try{
 
@@ -2417,291 +1274,123 @@ t.click()
 
 }finally{
 
-setTimeout(
-()=>{
+setTimeout(()=>{
 
-window.confirm=
-old;
+window.confirm=old;
+varexConfirmBypass=false
 
-varexConfirmBypass=
-false
-
-},
-0
-)
+},0)
 
 }
 
-},
-true
-)
-
+},true)
 }
-
 
 /* ========================================================= FINANCIAL FORMAT ========================================================= */
+function varexFormatFinancialNumbers(root=document){
 
-function varexFormatFinancialNumbers(
-root=document
-){
+const sel="[data-varex-money],[data-money],[data-currency],[data-amount],[id*='amount' i],[id*='total' i],[id*='price' i],[id*='cost' i],[id*='paid' i],[id*='balance' i],[class*='amount' i],[class*='total' i],[class*='price' i],[class*='cost' i],.stat-value,.summary-value,.money,.currency,.financial-value";
 
-const sel=
-"[data-varex-money],[data-money],[data-currency],[data-amount],[id*='amount' i],[id*='total' i],[id*='price' i],[id*='cost' i],[id*='paid' i],[id*='balance' i],[class*='amount' i],[class*='total' i],[class*='price' i],[class*='cost' i],.stat-value,.summary-value,.money,.currency,.financial-value";
-
-(
-root.querySelectorAll?.(
-sel
-)||
-[]
-)
-.forEach(
-el=>{
+(root.querySelectorAll?.(sel)||[]).forEach(el=>{
 
 if(
-el.matches(
-"input,textarea,select,option"
-)||
+el.matches("input,textarea,select,option")||
 el.children.length
 ){
 return
 }
 
-const m=
-String(
-el.textContent||
-""
-)
-.match(
+const m=String(el.textContent||"").match(
 /-?\d[\d,\s]*(?:\.\d+)?/
 );
 
-if(!m){
-return
-}
+if(!m)return;
 
-const n=
-VAREX.parseNumber(
-m[0],
-NaN
-);
+const n=VAREX.parseNumber(m[0],NaN);
 
-if(
-Number.isFinite(
-n
-)
-){
-
+if(Number.isFinite(n)){
 el.textContent=
 el.textContent.replace(
 m[0],
-VAREX.formatNumber(
-n,
-2
+VAREX.formatNumber(n,2)
 )
-)
-
 }
 
+})
 }
-)
-
-}
-
 
 function varexInstallFinancialFormatting(){
 
-varexFormatFinancialNumbers(
-document
-);
+varexFormatFinancialNumbers(document);
 
-new MutationObserver(
-()=>{
+new MutationObserver(()=>{
 
-clearTimeout(
-window.__vft
-);
+clearTimeout(window.__vft);
 
-window.__vft=
-setTimeout(
-()=>
-varexFormatFinancialNumbers(
-document
-),
-50
-)
+window.__vft=setTimeout(()=>{
 
-}
-)
-.observe(
-document.body,
-{
+varexFormatFinancialNumbers(document)
+
+},50)
+
+}).observe(document.body,{
 subtree:true,
 childList:true,
 characterData:true
-}
-)
-
+})
 }
 
-
-window.varexFormatNumber=
-(v,d=2)=>
-VAREX.formatNumber(
-v,
-d
-);
-
-window.varexFormatMoney=
-v=>
-VAREX.money(
-v
-);
-
-window.varexParseNumber=
-(v,f=0)=>
-VAREX.parseNumber(
-v,
-f
-);
-
-window.varexFormatFinancialNumbers=
-varexFormatFinancialNumbers;
-
+window.varexFormatNumber=(v,d=2)=>VAREX.formatNumber(v,d);
+window.varexFormatMoney=v=>VAREX.money(v);
+window.varexParseNumber=(v,f=0)=>VAREX.parseNumber(v,f);
+window.varexFormatFinancialNumbers=varexFormatFinancialNumbers;
 
 /* ========================================================= TYPOGRAPHY ========================================================= */
-
 function varexGetTypography(){
 
 let t={};
 
 try{
-
-t=
-JSON.parse(
-localStorage.getItem(
-"varexTypography"
-)||
-"{}"
-)||
-{}
-
+t=JSON.parse(localStorage.getItem("varexTypography")||"{}")||{}
 }catch(e){}
 
-const f=
-t.fontFamily||
-"Arial,Tahoma,sans-serif";
-
-const z=
-Math.max(
-8,
-Math.min(
-36,
-Number(
-t.fontSize||
-13
-)
-)
-);
+const f=t.fontFamily||"Arial,Tahoma,sans-serif";
+const z=Math.max(8,Math.min(36,Number(t.fontSize||13)));
 
 return{
-
-mainFontFamily:
-t.mainFontFamily||
-f,
-
-mainFontSize:
-Math.max(
-12,
-Math.min(
-48,
-Number(
-t.mainFontSize||
-18
-)
-)
-),
-
-subFontFamily:
-t.subFontFamily||
-f,
-
-subFontSize:
-Math.max(
-8,
-Math.min(
-36,
-Number(
-t.subFontSize||
-z
-)
-)
-),
-
-bold:
-!!t.bold,
-
-italic:
-!!t.italic,
-
-underline:
-!!t.underline
-
+mainFontFamily:t.mainFontFamily||f,
+mainFontSize:Math.max(12,Math.min(48,Number(t.mainFontSize||18))),
+subFontFamily:t.subFontFamily||f,
+subFontSize:Math.max(8,Math.min(36,Number(t.subFontSize||z))),
+bold:!!t.bold,
+italic:!!t.italic,
+underline:!!t.underline
 }
-
 }
-
 
 function varexApplyGlobalTypography(){
 
-const t=
-varexGetTypography();
+const t=varexGetTypography();
+const r=document.documentElement.style;
 
-const r=
-document.documentElement.style;
+r.setProperty("--varex-main-font",t.mainFontFamily);
+r.setProperty("--varex-main-size",t.mainFontSize+"px");
+r.setProperty("--varex-sub-font",t.subFontFamily);
+r.setProperty("--varex-sub-size",t.subFontSize+"px");
 
-r.setProperty(
-"--varex-main-font",
-t.mainFontFamily
-);
-
-r.setProperty(
-"--varex-main-size",
-t.mainFontSize+"px"
-);
-
-r.setProperty(
-"--varex-sub-font",
-t.subFontFamily
-);
-
-r.setProperty(
-"--varex-sub-size",
-t.subFontSize+"px"
-);
-
-let s=
-document.getElementById(
-"varexGlobalTypographyStyles"
-);
+let s=document.getElementById("varexGlobalTypographyStyles");
 
 if(!s){
 
-s=
-document.createElement(
-"style"
-);
+s=document.createElement("style");
 
-s.id=
-"varexGlobalTypographyStyles";
+s.id="varexGlobalTypographyStyles";
 
-document.head.appendChild(
-s
-)
+document.head.appendChild(s)
 
 }
 
 s.textContent=`
-
 body,input,select,textarea,button,table{
 font-family:${t.subFontFamily}!important
 }
@@ -2710,8 +1399,7 @@ body{
 font-size:${t.subFontSize}px!important
 }
 
-p,label,input,select,textarea,button,td,th,
-.nav-label,.chip,.info-chip{
+p,label,input,select,textarea,button,td,th,.nav-label,.chip,.info-chip{
 font-size:${t.subFontSize}px!important
 }
 
@@ -2720,327 +1408,166 @@ font-family:${t.mainFontFamily}!important
 }
 
 h1,.hero h1{
-font-size:${Math.min(
-58,
-t.mainFontSize+7
-)}px!important
+font-size:${Math.min(58,t.mainFontSize+7)}px!important
 }
 
 h2,.page-name h2{
-font-size:${Math.min(
-52,
-t.mainFontSize+2
-)}px!important
+font-size:${Math.min(52,t.mainFontSize+2)}px!important
 }
-
 `;
 
-document.body
-?.classList.toggle(
-"varex-font-bold",
-t.bold
-);
-
-document.body
-?.classList.toggle(
-"varex-font-italic",
-t.italic
-);
-
-document.body
-?.classList.toggle(
-"varex-font-underline",
-t.underline
-)
-
+document.body?.classList.toggle("varex-font-bold",t.bold);
+document.body?.classList.toggle("varex-font-italic",t.italic);
+document.body?.classList.toggle("varex-font-underline",t.underline)
 }
 
-
-window.varexApplyGlobalTypography=
-varexApplyGlobalTypography;
-
+window.varexApplyGlobalTypography=varexApplyGlobalTypography;
 
 /* ========================================================= MENU ========================================================= */
-
-const VAREX_SIDEBAR_SCROLL_KEY=
-"varex_sidebar_scroll_position";
-
+const VAREX_SIDEBAR_SCROLL_KEY="varex_sidebar_scroll_position";
 
 function varexGetSidebar(){
-
-return document.querySelector(
-".sidebar"
-)
-
+return document.querySelector(".sidebar")
 }
-
 
 function varexSaveSidebarScroll(){
 
-const s=
-varexGetSidebar();
+const s=varexGetSidebar();
 
 if(s){
 
 sessionStorage.setItem(
 VAREX_SIDEBAR_SCROLL_KEY,
-String(
-s.scrollTop||
-0
-)
+String(s.scrollTop||0)
 );
 
 localStorage.setItem(
 VAREX_SIDEBAR_SCROLL_KEY,
-String(
-s.scrollTop||
-0
-)
+String(s.scrollTop||0)
 )
 
 }
-
 }
-
 
 function varexRestoreSidebarScroll(){
 
-const s=
-varexGetSidebar();
+const s=varexGetSidebar();
 
-if(!s){
-return
-}
+if(!s)return;
 
-const v=
-Number(
-sessionStorage.getItem(
-VAREX_SIDEBAR_SCROLL_KEY
-)||
-localStorage.getItem(
-VAREX_SIDEBAR_SCROLL_KEY
-)||
+const v=Number(
+sessionStorage.getItem(VAREX_SIDEBAR_SCROLL_KEY)||
+localStorage.getItem(VAREX_SIDEBAR_SCROLL_KEY)||
 0
 );
 
-setTimeout(
-()=>
+setTimeout(()=>{
+
 s.scrollTop=
 Math.min(
 v,
-Math.max(
-0,
-s.scrollHeight-
-s.clientHeight
-)
-),
-40
+Math.max(0,s.scrollHeight-s.clientHeight)
 )
 
+},40)
 }
-
 
 function varexBuildMenu(){
 
-const nav=
-document.querySelector(
-".sidebar .nav"
-);
+const nav=document.querySelector(".sidebar .nav");
 
-if(!nav){
-return
-}
+if(!nav)return;
 
-const current=
-varexCurrentFile();
-
-const operator=
-VAREX.getStaffSession();
+const current=varexCurrentFile();
+const operator=VAREX.getStaffSession();
 
 nav.innerHTML=
 VAREX_MENU
-.filter(
-([file])=>
-!operator||
-varexCanOpen(
-file
-)
-)
-.map(
-([file,icon,title])=>`
-
+.filter(([file])=>!operator||varexCanOpen(file))
+.map(([file,icon,title])=>`
 <a
 href="./${file}"
 class="${current===file?"active":""}">
-
-<span class="nav-icon">
-${icon}
-</span>
-
-<span class="nav-label">
-${title}
-</span>
-
+<span class="nav-icon">${icon}</span>
+<span class="nav-label">${title}</span>
 </a>
-
-`
-)
+`)
 .join("");
 
 varexAddSidebarActions()
-
 }
-
 
 function varexAddSidebarActions(){
 
-const nav=
-document.querySelector(
-".sidebar .nav"
-);
+const nav=document.querySelector(".sidebar .nav");
 
-if(!nav){
-return
-}
+if(!nav)return;
 
-const box=
-document.createElement(
-"div"
-);
+const box=document.createElement("div");
 
-box.className=
-"varex-sidebar-actions";
+box.className="varex-sidebar-actions";
 
 box.innerHTML=`
-
-<button
-type="button"
-id="varexThemeButton">
-
-<span
-class="nav-icon"
-id="varexThemeIcon">
-🌙
-</span>
-
-<span id="varexThemeText">
-الوضع الليلي
-</span>
-
+<button type="button" id="varexThemeButton">
+<span class="nav-icon" id="varexThemeIcon">🌙</span>
+<span id="varexThemeText">الوضع الليلي</span>
 </button>
 
-<button
-type="button"
-id="varexStaffLogoutButton">
-
-<span class="nav-icon">
-👤
-</span>
-
-<span>
-تسجيل خروج المستخدم
-</span>
-
+<button type="button" id="varexStaffLogoutButton">
+<span class="nav-icon">👤</span>
+<span>تسجيل خروج المستخدم</span>
 </button>
 
-<button
-type="button"
-id="varexLogoutButton">
-
-<span class="varex-power-icon">
-⏻
-</span>
-
-<span>
-تسجيل خروج المنشأة
-</span>
-
+<button type="button" id="varexLogoutButton">
+<span class="varex-power-icon">⏻</span>
+<span>تسجيل خروج المنشأة</span>
 </button>
 
-<div class="varex-sidebar-bottom-space">
-</div>
+<div class="varex-sidebar-bottom-space"></div>
 `;
 
-nav.appendChild(
-box
-);
+nav.appendChild(box);
 
 varexInstallSharedStyles();
-
 varexInstallLogoutUI();
 
-varexInstallStaffLogoutUI();
-
-document
-.getElementById(
-"varexThemeButton"
-)
-.onclick=
+document.getElementById("varexThemeButton").onclick=
 varexToggleTheme;
 
-document
-.getElementById(
-"varexStaffLogoutButton"
-)
-.onclick=
+document.getElementById("varexStaffLogoutButton").onclick=
 varexLogoutCurrentUser;
 
-document
-.getElementById(
-"varexLogoutButton"
-)
-.onclick=
+document.getElementById("varexLogoutButton").onclick=
 varexOpenLogoutDialog;
 
 varexUpdateThemeButton()
-
 }
 
-
 /* ========================================================= TOP SWITCH USER ========================================================= */
-
 function varexInstallTopSwitchUserButton(){
 
-document.querySelectorAll(
-".top-info"
-)
-.forEach(
-top=>{
+document.querySelectorAll(".top-info").forEach(top=>{
 
 let btn=
-top.querySelector(
-".varex-top-switch-user"
-);
+top.querySelector(".varex-top-switch-user");
 
 if(!btn){
 
-btn=
-document.createElement(
-"button"
-);
+btn=document.createElement("button");
 
-btn.type=
-"button";
+btn.type="button";
 
 btn.className=
 "info-chip varex-top-switch-user";
 
 btn.innerHTML=`
-
-<span>
-👥
-</span>
-
-<strong>
-تبديل المستخدم
-</strong>
+<span>👥</span>
+<strong>تبديل المستخدم</strong>
 `;
 
-btn.onclick=
-e=>{
+btn.onclick=e=>{
 
 e.preventDefault();
-
 e.stopPropagation();
 
 varexSwitchUser()
@@ -3054,37 +1581,20 @@ top.firstChild
 
 }
 
+})
 }
-)
-
-}
-
 
 /* ========================================================= LOGOUT BUSINESS ========================================================= */
-
 function varexInstallLogoutUI(){
 
-if(
-document.getElementById(
-"varexLogoutOverlay"
-)
-){
-return
-}
+if(document.getElementById("varexLogoutOverlay"))return;
 
-const o=
-document.createElement(
-"div"
-);
+const o=document.createElement("div");
 
-o.id=
-"varexLogoutOverlay";
-
-o.className=
-"varex-logout-overlay";
+o.id="varexLogoutOverlay";
+o.className="varex-logout-overlay";
 
 o.innerHTML=`
-
 <div class="varex-logout-card">
 
 <div class="varex-logout-brand">
@@ -3114,87 +1624,45 @@ VAREX
 </div>
 `;
 
-document.body.appendChild(
-o
-);
+document.body.appendChild(o);
 
-document
-.getElementById(
-"varexLogoutCancel"
-)
-.onclick=
-()=>
-o.classList.remove(
-"show"
-);
+document.getElementById("varexLogoutCancel").onclick=
+()=>o.classList.remove("show");
 
-document
-.getElementById(
-"varexLogoutConfirm"
-)
-.onclick=
+document.getElementById("varexLogoutConfirm").onclick=
 async()=>{
 
-const b=
-document.getElementById(
-"varexLogoutConfirm"
-);
+const b=document.getElementById("varexLogoutConfirm");
 
-if(
-b.disabled
-){
-return
-}
+if(b.disabled)return;
 
-b.disabled=
-true;
+b.disabled=true;
 
 b.textContent=
 "جاري تسجيل الخروج...";
 
-await VAREX.logout(
-true
-)
+await VAREX.logout(true)
 
 }
-
 }
-
 
 function varexOpenLogoutDialog(){
 
 varexInstallLogoutUI();
 
 document
-.getElementById(
-"varexLogoutOverlay"
-)
-?.classList.add(
-"show"
-)
-
+.getElementById("varexLogoutOverlay")
+?.classList.add("show")
 }
-
 
 /* ========================================================= STYLES ========================================================= */
-
 function varexInstallSharedStyles(){
 
-if(
-document.getElementById(
-"varexSharedStyles"
-)
-){
-return
-}
+if(document.getElementById("varexSharedStyles"))return;
 
-const s=
-document.createElement(
-"style"
-);
+const s=document.createElement("style");
 
-s.id=
-"varexSharedStyles";
+s.id="varexSharedStyles";
 
 s.textContent=`
 
@@ -3268,7 +1736,21 @@ background:#fff!important;
 color:#172554!important;
 border:1px solid #fff!important;
 border-bottom:3px solid #94a3b8!important;
-cursor:pointer
+cursor:pointer;
+transition:
+transform .2s ease,
+box-shadow .2s ease,
+opacity .2s ease!important
+}
+
+.varex-sidebar-actions button:active{
+transform:translateY(3px)
+}
+
+#varexStaffLogoutButton.varex-button-pressing{
+transform:translateY(6px)!important;
+box-shadow:0 1px 0 #94a3b8!important;
+opacity:.92!important
 }
 
 .varex-power-icon{
@@ -3286,9 +1768,6 @@ height:230px!important;
 min-height:230px!important
 }
 
-
-/* TOP SWITCH USER */
-
 .varex-top-switch-user{
 border:1px solid #172554!important;
 cursor:pointer!important;
@@ -3303,8 +1782,7 @@ margin-left:6px
 margin:0!important
 }
 
-
-/* STAFF LOGIN */
+/* STAFF SELECT */
 
 .varex-staff-overlay{
 position:fixed;
@@ -3312,7 +1790,6 @@ inset:0;
 z-index:9999999;
 background:rgba(3,10,28,.84);
 backdrop-filter:blur(12px);
--webkit-backdrop-filter:blur(12px);
 display:flex;
 align-items:center;
 justify-content:center;
@@ -3320,13 +1797,19 @@ padding:20px;
 opacity:0;
 visibility:hidden;
 pointer-events:none;
-transition:.25s
+transition:
+opacity .42s ease,
+visibility .42s ease
 }
 
 .varex-staff-overlay.show{
 opacity:1;
 visibility:visible;
 pointer-events:auto
+}
+
+.varex-staff-overlay.varex-login-leaving{
+opacity:0!important
 }
 
 .varex-staff-card{
@@ -3337,7 +1820,15 @@ background:#fff;
 border-radius:26px;
 padding:30px;
 box-shadow:0 35px 100px rgba(0,0,0,.45);
-text-align:center
+text-align:center;
+transition:
+transform .48s cubic-bezier(.2,.8,.2,1),
+opacity .4s ease
+}
+
+.varex-staff-overlay.varex-login-leaving .varex-staff-card{
+transform:scale(.97) translateY(-12px);
+opacity:0
 }
 
 .varex-staff-brand{
@@ -3377,13 +1868,18 @@ gap:13px;
 padding:10px 14px;
 text-align:right;
 cursor:pointer;
-transition:.15s
+transition:.18s
 }
 
 .varex-staff-user:hover{
 border-color:#172554;
 transform:translateY(-2px);
 box-shadow:0 6px 0 #cbd5e1
+}
+
+.varex-staff-user:active{
+transform:translateY(3px);
+box-shadow:0 1px 0 #cbd5e1
 }
 
 .varex-staff-user.owner{
@@ -3422,7 +1918,19 @@ border-top:1px solid #e2e8f0
 }
 
 .varex-staff-password.show{
-display:block
+display:block;
+animation:varexPasswordOpen .3s ease
+}
+
+@keyframes varexPasswordOpen{
+from{
+opacity:0;
+transform:translateY(10px)
+}
+to{
+opacity:1;
+transform:translateY(0)
+}
 }
 
 .varex-selected-user{
@@ -3464,7 +1972,18 @@ cursor:pointer
 .varex-staff-login-actions button:first-child{
 background:#172554;
 color:#fff;
-border:0
+border:0;
+display:flex;
+align-items:center;
+justify-content:center;
+gap:8px;
+transition:
+transform .18s ease,
+background .25s ease
+}
+
+.varex-staff-login-actions button:first-child:active{
+transform:translateY(3px)
 }
 
 .varex-staff-login-actions button:last-child{
@@ -3473,24 +1992,51 @@ color:#172554;
 border:1px solid #cbd5e1
 }
 
+#varexStaffLoginBtn.varex-login-processing{
+background:#172554!important;
+color:#fff!important;
+cursor:wait!important
+}
 
-/* INTERNAL USER LOGOUT */
+#varexStaffLoginBtn.varex-login-success{
+background:#15803d!important;
+color:#fff!important
+}
+
+.varex-mini-spinner{
+width:16px;
+height:16px;
+border-radius:50%;
+border:2px solid rgba(255,255,255,.38);
+border-top-color:#fff;
+display:inline-block;
+animation:varexMiniSpinner .75s linear infinite
+}
+
+@keyframes varexMiniSpinner{
+to{
+transform:rotate(360deg)
+}
+}
+
+/* USER LOGOUT PROCESS */
 
 .varex-staff-logout-overlay{
 position:fixed;
 inset:0;
-z-index:10000020;
+z-index:10000000;
 background:rgba(3,10,28,.86);
-backdrop-filter:blur(13px);
--webkit-backdrop-filter:blur(13px);
+backdrop-filter:blur(12px);
 display:flex;
 align-items:center;
 justify-content:center;
-padding:22px;
+padding:20px;
 opacity:0;
 visibility:hidden;
 pointer-events:none;
-transition:.28s ease
+transition:
+opacity .42s ease,
+visibility .42s ease
 }
 
 .varex-staff-logout-overlay.show{
@@ -3499,47 +2045,53 @@ visibility:visible;
 pointer-events:auto
 }
 
+.varex-staff-logout-overlay.varex-staff-logout-leaving{
+opacity:0!important
+}
+
 .varex-staff-logout-card{
-width:min(540px,94vw);
-min-height:350px;
-background:linear-gradient(160deg,#fff,#f8fafc);
-border:1px solid #e2e8f0;
-border-radius:28px;
-box-shadow:0 38px 110px rgba(2,8,23,.48);
-padding:39px 34px 34px;
+width:min(520px,94vw);
+min-height:340px;
+background:#fff;
+border-radius:26px;
+padding:35px;
 display:flex;
 flex-direction:column;
 align-items:center;
 justify-content:center;
 text-align:center;
-transform:scale(.95) translateY(13px);
-transition:.3s ease
+box-shadow:0 35px 100px rgba(0,0,0,.45);
+transition:
+transform .45s ease,
+opacity .4s ease
 }
 
-.varex-staff-logout-overlay.show .varex-staff-logout-card{
-transform:scale(1) translateY(0)
+.varex-staff-logout-overlay.varex-staff-logout-leaving
+.varex-staff-logout-card{
+transform:scale(.97) translateY(-10px);
+opacity:0
 }
 
 .varex-staff-logout-brand{
-direction:ltr;
-font-size:34px;
+font-size:31px;
 font-weight:900;
-letter-spacing:7px;
+letter-spacing:6px;
+direction:ltr;
 color:#172554;
-margin-bottom:27px
+margin-bottom:24px
 }
 
 .varex-staff-logout-loader{
-width:55px;
-height:55px;
+width:52px;
+height:52px;
 border-radius:50%;
 border:4px solid #dbe3ef;
 border-top-color:#172554;
 margin-bottom:20px;
-animation:varexStaffLogoutSpin .72s linear infinite
+animation:varexLogoutSpin .8s linear infinite
 }
 
-@keyframes varexStaffLogoutSpin{
+@keyframes varexLogoutSpin{
 to{
 transform:rotate(360deg)
 }
@@ -3547,34 +2099,33 @@ transform:rotate(360deg)
 
 .varex-staff-logout-success{
 display:none;
-width:59px;
-height:59px;
+width:58px;
+height:58px;
 border-radius:50%;
 align-items:center;
 justify-content:center;
 background:#dcfce7;
 border:2px solid #22c55e;
 color:#15803d;
-font-size:31px;
+font-size:30px;
 font-weight:900;
 margin-bottom:20px;
-animation:varexStaffSuccess .36s ease
+animation:varexSuccessPop .4s ease
 }
 
-@keyframes varexStaffSuccess{
+@keyframes varexSuccessPop{
 from{
-transform:scale(.5);
-opacity:0
+opacity:0;
+transform:scale(.65)
 }
 to{
-transform:scale(1);
-opacity:1
+opacity:1;
+transform:scale(1)
 }
 }
 
 .varex-staff-logout-card h2{
-font-size:22px;
-font-weight:900;
+font-size:21px;
 color:#172554;
 margin-bottom:10px
 }
@@ -3588,24 +2139,18 @@ color:#64748b
 .varex-staff-logout-progress{
 width:82%;
 height:8px;
+border-radius:20px;
 background:#e2e8f0;
-border-radius:50px;
 overflow:hidden;
-margin-top:25px
+margin-top:26px
 }
 
 .varex-staff-logout-progress-bar{
 width:0;
 height:100%;
-border-radius:50px;
 background:linear-gradient(90deg,#172554,#31548c);
-transition:width .55s ease
+transition:width .7s ease
 }
-
-.varex-staff-logout-overlay.success .varex-staff-logout-progress-bar{
-background:#22c55e
-}
-
 
 /* CONFIRM + BUSINESS LOGOUT */
 
@@ -3696,7 +2241,6 @@ color:#172554;
 border:1px solid #cbd5e1
 }
 
-
 /* DARK */
 
 body.varex-dark .varex-staff-card,
@@ -3704,8 +2248,7 @@ body.varex-dark .varex-confirm-card,
 body.varex-dark .varex-logout-card,
 body.varex-dark .varex-staff-logout-card{
 background:#132641;
-color:#fff;
-border-color:#29415f
+color:#fff
 }
 
 body.varex-dark .varex-staff-card h2,
@@ -3716,19 +2259,6 @@ body.varex-dark .varex-logout-brand,
 body.varex-dark .varex-staff-logout-brand,
 body.varex-dark .varex-staff-logout-card h2{
 color:#fff
-}
-
-body.varex-dark .varex-staff-logout-card p{
-color:#cbd5e1
-}
-
-body.varex-dark .varex-staff-logout-loader{
-border-color:#35506f;
-border-top-color:#fff
-}
-
-body.varex-dark .varex-staff-logout-progress{
-background:#29415f
 }
 
 body.varex-dark .varex-staff-user{
@@ -3744,15 +2274,23 @@ body.varex-dark .varex-staff-user small{
 color:#cbd5e1
 }
 
+body.varex-dark .varex-staff-logout-card p{
+color:#cbd5e1
+}
 
-/* RESPONSIVE */
+body.varex-dark .varex-staff-logout-progress{
+background:#29415f
+}
+
+body.varex-dark .varex-staff-logout-loader{
+border-color:#29415f;
+border-top-color:#fff
+}
 
 @media(max-width:750px){
-
 .varex-top-switch-user{
 display:none!important
 }
-
 }
 
 @media(max-width:600px){
@@ -3768,54 +2306,36 @@ flex-direction:column
 }
 
 .varex-staff-logout-card{
-width:94vw;
-min-height:330px;
-padding:31px 20px 28px
-}
-
-.varex-staff-logout-brand{
-font-size:29px
+min-height:310px;
+padding:28px 20px
 }
 
 }
-
 `;
 
-document.head.appendChild(
-s
-)
-
+document.head.appendChild(s)
 }
-
 
 /* ========================================================= THEME + SIDEBAR ========================================================= */
-
 function varexInstallSidebarScroll(){
 
-const s=
-varexGetSidebar();
+const s=varexGetSidebar();
 
-if(!s){
-return
-}
+if(!s)return;
 
 varexRestoreSidebarScroll();
 
 s.addEventListener(
 "scroll",
 varexSaveSidebarScroll,
-{
-passive:true
-}
+{passive:true}
 );
 
 window.addEventListener(
 "pagehide",
 varexSaveSidebarScroll
 )
-
 }
-
 
 function varexResolveThemeMode(){
 
@@ -3824,57 +2344,41 @@ localStorage.getItem(
 "varexThemeMode"
 );
 
-if(
-m==="dark"||
-m==="light"
-){
+if(m==="dark"||m==="light"){
 return m
 }
 
-if(
-m==="system"
-){
-
+if(m==="system"){
 return matchMedia(
 "(prefers-color-scheme:dark)"
-)
-.matches
+).matches
 ?"dark"
 :"light"
-
 }
 
 return localStorage.getItem(
 "varex_theme"
 )||
 "light"
-
 }
-
 
 function varexGetTheme(){
-
 return varexResolveThemeMode()
-
 }
-
 
 function varexApplyTheme(t){
 
-document.documentElement
-.setAttribute(
+document.documentElement.setAttribute(
 "data-theme",
 t
 );
 
-document.documentElement
-.setAttribute(
+document.documentElement.setAttribute(
 "data-varex-theme",
 t
 );
 
-document.body
-?.classList.toggle(
+document.body?.classList.toggle(
 "varex-dark",
 t==="dark"
 );
@@ -3885,9 +2389,7 @@ t
 );
 
 varexUpdateThemeButton()
-
 }
-
 
 function varexToggleTheme(){
 
@@ -3901,12 +2403,8 @@ localStorage.setItem(
 n
 );
 
-varexApplyTheme(
-n
-)
-
+varexApplyTheme(n)
 }
-
 
 function varexUpdateThemeButton(){
 
@@ -3924,28 +2422,17 @@ document.getElementById(
 );
 
 if(i){
-
-i.textContent=
-d
-?"☀️"
-:"🌙"
-
+i.textContent=d?"☀️":"🌙"
 }
 
 if(t){
-
-t.textContent=
-d
+t.textContent=d
 ?"الوضع النهاري"
 :"الوضع الليلي"
-
 }
-
 }
-
 
 /* ========================================================= CURRENT OPERATOR ========================================================= */
-
 function varexShowCurrentUser(){
 
 const u=
@@ -3955,8 +2442,7 @@ VAREX.getOwnerOperator();
 document.querySelectorAll(
 ".info-chip,.chip"
 )
-.forEach(
-el=>{
+.forEach(el=>{
 
 if(
 el.classList.contains(
@@ -3967,31 +2453,22 @@ return
 }
 
 if(
-el.textContent.includes(
-"المستخدم"
-)||
-el.textContent.includes(
-"الحساب"
-)
+el.textContent.includes("المستخدم")||
+el.textContent.includes("الحساب")
 ){
 
 const s=
-el.querySelector(
-"strong"
-);
+el.querySelector("strong");
 
 if(s){
-
 s.textContent=
 u.name||
 "المستخدم"
-
 }
 
 }
 
-}
-);
+});
 
 [
 "sidebarUserName",
@@ -4000,25 +2477,19 @@ u.name||
 "currentUserName",
 "currentUser"
 ]
-.forEach(
-id=>{
+.forEach(id=>{
 
 const e=
-document.getElementById(
-id
-);
+document.getElementById(id);
 
 if(e){
-
 e.textContent=
 u.name||
 u.username||
 "المستخدم"
-
 }
 
-}
-);
+});
 
 const r=
 document.getElementById(
@@ -4026,61 +2497,25 @@ document.getElementById(
 );
 
 if(r){
-
 r.textContent=
-VAREX.roleName(
-u.role
-)
-
+VAREX.roleName(u.role)
 }
-
 }
-
 
 function varexEsc(v){
-
-return String(
-v??""
-)
-.replace(
-/&/g,
-"&amp;"
-)
-.replace(
-/</g,
-"&lt;"
-)
-.replace(
-/>/g,
-"&gt;"
-)
-.replace(
-/"/g,
-"&quot;"
-)
-.replace(
-/'/g,
-"&#039;"
-)
-
+return String(v??"")
+.replace(/&/g,"&amp;")
+.replace(/</g,"&lt;")
+.replace(/>/g,"&gt;")
+.replace(/"/g,"&quot;")
+.replace(/'/g,"&#039;")
 }
-
 
 function varexEscAttr(v){
-
-return varexEsc(
-v
-)
-.replace(
-/`/g,
-""
-)
-
+return varexEsc(v).replace(/`/g,"")
 }
 
-
 /* ========================================================= START ========================================================= */
-
 function varexStartUI(){
 
 const publicPage=
@@ -4088,21 +2523,11 @@ VAREX.isLoginPage()||
 VAREX.isRegisterPage()||
 VAREX.isVerifyEmailPage();
 
-if(publicPage){
-return
-}
+if(publicPage)return;
 
-if(
-!VAREX.requireLogin()
-){
-return
-}
+if(!VAREX.requireLogin())return;
 
-if(
-!VAREX.requireSubscription()
-){
-return
-}
+if(!VAREX.requireSubscription())return;
 
 varexInstallSharedStyles();
 
@@ -4139,36 +2564,21 @@ varexBuildMenu();
 varexInstallTopSwitchUserButton();
 
 varexShowCurrentUser()
-
 }
 
+window.addEventListener("storage",e=>{
 
-/* ========================================================= EVENTS ========================================================= */
-
-window.addEventListener(
-"storage",
-e=>{
-
-if(
-e.key===
-"varexTypography"
-){
+if(e.key==="varexTypography"){
 varexApplyGlobalTypography()
 }
 
-if(
-e.key===
-"varexThemeMode"
-){
+if(e.key==="varexThemeMode"){
 varexApplyTheme(
 varexGetTheme()
 )
 }
 
-if(
-e.key===
-VAREX.keys.staffUsers
-){
+if(e.key===VAREX.keys.staffUsers){
 
 const s=
 VAREX.getStaffSession();
@@ -4190,22 +2600,15 @@ if(
 !u||
 u.status==="disabled"
 ){
-
 varexLogoutCurrentUser()
-
 }
 
 }
 
 }
+});
 
-}
-);
-
-
-window.addEventListener(
-"focus",
-()=>{
+window.addEventListener("focus",()=>{
 
 varexApplyGlobalTypography();
 
@@ -4220,10 +2623,7 @@ document
 varexInstallTopSwitchUserButton();
 
 varexShowCurrentUser()
-
-}
-);
-
+});
 
 if(
 document.readyState===
