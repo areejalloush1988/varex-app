@@ -1,5 +1,5 @@
 /* ========================================================= VAREX CORE ========================================================= */
-const VAREX={config:{supabaseUrl:"https://eibadfdqzpeigccfdipt.supabase.co",supabaseKey:"sb_publishable__xRe4q10zwB2coiWu7wVrQ_9CimA336"},keys:{products:"varex_products",sales:"varex_sales",customers:"varex_customers",suppliers:"varex_suppliers",employees:"varex_employees",transactions:"varexTransactions",settings:"varex_settings",heldSales:"varex_held_sales",session:"varex_session",rememberedUser:"varex_remembered_user",cachedUser:"varex_cached_user",pendingVerification:"varex_pending_verification",subscription:"varex_subscription",subscriptionGate:"varex_subscription_gate",staffUsers:"varexUsers",staffSession:"varex_staff_session",deviceAuth:"varex_device_authorized",deviceOwner:"varex_device_owner",businessId:"varex_business_id"},cleanText(v){return String(v??"").trim()},normalizeEmail(v){return this.cleanText(v).toLowerCase()},normalizeUsername(v){return this.cleanText(v).toLowerCase()},now(){return new Date().toISOString()},today(){const d=new Date();return`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`},generateId(p="VRX"){return`${p}-${Date.now()}-${Math.floor(Math.random()*1e6)}`},parseNumber(v,f=0){if(typeof v==="number")return Number.isFinite(v)?v:f;if(v===null||v===undefined||v==="")return f;let x=String(v).trim().replace(/[,\s]/g,"").replace(/[^\d.\-]/g,"");const i=x.indexOf(".");if(i!==-1)x=x.slice(0,i+1)+x.slice(i+1).replace(/\./g,"");const n=Number(x);return Number.isFinite(n)?n:f},toNumber(v,f=0){return this.parseNumber(v,f)},positiveNumber(v){return Math.max(0,this.toNumber(v))},formatNumber(v,d=2){const n=this.toNumber(v),x=Math.max(0,Math.min(6,Number.isFinite(Number(d))?Number(d):2));return n.toLocaleString("en-US",{minimumFractionDigits:x,maximumFractionDigits:x})},formatQuantity(v){return this.toNumber(v).toLocaleString("en-US",{maximumFractionDigits:3})},normalizeDate(v){if(!v)return"";const d=new Date(v);if(Number.isNaN(d.getTime()))return String(v).slice(0,10);return`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`},getAccountScope(){const s=this.getSession?.();const id=s?.user?.id||this.getDeviceOwner?.()?.ownerId||"guest";return String(id).replace(/[^a-zA-Z0-9_-]/g,"_")},scopeKey(k){const scoped=new Set([this.keys.products,this.keys.sales,this.keys.customers,this.keys.suppliers,this.keys.employees,this.keys.transactions,this.keys.settings,this.keys.heldSales,this.keys.staffUsers,this.keys.subscription]);return scoped.has(k)?`${k}__${this.getAccountScope()}`:k},getData(k){try{const x=JSON.parse(localStorage.getItem(this.scopeKey(k))||"[]");return Array.isArray(x)?x:[]}catch(e){return[]}},saveData(k,d){try{localStorage.setItem(this.scopeKey(k),JSON.stringify(Array.isArray(d)?d:[]));return true}catch(e){return false}},getObject(k,f={}){try{const x=JSON.parse(localStorage.getItem(this.scopeKey(k))||"null");return x&&typeof x==="object"&&!Array.isArray(x)?{...f,...x}:{...f}}catch(e){return{...f}}},saveObject(k,d){try{localStorage.setItem(this.scopeKey(k),JSON.stringify(d||{}));return true}catch(e){return false}},async authFetch(path,opt={}){const h={apikey:this.config.supabaseKey,"Content-Type":"application/json",...(opt.headers||{})},s=this.getSession();if(s?.access_token)h.Authorization=`Bearer ${s.access_token}`;const r=await fetch(this.config.supabaseUrl+path,{...opt,headers:h});let data={};try{data=await r.json()}catch(e){}if(!r.ok){const e=new Error(data.msg||data.message||data.error_description||data.error||"تعذر الاتصال بخدمة الحسابات.");e.status=r.status;e.data=data;throw e}return data},async dbFetch(path,opt={}){let s=this.getSession();if(!s?.access_token)throw new Error("انتهت جلسة المستخدم. يرجى تسجيل الدخول من جديد.");if((s.expires_at||0)<=Math.floor(Date.now()/1000)+60){await this.refreshSession();s=this.getSession()}if(!s?.access_token)throw new Error("تعذر إنشاء جلسة آمنة مع قاعدة البيانات.");const h={apikey:this.config.supabaseKey,Authorization:`Bearer ${s.access_token}`,"Content-Type":"application/json",Accept:"application/json",...(opt.headers||{})};const r=await fetch(this.config.supabaseUrl+"/rest/v1/"+path,{...opt,headers:h});const text=await r.text();let data=null;if(text){try{data=JSON.parse(text)}catch(e){data=text}}if(!r.ok){const msg=data?.message||data?.details||data?.hint||data?.code||"تعذر تنفيذ العملية على قاعدة البيانات.";const er=new Error(msg);er.status=r.status;er.data=data;throw er}return data},mapAuthError(e){const m=String(e?.message||"").toLowerCase();if(m.includes("already registered")||m.includes("user already registered"))return"هذا البريد الإلكتروني مرتبط بحساب موجود مسبقاً. يرجى تسجيل الدخول بدلاً من إنشاء حساب جديد.";if(m.includes("invalid login credentials"))return"البريد الإلكتروني أو كلمة المرور غير صحيحة.";if(m.includes("email not confirmed"))return"البريد الإلكتروني غير مؤكد.";if(m.includes("expired"))return"انتهت صلاحية رمز التحقق.";if(m.includes("invalid otp")||m.includes("invalid token"))return"رمز التحقق غير صحيح.";if(m.includes("rate")||m.includes("security purposes"))return"تم إجراء محاولات كثيرة خلال وقت قصير. يرجى الانتظار قليلاً ثم المحاولة من جديد.";if(m.includes("failed to fetch"))return"تعذر الاتصال بالخادم. تحقق من اتصال الإنترنت ثم حاول مرة أخرى.";return e?.message||"حدث خطأ في خدمة الحسابات."},getSafeUser(u){if(!u)return null;const m=u.user_metadata||{};return{id:u.id,name:m.name||m.full_name||u.name||"مالك المنشأة",username:m.username||u.username||"",email:u.email||"",role:m.role||u.role||"مالك",status:"نشط",createdAt:u.created_at||u.createdAt||"",lastLogin:u.last_sign_in_at||u.lastLogin||""}},setPendingVerification(d={}){const x={email:this.normalizeEmail(d.email),name:this.cleanText(d.name),username:this.normalizeUsername(d.username),createdAt:this.now()};localStorage.setItem(this.keys.pendingVerification,JSON.stringify(x));return x},getPendingVerification(){try{return JSON.parse(localStorage.getItem(this.keys.pendingVerification)||"null")}catch(e){return null}},clearPendingVerification(){localStorage.removeItem(this.keys.pendingVerification)},async createUser(u={}){const name=this.cleanText(u.name),username=this.normalizeUsername(u.username),email=this.normalizeEmail(u.email),password=String(u.password||"");if(!name)return{success:false,message:"الاسم الكامل مطلوب."};if(username.length<3)return{success:false,message:"اسم المستخدم يجب أن يحتوي على 3 أحرف على الأقل."};if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))return{success:false,message:"يرجى إدخال بريد إلكتروني صحيح."};if(password.length<8)return{success:false,message:"كلمة المرور يجب أن تحتوي على 8 أحرف على الأقل."};try{const d=await this.authFetch("/auth/v1/signup",{method:"POST",body:JSON.stringify({email,password,data:{name,full_name:name,username,role:"مالك"}})});if(d?.user&&!d?.session&&Array.isArray(d?.user?.identities)&&d.user.identities.length===0)return{success:false,message:"هذا البريد الإلكتروني مرتبط بحساب موجود مسبقاً. يرجى تسجيل الدخول بدلاً من إنشاء حساب جديد."};this.setPendingVerification({email,name,username});return{success:true,user:this.getSafeUser(d.user),needsEmailConfirmation:!d?.session?.access_token,email,message:d?.session?.access_token?"تم إنشاء الحساب.":"تم إنشاء الحساب. أرسلنا رمز التحقق إلى بريدك الإلكتروني."}}catch(e){return{success:false,message:this.mapAuthError(e)}}},async verifyEmailOtp(email,token){try{const d=await this.authFetch("/auth/v1/verify",{method:"POST",body:JSON.stringify({type:"signup",email:this.normalizeEmail(email),token:this.cleanText(token).replace(/\s+/g,"")})});this.clearPendingVerification();sessionStorage.removeItem(this.keys.session);localStorage.removeItem(this.keys.session);return{success:true,user:this.getSafeUser(d.user),message:"تم تأكيد البريد الإلكتروني بنجاح."}}catch(e){return{success:false,message:this.mapAuthError(e)}}},async resendConfirmation(email){try{await this.authFetch("/auth/v1/resend",{method:"POST",body:JSON.stringify({type:"signup",email:this.normalizeEmail(email)})});return{success:true,message:"تم إرسال رمز تحقق جديد."}}catch(e){return{success:false,message:this.mapAuthError(e)}}},authorizeDevice(user){const u=this.getSafeUser(user)||user||{},x={authorized:true,ownerId:u.id||"",name:u.name||"مالك المنشأة",username:u.username||"owner",email:this.normalizeEmail(u.email||""),authorizedAt:this.now()};localStorage.setItem(this.keys.deviceAuth,"true");localStorage.setItem(this.keys.deviceOwner,JSON.stringify(x));return x},isDeviceAuthorized(){return localStorage.getItem(this.keys.deviceAuth)==="true"&&!!this.getDeviceOwner()},getDeviceOwner(){try{const x=JSON.parse(localStorage.getItem(this.keys.deviceOwner)||"null");return x&&typeof x==="object"?x:null}catch(e){return null}},removeDeviceAuthorization(){localStorage.removeItem(this.keys.deviceAuth);localStorage.removeItem(this.keys.deviceOwner);this.clearStaffSession()},async login(login,password,remember=false){const email=this.normalizeEmail(login);if(!email||!password)return{success:false,message:"يرجى إدخال البريد الإلكتروني وكلمة المرور."};try{const d=await this.authFetch("/auth/v1/token?grant_type=password",{method:"POST",body:JSON.stringify({email,password:String(password)})});if(!d.access_token||!d.user)return{success:false,message:"تعذر إنشاء جلسة المستخدم."};this.storeSession(d,true);localStorage.setItem(this.keys.rememberedUser,remember?email:"");this.authorizeDevice(d.user);this.clearPendingVerification();this.clearStaffSession();this.clearBusinessIdCache();return{success:true,user:this.getSafeUser(d.user)}}catch(e){return{success:false,message:this.mapAuthError(e)}}},async verifyOwnerPassword(password){const owner=this.getDeviceOwner();if(!owner?.email)return{success:false,message:"هذا الجهاز غير مرتبط بحساب المنشأة."};if(!password)return{success:false,message:"أدخل كلمة مرور المالك."};try{const d=await this.authFetch("/auth/v1/token?grant_type=password",{method:"POST",body:JSON.stringify({email:owner.email,password:String(password)})});if(!d?.access_token||!d?.user)return{success:false,message:"تعذر التحقق من حساب المالك."};this.storeSession(d,true);this.authorizeDevice(d.user);return{success:true,user:this.getSafeUser(d.user)}}catch(e){return{success:false,message:this.mapAuthError(e)}}},storeSession(s,remember=true){const x={access_token:s.access_token,refresh_token:s.refresh_token,expires_in:s.expires_in,expires_at:s.expires_at||Math.floor(Date.now()/1000)+(s.expires_in||3600),token_type:s.token_type||"bearer",user:s.user,remember:Boolean(remember)},str=JSON.stringify(x);if(remember){localStorage.setItem(this.keys.session,str);sessionStorage.removeItem(this.keys.session)}else{sessionStorage.setItem(this.keys.session,str);localStorage.removeItem(this.keys.session)}localStorage.setItem(this.keys.cachedUser,JSON.stringify(this.getSafeUser(s.user)));return x},getSession(){const raw=sessionStorage.getItem(this.keys.session)||localStorage.getItem(this.keys.session);if(!raw)return null;try{const s=JSON.parse(raw);return s?.access_token&&s?.user?s:null}catch(e){return null}},isLoggedIn(){return!!this.getSession()},getCurrentUser(){const s=this.getSession();if(s?.user)return this.getSafeUser(s.user);const d=this.getDeviceOwner();if(d)return{id:d.ownerId,name:d.name,username:d.username,email:d.email,role:"مالك"};try{return JSON.parse(localStorage.getItem(this.keys.cachedUser)||"null")}catch(e){return null}},getRememberedUser(){return localStorage.getItem(this.keys.rememberedUser)||""},async refreshSession(){const s=this.getSession();if(!s?.refresh_token)return false;if((s.expires_at||0)>Math.floor(Date.now()/1000)+60)return true;try{const d=await this.authFetch("/auth/v1/token?grant_type=refresh_token",{method:"POST",body:JSON.stringify({refresh_token:s.refresh_token})});this.storeSession(d,true);this.authorizeDevice(d.user);return true}catch(e){sessionStorage.removeItem(this.keys.session);localStorage.removeItem(this.keys.session);return false}},async logout(redirect=true){const s=this.getSession();try{if(s?.access_token)await this.authFetch("/auth/v1/logout",{method:"POST"})}catch(e){}this.removeDeviceAuthorization();sessionStorage.removeItem(this.keys.session);localStorage.removeItem(this.keys.session);localStorage.removeItem(this.keys.cachedUser);this.clearBusinessIdCache();sessionStorage.removeItem("varex_authenticated");localStorage.removeItem("varex_authenticated");if(redirect)location.replace("./login.html");return true},requireLogin(){if(this.isLoginPage()||this.isRegisterPage()||this.isVerifyEmailPage()||this.isResetPasswordPage())return true;if(this.isDeviceAuthorized()){if(this.isLoggedIn())this.refreshSession();return true}if(this.isLoggedIn()){const u=this.getSession()?.user;if(u)this.authorizeDevice(u);return true}location.replace("./login.html");return false},isLoginPage(){return location.pathname.toLowerCase().endsWith("login.html")},isRegisterPage(){return location.pathname.toLowerCase().endsWith("register.html")},isVerifyEmailPage(){return location.pathname.toLowerCase().endsWith("verify-email.html")},isResetPasswordPage(){return location.pathname.toLowerCase().endsWith("reset-password.html")},redirectLoggedUser(){if((this.isLoginPage()||this.isRegisterPage())&&(this.isLoggedIn()||this.isDeviceAuthorized())){location.replace("./index.html");return true}return false},async requestPasswordReset(email){try{const redirect=encodeURIComponent("https://varexapp.com/reset-password.html");await this.authFetch("/auth/v1/recover?redirect_to="+redirect,{method:"POST",body:JSON.stringify({email:this.normalizeEmail(email)})});return{success:true,message:"تم إرسال رابط استعادة كلمة المرور إلى بريدك الإلكتروني."}}catch(e){return{success:false,message:this.mapAuthError(e)}}},async updateCurrentUser(c={}){const s=this.getSession();if(!s)return{success:false,message:"يجب التحقق من حساب المالك أولاً."};const body={},data={};if(c.email!==undefined)body.email=this.normalizeEmail(c.email);["name","username","role"].forEach(k=>{if(c[k]!==undefined)data[k]=this.cleanText(c[k])});if(Object.keys(data).length)body.data={...(s.user.user_metadata||{}),...data};try{const u=await this.authFetch("/auth/v1/user",{method:"PUT",body:JSON.stringify(body)});s.user=u;this.storeSession(s,true);this.authorizeDevice(u);return{success:true,user:this.getSafeUser(u)}}catch(e){return{success:false,message:this.mapAuthError(e)}}},async changePassword(c,n){if(String(n||"").length<8)return{success:false,message:"كلمة المرور الجديدة يجب أن تحتوي على 8 أحرف على الأقل."};try{const s=this.getSession();if(!s)return{success:false,message:"يجب تسجيل الدخول بحساب المالك أولاً."};const u=await this.authFetch("/auth/v1/user",{method:"PUT",body:JSON.stringify({password:String(n)})});s.user=u;this.storeSession(s,true);return{success:true,message:"تم تغيير كلمة المرور بنجاح."}}catch(e){return{success:false,message:this.mapAuthError(e)}}},
+const VAREX={config:{supabaseUrl:"https://eibadfdqzpeigccfdipt.supabase.co",supabaseKey:"sb_publishable__xRe4q10zwB2coiWu7wVrQ_9CimA336"},keys:{products:"varex_products",sales:"varex_sales",customers:"varex_customers",suppliers:"varex_suppliers",employees:"varex_employees",transactions:"varexTransactions",settings:"varex_settings",heldSales:"varex_held_sales",session:"varex_session",rememberedUser:"varex_remembered_user",cachedUser:"varex_cached_user",pendingVerification:"varex_pending_verification",subscription:"varex_subscription",subscriptionGate:"varex_subscription_gate",staffUsers:"varexUsers",staffSession:"varex_staff_session",deviceAuth:"varex_device_authorized",deviceOwner:"varex_device_owner",businessId:"varex_business_id"},cleanText(v){return String(v??"").trim()},normalizeEmail(v){return this.cleanText(v).toLowerCase()},normalizeUsername(v){return this.cleanText(v).toLowerCase()},now(){return new Date().toISOString()},today(){const d=new Date();return`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`},generateId(p="VRX"){return`${p}-${Date.now()}-${Math.floor(Math.random()*1e6)}`},parseNumber(v,f=0){if(typeof v==="number")return Number.isFinite(v)?v:f;if(v===null||v===undefined||v==="")return f;let x=String(v).trim().replace(/[,\s]/g,"").replace(/[^\d.-]/g,"");const i=x.indexOf(".");if(i!==-1)x=x.slice(0,i+1)+x.slice(i+1).replace(/./g,"");const n=Number(x);return Number.isFinite(n)?n:f},toNumber(v,f=0){return this.parseNumber(v,f)},positiveNumber(v){return Math.max(0,this.toNumber(v))},formatNumber(v,d=2){const n=this.toNumber(v),x=Math.max(0,Math.min(6,Number.isFinite(Number(d))?Number(d):2));return n.toLocaleString("en-US",{minimumFractionDigits:x,maximumFractionDigits:x})},formatQuantity(v){return this.toNumber(v).toLocaleString("en-US",{maximumFractionDigits:3})},normalizeDate(v){if(!v)return"";const d=new Date(v);if(Number.isNaN(d.getTime()))return String(v).slice(0,10);return`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`},getAccountScope(){const s=this.getSession?.();const id=s?.user?.id||this.getDeviceOwner?.()?.ownerId||"guest";return String(id).replace(/[^a-zA-Z0-9_-]/g,"_")},scopeKey(k){const scoped=new Set([this.keys.products,this.keys.sales,this.keys.customers,this.keys.suppliers,this.keys.employees,this.keys.transactions,this.keys.settings,this.keys.heldSales,this.keys.staffUsers,this.keys.subscription]);return scoped.has(k)?`${k}__${this.getAccountScope()}`:k},getData(k){try{const x=JSON.parse(localStorage.getItem(this.scopeKey(k))||"[]");return Array.isArray(x)?x:[]}catch(e){return[]}},saveData(k,d){try{localStorage.setItem(this.scopeKey(k),JSON.stringify(Array.isArray(d)?d:[]));return true}catch(e){return false}},getObject(k,f={}){try{const x=JSON.parse(localStorage.getItem(this.scopeKey(k))||"null");return x&&typeof x==="object"&&!Array.isArray(x)?{...f,...x}:{...f}}catch(e){return{...f}}},saveObject(k,d){try{localStorage.setItem(this.scopeKey(k),JSON.stringify(d||{}));return true}catch(e){return false}},async authFetch(path,opt={}){const h={apikey:this.config.supabaseKey,"Content-Type":"application/json",...(opt.headers||{})},s=this.getSession();if(s?.access_token)h.Authorization=`Bearer ${s.access_token}`;const r=await fetch(this.config.supabaseUrl+path,{...opt,headers:h});let data={};try{data=await r.json()}catch(e){}if(!r.ok){const e=new Error(data.msg||data.message||data.error_description||data.error||"تعذر الاتصال بخدمة الحسابات.");e.status=r.status;e.data=data;throw e}return data},async dbFetch(path,opt={}){let s=this.getSession();if(!s?.access_token)throw new Error("انتهت جلسة المستخدم. يرجى تسجيل الدخول من جديد.");if((s.expires_at||0)<=Math.floor(Date.now()/1000)+60){await this.refreshSession();s=this.getSession()}if(!s?.access_token)throw new Error("تعذر إنشاء جلسة آمنة مع قاعدة البيانات.");const h={apikey:this.config.supabaseKey,Authorization:`Bearer ${s.access_token}`,"Content-Type":"application/json",Accept:"application/json",...(opt.headers||{})};const r=await fetch(this.config.supabaseUrl+"/rest/v1/"+path,{...opt,headers:h});const text=await r.text();let data=null;if(text){try{data=JSON.parse(text)}catch(e){data=text}}if(!r.ok){const msg=data?.message||data?.details||data?.hint||data?.code||"تعذر تنفيذ العملية على قاعدة البيانات.";const er=new Error(msg);er.status=r.status;er.data=data;throw er}return data},mapAuthError(e){const m=String(e?.message||"").toLowerCase();if(m.includes("already registered")||m.includes("user already registered"))return"هذا البريد الإلكتروني مرتبط بحساب موجود مسبقاً. يرجى تسجيل الدخول بدلاً من إنشاء حساب جديد.";if(m.includes("invalid login credentials"))return"البريد الإلكتروني أو كلمة المرور غير صحيحة.";if(m.includes("email not confirmed"))return"البريد الإلكتروني غير مؤكد.";if(m.includes("expired"))return"انتهت صلاحية رمز التحقق.";if(m.includes("invalid otp")||m.includes("invalid token"))return"رمز التحقق غير صحيح.";if(m.includes("rate")||m.includes("security purposes"))return"تم إجراء محاولات كثيرة خلال وقت قصير. يرجى الانتظار قليلاً ثم المحاولة من جديد.";if(m.includes("failed to fetch"))return"تعذر الاتصال بالخادم. تحقق من اتصال الإنترنت ثم حاول مرة أخرى.";return e?.message||"حدث خطأ في خدمة الحسابات."},getSafeUser(u){if(!u)return null;const m=u.user_metadata||{};return{id:u.id,name:m.name||m.full_name||u.name||"مالك المنشأة",username:m.username||u.username||"",email:u.email||"",role:m.role||u.role||"مالك",status:"نشط",createdAt:u.created_at||u.createdAt||"",lastLogin:u.last_sign_in_at||u.lastLogin||""}},setPendingVerification(d={}){const x={email:this.normalizeEmail(d.email),name:this.cleanText(d.name),username:this.normalizeUsername(d.username),createdAt:this.now()};localStorage.setItem(this.keys.pendingVerification,JSON.stringify(x));return x},getPendingVerification(){try{return JSON.parse(localStorage.getItem(this.keys.pendingVerification)||"null")}catch(e){return null}},clearPendingVerification(){localStorage.removeItem(this.keys.pendingVerification)},async createUser(u={}){const name=this.cleanText(u.name),username=this.normalizeUsername(u.username),email=this.normalizeEmail(u.email),password=String(u.password||"");if(!name)return{success:false,message:"الاسم الكامل مطلوب."};if(username.length<3)return{success:false,message:"اسم المستخدم يجب أن يحتوي على 3 أحرف على الأقل."};if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))return{success:false,message:"يرجى إدخال بريد إلكتروني صحيح."};if(password.length<8)return{success:false,message:"كلمة المرور يجب أن تحتوي على 8 أحرف على الأقل."};try{const d=await this.authFetch("/auth/v1/signup",{method:"POST",body:JSON.stringify({email,password,data:{name,full_name:name,username,role:"مالك"}})});if(d?.user&&!d?.session&&Array.isArray(d?.user?.identities)&&d.user.identities.length===0)return{success:false,message:"هذا البريد الإلكتروني مرتبط بحساب موجود مسبقاً. يرجى تسجيل الدخول بدلاً من إنشاء حساب جديد."};this.setPendingVerification({email,name,username});return{success:true,user:this.getSafeUser(d.user),needsEmailConfirmation:!d?.session?.access_token,email,message:d?.session?.access_token?"تم إنشاء الحساب.":"تم إنشاء الحساب. أرسلنا رمز التحقق إلى بريدك الإلكتروني."}}catch(e){return{success:false,message:this.mapAuthError(e)}}},async verifyEmailOtp(email,token){try{const d=await this.authFetch("/auth/v1/verify",{method:"POST",body:JSON.stringify({type:"signup",email:this.normalizeEmail(email),token:this.cleanText(token).replace(/\s+/g,"")})});this.clearPendingVerification();sessionStorage.removeItem(this.keys.session);localStorage.removeItem(this.keys.session);return{success:true,user:this.getSafeUser(d.user),message:"تم تأكيد البريد الإلكتروني بنجاح."}}catch(e){return{success:false,message:this.mapAuthError(e)}}},async resendConfirmation(email){try{await this.authFetch("/auth/v1/resend",{method:"POST",body:JSON.stringify({type:"signup",email:this.normalizeEmail(email)})});return{success:true,message:"تم إرسال رمز تحقق جديد."}}catch(e){return{success:false,message:this.mapAuthError(e)}}},authorizeDevice(user){const u=this.getSafeUser(user)||user||{},x={authorized:true,ownerId:u.id||"",name:u.name||"مالك المنشأة",username:u.username||"owner",email:this.normalizeEmail(u.email||""),authorizedAt:this.now()};localStorage.setItem(this.keys.deviceAuth,"true");localStorage.setItem(this.keys.deviceOwner,JSON.stringify(x));return x},isDeviceAuthorized(){return localStorage.getItem(this.keys.deviceAuth)==="true"&&!!this.getDeviceOwner()},getDeviceOwner(){try{const x=JSON.parse(localStorage.getItem(this.keys.deviceOwner)||"null");return x&&typeof x==="object"?x:null}catch(e){return null}},removeDeviceAuthorization(){localStorage.removeItem(this.keys.deviceAuth);localStorage.removeItem(this.keys.deviceOwner);this.clearStaffSession()},async login(login,password,remember=false){const email=this.normalizeEmail(login);if(!email||!password)return{success:false,message:"يرجى إدخال البريد الإلكتروني وكلمة المرور."};try{const d=await this.authFetch("/auth/v1/token?grant_type=password",{method:"POST",body:JSON.stringify({email,password:String(password)})});if(!d.access_token||!d.user)return{success:false,message:"تعذر إنشاء جلسة المستخدم."};this.storeSession(d,true);localStorage.setItem(this.keys.rememberedUser,remember?email:"");this.authorizeDevice(d.user);this.clearPendingVerification();this.clearStaffSession();this.clearBusinessIdCache();return{success:true,user:this.getSafeUser(d.user)}}catch(e){return{success:false,message:this.mapAuthError(e)}}},async verifyOwnerPassword(password){const owner=this.getDeviceOwner();if(!owner?.email)return{success:false,message:"هذا الجهاز غير مرتبط بحساب المنشأة."};if(!password)return{success:false,message:"أدخل كلمة مرور المالك."};try{const d=await this.authFetch("/auth/v1/token?grant_type=password",{method:"POST",body:JSON.stringify({email:owner.email,password:String(password)})});if(!d?.access_token||!d?.user)return{success:false,message:"تعذر التحقق من حساب المالك."};this.storeSession(d,true);this.authorizeDevice(d.user);return{success:true,user:this.getSafeUser(d.user)}}catch(e){return{success:false,message:this.mapAuthError(e)}}},storeSession(s,remember=true){const x={access_token:s.access_token,refresh_token:s.refresh_token,expires_in:s.expires_in,expires_at:s.expires_at||Math.floor(Date.now()/1000)+(s.expires_in||3600),token_type:s.token_type||"bearer",user:s.user,remember:Boolean(remember)},str=JSON.stringify(x);if(remember){localStorage.setItem(this.keys.session,str);sessionStorage.removeItem(this.keys.session)}else{sessionStorage.setItem(this.keys.session,str);localStorage.removeItem(this.keys.session)}localStorage.setItem(this.keys.cachedUser,JSON.stringify(this.getSafeUser(s.user)));return x},getSession(){const raw=sessionStorage.getItem(this.keys.session)||localStorage.getItem(this.keys.session);if(!raw)return null;try{const s=JSON.parse(raw);return s?.access_token&&s?.user?s:null}catch(e){return null}},isLoggedIn(){return!!this.getSession()},getCurrentUser(){const s=this.getSession();if(s?.user)return this.getSafeUser(s.user);const d=this.getDeviceOwner();if(d)return{id:d.ownerId,name:d.name,username:d.username,email:d.email,role:"مالك"};try{return JSON.parse(localStorage.getItem(this.keys.cachedUser)||"null")}catch(e){return null}},getRememberedUser(){return localStorage.getItem(this.keys.rememberedUser)||""},async refreshSession(){const s=this.getSession();if(!s?.refresh_token)return false;if((s.expires_at||0)>Math.floor(Date.now()/1000)+60)return true;try{const d=await this.authFetch("/auth/v1/token?grant_type=refresh_token",{method:"POST",body:JSON.stringify({refresh_token:s.refresh_token})});this.storeSession(d,true);this.authorizeDevice(d.user);return true}catch(e){sessionStorage.removeItem(this.keys.session);localStorage.removeItem(this.keys.session);return false}},async logout(redirect=true){const s=this.getSession();try{if(s?.access_token)await this.authFetch("/auth/v1/logout",{method:"POST"})}catch(e){}this.removeDeviceAuthorization();sessionStorage.removeItem(this.keys.session);localStorage.removeItem(this.keys.session);localStorage.removeItem(this.keys.cachedUser);this.clearBusinessIdCache();sessionStorage.removeItem("varex_authenticated");localStorage.removeItem("varex_authenticated");if(redirect)location.replace("./login.html");return true},requireLogin(){if(this.isLoginPage()||this.isRegisterPage()||this.isVerifyEmailPage()||this.isResetPasswordPage())return true;if(this.isDeviceAuthorized()){if(this.isLoggedIn())this.refreshSession();return true}if(this.isLoggedIn()){const u=this.getSession()?.user;if(u)this.authorizeDevice(u);return true}location.replace("./login.html");return false},isLoginPage(){return location.pathname.toLowerCase().endsWith("login.html")},isRegisterPage(){return location.pathname.toLowerCase().endsWith("register.html")},isVerifyEmailPage(){return location.pathname.toLowerCase().endsWith("verify-email.html")},isResetPasswordPage(){return location.pathname.toLowerCase().endsWith("reset-password.html")},redirectLoggedUser(){if((this.isLoginPage()||this.isRegisterPage())&&(this.isLoggedIn()||this.isDeviceAuthorized())){location.replace("./index.html");return true}return false},async requestPasswordReset(email){try{const redirect=encodeURIComponent("https://varexapp.com/reset-password.html");await this.authFetch("/auth/v1/recover?redirect_to="+redirect,{method:"POST",body:JSON.stringify({email:this.normalizeEmail(email)})});return{success:true,message:"تم إرسال رابط استعادة كلمة المرور إلى بريدك الإلكتروني."}}catch(e){return{success:false,message:this.mapAuthError(e)}}},async updateCurrentUser(c={}){const s=this.getSession();if(!s)return{success:false,message:"يجب التحقق من حساب المالك أولاً."};const body={},data={};if(c.email!==undefined)body.email=this.normalizeEmail(c.email);["name","username","role"].forEach(k=>{if(c[k]!==undefined)data[k]=this.cleanText(c[k])});if(Object.keys(data).length)body.data={...(s.user.user_metadata||{}),...data};try{const u=await this.authFetch("/auth/v1/user",{method:"PUT",body:JSON.stringify(body)});s.user=u;this.storeSession(s,true);this.authorizeDevice(u);return{success:true,user:this.getSafeUser(u)}}catch(e){return{success:false,message:this.mapAuthError(e)}}},async changePassword(c,n){if(String(n||"").length<8)return{success:false,message:"كلمة المرور الجديدة يجب أن تحتوي على 8 أحرف على الأقل."};try{const s=this.getSession();if(!s)return{success:false,message:"يجب تسجيل الدخول بحساب المالك أولاً."};const u=await this.authFetch("/auth/v1/user",{method:"PUT",body:JSON.stringify({password:String(n)})});s.user=u;this.storeSession(s,true);return{success:true,message:"تم تغيير كلمة المرور بنجاح."}}catch(e){return{success:false,message:this.mapAuthError(e)}}},
 
 /* ========================================================= BUSINESS ID ========================================================= */
 clearBusinessIdCache(){try{const s=this.getSession(),uid=s?.user?.id;if(uid)localStorage.removeItem(`${this.keys.businessId}__${uid}`);localStorage.removeItem(this.keys.businessId)}catch(e){}},
@@ -23,25 +23,18 @@ getStaffUsers(){try{const x=JSON.parse(localStorage.getItem(this.scopeKey(this.k
 
 /* SUBSCRIPTION */
 getSubscription(){const d={plan:"",planName:"",status:"inactive",billingType:"",price:0,currency:"AED",startedAt:"",expiresAt:"",lifetime:false,licenseKey:"",paymentStatus:"unpaid",updatedAt:""};try{const x=JSON.parse(localStorage.getItem(this.scopeKey(this.keys.subscription))||"null");return x&&typeof x==="object"&&!Array.isArray(x)?{...d,...x}:{...d}}catch(e){return{...d}}},saveSubscription(d={}){const x={...this.getSubscription(),...d,updatedAt:this.now()};localStorage.setItem(this.scopeKey(this.keys.subscription),JSON.stringify(x));return x},generateLicenseKey(){const c="ABCDEFGHJKLMNPQRSTUVWXYZ23456789";let r="VAREX";for(let g=0;g<4;g++){r+="-";for(let i=0;i<4;i++)r+=c[Math.floor(Math.random()*c.length)]}return r},activateSubscription(o={}){const type=String(o.billingType||o.type||"monthly"),now=new Date();let expiresAt="",lifetime=false;if(type==="monthly"){const e=new Date(now);e.setMonth(e.getMonth()+1);expiresAt=e.toISOString()}else if(type==="yearly"){const e=new Date(now);e.setFullYear(e.getFullYear()+1);expiresAt=e.toISOString()}else if(type==="trial"){const e=new Date(now);e.setDate(e.getDate()+7);expiresAt=e.toISOString()}else if(type==="lifetime")lifetime=true;return this.saveSubscription({plan:o.plan||"business",planName:o.planName||"VAREX Business",billingType:type,price:this.positiveNumber(o.price),currency:o.currency||"AED",status:"active",paymentStatus:o.paymentStatus||"paid",startedAt:now.toISOString(),expiresAt,lifetime,licenseKey:o.licenseKey||this.generateLicenseKey()})},cancelSubscription(){return this.saveSubscription({...this.getSubscription(),status:"cancelled"})},expireSubscription(){return this.saveSubscription({...this.getSubscription(),status:"expired"})},isSubscriptionActive(){const s=this.getSubscription();if(s.status!=="active")return false;if(s.lifetime||s.billingType==="lifetime")return true;if(!s.expiresAt)return false;const e=new Date(s.expiresAt);if(Number.isNaN(e.getTime()))return false;if(e<=Date.now()){this.expireSubscription();return false}return true},getSubscriptionDaysRemaining(){const s=this.getSubscription();if(s.lifetime||s.billingType==="lifetime")return Infinity;if(!s.expiresAt)return 0;const e=new Date(s.expiresAt);return Number.isNaN(e.getTime())?0:Math.max(0,Math.ceil((e-Date.now())/86400000))},getSubscriptionStatus(){return{...this.getSubscription(),active:this.isSubscriptionActive(),daysRemaining:this.getSubscriptionDaysRemaining()}},isSubscriptionPage(){return location.pathname.toLowerCase().endsWith("subscription.html")},isSubscriptionSuccessPage(){return location.pathname.toLowerCase().endsWith("subscription-success.html")},isSubscriptionGateEnabled(){return localStorage.getItem(this.keys.subscriptionGate)==="true"},enableSubscriptionGate(){localStorage.setItem(this.keys.subscriptionGate,"true");return true},disableSubscriptionGate(){localStorage.setItem(this.keys.subscriptionGate,"false");return true},requireSubscription(){if(!this.isSubscriptionGateEnabled())return true;if(this.isLoginPage()||this.isRegisterPage()||this.isVerifyEmailPage()||this.isResetPasswordPage()||this.isSubscriptionPage()||this.isSubscriptionSuccessPage())return true;if(!this.isSubscriptionActive()){location.replace("./subscription.html");return false}return true},initialize(){[this.keys.products,this.keys.sales,this.keys.customers,this.keys.suppliers,this.keys.employees,this.keys.transactions,this.keys.heldSales].forEach(k=>{const sk=this.scopeKey(k);if(localStorage.getItem(sk)===null)localStorage.setItem(sk,"[]")});return true}};
-VAREX.initialize();window.VAREX=VAREX;
+
+VAREX.initialize();
+window.VAREX=VAREX;
 
 /* ========================================================= HELPERS ========================================================= */
 function varexWait(ms){return new Promise(resolve=>setTimeout(resolve,ms))}
-const VAREX_PERMISSION_MAP={"index.html":"dashboard","pos.html":"pos","products.html":"products","purchases.html":"products","transfers.html":"products","customers.html":"customers","suppliers.html":"suppliers","accounts.html":"accounts","expenses.html":"accounts","shifts.html":"pos","employees.html":"employees","branches.html":"settings","reports.html":"reports","notifications.html":"dashboard","activity.html":"users","users.html":"users","subscription.html":"__owner__","setting.html":"settings"};
+const VAREX_PERMISSION_MAP={"index.html":"dashboard","pos.html":"pos","products.html":"products","purchases.html":"products","transfers.html":"products","customers.html":"customers","suppliers.html":"suppliers","accounts.html":"accounts","expenses.html":"accounts","shifts.html":"pos","employees.html":"employees","branches.html":"settings","reports.html":"reports","notifications.html":"dashboard","activity.html":"users","users.html":"users","subscription.html":"**owner**","setting.html":"settings"};
 const VAREX_MENU=[["index.html","▦","لوحة التحكم"],["pos.html","🛒","شاشة المبيعات"],["products.html","📦","المنتجات والمخزون"],["purchases.html","🧾","المشتريات"],["transfers.html","🔄","تحويلات المخزون"],["customers.html","👥","العملاء"],["suppliers.html","🚚","الموردون"],["accounts.html","💰","الحسابات"],["expenses.html","💸","المصروفات"],["shifts.html","🕘","ورديات الكاشير"],["employees.html","👤","الموظفون"],["branches.html","🏢","الفروع"],["reports.html","📊","التقارير"],["notifications.html","🔔","مركز التنبيهات"],["activity.html","📋","سجل النشاط"],["users.html","🔐","المستخدمون والصلاحيات"],["subscription.html","💎","الاشتراك والترخيص"],["setting.html","⚙️","الإعدادات"]];
-const VAREX_SIDEBAR_SCROLL_KEY="varex_sidebar_scroll_position";
 function varexCurrentFile(){return location.pathname.split("/").pop().toLowerCase()||"index.html"}
-function varexCanOpen(file){const u=VAREX.getStaffSession();if(!u)return false;if(u.isOwner)return true;const p=VAREX_PERMISSION_MAP[file];if(!p)return true;if(p==="__owner__")return false;return u.permissions?.includes(p)}
+function varexCanOpen(file){const u=VAREX.getStaffSession();if(!u)return false;if(u.isOwner)return true;const p=VAREX_PERMISSION_MAP[file];if(!p)return true;if(p==="**owner**")return false;return u.permissions?.includes(p)}
 function varexFirstAllowedPage(){for(const[f]of VAREX_MENU)if(varexCanOpen(f))return f;return"index.html"}
 function varexCheckCurrentPermission(){const u=VAREX.getStaffSession();if(!u)return false;if(varexCanOpen(varexCurrentFile()))return true;location.replace("./"+varexFirstAllowedPage());return false}
-function varexSidebar(){return document.querySelector(".sidebar")}
-function varexNav(){return document.querySelector(".sidebar .nav")}
-function varexSavedSidebarScroll(){const n=Number(sessionStorage.getItem(VAREX_SIDEBAR_SCROLL_KEY));return Number.isFinite(n)&&n>=0?n:0}
-function varexSaveSidebarScroll(){const nav=varexNav();if(!nav)return;sessionStorage.setItem(VAREX_SIDEBAR_SCROLL_KEY,String(Math.max(0,nav.scrollTop||0)))}
-function varexForceSidebarScroll(){const nav=varexNav();if(!nav)return;const y=varexSavedSidebarScroll();nav.style.scrollBehavior="auto";nav.scrollTop=y}
-function varexRestoreSidebarScroll(){varexForceSidebarScroll();requestAnimationFrame(varexForceSidebarScroll);setTimeout(varexForceSidebarScroll,0);setTimeout(varexForceSidebarScroll,40);setTimeout(varexForceSidebarScroll,100);setTimeout(varexForceSidebarScroll,220);setTimeout(varexForceSidebarScroll,450)}
-function varexBindSidebarScroll(){const nav=varexNav();if(!nav||nav.dataset.varexFixedScroll==="1")return;nav.dataset.varexFixedScroll="1";let timer;nav.addEventListener("scroll",()=>{clearTimeout(timer);timer=setTimeout(()=>{sessionStorage.setItem(VAREX_SIDEBAR_SCROLL_KEY,String(nav.scrollTop||0))},20)},{passive:true});nav.addEventListener("mousedown",e=>{if(e.target.closest("a[href]"))varexSaveSidebarScroll()},true);nav.addEventListener("touchstart",e=>{if(e.target.closest("a[href]"))varexSaveSidebarScroll()},{capture:true,passive:true});nav.addEventListener("click",e=>{const a=e.target.closest("a[href]");if(!a)return;varexSaveSidebarScroll();const href=a.getAttribute("href");if(!href)return;e.preventDefault();document.documentElement.classList.add("varex-changing-page");requestAnimationFrame(()=>{location.href=href})},true)}
-try{if("scrollRestoration"in history)history.scrollRestoration="manual"}catch(e){}
 
 /* STAFF */
 let varexSelectedStaffId=null,varexStaffLogoutRunning=false;
@@ -50,16 +43,17 @@ function varexRenderStaffUsers(){varexInstallStaffUI();const list=document.getEl
 function varexOpenStaffGate(){varexRenderStaffUsers();document.getElementById("varexStaffPasswordBox")?.classList.remove("show");const pass=document.getElementById("varexStaffPassword"),err=document.getElementById("varexStaffError"),btn=document.getElementById("varexStaffLoginBtn");if(pass)pass.value="";if(err)err.textContent="";if(btn){btn.disabled=false;btn.classList.remove("varex-login-processing","varex-login-success");btn.textContent="دخول إلى VAREX"}varexSelectedStaffId=null;document.getElementById("varexStaffOverlay")?.classList.remove("varex-login-leaving");document.getElementById("varexStaffOverlay")?.classList.add("show");document.body.style.overflow="hidden"}
 function varexCloseStaffGate(){document.getElementById("varexStaffOverlay")?.classList.remove("show");document.body.style.overflow=""}
 function varexSelectStaff(id){varexSelectedStaffId=id;const u=id==="__owner__"?VAREX.getOwnerOperator():VAREX.getStaffUsers().find(x=>String(x.id)===String(id));if(!u||u.status==="disabled")return;document.getElementById("varexSelectedStaff").textContent=`${u.name||"المستخدم"} — ${VAREX.roleName(u.role)}`;document.getElementById("varexStaffPassword").value="";document.getElementById("varexStaffError").textContent="";document.getElementById("varexStaffPasswordBox").classList.add("show");setTimeout(()=>document.getElementById("varexStaffPassword")?.focus(),120)}
-async function varexLoginSelectedStaff(){const pass=document.getElementById("varexStaffPassword").value,err=document.getElementById("varexStaffError"),btn=document.getElementById("varexStaffLoginBtn");if(!pass){err.textContent="أدخل كلمة المرور.";return}if(btn.disabled)return;err.textContent="";btn.disabled=true;btn.classList.add("varex-login-processing");btn.innerHTML=`<span class="varex-mini-spinner"></span><span>جاري تسجيل الدخول...</span>`;await varexWait(500);let result;if(varexSelectedStaffId==="__owner__"){result=await VAREX.verifyOwnerPassword(pass);if(result.success)VAREX.setStaffSession(VAREX.getOwnerOperator())}else{const u=VAREX.getStaffUsers().find(x=>String(x.id)===String(varexSelectedStaffId));if(!u){btn.disabled=false;btn.textContent="دخول إلى VAREX";return}result=await VAREX.verifyStaffPassword(u,pass);if(result.success)VAREX.setStaffSession(u)}if(!result?.success){btn.disabled=false;btn.classList.remove("varex-login-processing");btn.textContent="دخول إلى VAREX";err.textContent=result?.message||"تعذر تسجيل الدخول.";return}btn.classList.remove("varex-login-processing");btn.classList.add("varex-login-success");btn.innerHTML="<span>✓</span><span>تم تسجيل الدخول بنجاح</span>";await varexWait(700);varexCloseStaffGate();btn.disabled=false;btn.textContent="دخول إلى VAREX";varexBuildMenu();varexInstallTopSwitchUserButton();varexShowCurrentUser();varexCheckCurrentPermission()}
+async function varexLoginSelectedStaff(){const pass=document.getElementById("varexStaffPassword").value,err=document.getElementById("varexStaffError"),btn=document.getElementById("varexStaffLoginBtn");if(!pass){err.textContent="أدخل كلمة المرور.";return}if(btn.disabled)return;err.textContent="";btn.disabled=true;btn.classList.add("varex-login-processing");btn.innerHTML=`<span class="varex-mini-spinner"></span><span>جاري تسجيل الدخول...</span>`;await varexWait(500);let result;if(varexSelectedStaffId==="__owner__"){result=await VAREX.verifyOwnerPassword(pass);if(result.success)VAREX.setStaffSession(VAREX.getOwnerOperator())}else{const u=VAREX.getStaffUsers().find(x=>String(x.id)===String(varexSelectedStaffId));if(!u)return;result=await VAREX.verifyStaffPassword(u,pass);if(result.success)VAREX.setStaffSession(u)}if(!result?.success){btn.disabled=false;btn.classList.remove("varex-login-processing");btn.textContent="دخول إلى VAREX";err.textContent=result?.message||"تعذر تسجيل الدخول.";return}btn.classList.remove("varex-login-processing");btn.classList.add("varex-login-success");btn.innerHTML="✓ تم تسجيل الدخول بنجاح";await varexWait(700);varexCloseStaffGate();btn.disabled=false;btn.textContent="دخول إلى VAREX";varexBuildMenu();varexInstallTopSwitchUserButton();varexShowCurrentUser();varexCheckCurrentPermission()}
 function varexSwitchUser(){VAREX.clearStaffSession();varexOpenStaffGate()}
 function varexLogoutCurrentUser(){VAREX.clearStaffSession();varexOpenStaffGate()}
-window.varexSwitchUser=varexSwitchUser;window.varexLogoutCurrentUser=varexLogoutCurrentUser;
+window.varexSwitchUser=varexSwitchUser;
+window.varexLogoutCurrentUser=varexLogoutCurrentUser;
 function varexInitStaffAccess(){const session=VAREX.getStaffSession(),users=VAREX.getActiveStaffUsers();if(session){if(session.isOwner)return varexCheckCurrentPermission();const fresh=users.find(x=>String(x.id)===String(session.id));if(!fresh){VAREX.clearStaffSession();varexOpenStaffGate();return false}session.permissions=Array.isArray(fresh.permissions)?fresh.permissions:[];session.role=fresh.role;session.name=fresh.name;VAREX.setStaffSession(session);return varexCheckCurrentPermission()}varexOpenStaffGate();return false}
 
 /* MENU */
-function varexBuildMenu(){const nav=varexNav();if(!nav)return;const current=varexCurrentFile(),operator=VAREX.getStaffSession(),saved=varexSavedSidebarScroll();nav.innerHTML=VAREX_MENU.filter(([file])=>!operator||varexCanOpen(file)).map(([file,icon,title])=>`<a href="./${file}" class="${current===file?"active":""}"><span class="nav-icon">${icon}</span><span class="nav-label">${title}</span></a>`).join("");varexAddSidebarActions();nav.scrollTop=saved;varexBindSidebarScroll();varexRestoreSidebarScroll()}
-function varexAddSidebarActions(){const nav=varexNav();if(!nav)return;nav.querySelector(".varex-sidebar-actions")?.remove();const box=document.createElement("div");box.className="varex-sidebar-actions";box.innerHTML=`<button type="button" id="varexThemeButton"><span class="nav-icon" id="varexThemeIcon">🌙</span><span id="varexThemeText">الوضع الليلي</span></button><button type="button" id="varexStaffLogoutButton"><span class="nav-icon">👤</span><span>تسجيل خروج المستخدم</span></button><button type="button" id="varexLogoutButton"><span class="varex-power-icon">⏻</span><span>تسجيل خروج المنشأة</span></button><div class="varex-sidebar-bottom-space"></div>`;nav.appendChild(box);document.getElementById("varexThemeButton").onclick=varexToggleTheme;document.getElementById("varexStaffLogoutButton").onclick=varexLogoutCurrentUser;document.getElementById("varexLogoutButton").onclick=()=>VAREX.logout(true);varexUpdateThemeButton()}
-function varexInstallTopSwitchUserButton(){document.querySelectorAll(".top-info").forEach(top=>{if(top.querySelector(".varex-top-switch-user"))return;const btn=document.createElement("button");btn.type="button";btn.className="info-chip varex-top-switch-user";btn.innerHTML="<span>👥</span><strong>تبديل المستخدم</strong>";btn.onclick=e=>{e.preventDefault();varexSwitchUser()};top.insertBefore(btn,top.firstChild)})}
+function varexBuildMenu(){const nav=document.querySelector(".sidebar .nav");if(!nav)return;const current=varexCurrentFile(),operator=VAREX.getStaffSession();nav.innerHTML=VAREX_MENU.filter(([file])=>!operator||varexCanOpen(file)).map(([file,icon,title])=>`<a href="./${file}" class="${current===file?"active":""}"><span class="nav-icon">${icon}</span><span class="nav-label">${title}</span></a>`).join("");varexAddSidebarActions()}
+function varexAddSidebarActions(){const nav=document.querySelector(".sidebar .nav");if(!nav)return;const box=document.createElement("div");box.className="varex-sidebar-actions";box.innerHTML=`<button type="button" id="varexThemeButton"><span class="nav-icon" id="varexThemeIcon">🌙</span><span id="varexThemeText">الوضع الليلي</span></button><button type="button" id="varexStaffLogoutButton"><span class="nav-icon">👤</span><span>تسجيل خروج المستخدم</span></button><button type="button" id="varexLogoutButton"><span class="varex-power-icon">⏻</span><span>تسجيل خروج المنشأة</span></button><div class="varex-sidebar-bottom-space"></div>`;nav.appendChild(box);varexInstallSharedStyles();document.getElementById("varexThemeButton").onclick=varexToggleTheme;document.getElementById("varexStaffLogoutButton").onclick=varexLogoutCurrentUser;document.getElementById("varexLogoutButton").onclick=()=>VAREX.logout(true);varexUpdateThemeButton()}
+function varexInstallTopSwitchUserButton(){document.querySelectorAll(".top-info").forEach(top=>{if(top.querySelector(".varex-top-switch-user"))return;const btn=document.createElement("button");btn.type="button";btn.className="info-chip varex-top-switch-user";btn.innerHTML="👥 <strong>تبديل المستخدم</strong>";btn.onclick=e=>{e.preventDefault();varexSwitchUser()};top.insertBefore(btn,top.firstChild)})}
 
 /* THEME */
 function varexResolveThemeMode(){const m=localStorage.getItem("varexThemeMode");if(m==="dark"||m==="light")return m;if(m==="system")return matchMedia("(prefers-color-scheme:dark)").matches?"dark":"light";return localStorage.getItem("varex_theme")||"light"}
@@ -70,89 +64,429 @@ function varexUpdateThemeButton(){const d=varexGetTheme()==="dark",i=document.ge
 
 /* CURRENT USER */
 function varexShowCurrentUser(){const u=VAREX.getStaffSession()||VAREX.getOwnerOperator();document.querySelectorAll(".info-chip,.chip").forEach(el=>{if(el.classList.contains("varex-top-switch-user"))return;if(el.textContent.includes("المستخدم")||el.textContent.includes("الحساب")){const s=el.querySelector("strong");if(s)s.textContent=u.name||"المستخدم"}});["sidebarUserName","topUserName","settingsUserName","currentUserName","currentUser"].forEach(id=>{const e=document.getElementById(id);if(e)e.textContent=u.name||u.username||"المستخدم"})}
-function varexEsc(v){return String(v??"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#039;")}
-function varexEscAttr(v){return varexEsc(v).replace(/`/g,"")}
+function varexEsc(v){return String(v??"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;")}
+function varexEscAttr(v){return varexEsc(v).replace(/`/g,"&#96;")}
 
-/* ========================================================= FIXED GLOBAL UI ========================================================= */
-function varexInstallSharedStyles(){if(document.getElementById("varexSharedStyles"))return;const s=document.createElement("style");s.id="varexSharedStyles";s.textContent=`
-:root{--sidebar:240px!important;--sidebar-width:240px!important}
-html{scroll-behavior:auto!important;scrollbar-gutter:stable!important}
-html.varex-changing-page *,html.varex-changing-page *:before,html.varex-changing-page *:after{transition:none!important}
-body{overflow-x:hidden!important}
-.main{margin-right:240px!important;min-height:100vh!important;transform:none!important;transition:none!important}
-.sidebar{position:fixed!important;right:0!important;top:0!important;bottom:0!important;width:240px!important;min-width:240px!important;max-width:240px!important;height:100vh!important;height:100dvh!important;display:flex!important;flex-direction:column!important;overflow:hidden!important;z-index:1000!important;transform:none!important;translate:none!important;transition:none!important;animation:none!important;contain:layout paint style!important}
-.sidebar .brand{height:170px!important;min-height:170px!important;max-height:170px!important;flex:0 0 170px!important;transform:none!important;transition:none!important;animation:none!important}
-.sidebar .sidebar-footer{height:54px!important;min-height:54px!important;max-height:54px!important;flex:0 0 54px!important;transform:none!important;transition:none!important;animation:none!important}
-.sidebar .nav{position:relative!important;width:100%!important;min-width:100%!important;max-width:100%!important;flex:1 1 auto!important;min-height:0!important;padding:16px 12px 0!important;margin:0!important;overflow-y:scroll!important;overflow-x:hidden!important;scroll-behavior:auto!important;overscroll-behavior:contain!important;scrollbar-gutter:stable!important;transform:none!important;translate:none!important;transition:none!important;animation:none!important;overflow-anchor:none!important}
-.sidebar .nav a{box-sizing:border-box!important;width:100%!important;height:48px!important;min-height:48px!important;max-height:48px!important;display:flex!important;align-items:center!important;gap:11px!important;padding:0 14px!important;margin:0 0 5px!important;border-radius:10px!important;border:0!important;outline:0!important;text-decoration:none!important;font-size:13px!important;font-weight:600!important;line-height:48px!important;white-space:nowrap!important;background:transparent!important;color:#dbeafe!important;box-shadow:none!important;transform:none!important;translate:none!important;scale:none!important;transition:none!important;animation:none!important}
-.sidebar .nav a:hover,.sidebar .nav a:focus,.sidebar .nav a:focus-visible,.sidebar .nav a:active{height:48px!important;min-height:48px!important;max-height:48px!important;padding:0 14px!important;margin:0 0 5px!important;background:rgba(255,255,255,.08)!important;color:#fff!important;border:0!important;outline:0!important;box-shadow:none!important;transform:none!important;translate:none!important;scale:none!important}
-.sidebar .nav a.active,.sidebar .nav a.active:hover,.sidebar .nav a.active:focus,.sidebar .nav a.active:active{background:#fff!important;color:#172554!important;font-weight:700!important;height:48px!important;min-height:48px!important;max-height:48px!important;padding:0 14px!important;margin:0 0 5px!important;border:0!important;outline:0!important;box-shadow:none!important;transform:none!important;translate:none!important;scale:none!important}
-body.varex-dark .sidebar .nav a.active{background:#e2e8f0!important;color:#0f1d43!important}
-.sidebar .nav-icon{width:25px!important;min-width:25px!important;max-width:25px!important;line-height:1!important;text-align:center!important;flex:0 0 25px!important}
-.sidebar .nav-label{line-height:1.4!important}
-.varex-sidebar-actions{width:100%!important;margin:15px 0 0!important;padding:15px 0 0!important;border-top:1px solid rgba(255,255,255,.12)!important;transform:none!important;transition:none!important;animation:none!important}
-.varex-sidebar-actions button{box-sizing:border-box!important;width:100%!important;height:48px!important;min-height:48px!important;max-height:48px!important;display:flex!important;align-items:center!important;gap:11px!important;padding:0 14px!important;margin:0 0 7px!important;border-radius:10px!important;border:1px solid #fff!important;background:#fff!important;color:#172554!important;font-family:inherit!important;font-size:12px!important;font-weight:700!important;line-height:1!important;cursor:pointer!important;box-shadow:none!important;transform:none!important;translate:none!important;scale:none!important;transition:none!important;animation:none!important}
-.varex-sidebar-actions button:hover,.varex-sidebar-actions button:focus,.varex-sidebar-actions button:active{height:48px!important;min-height:48px!important;max-height:48px!important;padding:0 14px!important;margin:0 0 7px!important;background:#f1f5f9!important;color:#172554!important;box-shadow:none!important;transform:none!important;translate:none!important;scale:none!important}
-.varex-sidebar-bottom-space{height:180px!important;min-height:180px!important;pointer-events:none!important}
-.topbar{transform:none!important;translate:none!important;transition:none!important;animation:none!important}
-.content{transform:none!important;translate:none!important}
-.hero,.panel,.stat,.card,.notification,.theme-option,.font-tool,.chip,.info-chip,.primary,.secondary,.mini,.reset,.save,.delete-account-btn,button{translate:none!important}
-.hero,.panel,.stat,.card,.notification{transform:none!important;transition:none!important;animation:none!important}
-.chip,.info-chip,.varex-top-switch-user{transform:none!important;translate:none!important;scale:none!important;transition:none!important;animation:none!important}
-.chip:hover,.chip:focus,.chip:active,.info-chip:hover,.info-chip:focus,.info-chip:active,.varex-top-switch-user:hover,.varex-top-switch-user:focus,.varex-top-switch-user:active{transform:none!important;translate:none!important;scale:none!important}
-.primary,.secondary,.mini,.reset,.save,.delete-account-btn,.font-tool,.theme-option{transform:none!important;translate:none!important;scale:none!important;transition:none!important}
-.primary:hover,.primary:focus,.primary:active,.secondary:hover,.secondary:focus,.secondary:active,.mini:hover,.mini:focus,.mini:active,.reset:hover,.reset:focus,.reset:active,.save:hover,.save:focus,.save:active,.delete-account-btn:hover,.delete-account-btn:focus,.delete-account-btn:active,.font-tool:hover,.font-tool:focus,.font-tool:active,.theme-option:hover,.theme-option:focus,.theme-option:active{transform:none!important;translate:none!important;scale:none!important}
-.varex-top-switch-user{border:1px solid #172554!important;cursor:pointer!important}
-.varex-staff-overlay{position:fixed;inset:0;z-index:9999999;background:rgba(3,10,28,.84);backdrop-filter:blur(12px);display:flex;align-items:center;justify-content:center;padding:20px;opacity:0;visibility:hidden;pointer-events:none}
-.varex-staff-overlay.show{opacity:1;visibility:visible;pointer-events:auto}
-.varex-staff-card{width:min(560px,96vw);max-height:88vh;overflow-y:auto;background:#fff;border-radius:26px;padding:30px;text-align:center;box-shadow:0 35px 100px rgba(0,0,0,.45)}
-.varex-staff-brand{font-size:32px;font-weight:900;letter-spacing:6px;color:#172554;margin-bottom:14px}
-.varex-staff-card h2{font-size:22px;color:#172554}
-.varex-staff-sub{font-size:12px;color:#64748b;margin:7px 0 20px}
-.varex-staff-list{display:grid;gap:10px}
-.varex-staff-user{width:100%;min-height:67px;border:1px solid #e2e8f0;border-radius:14px;background:#f8fafc;display:flex;align-items:center;gap:13px;padding:10px 14px;text-align:right;cursor:pointer;transform:none!important;transition:none!important}
-.varex-staff-user.owner{background:#eef2ff}
-.varex-staff-avatar{width:43px;height:43px;border-radius:12px;background:#172554;color:#fff;display:flex;align-items:center;justify-content:center;font-size:20px}
-.varex-staff-user strong{display:block;color:#172554;font-size:13px}
-.varex-staff-user small{display:block;color:#64748b;margin-top:3px}
-.varex-staff-password{display:none;margin-top:18px;padding-top:18px;border-top:1px solid #e2e8f0}
-.varex-staff-password.show{display:block}
-.varex-selected-user{font-weight:800;color:#172554;margin-bottom:10px}
-.varex-staff-password input{width:100%;height:46px;border:1px solid #cbd5e1;border-radius:10px;padding:0 12px}
-.varex-staff-error{min-height:20px;color:#b91c1c;font-size:11px;margin-top:7px}
-.varex-staff-login-actions{display:flex;gap:9px;margin-top:10px}
-.varex-staff-login-actions button{flex:1;height:43px;border-radius:9px;font-weight:800;cursor:pointer}
-.varex-staff-login-actions button:first-child{background:#172554;color:#fff;border:0}
-.varex-staff-login-actions button:last-child{background:#f1f5f9;color:#172554;border:1px solid #cbd5e1}
-.varex-mini-spinner{width:16px;height:16px;border-radius:50%;border:2px solid rgba(255,255,255,.38);border-top-color:#fff;display:inline-block;animation:varexMiniSpinner .75s linear infinite!important}
-@keyframes varexMiniSpinner{to{transform:rotate(360deg)}}
-body.varex-dark .varex-staff-card{background:#132641;color:#fff}
-body.varex-dark .varex-staff-card h2,body.varex-dark .varex-staff-brand,body.varex-dark .varex-selected-user{color:#fff}
-body.varex-dark .varex-staff-user{background:#10233d;border-color:#29415f}
-body.varex-dark .varex-staff-user strong{color:#fff}
-body.varex-dark .varex-staff-user small{color:#cbd5e1}
-@media(max-width:750px){.varex-top-switch-user{display:none!important}}
-@media(max-width:600px){.varex-staff-card{padding:23px 17px}.varex-staff-login-actions{flex-direction:column}}
-`;document.head.appendChild(s)}
+/* ========================================================= SHARED STYLES — FIXED NO-SHAKE VERSION ========================================================= */
+function varexInstallSharedStyles(){
+if(document.getElementById("varexSharedStyles"))return;
+const s=document.createElement("style");
+s.id="varexSharedStyles";
+s.textContent=`
+html{
+width:100%!important;
+min-height:100%!important;
+overflow-y:scroll!important;
+overflow-x:hidden!important;
+scrollbar-gutter:stable!important;
+}
 
-/* START */
+body{
+width:100%!important;
+min-height:100%!important;
+margin:0!important;
+overflow-x:hidden!important;
+scrollbar-gutter:stable!important;
+}
+
+*,*::before,*::after{
+box-sizing:border-box!important;
+}
+
+:root{
+--sidebar-width:265px!important;
+}
+
+.main{
+position:relative!important;
+margin-right:var(--sidebar-width)!important;
+width:calc(100% - var(--sidebar-width))!important;
+max-width:calc(100% - var(--sidebar-width))!important;
+min-width:0!important;
+padding-bottom:180px!important;
+transform:none!important;
+translate:none!important;
+animation:none!important;
+}
+
+.sidebar{
+position:fixed!important;
+top:0!important;
+right:0!important;
+bottom:0!important;
+width:var(--sidebar-width)!important;
+min-width:var(--sidebar-width)!important;
+max-width:var(--sidebar-width)!important;
+height:100vh!important;
+height:100dvh!important;
+overflow-y:scroll!important;
+overflow-x:hidden!important;
+scrollbar-gutter:stable!important;
+z-index:1000!important;
+transform:none!important;
+translate:none!important;
+animation:none!important;
+}
+
+.sidebar .nav{
+width:100%!important;
+min-width:100%!important;
+max-width:100%!important;
+padding:16px 14px 0!important;
+margin:0!important;
+transform:none!important;
+}
+
+.sidebar .nav a,
+.varex-sidebar-actions button{
+width:100%!important;
+min-width:100%!important;
+max-width:100%!important;
+height:50px!important;
+min-height:50px!important;
+max-height:50px!important;
+display:flex!important;
+align-items:center!important;
+gap:12px!important;
+padding:0 15px!important;
+margin:0 0 8px 0!important;
+border-radius:11px!important;
+font-weight:700!important;
+box-sizing:border-box!important;
+transform:none!important;
+translate:none!important;
+animation:none!important;
+}
+
+.sidebar .nav a{
+background:rgba(255,255,255,.055)!important;
+color:#dbeafe!important;
+text-decoration:none!important;
+border:0!important;
+border-bottom:3px solid rgba(5,14,37,.44)!important;
+transition:background-color .12s ease,color .12s ease,border-color .12s ease!important;
+}
+
+.sidebar .nav a:hover,
+.sidebar .nav a:focus,
+.sidebar .nav a:active,
+.sidebar .nav a.active{
+transform:none!important;
+translate:none!important;
+scale:1!important;
+}
+
+.sidebar .nav a.active{
+background:#fff!important;
+color:#172554!important;
+border-bottom:3px solid #94a3b8!important;
+}
+
+.nav-icon,
+.nav-label{
+flex-shrink:0!important;
+transform:none!important;
+}
+
+.nav-label{
+white-space:nowrap!important;
+}
+
+.varex-sidebar-actions{
+width:100%!important;
+margin-top:18px!important;
+padding-top:15px!important;
+border-top:1px solid rgba(255,255,255,.12)!important;
+transform:none!important;
+}
+
+.varex-sidebar-actions button{
+background:#fff!important;
+color:#172554!important;
+border:1px solid #fff!important;
+border-bottom:3px solid #94a3b8!important;
+cursor:pointer!important;
+}
+
+.varex-sidebar-bottom-space{
+height:230px!important;
+}
+
+.varex-top-switch-user{
+border:1px solid #172554!important;
+cursor:pointer!important;
+transform:none!important;
+translate:none!important;
+}
+
+.top-info,
+.info-chip,
+.chip,
+.card,
+.cards,
+.dashboard-card,
+.dashboard-cards,
+.stat-card,
+.stats-card,
+.summary-card,
+.metric-card,
+.kpi-card,
+.panel,
+.widget{
+transform:none!important;
+translate:none!important;
+}
+
+.sidebar .nav a *,
+.varex-sidebar-actions button *,
+.top-info *,
+.info-chip *,
+.chip *{
+transform:none!important;
+translate:none!important;
+}
+
+.varex-staff-overlay{
+position:fixed;
+inset:0;
+z-index:9999999;
+background:rgba(3,10,28,.84);
+backdrop-filter:blur(12px);
+display:flex;
+align-items:center;
+justify-content:center;
+padding:20px;
+opacity:0;
+visibility:hidden;
+pointer-events:none;
+}
+
+.varex-staff-overlay.show{
+opacity:1;
+visibility:visible;
+pointer-events:auto;
+}
+
+.varex-staff-card{
+width:min(560px,96vw);
+max-height:88vh;
+overflow-y:auto;
+background:#fff;
+border-radius:26px;
+padding:30px;
+text-align:center;
+box-shadow:0 35px 100px rgba(0,0,0,.45);
+}
+
+.varex-staff-brand{
+font-size:32px;
+font-weight:900;
+letter-spacing:6px;
+color:#172554;
+margin-bottom:14px;
+}
+
+.varex-staff-card h2{
+font-size:22px;
+color:#172554;
+}
+
+.varex-staff-sub{
+font-size:12px;
+color:#64748b;
+margin:7px 0 20px;
+}
+
+.varex-staff-list{
+display:grid;
+gap:10px;
+}
+
+.varex-staff-user{
+width:100%;
+min-height:67px;
+border:1px solid #e2e8f0;
+border-radius:14px;
+background:#f8fafc;
+display:flex;
+align-items:center;
+gap:13px;
+padding:10px 14px;
+text-align:right;
+cursor:pointer;
+}
+
+.varex-staff-user.owner{
+background:#eef2ff;
+}
+
+.varex-staff-avatar{
+width:43px;
+height:43px;
+border-radius:12px;
+background:#172554;
+color:#fff;
+display:flex;
+align-items:center;
+justify-content:center;
+font-size:20px;
+}
+
+.varex-staff-user strong{
+display:block;
+color:#172554;
+font-size:13px;
+}
+
+.varex-staff-user small{
+display:block;
+color:#64748b;
+margin-top:3px;
+}
+
+.varex-staff-password{
+display:none;
+margin-top:18px;
+padding-top:18px;
+border-top:1px solid #e2e8f0;
+}
+
+.varex-staff-password.show{
+display:block;
+}
+
+.varex-selected-user{
+font-weight:800;
+color:#172554;
+margin-bottom:10px;
+}
+
+.varex-staff-password input{
+width:100%;
+height:46px;
+border:1px solid #cbd5e1;
+border-radius:10px;
+padding:0 12px;
+}
+
+.varex-staff-error{
+min-height:20px;
+color:#b91c1c;
+font-size:11px;
+margin-top:7px;
+}
+
+.varex-staff-login-actions{
+display:flex;
+gap:9px;
+margin-top:10px;
+}
+
+.varex-staff-login-actions button{
+flex:1;
+height:43px;
+border-radius:9px;
+font-weight:800;
+cursor:pointer;
+}
+
+.varex-staff-login-actions button:first-child{
+background:#172554;
+color:#fff;
+border:0;
+}
+
+.varex-staff-login-actions button:last-child{
+background:#f1f5f9;
+color:#172554;
+border:1px solid #cbd5e1;
+}
+
+.varex-mini-spinner{
+width:16px;
+height:16px;
+border-radius:50%;
+border:2px solid rgba(255,255,255,.38);
+border-top-color:#fff;
+display:inline-block;
+animation:varexMiniSpinner .75s linear infinite;
+}
+
+@keyframes varexMiniSpinner{
+to{transform:rotate(360deg)}
+}
+
+body.varex-dark .varex-staff-card{
+background:#132641;
+color:#fff;
+}
+
+body.varex-dark .varex-staff-card h2,
+body.varex-dark .varex-staff-brand,
+body.varex-dark .varex-selected-user{
+color:#fff;
+}
+
+body.varex-dark .varex-staff-user{
+background:#10233d;
+border-color:#29415f;
+}
+
+body.varex-dark .varex-staff-user strong{
+color:#fff;
+}
+
+body.varex-dark .varex-staff-user small{
+color:#cbd5e1;
+}
+
+@media(max-width:750px){
+.varex-top-switch-user{display:none!important}
+}
+
+@media(max-width:600px){
+.varex-staff-card{padding:23px 17px}
+.varex-staff-login-actions{flex-direction:column}
+}
+`;
+document.head.appendChild(s);
+}
+
+/* ========================================================= START — FIXED ========================================================= */
 function varexStartUI(){
-const publicPage=VAREX.isLoginPage()||VAREX.isRegisterPage()||VAREX.isVerifyEmailPage()||VAREX.isResetPasswordPage();
+const publicPage=
+VAREX.isLoginPage()||
+VAREX.isRegisterPage()||
+VAREX.isVerifyEmailPage()||
+VAREX.isResetPasswordPage();
+
 if(publicPage)return;
 if(!VAREX.requireLogin())return;
 if(!VAREX.requireSubscription())return;
+
 varexInstallSharedStyles();
-varexForceSidebarScroll();
 varexInstallStaffUI();
 varexApplyTheme(varexGetTheme());
-varexInitStaffAccess();
+
+const staffReady=varexInitStaffAccess();
+
 varexBuildMenu();
 varexInstallTopSwitchUserButton();
 varexShowCurrentUser();
-varexRestoreSidebarScroll();
+
+if(staffReady!==false){
+varexCheckCurrentPermission();
 }
-window.addEventListener("focus",()=>{varexApplyTheme(varexGetTheme());varexInstallTopSwitchUserButton();varexShowCurrentUser();varexRestoreSidebarScroll()});
-window.addEventListener("pageshow",()=>varexRestoreSidebarScroll());
-window.addEventListener("pagehide",varexSaveSidebarScroll);
-window.addEventListener("beforeunload",varexSaveSidebarScroll);
-if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",varexStartUI);else varexStartUI();
+}
+
+window.addEventListener("focus",()=>{
+varexApplyTheme(varexGetTheme());
+varexInstallTopSwitchUserButton();
+varexShowCurrentUser();
+});
+
+if(document.readyState==="loading"){
+document.addEventListener("DOMContentLoaded",varexStartUI,{once:true});
+}else{
+varexStartUI();
+}
