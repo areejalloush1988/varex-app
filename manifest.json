@@ -1,1 +1,34 @@
-{"id":"./","name":"VAREX Business Management System","short_name":"VAREX","description":"VAREX Business Management System for sales, inventory, purchases, stock transfers, customers, suppliers, accounts, expenses, cashier shifts, employees, branches, reports, notifications, activity logs, users and permissions.","start_url":"./index.html","scope":"./","display":"standalone","display_override":["window-controls-overlay","standalone","minimal-ui"],"orientation":"any","background_color":"#f4f6fb","theme_color":"#172554","lang":"ar","dir":"rtl","categories":["business","productivity","finance"],"icons":[{"src":"./varex-icon-192.png","sizes":"192x192","type":"image/png","purpose":"any"},{"src":"./varex-icon-512.png","sizes":"512x512","type":"image/png","purpose":"any"},{"src":"./varex-icon-512.png","sizes":"512x512","type":"image/png","purpose":"maskable"}]}
+{
+"id": "./",
+"name": "VAREX Business Management System",
+"short_name": "VAREX",
+"description": "VAREX Business Management System - Sales, Inventory, Customers, Suppliers, Accounts and Reports",
+"start_url": "./index.html",
+"scope": "./",
+"display": "standalone",
+"orientation": "any",
+"background_color": "#f4f6fb",
+"theme_color": "#172554",
+"lang": "ar",
+"dir": "rtl",
+"icons": [
+{
+"src": "./varex-icon-192.png",
+"sizes": "192x192",
+"type": "image/png",
+"purpose": "any"
+},
+{
+"src": "./varex-icon-512.png",
+"sizes": "512x512",
+"type": "image/png",
+"purpose": "any"
+},
+{
+"src": "./varex-icon-512.png",
+"sizes": "512x512",
+"type": "image/png",
+"purpose": "maskable"
+}
+]
+}
