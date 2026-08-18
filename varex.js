@@ -76,7 +76,7 @@ body{width:100%;min-height:100%;margin:0;overflow-x:hidden}
 .sidebar{width:240px!important;min-width:240px!important;max-width:240px!important}
 .main{margin-right:240px!important;min-width:0!important}
 `;
-(document.head||document.documentElement).appendChild(s)
+(document.head||document.documentElement).prepend(s)
 })();
 
 /* ========================================================= HELPERS ========================================================= */
@@ -169,7 +169,7 @@ body.varex-dark .varex-staff-user strong{color:#fff}
 body.varex-dark .varex-staff-user small{color:#cbd5e1}
 @media(max-width:750px){.varex-top-switch-user{display:none!important}}
 @media(max-width:600px){.varex-staff-card{padding:23px 17px}.varex-staff-login-actions{flex-direction:column}}
-`;document.head.appendChild(s)}
+`;document.head.prepend(s)}
 
 /* ========================================================= START ========================================================= */
 function varexStartUI(){const publicPage=VAREX.isLoginPage()||VAREX.isRegisterPage()||VAREX.isVerifyEmailPage()||VAREX.isResetPasswordPage();if(publicPage)return;if(!VAREX.requireLogin())return;if(!VAREX.requireSubscription())return;varexInstallSharedStyles();varexApplyTheme(varexGetTheme());varexInstallStaffUI();const access=varexInitStaffAccess();varexBuildMenu();varexInstallTopSwitchUserButton();varexShowCurrentUser();if(access!==false)varexCheckCurrentPermission()}
