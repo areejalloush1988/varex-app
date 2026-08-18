@@ -1,19 +1,214 @@
-<!DOCTYPE html><html lang="ar" dir="rtl"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>VAREX | إنشاء حساب جديد</title><meta name="theme-color" content="#172554"><meta name="application-name" content="VAREX"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="default"><meta name="apple-mobile-web-app-title" content="VAREX"><link rel="manifest" href="./manifest.json?v=20260818"><link rel="icon" type="image/png" sizes="192x192" href="./varex-icon-192.png?v=20260818"><link rel="icon" type="image/png" sizes="512x512" href="./varex-icon-512.png?v=20260818"><link rel="apple-touch-icon" href="./varex-icon-192.png?v=20260818"><link rel="stylesheet" href="./varex-theme.css"><style>
-html,body{min-height:100%;background:var(--bg)}body{display:flex;align-items:center;justify-content:center;padding:25px;background:radial-gradient(circle at 20% 20%,rgba(59,130,246,.10),transparent 30%),var(--bg);color:var(--text)}.register-page{width:100%;max-width:1050px;min-height:680px;background:var(--card);border:1px solid var(--border);border-radius:24px;overflow:hidden;display:grid;grid-template-columns:1fr 1fr;box-shadow:0 25px 70px rgba(15,29,67,.15)}body.varex-dark .register-page{box-shadow:0 25px 70px rgba(0,0,0,.32)}.brand-side{background:linear-gradient(145deg,#172554,#14264f 50%,#0f1d43);color:#fff;padding:55px 48px;display:flex;flex-direction:column;justify-content:space-between;position:relative;overflow:hidden}.brand-side:before{content:"";position:absolute;width:330px;height:330px;border-radius:50%;border:1px solid rgba(255,255,255,.08);top:-140px;left:-140px}.brand-side:after{content:"";position:absolute;width:260px;height:260px;border-radius:50%;background:rgba(255,255,255,.025);bottom:-110px;right:-100px}.brand-content{position:relative;z-index:2}.brand-logo{font-size:42px;font-weight:800;letter-spacing:7px;direction:ltr;text-align:left;margin-bottom:9px;color:#fff}.brand-subtitle{font-size:12px;letter-spacing:2px;color:#cbd5e1;direction:ltr;text-align:left}.brand-message{margin-top:90px}.brand-message h1{font-size:30px;line-height:1.5;margin-bottom:17px;color:#fff}.brand-message p{max-width:400px;font-size:14px;line-height:2;color:#dbeafe}.brand-features{margin-top:32px;display:grid;gap:14px}.brand-feature{display:flex;align-items:center;gap:11px;font-size:12px;color:#e2e8f0}.feature-icon{width:30px;height:30px;min-width:30px;border-radius:8px;background:rgba(255,255,255,.09);display:flex;align-items:center;justify-content:center;color:#86efac}.brand-footer{position:relative;z-index:2;color:#94a3b8;font-size:10px;letter-spacing:.5px;direction:ltr;text-align:left}.register-side{padding:38px 52px;display:flex;flex-direction:column;justify-content:center;background:var(--card);color:var(--text)}.register-top{display:flex;justify-content:space-between;align-items:center;gap:15px;margin-bottom:24px}.back-login{border:0;background:transparent;color:var(--text);font-family:inherit;font-size:11px;font-weight:700;cursor:pointer}.back-login:hover{text-decoration:underline}.secure-badge{font-size:10px;color:#15803d;background:#f0fdf4;border:1px solid #bbf7d0;padding:7px 10px;border-radius:8px}body.varex-dark .secure-badge{background:rgba(34,197,94,.11);border-color:rgba(74,222,128,.18);color:#86efac}.register-header{margin-bottom:23px}.register-header h2{color:var(--text);font-size:27px;margin-bottom:8px}.register-header p{color:var(--muted);font-size:13px;line-height:1.7}.form-group{margin-bottom:15px}.form-group label{display:block;font-size:12px;font-weight:700;color:var(--bodytext);margin-bottom:7px}.input-wrapper{position:relative}.form-control{width:100%;height:48px;border:1px solid var(--border);background:var(--field);border-radius:10px;padding:0 44px;outline:none;font-family:inherit;font-size:13px;color:var(--text);transition:.2s}.form-control::placeholder{color:var(--muted)}.form-control:focus{border-color:#64748b;box-shadow:0 0 0 3px rgba(100,116,139,.10)}.input-icon{position:absolute;right:15px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:16px;pointer-events:none}.password-toggle{position:absolute;left:13px;top:50%;transform:translateY(-50%);border:0;background:transparent;color:var(--muted);cursor:pointer;font-size:15px;padding:5px}.field-info{color:var(--muted);font-size:10px;line-height:1.7;margin-top:6px}.password-rules{margin-top:9px;padding:11px 12px;background:var(--card2);border:1px solid var(--border);border-radius:9px;display:grid;grid-template-columns:1fr 1fr;gap:7px 10px}.rule{font-size:9px;color:var(--muted);display:flex;align-items:center;gap:5px;line-height:1.5}.rule:before{content:"○";font-size:11px}.rule.valid{color:var(--green);font-weight:700}.rule.valid:before{content:"✓"}.register-button{width:100%;height:50px;border:1px solid #172554;border-radius:10px;background:linear-gradient(135deg,#172554,#1e3a6d);color:#fff;font-family:inherit;font-size:14px;font-weight:700;cursor:pointer;box-shadow:0 6px 0 #0f1d43,0 12px 20px rgba(23,37,84,.22);margin-top:5px;transition:transform .12s,box-shadow .12s}.register-button:hover{transform:translateY(-1px)}.register-button:active{transform:translateY(4px);box-shadow:0 1px 0 #0f1d43,0 4px 8px rgba(23,37,84,.16)}.register-button:disabled{opacity:.65;cursor:not-allowed;transform:none}.register-message{display:none;margin-top:13px;border-radius:9px;padding:11px 12px;font-size:11px;line-height:1.7}.register-message.error{display:block;background:#fef2f2;border:1px solid #fecaca;color:#991b1b}.register-message.success{display:block;background:#f0fdf4;border:1px solid #bbf7d0;color:#166534}body.varex-dark .register-message.error{background:rgba(220,38,38,.12);border-color:rgba(248,113,113,.18);color:#fca5a5}body.varex-dark .register-message.success{background:rgba(34,197,94,.11);border-color:rgba(74,222,128,.18);color:#86efac}.login-link{margin-top:19px;padding-top:17px;border-top:1px solid var(--line);text-align:center;color:var(--muted);font-size:11px}.login-button-link{border:0;background:transparent;color:#2563eb;font-family:inherit;font-size:11px;font-weight:700;cursor:pointer;margin-right:4px}.login-button-link:hover{text-decoration:underline}body.varex-dark .login-button-link{color:#93c5fd}@media(max-width:850px){body{padding:0}.register-page{min-height:100vh;border-radius:0;grid-template-columns:1fr;box-shadow:none;border:0}.brand-side{min-height:230px;padding:32px 28px}.brand-logo{text-align:center;font-size:35px}.brand-subtitle{text-align:center}.brand-message{margin-top:30px;text-align:center}.brand-message h1{font-size:22px}.brand-message p{margin:auto}.brand-features,.brand-footer{display:none}.register-side{padding:35px 28px 45px}}@media(max-width:500px){.register-side{padding:30px 20px 40px}.secure-badge{display:none}.register-header h2{font-size:23px}.brand-side{min-height:210px}.password-rules{grid-template-columns:1fr}}
-</style></head><body><div class="register-page"><section class="brand-side"><div class="brand-content"><div class="brand-logo">VAREX</div><div class="brand-subtitle">BUSINESS MANAGEMENT SYSTEM</div><div class="brand-message"><h1>ابدأ إدارة أعمالك مع VAREX</h1><p>أنشئ حسابك للوصول إلى نظام متكامل لإدارة المبيعات والمخزون والعملاء والموردين والحسابات والموظفين والتقارير.</p><div class="brand-features"><div class="brand-feature"><span class="feature-icon">✓</span><span>إدارة متكاملة لأعمالك</span></div><div class="brand-feature"><span class="feature-icon">✓</span><span>حساب واحد يعمل على أجهزتك المختلفة</span></div><div class="brand-feature"><span class="feature-icon">✓</span><span>حماية الحساب وتأكيد البريد الإلكتروني</span></div></div></div></div><div class="brand-footer">VAREX BUSINESS MANAGEMENT SYSTEM</div></section><section class="register-side"><div class="register-top"><button type="button" class="back-login" id="backLoginButton">← العودة لتسجيل الدخول</button><div class="secure-badge">● اتصال آمن</div></div><div class="register-header"><h2>إنشاء حساب جديد</h2><p>أدخل بياناتك لإنشاء حساب جديد في نظام VAREX.</p></div><form id="registerForm" novalidate><div class="form-group"><label for="username">اسم المستخدم</label><div class="input-wrapper"><span class="input-icon">👤</span><input id="username" class="form-control" type="text" autocomplete="username" placeholder="اختر اسم المستخدم" dir="ltr" minlength="3" required></div><div class="field-info">اسم المستخدم يجب أن يحتوي على 3 أحرف على الأقل.</div></div><div class="form-group"><label for="email">البريد الإلكتروني</label><div class="input-wrapper"><span class="input-icon">✉</span><input id="email" class="form-control" type="email" autocomplete="email" placeholder="example@email.com" dir="ltr" required></div></div><div class="form-group"><label for="password">كلمة المرور</label><div class="input-wrapper"><span class="input-icon">🔒</span><input id="password" class="form-control" type="password" autocomplete="new-password" placeholder="أدخل كلمة المرور" minlength="8" required><button type="button" class="password-toggle" onclick="togglePassword('password')" aria-label="إظهار كلمة المرور">👁</button></div><div class="password-rules"><div class="rule" id="ruleLength">8 أحرف على الأقل</div><div class="rule" id="ruleUpper">حرف إنجليزي كبير A-Z</div><div class="rule" id="ruleLower">حرف إنجليزي صغير a-z</div><div class="rule" id="ruleNumber">رقم واحد على الأقل 0-9</div><div class="rule" id="ruleSymbol">رمز خاص مثل ! @ # $ %</div></div></div><div class="form-group"><label for="confirmPassword">تأكيد كلمة المرور</label><div class="input-wrapper"><span class="input-icon">🔒</span><input id="confirmPassword" class="form-control" type="password" autocomplete="new-password" placeholder="أعد إدخال كلمة المرور" minlength="8" required><button type="button" class="password-toggle" onclick="togglePassword('confirmPassword')" aria-label="إظهار كلمة المرور">👁</button></div></div><button type="submit" class="register-button" id="registerButton">إنشاء الحساب</button><div id="registerMessage" class="register-message"></div></form><div class="login-link">لديك حساب بالفعل؟<button type="button" class="login-button-link" id="loginLinkButton">تسجيل الدخول</button></div></section></div><script src="./varex.js?v=20260818"></script><script>
-const VAREX_REGISTER_VERSION="20260818-3",get=id=>document.getElementById(id);
-function goToLogin(){try{sessionStorage.setItem("varex_force_login_navigation",Date.now().toString())}catch(e){}location.assign("./login.html?v="+encodeURIComponent(VAREX_REGISTER_VERSION))}
-get("backLoginButton").addEventListener("click",goToLogin);get("loginLinkButton").addEventListener("click",goToLogin);
-function togglePassword(id){const input=get(id);if(input)input.type=input.type==="password"?"text":"password"}
-function showMessage(type,text){const box=get("registerMessage");if(!box)return;box.className=type?"register-message "+type:"register-message";box.textContent=text||""}
-function resetButton(){const b=get("registerButton");if(!b)return;b.disabled=false;b.textContent="إنشاء الحساب"}
+<!DOCTYPE html><html lang="ar" dir="rtl"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>VAREX | إنشاء حساب جديد</title><meta name="theme-color" content="#172554"><meta name="application-name" content="VAREX"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="default"><meta name="apple-mobile-web-app-title" content="VAREX"><link rel="manifest" href="./manifest.json?v=20260818"><link rel="icon" type="image/png" sizes="192x192" href="./varex-icon-192.png?v=20260818"><link rel="icon" type="image/png" sizes="512x512" href="./varex-icon-512.png?v=20260818"><link rel="apple-touch-icon" href="./varex-icon-192.png?v=20260818"><style>  *{box-sizing:border-box;margin:0;padding:0}:root{--navy:#172554;--dark:#0f1d43;--light:#1e3a6d;--blue:#2563eb;--border:#dfe5ee;--text:#172554;--muted:#64748b;--green:#15803d;--red:#b91c1c}html,body{min-height:100%}body{min-height:100vh;font-family:Arial,Tahoma,sans-serif;background:radial-gradient(circle at 20% 20%,rgba(59,130,246,.1),transparent 30%),linear-gradient(135deg,#f8fafc,#eef2f7 50%,#e8edf5);color:var(--text);display:flex;align-items:center;justify-content:center;padding:25px}.register-page{width:100%;max-width:1050px;min-height:680px;background:#fff;border-radius:24px;overflow:hidden;display:grid;grid-template-columns:1fr 1fr;box-shadow:0 25px 70px rgba(15,29,67,.15);border:1px solid #e2e8f0}.brand-side{background:linear-gradient(145deg,#172554,#14264f 50%,#0f1d43);color:#fff;padding:55px 48px;display:flex;flex-direction:column;justify-content:space-between;position:relative;overflow:hidden}.brand-side:before{content:"";position:absolute;width:330px;height:330px;border-radius:50%;border:1px solid rgba(255,255,255,.08);top:-140px;left:-140px}.brand-side:after{content:"";position:absolute;width:260px;height:260px;border-radius:50%;background:rgba(255,255,255,.025);bottom:-110px;right:-100px}.brand-content{position:relative;z-index:2}.brand-logo{font-size:42px;font-weight:800;letter-spacing:7px;direction:ltr;text-align:left;margin-bottom:9px}.brand-subtitle{font-size:12px;letter-spacing:2px;color:#cbd5e1;direction:ltr;text-align:left}.brand-message{margin-top:90px}.brand-message h1{font-size:30px;line-height:1.5;margin-bottom:17px}.brand-message p{max-width:400px;font-size:14px;line-height:2;color:#dbeafe}.brand-features{margin-top:32px;display:grid;gap:14px}.brand-feature{display:flex;align-items:center;gap:11px;font-size:12px;color:#e2e8f0}.feature-icon{width:30px;height:30px;min-width:30px;border-radius:8px;background:rgba(255,255,255,.09);display:flex;align-items:center;justify-content:center;color:#86efac}.brand-footer{position:relative;z-index:2;color:#94a3b8;font-size:10px;letter-spacing:.5px;direction:ltr;text-align:left}.register-side{padding:38px 52px;display:flex;flex-direction:column;justify-content:center;background:#fff}.register-top{display:flex;justify-content:space-between;align-items:center;gap:15px;margin-bottom:24px}.back-login{border:0;background:transparent;color:var(--navy);font-family:inherit;font-size:11px;font-weight:700;cursor:pointer}.back-login:hover{text-decoration:underline}.secure-badge{font-size:10px;color:var(--green);background:#f0fdf4;border:1px solid #bbf7d0;padding:7px 10px;border-radius:8px}.register-header{margin-bottom:23px}.register-header h2{color:var(--navy);font-size:27px;margin-bottom:8px}.register-header p{color:var(--muted);font-size:13px;line-height:1.7}.form-group{margin-bottom:15px}.form-group label{display:block;font-size:12px;font-weight:700;color:#334155;margin-bottom:7px}.input-wrapper{position:relative}.form-control{width:100%;height:48px;border:1px solid var(--border);background:#fff;border-radius:10px;padding:0 44px;outline:none;font-family:inherit;font-size:13px;color:#0f172a;transition:.2s}.form-control:focus{border-color:#94a3b8;box-shadow:0 0 0 3px rgba(148,163,184,.12)}.input-icon{position:absolute;right:15px;top:50%;transform:translateY(-50%);color:#94a3b8;font-size:16px;pointer-events:none}.password-toggle{position:absolute;left:13px;top:50%;transform:translateY(-50%);border:0;background:transparent;color:#64748b;cursor:pointer;font-size:15px;padding:5px}.field-info{color:#94a3b8;font-size:10px;line-height:1.7;margin-top:6px}.password-rules{margin-top:9px;padding:11px 12px;background:#f8fafc;border:1px solid #e5eaf2;border-radius:9px;display:grid;grid-template-columns:1fr 1fr;gap:7px 10px}.rule{font-size:9px;color:#94a3b8;display:flex;align-items:center;gap:5px;line-height:1.5}.rule:before{content:"○";font-size:11px}.rule.valid{color:#15803d;font-weight:700}.rule.valid:before{content:"✓"}.register-button{width:100%;height:50px;border:1px solid #172554;border-radius:10px;background:linear-gradient(135deg,#172554,#1e3a6d);color:#fff;font-family:inherit;font-size:14px;font-weight:700;cursor:pointer;box-shadow:0 6px 0 #0f1d43,0 12px 20px rgba(23,37,84,.22);margin-top:5px;transition:.12s}.register-button:hover{transform:translateY(-1px)}.register-button:active{transform:translateY(4px);box-shadow:0 1px 0 #0f1d43,0 4px 8px rgba(23,37,84,.16)}.register-button:disabled{opacity:.65;cursor:not-allowed;transform:none}.register-message{display:none;margin-top:13px;border-radius:9px;padding:11px 12px;font-size:11px;line-height:1.7}.register-message.error{display:block;background:#fef2f2;border:1px solid #fecaca;color:#991b1b}.register-message.success{display:block;background:#f0fdf4;border:1px solid #bbf7d0;color:#166534}.login-link{margin-top:19px;padding-top:17px;border-top:1px solid #edf0f5;text-align:center;color:var(--muted);font-size:11px}.login-button-link{border:0;background:transparent;color:var(--blue);font-family:inherit;font-size:11px;font-weight:700;cursor:pointer;margin-right:4px}.login-button-link:hover{text-decoration:underline}@media(max-width:850px){body{padding:0;background:#fff}.register-page{min-height:100vh;border-radius:0;grid-template-columns:1fr;box-shadow:none;border:0}.brand-side{min-height:230px;padding:32px 28px}.brand-logo{text-align:center;font-size:35px}.brand-subtitle{text-align:center}.brand-message{margin-top:30px;text-align:center}.brand-message h1{font-size:22px}.brand-message p{margin:auto}.brand-features,.brand-footer{display:none}.register-side{padding:35px 28px 45px}}@media(max-width:500px){.register-side{padding:30px 20px 40px}.secure-badge{display:none}.register-header h2{font-size:23px}.brand-side{min-height:210px}.password-rules{grid-template-columns:1fr}}
+</style></head><body><div class="register-page"><section class="brand-side"><div class="brand-content"><div class="brand-logo">VAREX</div><div class="brand-subtitle">BUSINESS MANAGEMENT SYSTEM</div><div class="brand-message"><h1>ابدأ إدارة أعمالك مع VAREX</h1><p>أنشئ حسابك للوصول إلى نظام متكامل لإدارة المبيعات والمخزون والعملاء والموردين والحسابات والموظفين والتقارير.</p><div class="brand-features"><div class="brand-feature"><span class="feature-icon">✓</span><span>إدارة متكاملة لأعمالك</span></div><div class="brand-feature"><span class="feature-icon">✓</span><span>حساب واحد يعمل على أجهزتك المختلفة</span></div><div class="brand-feature"><span class="feature-icon">✓</span><span>حماية الحساب وتأكيد البريد الإلكتروني</span></div></div></div></div><div class="brand-footer">VAREX MANAGEMENT SYSTEM</div></section><section class="register-side"><div class="register-top"><button type="button" class="back-login" id="backLoginButton">← العودة لتسجيل الدخول</button><div class="secure-badge">● اتصال آمن</div></div><div class="register-header"><h2>إنشاء حساب جديد</h2><p>أدخل بياناتك لإنشاء حساب جديد في نظام VAREX</p></div><form id="registerForm" novalidate><div class="form-group"><label for="username">اسم المستخدم</label><div class="input-wrapper"><span class="input-icon">👤</span><input id="username" class="form-control" type="text" autocomplete="username" placeholder="اختر اسم المستخدم" dir="ltr" minlength="3" required></div><div class="field-info">اسم المستخدم يجب أن يحتوي على 3 أحرف على الأقل.</div></div><div class="form-group"><label for="email">البريد الإلكتروني</label><div class="input-wrapper"><span class="input-icon">✉</span><input id="email" class="form-control" type="email" autocomplete="email" placeholder="example@email.com" dir="ltr" required></div></div><div class="form-group"><label for="password">كلمة المرور</label><div class="input-wrapper"><span class="input-icon">🔒</span><input id="password" class="form-control" type="password" autocomplete="new-password" placeholder="أدخل كلمة المرور" minlength="8" required><button type="button" class="password-toggle" onclick="togglePassword('password')" aria-label="إظهار كلمة المرور">👁</button></div><div class="password-rules"><div class="rule" id="ruleLength">8 أحرف على الأقل</div><div class="rule" id="ruleUpper">حرف إنجليزي كبير A-Z</div><div class="rule" id="ruleLower">حرف إنجليزي صغير a-z</div><div class="rule" id="ruleNumber">رقم واحد على الأقل 0-9</div><div class="rule" id="ruleSymbol">رمز خاص مثل ! @ # $ %</div></div></div><div class="form-group"><label for="confirmPassword">تأكيد كلمة المرور</label><div class="input-wrapper"><span class="input-icon">🔒</span><input id="confirmPassword" class="form-control" type="password" autocomplete="new-password" placeholder="أعد إدخال كلمة المرور" minlength="8" required><button type="button" class="password-toggle" onclick="togglePassword('confirmPassword')" aria-label="إظهار كلمة المرور">👁</button></div></div><button type="submit" class="register-button" id="registerButton">إنشاء الحساب</button><div id="registerMessage" class="register-message"></div></form><div class="login-link">لديك حساب بالفعل؟<button type="button" class="login-button-link" id="loginLinkButton">تسجيل الدخول</button></div></section></div><script src="./varex.js?v=20260818"></script><script>
+const VAREX_REGISTER_VERSION="20260818-2";
+
+function goToLogin(){
+try{sessionStorage.setItem("varex_force_login_navigation",Date.now().toString())}catch(e){}
+window.location.assign("./login.html?v="+encodeURIComponent(VAREX_REGISTER_VERSION));
+}
+
+document.getElementById("backLoginButton").addEventListener("click",goToLogin);
+document.getElementById("loginLinkButton").addEventListener("click",goToLogin);
+
+function togglePassword(id){
+const input=document.getElementById(id);
+if(input)input.type=input.type==="password"?"text":"password";
+}
+
+function showMessage(type,text){
+const box=document.getElementById("registerMessage");
+if(!box)return;
+box.className=type?"register-message "+type:"register-message";
+box.textContent=text||"";
+}
+
+function resetButton(){
+const button=document.getElementById("registerButton");
+if(!button)return;
+button.disabled=false;
+button.textContent="إنشاء الحساب";
+}
+
 function wait(ms){return new Promise(resolve=>setTimeout(resolve,ms))}
-function isStrongPassword(p){return p.length>=8&&/[A-Z]/.test(p)&&/[a-z]/.test(p)&&/[0-9]/.test(p)&&/[^A-Za-z0-9]/.test(p)}
-function updatePasswordRules(){const p=get("password").value;get("ruleLength").classList.toggle("valid",p.length>=8);get("ruleUpper").classList.toggle("valid",/[A-Z]/.test(p));get("ruleLower").classList.toggle("valid",/[a-z]/.test(p));get("ruleNumber").classList.toggle("valid",/[0-9]/.test(p));get("ruleSymbol").classList.toggle("valid",/[^A-Za-z0-9]/.test(p))}
-get("password").addEventListener("input",updatePasswordRules);
-function looksLikeExistingAccount(result){if(!result)return false;if(result.accountExists===true||result.emailExists===true||result.userExists===true||result.alreadyExists===true||result.alreadyRegistered===true||result.accountAlreadyExists===true||result.existingUser===true)return true;const code=String(result.code||result.errorCode||result.error?.code||"").toLowerCase(),message=String(result.message||result.error?.message||"").toLowerCase();return code.includes("user_already_exists")||code.includes("email_exists")||code.includes("already_registered")||message.includes("already registered")||message.includes("already exists")||message.includes("user already exists")||message.includes("email already")||message.includes("already been registered")||message.includes("already linked")}
-async function checkExistingEmail(email){try{if(typeof VAREX==="undefined")return false;if(typeof VAREX.checkEmailExists==="function"){const result=await VAREX.checkEmailExists(email);if(result===true)return true;if(result&&typeof result==="object"&&(result.exists===true||result.accountExists===true||result.emailExists===true))return true}if(typeof VAREX.emailExists==="function"){const result=await VAREX.emailExists(email);if(result===true)return true;if(result&&typeof result==="object"&&(result.exists===true||result.accountExists===true||result.emailExists===true))return true}}catch(error){console.warn("VAREX EMAIL PRECHECK:",error)}return false}
-(function(){try{if(typeof VAREX!=="undefined"&&typeof VAREX.isLoggedIn==="function"&&VAREX.isLoggedIn())location.replace("./index.html")}catch(error){console.error("REGISTER LOGIN CHECK:",error)}})();
-get("registerForm").addEventListener("submit",async event=>{event.preventDefault();const username=get("username").value.trim(),email=get("email").value.trim().toLowerCase(),password=get("password").value,confirmPassword=get("confirmPassword").value,button=get("registerButton");showMessage("","");if(!username||!email||!password||!confirmPassword)return showMessage("error","يرجى تعبئة جميع الحقول.");if(username.length<3)return showMessage("error","اسم المستخدم يجب أن يحتوي على 3 أحرف على الأقل.");if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))return showMessage("error","يرجى إدخال بريد إلكتروني صحيح.");if(!isStrongPassword(password))return showMessage("error","كلمة المرور يجب أن تحتوي على 8 أحرف على الأقل، وحرف إنجليزي كبير، وحرف إنجليزي صغير، ورقم، ورمز خاص.");if(password!==confirmPassword)return showMessage("error","كلمتا المرور غير متطابقتين.");if(typeof VAREX==="undefined"||typeof VAREX.createUser!=="function")return showMessage("error","تعذر تحميل نظام VAREX. تأكد من وجود ملف varex.js.");button.disabled=true;button.textContent="جاري التحقق من البريد...";try{const existingAccount=await checkExistingEmail(email);if(existingAccount){showMessage("error","هذا البريد الإلكتروني مرتبط بحساب موجود مسبقًا. يرجى تسجيل الدخول بدل إنشاء حساب جديد.");resetButton();return}button.textContent="جاري إنشاء الحساب...";const result=await VAREX.createUser({name:username,username:username,email:email,password:password});if(looksLikeExistingAccount(result)){showMessage("error","هذا البريد الإلكتروني مرتبط بحساب موجود مسبقًا. يرجى تسجيل الدخول بدل إنشاء حساب جديد.");resetButton();return}if(!result||result.success!==true){showMessage("error",result?.message||"تعذر إنشاء الحساب.");resetButton();return}if(result.needsEmailConfirmation===true){const pending={email:email,name:username,username:username};if(typeof VAREX.setPendingVerification==="function")VAREX.setPendingVerification(pending);else localStorage.setItem("varex_pending_verification",JSON.stringify(pending));showMessage("success","تم إنشاء الحساب. سيتم تحويلك لتأكيد البريد الإلكتروني.");await wait(500);location.replace("./verify-email.html?v="+encodeURIComponent(VAREX_REGISTER_VERSION));return}showMessage("success","تم إنشاء الحساب بنجاح.");await wait(500);location.replace("./index.html")}catch(error){console.error("VAREX REGISTER ERROR:",error);if(looksLikeExistingAccount({message:error?.message,code:error?.code,error:error}))showMessage("error","هذا البريد الإلكتروني مرتبط بحساب موجود مسبقًا. يرجى تسجيل الدخول بدل إنشاء حساب جديد.");else showMessage("error",error?.message||"حدث خطأ أثناء إنشاء الحساب.");resetButton()}});
-if("serviceWorker"in navigator)window.addEventListener("load",async()=>{try{const registration=await navigator.serviceWorker.register("./sw.js",{scope:"./",updateViaCache:"none"});await registration.update()}catch(error){console.error("Service Worker:",error)}});
+
+function isStrongPassword(password){
+return password.length>=8&&/[A-Z]/.test(password)&&/[a-z]/.test(password)&&/[0-9]/.test(password)&&/[^A-Za-z0-9]/.test(password);
+}
+
+function updatePasswordRules(){
+const password=document.getElementById("password").value;
+document.getElementById("ruleLength").classList.toggle("valid",password.length>=8);
+document.getElementById("ruleUpper").classList.toggle("valid",/[A-Z]/.test(password));
+document.getElementById("ruleLower").classList.toggle("valid",/[a-z]/.test(password));
+document.getElementById("ruleNumber").classList.toggle("valid",/[0-9]/.test(password));
+document.getElementById("ruleSymbol").classList.toggle("valid",/[^A-Za-z0-9]/.test(password));
+}
+
+document.getElementById("password").addEventListener("input",updatePasswordRules);
+
+function looksLikeExistingAccount(result){
+if(!result)return false;
+if(result.accountExists===true||result.emailExists===true||result.userExists===true||result.alreadyExists===true||result.alreadyRegistered===true)return true;
+const code=String(result.code||result.errorCode||result.error?.code||"").toLowerCase();
+const message=String(result.message||result.error?.message||"").toLowerCase();
+return code.includes("user_already_exists")||
+code.includes("email_exists")||
+code.includes("already_registered")||
+message.includes("already registered")||
+message.includes("already exists")||
+message.includes("user already exists")||
+message.includes("email already")||
+message.includes("already been registered")||
+message.includes("already linked");
+}
+
+async function checkExistingEmail(email){
+try{
+if(typeof VAREX==="undefined")return false;
+if(typeof VAREX.checkEmailExists==="function"){
+const result=await VAREX.checkEmailExists(email);
+if(result===true)return true;
+if(result&&typeof result==="object"){
+if(result.exists===true||result.accountExists===true||result.emailExists===true)return true;
+}
+}
+if(typeof VAREX.emailExists==="function"){
+const result=await VAREX.emailExists(email);
+if(result===true)return true;
+if(result&&typeof result==="object"&&(result.exists===true||result.accountExists===true))return true;
+}
+}catch(error){
+console.warn("VAREX EMAIL PRECHECK:",error);
+}
+return false;
+}
+
+(function(){
+try{
+if(typeof VAREX!=="undefined"&&typeof VAREX.isLoggedIn==="function"&&VAREX.isLoggedIn()){
+window.location.replace("./index.html");
+}
+}catch(error){console.error(error)}
+})();
+
+document.getElementById("registerForm").addEventListener("submit",async function(event){
+event.preventDefault();
+
+const username=document.getElementById("username").value.trim();
+const email=document.getElementById("email").value.trim().toLowerCase();
+const password=document.getElementById("password").value;
+const confirmPassword=document.getElementById("confirmPassword").value;
+const button=document.getElementById("registerButton");
+
+showMessage("","");
+
+if(!username||!email||!password||!confirmPassword){
+showMessage("error","يرجى تعبئة جميع الحقول.");
+return;
+}
+
+if(username.length<3){
+showMessage("error","اسم المستخدم يجب أن يحتوي على 3 أحرف على الأقل.");
+return;
+}
+
+if(!/^[^\s@]+@[^\s@]+.[^\s@]+$/.test(email)){
+showMessage("error","يرجى إدخال بريد إلكتروني صحيح.");
+return;
+}
+
+if(!isStrongPassword(password)){
+showMessage("error","كلمة المرور يجب أن تحتوي على 8 أحرف على الأقل، وحرف إنجليزي كبير، وحرف إنجليزي صغير، ورقم، ورمز خاص.");
+return;
+}
+
+if(password!==confirmPassword){
+showMessage("error","كلمتا المرور غير متطابقتين.");
+return;
+}
+
+if(typeof VAREX==="undefined"||typeof VAREX.createUser!=="function"){
+showMessage("error","تعذر تحميل نظام VAREX. تأكد من وجود ملف varex.js.");
+return;
+}
+
+button.disabled=true;
+button.textContent="جاري التحقق من البريد...";
+
+try{
+
+const existingAccount=await checkExistingEmail(email);
+
+if(existingAccount){
+showMessage("error","هذا البريد الإلكتروني مرتبط بحساب موجود مسبقًا. يرجى تسجيل الدخول بدل إنشاء حساب جديد.");
+resetButton();
+return;
+}
+
+button.textContent="جاري إنشاء الحساب...";
+
+const result=await VAREX.createUser({
+name:username,
+username:username,
+email:email,
+password:password
+});
+
+if(looksLikeExistingAccount(result)){
+showMessage("error","هذا البريد الإلكتروني مرتبط بحساب موجود مسبقًا. يرجى تسجيل الدخول بدل إنشاء حساب جديد.");
+resetButton();
+return;
+}
+
+if(!result||result.success!==true){
+showMessage("error",result?.message||"تعذر إنشاء الحساب.");
+resetButton();
+return;
+}
+
+if(result.accountAlreadyExists===true||result.existingUser===true){
+showMessage("error","هذا البريد الإلكتروني مرتبط بحساب موجود مسبقًا. يرجى تسجيل الدخول بدل إنشاء حساب جديد.");
+resetButton();
+return;
+}
+
+if(result.needsEmailConfirmation===true){
+if(typeof VAREX.setPendingVerification==="function"){
+VAREX.setPendingVerification({email:email,name:username,username:username});
+}else{
+localStorage.setItem("varex_pending_verification",JSON.stringify({email:email,name:username,username:username}));
+}
+showMessage("","");
+await wait(600);
+window.location.replace("./verify-email.html?v="+encodeURIComponent(VAREX_REGISTER_VERSION));
+return;
+}
+
+showMessage("success","تم إنشاء الحساب بنجاح.");
+await wait(600);
+window.location.replace("./index.html");
+
+}catch(error){
+console.error("VAREX REGISTER ERROR:",error);
+
+if(looksLikeExistingAccount({message:error?.message,code:error?.code,error:error})){
+showMessage("error","هذا البريد الإلكتروني مرتبط بحساب موجود مسبقًا. يرجى تسجيل الدخول بدل إنشاء حساب جديد.");
+}else{
+showMessage("error",error?.message||"حدث خطأ أثناء إنشاء الحساب.");
+}
+
+resetButton();
+}
+});
+
+if("serviceWorker" in navigator){
+window.addEventListener("load",async function(){
+try{
+const registration=await navigator.serviceWorker.register("./sw.js?v=20260818",{updateViaCache:"none"});
+await registration.update();
+}catch(error){
+console.error("Service Worker:",error);
+}
+});
+}
 </script></body></html>
