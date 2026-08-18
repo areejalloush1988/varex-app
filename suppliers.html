@@ -1,359 +1,41 @@
-<!DOCTYPE html><html lang="ar" dir="rtl"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>الموردون - VAREX</title><style>
-*{box-sizing:border-box;margin:0;padding:0}
-:root{--navy:#172554;--navy-dark:#0f1d43;--navy-light:#213765;--blue:#2563eb;--bg:#f4f6fb;--white:#fff;--card:#fff;--border:#e5eaf2;--text:#172554;--bodytext:#475569;--muted:#64748b;--green:#16a34a;--red:#dc2626;--orange:#d97706;--field:#fff;--soft:#f8fafc;--soft2:#eef2ff;--line:#edf0f5;--shadow:0 5px 18px rgba(15,23,42,.055);--sidebar-width:240px;--brand-height:170px}
-html[data-theme="dark"],html[data-varex-theme="dark"],body.varex-dark{--bg:#0b1120;--card:#111c33;--border:#263550;--text:#f1f5f9;--bodytext:#cbd5e1;--muted:#94a3b8;--field:#17233d;--soft:#162139;--soft2:#1c2945;--line:#263550;--shadow:0 7px 24px rgba(0,0,0,.18)}
-html{scroll-behavior:smooth}
-body{font-family:Arial,Tahoma,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;line-height:1.5;transition:background .25s,color .25s}
-.sidebar{position:fixed;right:0;top:0;width:var(--sidebar-width);height:100vh;min-height:100vh;background:linear-gradient(180deg,#172554 0%,#13234f 48%,#0f1d43 100%);color:#fff;z-index:1000;display:flex;flex-direction:column;overflow:hidden;box-shadow:-4px 0 18px rgba(15,29,67,.08)}
-html[data-theme="dark"] .sidebar,html[data-varex-theme="dark"] .sidebar,body.varex-dark .sidebar{background:linear-gradient(180deg,#101b38,#0d1730 50%,#080f20)}
-.brand{width:100%;height:var(--brand-height);min-height:var(--brand-height);max-height:var(--brand-height);padding:24px 14px 20px;border-bottom:1px solid rgba(255,255,255,.10);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;flex:0 0 var(--brand-height);overflow:hidden}
-.logo{width:100%;font-size:30px;line-height:30px;font-weight:800;letter-spacing:4px;color:#fff;text-align:center;direction:ltr;white-space:nowrap}
-.brand-small{width:100%;margin-top:11px;font-size:10px;line-height:14px;font-weight:600;letter-spacing:.8px;color:#e2e8f0;text-align:center;direction:ltr;white-space:nowrap}
-.system-status{width:100%;margin-top:16px;display:flex;align-items:center;justify-content:center;gap:7px;font-size:10px;line-height:14px;color:#d1fae5;white-space:nowrap}
-.status-dot{width:7px;height:7px;min-width:7px;min-height:7px;background:#22c55e;border-radius:50%;box-shadow:0 0 8px rgba(34,197,94,.75)}
-.nav{width:100%;padding:16px 12px;flex:1 1 auto;overflow-y:auto;overflow-x:hidden;scrollbar-width:thin}
-.nav a{width:100%;height:48px;min-height:48px;max-height:48px;display:flex;align-items:center;justify-content:flex-start;gap:11px;color:#dbeafe;text-decoration:none;padding:0 14px;border:0;border-radius:10px;margin:0 0 5px;background:transparent;font-family:inherit;font-size:13px;font-weight:600;text-align:right;cursor:pointer;transition:.2s}
-.nav a:hover{background:rgba(255,255,255,.08);color:#fff}
-.nav a.active{background:#fff;color:var(--navy);box-shadow:0 5px 15px rgba(0,0,0,.14)}
-html[data-theme="dark"] .nav a.active,html[data-varex-theme="dark"] .nav a.active,body.varex-dark .nav a.active{background:#e2e8f0;color:#0f1d43}
-.nav a.active .nav-icon{color:var(--navy)}
-.nav-icon{width:25px;min-width:25px;height:25px;min-height:25px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
-.sidebar-footer{width:100%;height:54px;min-height:54px;max-height:54px;padding:0 10px;border-top:1px solid rgba(255,255,255,.10);color:#94a3b8;font-size:9px;letter-spacing:.5px;text-align:center;display:flex;align-items:center;justify-content:center;direction:ltr;flex:0 0 54px}
-.main{margin-right:var(--sidebar-width);min-height:100vh;background:var(--bg);transition:.25s}
-.topbar{min-height:78px;background:var(--card);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:20px;padding:0 28px;position:sticky;top:0;z-index:50;transition:.25s}
-.page-name{display:flex;align-items:center;gap:12px}
-.page-icon{width:44px;min-width:44px;height:44px;border-radius:11px;background:var(--soft2);display:flex;align-items:center;justify-content:center;font-size:20px}
-.page-name h2{font-size:19px;font-weight:700;color:var(--text)}
-.page-name small{display:block;color:var(--muted);margin-top:4px;font-size:11px;direction:ltr;text-align:right}
-.top-info{display:flex;align-items:center;justify-content:flex-end;gap:10px}
-
-/* ===== بطاقات الأعلى - نهاري كحلي 3D ===== */
-.info-chip{min-height:40px;background:#172554!important;background-image:none!important;color:#fff!important;border:1px solid #172554!important;border-radius:9px;padding:8px 13px;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;white-space:nowrap;box-shadow:0 5px 0 #0f1d43,0 10px 18px rgba(23,37,84,.24)!important;transform:translateY(0);transition:transform .12s ease,box-shadow .12s ease,background .18s ease}
-.info-chip strong{color:#fff!important;margin-right:4px;font-weight:800}
-.info-chip:hover{background:#1e3362!important;color:#fff!important;transform:translateY(-1px);box-shadow:0 6px 0 #0f1d43,0 12px 20px rgba(23,37,84,.28)!important}
-.info-chip:active{transform:translateY(3px);box-shadow:0 2px 0 #0f1d43,0 5px 9px rgba(23,37,84,.18)!important}
-
-/* ===== بطاقات الأعلى - ليلي أبيض 3D ===== */
-html[data-theme="dark"] .top-info .info-chip,
-html[data-varex-theme="dark"] .top-info .info-chip,
-body.varex-dark .top-info .info-chip{
-background:#fff!important;
-background-color:#fff!important;
-background-image:none!important;
-color:#172554!important;
-border:1px solid #fff!important;
-box-shadow:0 5px 0 #94a3b8,0 11px 21px rgba(0,0,0,.40)!important
-}
-
-html[data-theme="dark"] .top-info .info-chip strong,
-html[data-varex-theme="dark"] .top-info .info-chip strong,
-body.varex-dark .top-info .info-chip strong{
-color:#172554!important
-}
-
-html[data-theme="dark"] .top-info .info-chip:hover,
-html[data-varex-theme="dark"] .top-info .info-chip:hover,
-body.varex-dark .top-info .info-chip:hover{
-background:#f1f5f9!important;
-background-color:#f1f5f9!important;
-color:#172554!important;
-border-color:#fff!important;
-transform:translateY(-1px);
-box-shadow:0 6px 0 #94a3b8,0 13px 23px rgba(0,0,0,.44)!important
-}
-
-html[data-theme="dark"] .top-info .info-chip:active,
-html[data-varex-theme="dark"] .top-info .info-chip:active,
-body.varex-dark .top-info .info-chip:active{
-background:#fff!important;
-color:#172554!important;
-transform:translateY(3px);
-box-shadow:0 2px 0 #94a3b8,0 5px 9px rgba(0,0,0,.29)!important
-}
-
-.content{width:calc(100% - 48px);max-width:1450px;margin:24px auto 55px}
-.hero{display:flex;align-items:center;justify-content:space-between;gap:15px;margin-bottom:22px;padding:20px 22px;border:1px solid rgba(255,255,255,.10);border-radius:14px;background:linear-gradient(135deg,#172554,#213765);box-shadow:var(--shadow)}
-html[data-theme="dark"] .hero,html[data-varex-theme="dark"] .hero,body.varex-dark .hero{background:linear-gradient(135deg,#172554,#1b3159);border-color:rgba(255,255,255,.08)}
-.hero h1{font-size:25px;margin-bottom:6px;color:#fff!important}
-.hero p{color:#dbeafe!important;font-size:13px;line-height:1.7}
-.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:15px;margin-bottom:20px}
-.stat{background:var(--card);border:1px solid var(--border);border-radius:15px;padding:20px;box-shadow:var(--shadow);transition:.25s}
-.stat span{display:block;color:var(--muted);font-size:14px;margin-bottom:9px}
-.stat strong{display:block;font-size:23px;color:var(--text)}
-.supplier-card{border-top:4px solid #2563eb}.purchase-card{border-top:4px solid #7c3aed}.paid-card{border-top:4px solid #16a34a}.due-card{border-top:4px solid #f59e0b}
-.panel{background:var(--card);border:1px solid var(--border);border-radius:15px;padding:21px;margin-bottom:20px;box-shadow:var(--shadow);transition:.25s}
-.panel h3{margin:0 0 18px;padding-bottom:13px;border-bottom:1px solid var(--line);font-size:17px;color:var(--text)}
-.form-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
-input,select,textarea{width:100%;padding:12px;border:1px solid var(--border);border-radius:9px;font-size:14px;font-family:inherit;background:var(--field);color:var(--text);outline:none}
-input::placeholder,textarea::placeholder{color:var(--muted)}
-input:focus,select:focus,textarea:focus{border-color:#94a3b8;box-shadow:0 0 0 3px rgba(37,99,235,.05)}
-html[data-theme="dark"] select option,html[data-varex-theme="dark"] select option,body.varex-dark select option{background:#17233d;color:#fff}
-textarea{min-height:80px;resize:vertical}.full{grid-column:1/-1}
-.actions-form{margin-top:17px;display:flex;gap:11px;align-items:center}
-button{border:0;border-radius:9px;padding:11px 18px;cursor:pointer;font-family:inherit;font-weight:bold;transform:translateY(0);transition:transform .1s ease,box-shadow .1s ease,background .16s ease}
-
-/* ===== زر حفظ المورد - نهاري كحلي 3D ===== */
-.save{
-background:#172554!important;
-background-image:none!important;
-color:#fff!important;
-border:1px solid #172554!important;
-box-shadow:0 5px 0 #0f1d43,0 10px 17px rgba(23,37,84,.22)!important
-}
-
-.save:hover{
-background:#213765!important;
-color:#fff!important;
-transform:translateY(-1px);
-box-shadow:0 6px 0 #0f1d43,0 12px 19px rgba(23,37,84,.26)!important
-}
-
-.save:active{
-transform:translateY(4px);
-box-shadow:0 1px 0 #0f1d43,0 4px 7px rgba(23,37,84,.17)!important
-}
-
-/* ===== زر حفظ المورد - ليلي أبيض 3D ===== */
-html[data-theme="dark"] .actions-form .save,
-html[data-varex-theme="dark"] .actions-form .save,
-body.varex-dark .actions-form .save{
-background:#fff!important;
-background-color:#fff!important;
-background-image:none!important;
-color:#172554!important;
-border:1px solid #fff!important;
-box-shadow:0 5px 0 #94a3b8,0 11px 20px rgba(0,0,0,.40)!important
-}
-
-html[data-theme="dark"] .actions-form .save:hover,
-html[data-varex-theme="dark"] .actions-form .save:hover,
-body.varex-dark .actions-form .save:hover{
-background:#f1f5f9!important;
-background-color:#f1f5f9!important;
-color:#172554!important;
-border-color:#fff!important;
-transform:translateY(-1px);
-box-shadow:0 6px 0 #94a3b8,0 13px 22px rgba(0,0,0,.44)!important
-}
-
-html[data-theme="dark"] .actions-form .save:active,
-html[data-varex-theme="dark"] .actions-form .save:active,
-body.varex-dark .actions-form .save:active{
-background:#fff!important;
-color:#172554!important;
-transform:translateY(4px);
-box-shadow:0 1px 0 #94a3b8,0 4px 8px rgba(0,0,0,.27)!important
-}
-
-.cancel{background:#e5e7eb;color:#111827;display:none;border:1px solid #cbd5e1;box-shadow:0 5px 0 #cbd5e1,0 9px 15px rgba(15,23,42,.13)}
-.cancel:hover{background:#f1f5f9;transform:translateY(-1px);box-shadow:0 6px 0 #cbd5e1,0 11px 17px rgba(15,23,42,.16)}
-.cancel:active{transform:translateY(4px);box-shadow:0 1px 0 #cbd5e1,0 3px 6px rgba(15,23,42,.11)}
-html[data-theme="dark"] .cancel,html[data-varex-theme="dark"] .cancel,body.varex-dark .cancel{background:#fff!important;color:#172554!important;border-color:#fff!important;box-shadow:0 5px 0 #94a3b8,0 10px 18px rgba(0,0,0,.34)!important}
-html[data-theme="dark"] .cancel:hover,html[data-varex-theme="dark"] .cancel:hover,body.varex-dark .cancel:hover{background:#f1f5f9!important;color:#172554!important;box-shadow:0 6px 0 #94a3b8,0 12px 20px rgba(0,0,0,.38)!important}
-.toolbar{display:flex;gap:10px;margin-bottom:15px}.search{flex:1}
-.table-wrap{overflow-x:auto}table{width:100%;border-collapse:collapse;min-width:1000px;background:var(--card)}
-th,td{padding:12px 9px;border-bottom:1px solid var(--line);text-align:right;font-size:14px}
-th{background:var(--soft);color:var(--bodytext);font-weight:bold}td{color:var(--bodytext)}tbody tr:hover{background:var(--soft)}
-.edit,.delete{min-height:34px;padding:7px 11px;margin:3px;border-radius:7px;font-weight:700;background:#172554;color:#fff;border:1px solid #172554;box-shadow:0 4px 0 #0f1d43,0 8px 13px rgba(23,37,84,.18)}
-.edit:hover,.delete:hover{background:#213765;color:#fff;transform:translateY(-1px);box-shadow:0 5px 0 #0f1d43,0 10px 15px rgba(23,37,84,.22)}
-.edit:active,.delete:active{transform:translateY(3px);box-shadow:0 1px 0 #0f1d43,0 3px 6px rgba(23,37,84,.15)}
-html[data-theme="dark"] .edit,html[data-varex-theme="dark"] .edit,body.varex-dark .edit,
-html[data-theme="dark"] .delete,html[data-varex-theme="dark"] .delete,body.varex-dark .delete{background:#fff!important;color:#172554!important;border-color:#fff!important;box-shadow:0 4px 0 #94a3b8,0 9px 16px rgba(0,0,0,.34)!important}
-html[data-theme="dark"] .edit:hover,html[data-varex-theme="dark"] .edit:hover,body.varex-dark .edit:hover,
-html[data-theme="dark"] .delete:hover,html[data-varex-theme="dark"] .delete:hover,body.varex-dark .delete:hover{background:#f1f5f9!important;color:#172554!important;transform:translateY(-1px);box-shadow:0 5px 0 #94a3b8,0 11px 18px rgba(0,0,0,.38)!important}
-html[data-theme="dark"] .edit:active,html[data-varex-theme="dark"] .edit:active,body.varex-dark .edit:active,
-html[data-theme="dark"] .delete:active,html[data-varex-theme="dark"] .delete:active,body.varex-dark .delete:active{transform:translateY(3px);box-shadow:0 1px 0 #94a3b8,0 3px 6px rgba(0,0,0,.25)!important}
-.status-paid{display:inline-block;background:#dcfce7;color:#15803d;font-weight:bold;padding:5px 9px;border-radius:20px;font-size:12px}
-.status-due{display:inline-block;background:#fef3c7;color:#b45309;font-weight:bold;padding:5px 9px;border-radius:20px;font-size:12px}
-html[data-theme="dark"] .status-paid,html[data-varex-theme="dark"] .status-paid,body.varex-dark .status-paid{background:rgba(34,197,94,.14);color:#86efac}
-html[data-theme="dark"] .status-due,html[data-varex-theme="dark"] .status-due,body.varex-dark .status-due{background:rgba(217,119,6,.17);color:#fdba74}
-.empty{text-align:center;padding:30px;color:var(--muted)}
-.nav::-webkit-scrollbar{width:5px}.nav::-webkit-scrollbar-track{background:transparent}.nav::-webkit-scrollbar-thumb{background:rgba(255,255,255,.20);border-radius:10px}
-@media(max-width:1200px){.stats{grid-template-columns:repeat(2,1fr)}.form-grid{grid-template-columns:1fr 1fr}}
-@media(max-width:1000px){.topbar{padding:0 18px}}
-@media(max-width:850px){.content{width:94%}.topbar{padding:0 14px}}
-@media(max-width:650px){.form-grid{grid-template-columns:1fr}.full{grid-column:auto}.top-info .info-chip{display:none}.hero{flex-direction:column;align-items:flex-start}}
-@media(max-width:500px){.stats{grid-template-columns:1fr}.page-name small{display:none}}
+<!DOCTYPE html><html lang="ar" dir="rtl"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>VAREX | الموردون</title><meta name="theme-color" content="#172554"><link rel="manifest" href="./manifest.json?v=20260818"><link rel="icon" type="image/png" sizes="192x192" href="./varex-icon-192.png?v=20260818"><link rel="apple-touch-icon" href="./varex-icon-192.png?v=20260818"><link rel="stylesheet" href="./varex-theme.css"><style>
+.content{padding-bottom:100px}.hero{display:flex;align-items:center;justify-content:space-between;gap:15px;margin-bottom:20px;padding:20px 22px;border:1px solid rgba(255,255,255,.08);border-radius:14px;background:linear-gradient(135deg,#172554,#213765);box-shadow:var(--shadow)}body.varex-dark .hero{background:linear-gradient(135deg,#172554,#1b3159)!important}.hero h1{font-size:25px;margin-bottom:6px;color:#fff!important}.hero p{color:#dbeafe!important;font-size:13px;line-height:1.7}.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin-bottom:20px}.stat{background:var(--card);border:1px solid var(--border);border-radius:14px;min-height:126px;padding:17px 18px;box-shadow:var(--shadow)}.stat-top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}.stat-label{font-size:12px;color:var(--muted)}.stat-icon{width:36px;height:36px;border-radius:10px;background:var(--card3);display:flex;align-items:center;justify-content:center;font-size:17px}.stat-value{font-size:22px;font-weight:800;color:var(--text)}.purchase-stat .stat-value{color:#7c3aed}.paid-stat .stat-value{color:var(--green)}.due-stat .stat-value{color:var(--orange)}body.varex-dark .purchase-stat .stat-value{color:#c4b5fd}.stat-small{font-size:10px;color:var(--softmuted);margin-top:5px}.panel{background:var(--card);border:1px solid var(--border);border-radius:16px;box-shadow:var(--shadow);overflow:hidden;margin-bottom:20px}.panel-head{min-height:65px;padding:18px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:15px;background:var(--card2)}.panel-head h3{font-size:16px;color:var(--text)}.panel-head span{font-size:11px;color:var(--muted)}.panel-body{padding:20px}.form-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.field{width:100%}.field label{display:block;margin-bottom:6px;color:var(--bodytext);font-size:11px;font-weight:700}.field input,.field select,.field textarea{width:100%}.full{grid-column:1/-1}input,select,textarea{min-height:42px;padding:10px 12px;border:1px solid var(--border);border-radius:9px;background:var(--field);color:var(--text);font-family:inherit;font-size:12px;outline:none}textarea{min-height:90px;resize:vertical}input::placeholder,textarea::placeholder{color:var(--muted)}input:focus,select:focus,textarea:focus{border-color:#64748b;box-shadow:0 0 0 3px rgba(100,116,139,.10)}body.varex-dark select option{background:#17233d;color:#fff}.actions-form{display:flex;gap:10px;align-items:center;margin-top:18px}.save,.cancel,.edit,.delete{border-radius:9px;border:1px solid #172554;background:#172554;color:#fff;font-family:inherit;font-weight:800;cursor:pointer;box-shadow:0 5px 0 #0f1d43,0 9px 15px rgba(23,37,84,.18)}.save{min-height:42px;padding:10px 18px}.cancel{display:none;min-height:42px;padding:10px 18px}.edit,.delete{min-height:33px;padding:7px 10px;margin:2px;font-size:10px}.save:hover,.cancel:hover,.edit:hover,.delete:hover{background:#213765;transform:translateY(-1px)}.save:active,.cancel:active,.edit:active,.delete:active{transform:translateY(3px);box-shadow:0 1px 0 #0f1d43}.save:disabled{opacity:.6;cursor:wait;transform:none}body.varex-dark .save,body.varex-dark .cancel,body.varex-dark .edit,body.varex-dark .delete{background:#fff!important;color:#172554!important;border-color:#fff!important;box-shadow:0 5px 0 #94a3b8,0 10px 17px rgba(0,0,0,.30)!important}.sync-state{display:none;padding:10px 14px;font-size:10px;border-bottom:1px solid var(--border)}.sync-state.show{display:block}.sync-state.loading{background:#eff6ff;color:#1d4ed8}.sync-state.success{background:#f0fdf4;color:#15803d}.sync-state.error{background:#fef2f2;color:#b91c1c}body.varex-dark .sync-state.loading{background:rgba(37,99,235,.12);color:#bfdbfe}body.varex-dark .sync-state.success{background:rgba(34,197,94,.10);color:#86efac}body.varex-dark .sync-state.error{background:rgba(239,68,68,.12);color:#fca5a5}.toolbar{padding:15px 20px;background:var(--card2);border-bottom:1px solid var(--border);display:flex;gap:9px}.search{flex:1;min-width:250px}.table-wrap{overflow-x:auto}table{width:100%;border-collapse:collapse;min-width:1100px;background:var(--card)}th,td{padding:13px 10px;text-align:right;border-bottom:1px solid var(--line);font-size:11px;vertical-align:middle}th{background:var(--card2);color:var(--bodytext);white-space:nowrap;font-weight:700}td{color:var(--bodytext)}tbody tr:hover td{background:var(--card2)}.supplier-name{font-weight:800;color:var(--text)}.status-paid,.status-due{display:inline-block;padding:5px 10px;border-radius:20px;font-size:9px;font-weight:800}.status-paid{background:#dcfce7;color:#15803d}.status-due{background:#fef3c7;color:#b45309}body.varex-dark .status-paid{background:rgba(34,197,94,.12);color:#86efac}body.varex-dark .status-due{background:rgba(217,119,6,.15);color:#fdba74}.empty{text-align:center;color:var(--muted);padding:35px;font-size:11px}@media(max-width:1200px){.stats{grid-template-columns:repeat(2,minmax(0,1fr))}.form-grid{grid-template-columns:1fr 1fr}}@media(max-width:750px){.form-grid{grid-template-columns:1fr}.full{grid-column:auto}.hero{flex-direction:column;align-items:flex-start}}@media(max-width:500px){.stats{grid-template-columns:1fr}.actions-form{flex-direction:column}.actions-form button{width:100%}}
 </style></head><body>
-<aside class="sidebar"><div class="brand"><div class="logo">VAREX</div><div class="brand-small">BUSINESS MANAGEMENT SYSTEM</div><div class="system-status"><span class="status-dot"></span><span>النظام متصل وجاهز للعمل</span></div></div><nav class="nav"><a href="./index.html"><span class="nav-icon">▦</span><span>لوحة التحكم</span></a><a href="./pos.html"><span class="nav-icon">🛒</span><span>شاشة المبيعات</span></a><a href="./products.html"><span class="nav-icon">📦</span><span>المنتجات والمخزون</span></a><a href="./customers.html"><span class="nav-icon">👥</span><span>العملاء</span></a><a href="./suppliers.html" class="active"><span class="nav-icon">🚚</span><span>الموردون</span></a><a href="./accounts.html"><span class="nav-icon">💰</span><span>الحسابات</span></a><a href="./employees.html"><span class="nav-icon">👤</span><span>الموظفون</span></a><a href="./reports.html"><span class="nav-icon">📊</span><span>التقارير</span></a><a href="./setting.html"><span class="nav-icon">⚙️</span><span>الإعدادات</span></a></nav><div class="sidebar-footer">VAREX MANAGEMENT SYSTEM</div></aside>
 
-<div class="main"><header class="topbar"><div class="page-name"><div class="page-icon">🚚</div><div><h2>الموردون</h2><small>SUPPLIERS MANAGEMENT</small></div></div><div class="top-info"><div class="info-chip">المستخدم:<strong>المستخدم الحالي</strong></div><div class="info-chip" id="currentDate">—</div><div class="info-chip" id="currentTime">—</div></div></header>
+<aside class="sidebar"><div class="brand"><div class="logo">VAREX</div><div class="brand-small">BUSINESS MANAGEMENT SYSTEM</div><div class="system-status"><span class="status-dot"></span><span>النظام متصل وجاهز للعمل</span></div></div><nav class="nav"><a href="./index.html"><span class="nav-icon">▦</span><span>لوحة التحكم</span></a><a href="./pos.html"><span class="nav-icon">🛒</span><span>شاشة المبيعات</span></a><a href="./products.html"><span class="nav-icon">📦</span><span>المنتجات والمخزون</span></a><a href="./purchases.html"><span class="nav-icon">🧾</span><span>المشتريات</span></a><a href="./transfers.html"><span class="nav-icon">🔄</span><span>تحويلات المخزون</span></a><a href="./customers.html"><span class="nav-icon">👥</span><span>العملاء</span></a><a href="./suppliers.html" class="active"><span class="nav-icon">🚚</span><span>الموردون</span></a><a href="./accounts.html"><span class="nav-icon">💰</span><span>الحسابات</span></a><a href="./expenses.html"><span class="nav-icon">💸</span><span>المصروفات</span></a><a href="./shifts.html"><span class="nav-icon">🕘</span><span>ورديات الكاشير</span></a><a href="./employees.html"><span class="nav-icon">👤</span><span>الموظفون</span></a><a href="./branches.html"><span class="nav-icon">🏢</span><span>الفروع</span></a><a href="./reports.html"><span class="nav-icon">📊</span><span>التقارير</span></a><a href="./notifications.html"><span class="nav-icon">🔔</span><span>مركز التنبيهات</span></a><a href="./activity.html"><span class="nav-icon">📋</span><span>سجل النشاط</span></a><a href="./users.html"><span class="nav-icon">🔐</span><span>المستخدمون والصلاحيات</span></a><a href="./subscription.html"><span class="nav-icon">💎</span><span>الاشتراك والترخيص</span></a><a href="./setting.html"><span class="nav-icon">⚙️</span><span>الإعدادات</span></a></nav><div class="sidebar-footer">VAREX BUSINESS SYSTEM</div></aside>
 
-<main class="content"><section class="hero"><div><h1>🚚 إدارة الموردين</h1><p>إضافة الموردين وإدارة بياناتهم ومتابعة المشتريات والمدفوعات والمبالغ المستحقة.</p></div></section>
+<div class="main"><header class="topbar"><div class="page-name"><div class="page-icon">🚚</div><div><h2>الموردون</h2><small>VAREX SUPPLIERS</small></div></div><div class="top-info"><div class="info-chip">المستخدم:<strong id="currentUserName">—</strong></div><div class="info-chip" id="currentDate">—</div><div class="info-chip" id="currentTime">—</div></div></header>
 
-<div class="stats"><div class="stat supplier-card"><span>عدد الموردين</span><strong id="supplierCount">0</strong></div><div class="stat purchase-card"><span>إجمالي المشتريات</span><strong id="totalPurchases">0.00 د.إ</strong></div><div class="stat paid-card"><span>إجمالي المدفوع</span><strong id="totalPaid">0.00 د.إ</strong></div><div class="stat due-card"><span>إجمالي المستحق</span><strong id="totalDue">0.00 د.إ</strong></div></div>
+<main class="content"><section class="hero"><div><h1>إدارة الموردين</h1><p>إضافة الموردين وإدارة بياناتهم ومتابعة المشتريات والمدفوعات والمبالغ المستحقة.</p></div></section>
 
-<div class="panel"><h3 id="formTitle">إضافة مورد جديد</h3><div class="form-grid"><input id="supplierName" placeholder="اسم المورد"><input id="companyName" placeholder="اسم الشركة"><input id="phone" placeholder="رقم الهاتف"><input id="email" type="email" placeholder="البريد الإلكتروني"><input id="taxNumber" placeholder="الرقم الضريبي"><select id="supplierType"><option value="">نوع المورد</option><option value="مورد منتجات">مورد منتجات</option><option value="مورد خدمات">مورد خدمات</option><option value="مورد منتجات وخدمات">مورد منتجات وخدمات</option></select><input id="purchases" type="number" min="0" step="0.01" placeholder="إجمالي المشتريات"><input id="paid" type="number" min="0" step="0.01" placeholder="المبلغ المدفوع"><input id="address" placeholder="العنوان"><textarea id="notes" class="full" placeholder="ملاحظات عن المورد"></textarea></div><div class="actions-form"><button class="save" onclick="saveSupplier()">حفظ المورد</button><button class="cancel" id="cancelBtn" onclick="cancelEdit()">إلغاء التعديل</button></div></div>
+<section class="stats"><div class="stat"><div class="stat-top"><div class="stat-label">إجمالي الموردين</div><div class="stat-icon">🚚</div></div><div class="stat-value" id="supplierCount">0</div><div class="stat-small">عدد الموردين المسجلين</div></div><div class="stat purchase-stat"><div class="stat-top"><div class="stat-label">إجمالي المشتريات</div><div class="stat-icon">🧾</div></div><div class="stat-value" id="totalPurchases">0.00 د.إ</div><div class="stat-small">إجمالي قيمة مشتريات الموردين</div></div><div class="stat paid-stat"><div class="stat-top"><div class="stat-label">إجمالي المدفوع</div><div class="stat-icon">✓</div></div><div class="stat-value" id="totalPaid">0.00 د.إ</div><div class="stat-small">المبالغ المدفوعة للموردين</div></div><div class="stat due-stat"><div class="stat-top"><div class="stat-label">إجمالي المستحق</div><div class="stat-icon">⚠️</div></div><div class="stat-value" id="totalDue">0.00 د.إ</div><div class="stat-small">المبالغ المتبقية للموردين</div></div></section>
 
-<div class="panel"><h3>قائمة الموردين</h3><div class="toolbar"><input class="search" id="search" placeholder="🔍 ابحث باسم المورد أو الشركة أو الهاتف..." oninput="renderSuppliers()"></div><div class="table-wrap"><table><thead><tr><th>#</th><th>اسم المورد</th><th>الشركة</th><th>الهاتف</th><th>نوع المورد</th><th>المشتريات</th><th>المدفوع</th><th>المتبقي</th><th>الحالة</th><th>الإجراءات</th></tr></thead><tbody id="supplierTable"></tbody></table><div id="emptyMessage" class="empty">لا يوجد موردون حتى الآن</div></div></div></main></div>
+<section class="panel"><div class="panel-head"><h3 id="formTitle">إضافة مورد جديد</h3><span>بيانات المورد الأساسية والمالية</span></div><div class="panel-body"><div class="form-grid"><div class="field"><label>اسم المورد *</label><input id="supplierName" placeholder="اسم المورد"></div><div class="field"><label>اسم الشركة</label><input id="companyName" placeholder="اسم الشركة"></div><div class="field"><label>رقم الهاتف</label><input id="phone" placeholder="رقم الهاتف"></div><div class="field"><label>البريد الإلكتروني</label><input id="email" type="email" placeholder="البريد الإلكتروني"></div><div class="field"><label>الرقم الضريبي TRN</label><input id="taxNumber" placeholder="الرقم الضريبي"></div><div class="field"><label>نوع المورد</label><select id="supplierType"><option value="">نوع المورد</option><option value="مورد منتجات">مورد منتجات</option><option value="مورد خدمات">مورد خدمات</option><option value="مورد منتجات وخدمات">مورد منتجات وخدمات</option></select></div><div class="field"><label>إجمالي المشتريات</label><input id="purchases" type="number" min="0" step=".01" placeholder="0.00"></div><div class="field"><label>إجمالي المدفوع</label><input id="paid" type="number" min="0" step=".01" placeholder="0.00"></div><div class="field"><label>العنوان</label><input id="address" placeholder="عنوان المورد"></div><div class="field full"><label>ملاحظات</label><textarea id="notes" placeholder="ملاحظات عن المورد"></textarea></div></div><div class="actions-form"><button id="saveSupplierBtn" class="save" onclick="saveSupplier()">حفظ المورد</button><button class="cancel" id="cancelBtn" onclick="cancelEdit()">إلغاء التعديل</button></div></div></section>
 
-<script src="./varex.js"></script><script>
-let editingSupplierId=null;
+<section class="panel"><div class="panel-head"><h3>قائمة الموردين</h3><span>إدارة الموردين والمشتريات والمبالغ المستحقة</span></div><div id="syncState" class="sync-state"></div><div class="toolbar"><input class="search" id="search" placeholder="🔍 ابحث باسم المورد أو الشركة أو الهاتف أو البريد" oninput="renderSuppliers()"></div><div class="table-wrap"><table><thead><tr><th>#</th><th>اسم المورد</th><th>الشركة</th><th>الهاتف</th><th>النوع</th><th>المشتريات</th><th>المدفوع</th><th>المتبقي</th><th>الحالة</th><th>الإجراءات</th></tr></thead><tbody id="supplierTable"></tbody></table><div id="emptyMessage" class="empty">لا يوجد موردون حتى الآن</div></div></section></main></div>
 
-function updateClock(){
-const now=new Date();
-document.getElementById("currentDate").innerText=now.toLocaleDateString("ar-AE",{year:"numeric",month:"2-digit",day:"2-digit"});
-document.getElementById("currentTime").innerText=now.toLocaleTimeString("ar-AE",{hour:"2-digit",minute:"2-digit",second:"2-digit"});
-}
-updateClock();
-setInterval(updateClock,1000);
+<script src="./varex.js?v=20260818"></script><script>
+const $=id=>document.getElementById(id);let editingSupplierId=null,syncRunning=false;
 
-function number(value){return Number(value)||0;}
+(function(){try{if(typeof VAREX==="undefined"||typeof VAREX.requireLogin!=="function"){location.replace("./login.html");return}VAREX.requireLogin()}catch(e){location.replace("./login.html")}})();
 
-function saveSupplier(){
-const name=document.getElementById("supplierName").value.trim();
-if(!name){alert("يرجى إدخال اسم المورد");return;}
-const purchases=number(document.getElementById("purchases").value);
-const paid=number(document.getElementById("paid").value);
-if(paid>purchases){alert("المبلغ المدفوع لا يمكن أن يكون أكبر من إجمالي المشتريات");return;}
-
-const supplierData={
-name,
-company:document.getElementById("companyName").value.trim(),
-phone:document.getElementById("phone").value.trim(),
-email:document.getElementById("email").value.trim(),
-taxNumber:document.getElementById("taxNumber").value.trim(),
-type:document.getElementById("supplierType").value,
-purchases,
-paid,
-address:document.getElementById("address").value.trim(),
-notes:document.getElementById("notes").value.trim()
-};
-
-if(editingSupplierId===null){
-VAREX.addSupplier(supplierData);
-}else{
-if(typeof VAREX.updateSupplier==="function"){
-VAREX.updateSupplier(editingSupplierId,supplierData);
-}else{
-const suppliers=VAREX.getSuppliers();
-const index=suppliers.findIndex(s=>String(s.id)===String(editingSupplierId));
-if(index!==-1){
-suppliers[index]={...suppliers[index],...supplierData};
-VAREX.saveData(VAREX.keys.suppliers,suppliers);
-}
-}
-}
-
-editingSupplierId=null;
-clearForm();
-renderSuppliers();
-}
-
-function renderSuppliers(){
-const suppliers=VAREX.getSuppliers();
-const table=document.getElementById("supplierTable");
-const search=document.getElementById("search").value.trim().toLowerCase();
-table.innerHTML="";
-let visible=0;
-
-suppliers.forEach(supplier=>{
-const searchable=((supplier.name||"")+" "+(supplier.company||"")+" "+(supplier.phone||"")+" "+(supplier.email||"")+" "+(supplier.type||"")).toLowerCase();
-if(!searchable.includes(search))return;
-
-visible++;
-
-const due=Math.max(0,number(supplier.purchases)-number(supplier.paid));
-const status=due<=0?'<span class="status-paid">مسدد</span>':'<span class="status-due">مستحق</span>';
-
-const row=document.createElement("tr");
-row.innerHTML=`<td>${visible}</td><td>${escapeHTML(supplier.name||"-")}</td><td>${escapeHTML(supplier.company||"-")}</td><td>${escapeHTML(supplier.phone||"-")}</td><td>${escapeHTML(supplier.type||"-")}</td><td>${VAREX.money(supplier.purchases)}</td><td>${VAREX.money(supplier.paid)}</td><td>${VAREX.money(due)}</td><td>${status}</td><td><button class="edit" onclick="editSupplier('${supplier.id}')">تعديل</button><button class="delete" onclick="deleteSupplier('${supplier.id}')">حذف</button></td>`;
-
-table.appendChild(row);
-});
-
-document.getElementById("emptyMessage").style.display=visible===0?"block":"none";
-updateStats();
-}
-
-function updateStats(){
-const suppliers=VAREX.getSuppliers();
-let purchases=0,paid=0;
-
-suppliers.forEach(s=>{
-purchases+=number(s.purchases);
-paid+=number(s.paid);
-});
-
-const due=Math.max(0,purchases-paid);
-
-document.getElementById("supplierCount").innerText=suppliers.length;
-document.getElementById("totalPurchases").innerText=VAREX.money(purchases);
-document.getElementById("totalPaid").innerText=VAREX.money(paid);
-document.getElementById("totalDue").innerText=VAREX.money(due);
-}
-
-function editSupplier(id){
-const supplier=VAREX.getSuppliers().find(s=>String(s.id)===String(id));
-if(!supplier)return;
-
-editingSupplierId=supplier.id;
-
-document.getElementById("supplierName").value=supplier.name||"";
-document.getElementById("companyName").value=supplier.company||"";
-document.getElementById("phone").value=supplier.phone||"";
-document.getElementById("email").value=supplier.email||"";
-document.getElementById("taxNumber").value=supplier.taxNumber||"";
-document.getElementById("supplierType").value=supplier.type||"";
-document.getElementById("purchases").value=supplier.purchases??"";
-document.getElementById("paid").value=supplier.paid??"";
-document.getElementById("address").value=supplier.address||"";
-document.getElementById("notes").value=supplier.notes||"";
-
-document.getElementById("formTitle").innerText="تعديل بيانات المورد";
-document.getElementById("cancelBtn").style.display="inline-block";
-
-window.scrollTo({top:0,behavior:"smooth"});
-}
-
-function deleteSupplier(id){
-const suppliers=VAREX.getSuppliers();
-const supplier=suppliers.find(s=>String(s.id)===String(id));
-
-if(!supplier)return;
-
-if(!confirm("هل تريد حذف المورد: "+supplier.name+"؟"))return;
-
-if(typeof VAREX.deleteSupplier==="function"){
-VAREX.deleteSupplier(id);
-}else{
-VAREX.saveData(
-VAREX.keys.suppliers,
-suppliers.filter(s=>String(s.id)!==String(id))
-);
-}
-
-if(String(editingSupplierId)===String(id)){
-editingSupplierId=null;
-clearForm();
-}
-
-renderSuppliers();
-}
-
-function cancelEdit(){
-editingSupplierId=null;
-clearForm();
-}
-
-function clearForm(){
-["supplierName","companyName","phone","email","taxNumber","purchases","paid","address","notes"].forEach(id=>{
-document.getElementById(id).value="";
-});
-
-document.getElementById("supplierType").value="";
-document.getElementById("formTitle").innerText="إضافة مورد جديد";
-document.getElementById("cancelBtn").style.display="none";
-}
-
-function escapeHTML(value){
-const div=document.createElement("div");
-div.textContent=value==null?"":String(value);
-return div.innerHTML;
-}
-
-window.addEventListener("focus",renderSuppliers);
-window.addEventListener("storage",renderSuppliers);
-
-renderSuppliers();
+function number(v){const n=Number(v);return Number.isFinite(n)?n:0}
+function money(v){try{if(typeof VAREX!=="undefined"&&typeof VAREX.money==="function")return VAREX.money(number(v))}catch(e){}return number(v).toFixed(2)+" د.إ"}
+function escapeHTML(v){const d=document.createElement("div");d.textContent=v==null?"":String(v);return d.innerHTML}
+function updateClock(){const n=new Date();$("currentDate").textContent=n.toLocaleDateString("ar-AE",{year:"numeric",month:"2-digit",day:"2-digit"});$("currentTime").textContent=n.toLocaleTimeString("ar-AE",{hour:"2-digit",minute:"2-digit",second:"2-digit"})}
+function loadCurrentUser(){try{const u=VAREX.getCurrentUser?.()||VAREX.getStaffSession?.()||VAREX.getOwnerOperator?.()||null;$("currentUserName").textContent=u?.name||u?.username||u?.email||"المستخدم"}catch(e){$("currentUserName").textContent="المستخدم"}}
+function showSync(type,text){const e=$("syncState");e.className="sync-state show "+type;e.textContent=text;if(type==="success")setTimeout(()=>{if(e.classList.contains("success"))e.className="sync-state"},1500)}
+function getSuppliers(){try{const data=VAREX.getSuppliers?.();return Array.isArray(data)?data:[]}catch(e){console.error("SUPPLIERS:",e);return[]}}
+function findSupplier(id){return getSuppliers().find(s=>String(s.id)===String(id))||null}
+function normalizedSupplier(s){return{...s,company:s.company??s.company_name??s.companyName??"",taxNumber:s.taxNumber??s.tax_number??s.trn??"",type:s.type??s.supplier_type??"",purchases:number(s.purchases??s.totalPurchases??s.total_purchases??0),paid:number(s.paid??s.totalPaid??s.total_paid??0),address:s.address??"",notes:s.notes??""}}
+function supplierDataFromForm(){return{name:$("supplierName").value.trim(),company:$("companyName").value.trim(),phone:$("phone").value.trim(),email:$("email").value.trim(),taxNumber:$("taxNumber").value.trim(),type:$("supplierType").value,purchases:number($("purchases").value),paid:number($("paid").value),address:$("address").value.trim(),notes:$("notes").value.trim()}}
+function clearForm(){["supplierName","companyName","phone","email","taxNumber","purchases","paid","address","notes"].forEach(id=>$(id).value="");$("supplierType").value="";$("formTitle").textContent="إضافة مورد جديد";$("cancelBtn").style.display="none";editingSupplierId=null}
+async function saveSupplier(){const data=supplierDataFromForm();if(!data.name){alert("يرجى إدخال اسم المورد");return}if(data.purchases<0||data.paid<0){alert("لا يمكن إدخال قيم سالبة");return}if(data.paid>data.purchases){alert("المبلغ المدفوع لا يمكن أن يكون أكبر من إجمالي المشتريات");return}const b=$("saveSupplierBtn");if(b.disabled)return;b.disabled=true;b.textContent="جاري الحفظ...";try{if(editingSupplierId===null){if(typeof VAREX.addSupplierRemote==="function")await VAREX.addSupplierRemote(data);else if(typeof VAREX.addSupplier==="function")await VAREX.addSupplier(data);else throw new Error("وظيفة إضافة المورد غير متوفرة في VAREX.")}else{if(typeof VAREX.updateSupplierRemote==="function")await VAREX.updateSupplierRemote(editingSupplierId,data);else if(typeof VAREX.updateSupplier==="function")await VAREX.updateSupplier(editingSupplierId,data);else throw new Error("وظيفة تعديل المورد غير متوفرة في VAREX.")}clearForm();renderSuppliers();showSync("success","✓ تم حفظ بيانات المورد بنجاح")}catch(e){console.error("SAVE SUPPLIER:",e);showSync("error",e?.message||"تعذر حفظ المورد.");alert(e?.message||"تعذر حفظ المورد.")}finally{b.disabled=false;b.textContent="حفظ المورد"}}
+function editSupplier(id){const raw=findSupplier(id);if(!raw)return;const s=normalizedSupplier(raw);editingSupplierId=raw.id;$("supplierName").value=s.name||"";$("companyName").value=s.company||"";$("phone").value=s.phone||"";$("email").value=s.email||"";$("taxNumber").value=s.taxNumber||"";$("supplierType").value=s.type||"";$("purchases").value=s.purchases||0;$("paid").value=s.paid||0;$("address").value=s.address||"";$("notes").value=s.notes||"";$("formTitle").textContent="تعديل بيانات المورد";$("cancelBtn").style.display="inline-block";window.scrollTo({top:0,behavior:"smooth"})}
+function cancelEdit(){clearForm()}
+async function deleteSupplier(id){const s=findSupplier(id);if(!s)return;if(!confirm("هل تريد حذف المورد: "+(s.name||"المورد")+"؟"))return;try{showSync("loading","جاري حذف المورد...");if(typeof VAREX.deleteSupplierRemote==="function")await VAREX.deleteSupplierRemote(id);else if(typeof VAREX.deleteSupplier==="function")await VAREX.deleteSupplier(id);else throw new Error("وظيفة حذف المورد غير متوفرة في VAREX.");if(String(editingSupplierId)===String(id))clearForm();renderSuppliers();showSync("success","✓ تم حذف المورد")}catch(e){console.error("DELETE SUPPLIER:",e);showSync("error",e?.message||"تعذر حذف المورد.");alert(e?.message||"تعذر حذف المورد.")}}
+function renderSuppliers(){const suppliers=getSuppliers(),q=$("search").value.trim().toLowerCase(),table=$("supplierTable");table.innerHTML="";let visible=0;suppliers.forEach(raw=>{const s=normalizedSupplier(raw),searchable=((s.name||"")+" "+(s.company||"")+" "+(s.phone||"")+" "+(s.email||"")+" "+(s.type||"")+" "+(s.taxNumber||"")).toLowerCase();if(q&&!searchable.includes(q))return;visible++;const due=Math.max(0,s.purchases-s.paid),status=due<=.001?'<span class="status-paid">مسدد</span>':'<span class="status-due">مستحق</span>',row=document.createElement("tr");row.innerHTML=`<td>${visible}</td><td class="supplier-name">${escapeHTML(s.name||"-")}</td><td>${escapeHTML(s.company||"-")}</td><td>${escapeHTML(s.phone||"-")}</td><td>${escapeHTML(s.type||"-")}</td><td>${money(s.purchases)}</td><td>${money(s.paid)}</td><td>${money(due)}</td><td>${status}</td><td><button class="edit" onclick="editSupplier('${raw.id}')">تعديل</button><button class="delete" onclick="deleteSupplier('${raw.id}')">حذف</button></td>`;table.appendChild(row)});$("emptyMessage").style.display=visible?"none":"block";updateStats()}
+function updateStats(){const suppliers=getSuppliers().map(normalizedSupplier);let purchases=0,paid=0;suppliers.forEach(s=>{purchases+=s.purchases;paid+=s.paid});$("supplierCount").textContent=suppliers.length;$("totalPurchases").textContent=money(purchases);$("totalPaid").textContent=money(paid);$("totalDue").textContent=money(Math.max(0,purchases-paid))}
+async function syncSuppliers(){if(syncRunning)return;syncRunning=true;showSync("loading","جاري تحميل موردي المنشأة...");try{if(typeof VAREX.syncSuppliersFromSupabase==="function")await VAREX.syncSuppliersFromSupabase();else if(typeof VAREX.loadSuppliers==="function")await VAREX.loadSuppliers();renderSuppliers();showSync("success","✓ تم تحديث بيانات الموردين")}catch(e){console.error("SUPPLIER SYNC:",e);renderSuppliers();showSync("error",e?.message||"تعذر مزامنة الموردين.")}finally{syncRunning=false}}
+updateClock();setInterval(updateClock,1000);loadCurrentUser();renderSuppliers();syncSuppliers();window.addEventListener("focus",()=>{loadCurrentUser();syncSuppliers()});window.addEventListener("storage",()=>{loadCurrentUser();renderSuppliers()});
 </script></body></html>
