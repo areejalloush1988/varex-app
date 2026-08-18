@@ -1,9 +1,540 @@
-const CACHE_NAME="varex-cache-v6",FILES_TO_CACHE=["./","./index.html","./login.html","./register.html","./verify-email.html","./reset-password.html","./pos.html","./products.html","./purchases.html","./transfers.html","./customers.html","./suppliers.html","./accounts.html","./expenses.html","./shifts.html","./employees.html","./branches.html","./reports.html","./notifications.html","./activity.html","./users.html","./subscription.html","./setting.html","./varex.js","./varex-theme.css","./manifest.json","./varex-icon-192.png","./varex-icon-512.png"];
+const CACHE_NAME="varex-cache-v5";
 
-self.addEventListener("install",e=>{e.waitUntil((async()=>{const c=await caches.open(CACHE_NAME);for(const f of FILES_TO_CACHE)try{await c.add(f)}catch(err){console.warn("VAREX CACHE SKIP:",f,err)}})());self.skipWaiting()});
+const FILES_TO_CACHE=[
+"./",
+"./index.html",
+"./login.html",
+"./register.html",
+"./pos.html",
+"./products.html",
+"./customers.html",
+"./suppliers.html",
+"./accounts.html",
+"./employees.html",
+"./reports.html",
+"./setting.html",
+"./varex.js",
+"./manifest.json",
+"./varex-icon-192.png",
+"./varex-icon-512.png"
+];
 
-self.addEventListener("activate",e=>{e.waitUntil((async()=>{const names=await caches.keys();await Promise.all(names.filter(n=>n!==CACHE_NAME).map(n=>caches.delete(n)));await self.clients.claim()})())});
+self.addEventListener("install",event=>{
+event.waitUntil(
+caches.open(CACHE_NAME)
+.then(cache=>cache.addAll(FILES_TO_CACHE))
+);
+self.skipWaiting();
+});
 
-self.addEventListener("fetch",e=>{if(e.request.method!=="GET")return;const r=e.request,u=new URL(r.url);if(u.origin!==self.location.origin)return;const dynamic=r.mode==="navigate"||/\.(html|js|css|json)$/i.test(u.pathname);if(dynamic){e.respondWith((async()=>{try{const res=await fetch(r,{cache:"no-store"});if(res&&res.ok){const c=await caches.open(CACHE_NAME);c.put(r,res.clone()).catch(()=>{})}return res}catch(err){const exact=await caches.match(r);if(exact)return exact;if(r.mode==="navigate"){const path=u.pathname.split("/").pop()||"index.html",fallback=await caches.match("./"+path);if(fallback)return fallback;const login=await caches.match("./login.html");if(login)return login}return Response.error()}})());return}e.respondWith((async()=>{const cached=await caches.match(r);if(cached)return cached;try{const res=await fetch(r);if(res&&res.ok&&res.type!=="opaque"){const c=await caches.open(CACHE_NAME);c.put(r,res.clone()).catch(()=>{})}return res}catch(err){return Response.error()}})())});
+self.addEventListener("activate",event=>{
+event.waitUntil(
+caches.keys()
+.then(names=>Promise.all(
+names
+.filter(name=>name!==CACHE_NAME)
+.map(name=>caches.delete(name))
+))
+.then(()=>self.clients.claim())
+);
+});
 
-self.addEventListener("message",e=>{if(e.data?.type==="SKIP_WAITING")self.skipWaiting()});
+self.addEventListener("fetch",event=>{
+if(event.request.method!=="GET")return;
+
+const request=event.request;
+const url=new URL(request.url);
+
+if(url.origin!==self.location.origin)return;
+
+if(
+request.mode==="navigate"||
+url.pathname.endsWith(".html")||
+url.pathname.endsWith(".js")||
+url.pathname.endsWith(".json")
+){
+event.respondWith(
+fetch(request,{cache:"no-store"})
+.then(response=>{
+if(response&&response.ok){
+const copy=response.clone();
+caches.open(CACHE_NAME)
+.then(cache=>cache.put(request,copy));
+}
+return response;
+})
+.catch(async()=>{
+const cached=await caches.match(request);
+
+if(cached)return cached;  
+
+      if(request.mode==="navigate"){  
+        return caches.match("./login.html");  
+      }  
+
+      return Response.error();  
+    })  
+);  
+
+return;
+
+}
+
+event.respondWith(
+caches.match(request)
+.then(cached=>{
+if(cached)return cached;
+
+return fetch(request)  
+      .then(response=>{  
+        if(  
+          !response||  
+          !response.ok||  
+          response.type==="opaque"  
+        ){  
+          return response;  
+        }  
+
+        const copy=response.clone();  
+
+        caches.open(CACHE_NAME)  
+          .then(cache=>cache.put(request,copy));  
+
+        return response;  
+      });  
+  })
+
+);
+});
+const CACHE_NAME="varex-cache-v5";
+
+const FILES_TO_CACHE=[
+"./",
+"./index.html",
+"./login.html",
+"./register.html",
+"./pos.html",
+"./products.html",
+"./customers.html",
+"./suppliers.html",
+"./accounts.html",
+"./employees.html",
+"./reports.html",
+"./setting.html",
+"./varex.js",
+"./manifest.json",
+"./varex-icon-192.png",
+"./varex-icon-512.png"
+];
+
+self.addEventListener("install",event=>{
+event.waitUntil(
+caches.open(CACHE_NAME)
+.then(cache=>cache.addAll(FILES_TO_CACHE))
+);
+self.skipWaiting();
+});
+
+self.addEventListener("activate",event=>{
+event.waitUntil(
+caches.keys()
+.then(names=>Promise.all(
+names
+.filter(name=>name!==CACHE_NAME)
+.map(name=>caches.delete(name))
+))
+.then(()=>self.clients.claim())
+);
+});
+
+self.addEventListener("fetch",event=>{
+if(event.request.method!=="GET")return;
+
+const request=event.request;
+const url=new URL(request.url);
+
+if(url.origin!==self.location.origin)return;
+
+if(
+request.mode==="navigate"||
+url.pathname.endsWith(".html")||
+url.pathname.endsWith(".js")||
+url.pathname.endsWith(".json")
+){
+event.respondWith(
+fetch(request,{cache:"no-store"})
+.then(response=>{
+if(response&&response.ok){
+const copy=response.clone();
+caches.open(CACHE_NAME)
+.then(cache=>cache.put(request,copy));
+}
+return response;
+})
+.catch(async()=>{
+const cached=await caches.match(request);
+
+if(cached)return cached;  
+
+      if(request.mode==="navigate"){  
+        return caches.match("./login.html");  
+      }  
+
+      return Response.error();  
+    })  
+);  
+
+return;
+
+}
+
+event.respondWith(
+caches.match(request)
+.then(cached=>{
+if(cached)return cached;
+
+return fetch(request)  
+      .then(response=>{  
+        if(  
+          !response||  
+          !response.ok||  
+          response.type==="opaque"  
+        ){  
+          return response;  
+        }  
+
+        const copy=response.clone();  
+
+        caches.open(CACHE_NAME)  
+          .then(cache=>cache.put(request,copy));  
+
+        return response;  
+      });  
+  })
+
+);
+});
+vvconst CACHE_NAME="varex-cache-v5";
+
+const FILES_TO_CACHE=[
+"./",
+"./index.html",
+"./login.html",
+"./register.html",
+"./pos.html",
+"./products.html",
+"./customers.html",
+"./suppliers.html",
+"./accounts.html",
+"./employees.html",
+"./reports.html",
+"./setting.html",
+"./varex.js",
+"./manifest.json",
+"./varex-icon-192.png",
+"./varex-icon-512.png"
+];
+
+self.addEventListener("install",event=>{
+event.waitUntil(
+caches.open(CACHE_NAME)
+.then(cache=>cache.addAll(FILES_TO_CACHE))
+);
+self.skipWaiting();
+});
+
+self.addEventListener("activate",event=>{
+event.waitUntil(
+caches.keys()
+.then(names=>Promise.all(
+names
+.filter(name=>name!==CACHE_NAME)
+.map(name=>caches.delete(name))
+))
+.then(()=>self.clients.claim())
+);
+});
+
+self.addEventListener("fetch",event=>{
+if(event.request.method!=="GET")return;
+
+const request=event.request;
+const url=new URL(request.url);
+
+if(url.origin!==self.location.origin)return;
+
+if(
+request.mode==="navigate"||
+url.pathname.endsWith(".html")||
+url.pathname.endsWith(".js")||
+url.pathname.endsWith(".json")
+){
+event.respondWith(
+fetch(request,{cache:"no-store"})
+.then(response=>{
+if(response&&response.ok){
+const copy=response.clone();
+caches.open(CACHE_NAME)
+.then(cache=>cache.put(request,copy));
+}
+return response;
+})
+.catch(async()=>{
+const cached=await caches.match(request);
+
+if(cached)return cached;  
+
+      if(request.mode==="navigate"){  
+        return caches.match("./login.html");  
+      }  
+
+      return Response.error();  
+    })  
+);  
+
+return;
+
+}
+
+event.respondWith(
+caches.match(request)
+.then(cached=>{
+if(cached)return cached;
+
+return fetch(request)  
+      .then(response=>{  
+        if(  
+          !response||  
+          !response.ok||  
+          response.type==="opaque"  
+        ){  
+          return response;  
+        }  
+
+        const copy=response.clone();  
+
+        caches.open(CACHE_NAME)  
+          .then(cache=>cache.put(request,copy));  
+
+        return response;  
+      });  
+  })
+
+);
+});
+const CACHE_NAME="varex-cache-v5";
+
+const FILES_TO_CACHE=[
+"./",
+"./index.html",
+"./login.html",
+"./register.html",
+"./pos.html",
+"./products.html",
+"./customers.html",
+"./suppliers.html",
+"./accounts.html",
+"./employees.html",
+"./reports.html",
+"./setting.html",
+"./varex.js",
+"./manifest.json",
+"./varex-icon-192.png",
+"./varex-icon-512.png"
+];
+
+self.addEventListener("install",event=>{
+event.waitUntil(
+caches.open(CACHE_NAME)
+.then(cache=>cache.addAll(FILES_TO_CACHE))
+);
+self.skipWaiting();
+});
+
+self.addEventListener("activate",event=>{
+event.waitUntil(
+caches.keys()
+.then(names=>Promise.all(
+names
+.filter(name=>name!==CACHE_NAME)
+.map(name=>caches.delete(name))
+))
+.then(()=>self.clients.claim())
+);
+});
+
+self.addEventListener("fetch",event=>{
+if(event.request.method!=="GET")return;
+
+const request=event.request;
+const url=new URL(request.url);
+
+if(url.origin!==self.location.origin)return;
+
+if(
+request.mode==="navigate"||
+url.pathname.endsWith(".html")||
+url.pathname.endsWith(".js")||
+url.pathname.endsWith(".json")
+){
+event.respondWith(
+fetch(request,{cache:"no-store"})
+.then(response=>{
+if(response&&response.ok){
+const copy=response.clone();
+caches.open(CACHE_NAME)
+.then(cache=>cache.put(request,copy));
+}
+return response;
+})
+.catch(async()=>{
+const cached=await caches.match(request);
+
+if(cached)return cached;  
+
+      if(request.mode==="navigate"){  
+        return caches.match("./login.html");  
+      }  
+
+      return Response.error();  
+    })  
+);  
+
+return;
+
+}
+
+event.respondWith(
+caches.match(request)
+.then(cached=>{
+if(cached)return cached;
+
+return fetch(request)  
+      .then(response=>{  
+        if(  
+          !response||  
+          !response.ok||  
+          response.type==="opaque"  
+        ){  
+          return response;  
+        }  
+
+        const copy=response.clone();  
+
+        caches.open(CACHE_NAME)  
+          .then(cache=>cache.put(request,copy));  
+
+        return response;  
+      });  
+  })
+
+);
+});
+const CACHE_NAME="varex-cache-v5";
+
+const FILES_TO_CACHE=[
+"./",
+"./index.html",
+"./login.html",
+"./register.html",
+"./pos.html",
+"./products.html",
+"./customers.html",
+"./suppliers.html",
+"./accounts.html",
+"./employees.html",
+"./reports.html",
+"./setting.html",
+"./varex.js",
+"./manifest.json",
+"./varex-icon-192.png",
+"./varex-icon-512.png"
+];
+
+self.addEventListener("install",event=>{
+event.waitUntil(
+caches.open(CACHE_NAME)
+.then(cache=>cache.addAll(FILES_TO_CACHE))
+);
+self.skipWaiting();
+});
+
+self.addEventListener("activate",event=>{
+event.waitUntil(
+caches.keys()
+.then(names=>Promise.all(
+names
+.filter(name=>name!==CACHE_NAME)
+.map(name=>caches.delete(name))
+))
+.then(()=>self.clients.claim())
+);
+});
+
+self.addEventListener("fetch",event=>{
+if(event.request.method!=="GET")return;
+
+const request=event.request;
+const url=new URL(request.url);
+
+if(url.origin!==self.location.origin)return;
+
+if(
+request.mode==="navigate"||
+url.pathname.endsWith(".html")||
+url.pathname.endsWith(".js")||
+url.pathname.endsWith(".json")
+){
+event.respondWith(
+fetch(request,{cache:"no-store"})
+.then(response=>{
+if(response&&response.ok){
+const copy=response.clone();
+caches.open(CACHE_NAME)
+.then(cache=>cache.put(request,copy));
+}
+return response;
+})
+.catch(async()=>{
+const cached=await caches.match(request);
+
+if(cached)return cached;  
+
+      if(request.mode==="navigate"){  
+        return caches.match("./login.html");  
+      }  
+
+      return Response.error();  
+    })  
+);  
+
+return;
+
+}
+
+event.respondWith(
+caches.match(request)
+.then(cached=>{
+if(cached)return cached;
+
+return fetch(request)  
+      .then(response=>{  
+        if(  
+          !response||  
+          !response.ok||  
+          response.type==="opaque"  
+        ){  
+          return response;  
+        }  
+
+        const copy=response.clone();  
+
+        caches.open(CACHE_NAME)  
+          .then(cache=>cache.put(request,copy));  
+
+        return response;  
+      });  
+  })
+
+);
+});
