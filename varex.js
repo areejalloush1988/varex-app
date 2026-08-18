@@ -176,6 +176,7 @@ function varexStartUI(){const publicPage=VAREX.isLoginPage()||VAREX.isRegisterPa
 window.addEventListener("focus",()=>{varexApplyTheme(varexGetTheme());varexInstallTopSwitchUserButton();varexShowCurrentUser()});
 if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",varexStartUI,{once:true});else varexStartUI();
 /* ================= VAREX THEME + FIXED SIDEBAR SCROLL ================= */
+/* ================= VAREX THEME + STABLE SIDEBAR ================= */
 (function(){
 "use strict";
 const THEME_ID="varexCentralTheme",SCROLL_KEY="varex_sidebar_scroll";
@@ -185,60 +186,55 @@ if(!link){
 link=document.createElement("link");
 link.id=THEME_ID;
 link.rel="stylesheet";
-link.href="./varex-theme.css?v=20260818-2";
 document.head.appendChild(link);
-}else link.href="./varex-theme.css?v=20260818-2";
+}
+link.href="./varex-theme.css?v=20260818-3";
 }
 function getNav(){return document.querySelector(".sidebar .nav")}
-function savedScroll(){const n=Number(sessionStorage.getItem(SCROLL_KEY)||0);return Number.isFinite(n)&&n>=0?n:0}
+function getSavedScroll(){
+const value=Number(sessionStorage.getItem(SCROLL_KEY)||0);
+return Number.isFinite(value)&&value>=0?value:0;
+}
 function saveScroll(){
 const nav=getNav();
-if(nav)sessionStorage.setItem(SCROLL_KEY,String(Math.max(0,nav.scrollTop||0)));
+if(nav)sessionStorage.setItem(SCROLL_KEY,String(Math.max(0,nav.scrollTop)));
 }
 function restoreScroll(){
 const nav=getNav();
 if(!nav)return;
-const y=savedScroll();
-requestAnimationFrame(function(){
-nav.scrollTop=y;
-requestAnimationFrame(function(){nav.scrollTop=y});
-});
+nav.style.scrollBehavior="auto";
+nav.scrollTop=getSavedScroll();
 }
 function prepareNav(){
 const nav=getNav();
-if(!nav||nav.dataset.varexScrollReady==="true")return;
-nav.dataset.varexScrollReady="true";
+if(!nav||nav.dataset.varexStableScroll==="true")return;
+nav.dataset.varexStableScroll="true";
+restoreScroll();
 nav.addEventListener("scroll",function(){
-sessionStorage.setItem(SCROLL_KEY,String(Math.max(0,nav.scrollTop||0)));
+sessionStorage.setItem(SCROLL_KEY,String(Math.max(0,nav.scrollTop)));
 },{passive:true});
 nav.addEventListener("pointerdown",saveScroll,true);
 nav.addEventListener("click",function(e){
 if(e.target.closest("a[href]"))saveScroll();
 },true);
-restoreScroll();
 }
-loadTheme();
-const observer=new MutationObserver(function(){
-prepareNav();
-restoreScroll();
-});
 function start(){
 prepareNav();
-restoreScroll();
-observer.observe(document.body,{childList:true,subtree:true});
-setTimeout(restoreScroll,0);
-setTimeout(restoreScroll,100);
-setTimeout(restoreScroll,300);
-setTimeout(restoreScroll,700);
+if(getNav())return;
+const observer=new MutationObserver(function(){
+if(getNav()){
+observer.disconnect();
+prepareNav();
 }
+});
+observer.observe(document.body,{childList:true,subtree:true});
+}
+loadTheme();
 window.addEventListener("pagehide",saveScroll);
 window.addEventListener("beforeunload",saveScroll);
-document.addEventListener("visibilitychange",function(){
-if(document.visibilityState==="hidden")saveScroll();
-else restoreScroll();
-});
-window.addEventListener("pageshow",restoreScroll);
-window.addEventListener("focus",restoreScroll);
-if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",start,{once:true});
-else start();
+if(document.readyState==="loading"){
+document.addEventListener("DOMContentLoaded",start,{once:true});
+}else{
+start();
+}
 })();
