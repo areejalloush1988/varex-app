@@ -65,6 +65,179 @@ requireSubscription(){if(!this.isSubscriptionGateEnabled())return true;if(this.i
 initialize(){[this.keys.products,this.keys.sales,this.keys.customers,this.keys.suppliers,this.keys.employees,this.keys.transactions,this.keys.heldSales].forEach(k=>{const sk=this.scopeKey(k);if(localStorage.getItem(sk)===null)localStorage.setItem(sk,"[]")});return true}};
 VAREX.initialize();window.VAREX=VAREX;
 
+/* =========================================================
+   VAREX SYSTEM DIALOGS
+   نوافذ داخلية بديلة عن alert / confirm / prompt في المتصفح
+========================================================= */
+(function(){
+"use strict";
+
+let dialogQueue=Promise.resolve();
+let activeDialog=null;
+let previousFocus=null;
+let previousBodyOverflow="";
+
+function waitForBody(){
+if(document.body)return Promise.resolve();
+return new Promise(resolve=>document.addEventListener("DOMContentLoaded",resolve,{once:true}));
+}
+
+function addDialogStyles(){
+if(document.getElementById("varexSystemDialogStyles"))return;
+const style=document.createElement("style");
+style.id="varexSystemDialogStyles";
+style.textContent=`
+#varexSystemDialog[hidden]{display:none!important}
+#varexSystemDialog{position:fixed;inset:0;z-index:2147483646;display:flex;align-items:center;justify-content:center;padding:20px;background:rgba(8,15,35,.68);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);font-family:Arial,Tahoma,sans-serif;box-sizing:border-box}
+#varexSystemDialog *{box-sizing:border-box}
+#varexSystemDialog .varex-dialog-card{width:min(520px,calc(100vw - 32px));max-height:min(680px,calc(100dvh - 32px));overflow:auto;padding:28px;border:1px solid rgba(148,163,184,.28);border-radius:22px;background:#fff;color:#172554;text-align:center;box-shadow:0 30px 90px rgba(2,6,23,.38);animation:varexDialogIn .16s ease-out}
+#varexSystemDialog .varex-dialog-brand{display:inline-flex;align-items:center;justify-content:center;min-width:96px;height:32px;margin-bottom:17px;padding:0 15px;border-radius:999px;background:linear-gradient(135deg,#172554,#263d70);color:#fff;font-size:14px;font-weight:900;letter-spacing:2px;direction:ltr}
+#varexSystemDialog .varex-dialog-icon{width:58px;height:58px;margin:0 auto 15px;border-radius:18px;display:flex;align-items:center;justify-content:center;background:#eef2ff;color:#172554;font-size:29px;font-weight:900}
+#varexSystemDialog .varex-dialog-title{margin:0 0 12px;color:inherit;font-size:21px;line-height:1.4;font-weight:900;text-align:center}
+#varexSystemDialog .varex-dialog-message{margin:0 auto;color:#475569;font-size:15px;line-height:1.9;font-weight:700;text-align:center;white-space:pre-wrap;overflow-wrap:anywhere}
+#varexSystemDialog .varex-dialog-input-wrap{display:none;margin-top:19px}
+#varexSystemDialog[data-kind="prompt"] .varex-dialog-input-wrap{display:block}
+#varexSystemDialog .varex-dialog-input{width:100%;height:48px;padding:10px 14px;border:1px solid #cbd5e1;border-radius:12px;outline:none;background:#fff;color:#172554;font:700 14px Arial,Tahoma,sans-serif;text-align:center;direction:auto}
+#varexSystemDialog .varex-dialog-input:focus{border-color:#172554;box-shadow:0 0 0 4px rgba(23,37,84,.12)}
+#varexSystemDialog .varex-dialog-actions{display:grid;grid-template-columns:1fr 1fr;gap:11px;margin-top:24px}
+#varexSystemDialog[data-kind="alert"] .varex-dialog-actions{grid-template-columns:1fr}
+#varexSystemDialog[data-kind="alert"] .varex-dialog-cancel{display:none}
+#varexSystemDialog .varex-dialog-button{min-height:46px;padding:11px 16px;border-radius:12px;font:900 14px Arial,Tahoma,sans-serif;cursor:pointer}
+#varexSystemDialog .varex-dialog-confirm{border:1px solid #172554;background:linear-gradient(135deg,#172554,#263d70);color:#fff;box-shadow:0 6px 16px rgba(23,37,84,.22)}
+#varexSystemDialog .varex-dialog-cancel{border:1px solid #cbd5e1;background:#f8fafc;color:#334155}
+#varexSystemDialog .varex-dialog-button:focus-visible{outline:3px solid rgba(37,99,235,.35);outline-offset:2px}
+html[data-theme="dark"] #varexSystemDialog .varex-dialog-card,html[data-varex-theme="dark"] #varexSystemDialog .varex-dialog-card,body.varex-dark #varexSystemDialog .varex-dialog-card{border-color:#334155;background:#111c33;color:#f8fafc}
+html[data-theme="dark"] #varexSystemDialog .varex-dialog-message,html[data-varex-theme="dark"] #varexSystemDialog .varex-dialog-message,body.varex-dark #varexSystemDialog .varex-dialog-message{color:#cbd5e1}
+html[data-theme="dark"] #varexSystemDialog .varex-dialog-icon,html[data-varex-theme="dark"] #varexSystemDialog .varex-dialog-icon,body.varex-dark #varexSystemDialog .varex-dialog-icon{background:#1e2d4b;color:#dbeafe}
+html[data-theme="dark"] #varexSystemDialog .varex-dialog-input,html[data-varex-theme="dark"] #varexSystemDialog .varex-dialog-input,body.varex-dark #varexSystemDialog .varex-dialog-input{border-color:#475569;background:#17233d;color:#f8fafc}
+html[data-theme="dark"] #varexSystemDialog .varex-dialog-cancel,html[data-varex-theme="dark"] #varexSystemDialog .varex-dialog-cancel,body.varex-dark #varexSystemDialog .varex-dialog-cancel{border-color:#475569;background:#1b2945;color:#e2e8f0}
+@keyframes varexDialogIn{from{opacity:0;transform:translateY(10px) scale(.98)}to{opacity:1;transform:none}}
+@media(max-width:520px){#varexSystemDialog{padding:14px}#varexSystemDialog .varex-dialog-card{width:100%;padding:23px 18px;border-radius:18px}#varexSystemDialog .varex-dialog-title{font-size:19px}#varexSystemDialog .varex-dialog-message{font-size:14px}#varexSystemDialog .varex-dialog-actions{grid-template-columns:1fr}}
+@media(prefers-reduced-motion:reduce){#varexSystemDialog .varex-dialog-card{animation:none}}
+`;
+(document.head||document.documentElement).appendChild(style);
+}
+
+function createDialog(){
+let overlay=document.getElementById("varexSystemDialog");
+if(overlay)return overlay;
+addDialogStyles();
+overlay=document.createElement("div");
+overlay.id="varexSystemDialog";
+overlay.hidden=true;
+overlay.dataset.kind="alert";
+overlay.setAttribute("role","dialog");
+overlay.setAttribute("aria-modal","true");
+overlay.setAttribute("aria-labelledby","varexDialogTitle");
+overlay.setAttribute("aria-describedby","varexDialogMessage");
+overlay.innerHTML=`<div class="varex-dialog-card" role="document"><div class="varex-dialog-brand">VAREX</div><div class="varex-dialog-icon" aria-hidden="true">!</div><h2 class="varex-dialog-title" id="varexDialogTitle">تنبيه VAREX</h2><div class="varex-dialog-message" id="varexDialogMessage"></div><div class="varex-dialog-input-wrap"><input class="varex-dialog-input" id="varexDialogInput" autocomplete="off"></div><div class="varex-dialog-actions"><button type="button" class="varex-dialog-button varex-dialog-confirm" id="varexDialogConfirm">حسنًا</button><button type="button" class="varex-dialog-button varex-dialog-cancel" id="varexDialogCancel">إلغاء</button></div></div>`;
+document.body.appendChild(overlay);
+overlay.querySelector("#varexDialogConfirm").addEventListener("click",()=>finishDialog(true));
+overlay.querySelector("#varexDialogCancel").addEventListener("click",()=>finishDialog(false));
+return overlay;
+}
+
+function closeValue(confirmed){
+if(!activeDialog)return null;
+if(activeDialog.kind==="prompt"){
+if(!confirmed)return null;
+return activeDialog.overlay.querySelector("#varexDialogInput").value;
+}
+return activeDialog.kind==="confirm"?Boolean(confirmed):undefined;
+}
+
+function finishDialog(confirmed){
+if(!activeDialog)return;
+const current=activeDialog;
+const value=closeValue(confirmed);
+activeDialog=null;
+current.overlay.hidden=true;
+current.overlay.removeAttribute("data-state");
+document.body.style.overflow=previousBodyOverflow;
+if(previousFocus&&typeof previousFocus.focus==="function"&&document.contains(previousFocus)){
+try{previousFocus.focus({preventScroll:true})}catch(e){previousFocus.focus()}
+}
+previousFocus=null;
+current.resolve(value);
+}
+
+async function showDialog(kind,message,options={}){
+await waitForBody();
+return new Promise(resolve=>{
+const overlay=createDialog();
+const title=overlay.querySelector("#varexDialogTitle");
+const text=overlay.querySelector("#varexDialogMessage");
+const icon=overlay.querySelector(".varex-dialog-icon");
+const input=overlay.querySelector("#varexDialogInput");
+const confirmButton=overlay.querySelector("#varexDialogConfirm");
+const cancelButton=overlay.querySelector("#varexDialogCancel");
+const defaults=kind==="confirm"?{title:"تأكيد الإجراء",icon:"?",confirmText:"تأكيد"}:kind==="prompt"?{title:"تأكيد الهوية",icon:"🔒",confirmText:"متابعة"}:{title:"تنبيه VAREX",icon:"!",confirmText:"حسنًا"};
+overlay.dataset.kind=kind;
+title.textContent=String(options.title||defaults.title);
+text.textContent=String(message??"");
+icon.textContent=String(options.icon||defaults.icon);
+confirmButton.textContent=String(options.confirmText||defaults.confirmText);
+cancelButton.textContent=String(options.cancelText||"إلغاء");
+input.value=String(options.defaultValue??"");
+input.placeholder=String(options.placeholder||"");
+input.type=["text","password","email","number","tel"].includes(options.type)?options.type:"text";
+input.maxLength=Number.isFinite(Number(options.maxLength))?Math.max(1,Number(options.maxLength)):256;
+previousFocus=document.activeElement;
+previousBodyOverflow=document.body.style.overflow;
+document.body.style.overflow="hidden";
+activeDialog={kind,overlay,resolve};
+overlay.hidden=false;
+overlay.dataset.state="open";
+requestAnimationFrame(()=>{
+const target=kind==="prompt"?input:confirmButton;
+target.focus({preventScroll:true});
+if(kind==="prompt"&&input.value)input.select();
+});
+});
+}
+
+function enqueueDialog(kind,message,options){
+const task=()=>showDialog(kind,message,options);
+const result=dialogQueue.then(task,task);
+dialogQueue=result.then(()=>undefined,()=>undefined);
+return result;
+}
+
+document.addEventListener("keydown",event=>{
+if(!activeDialog)return;
+if(event.key==="Tab"){
+const focusable=[...activeDialog.overlay.querySelectorAll("input,button")].filter(element=>!element.disabled&&getComputedStyle(element).display!=="none");
+if(!focusable.length)return;
+const first=focusable[0],last=focusable[focusable.length-1];
+if(event.shiftKey&&document.activeElement===first){event.preventDefault();last.focus()}
+else if(!event.shiftKey&&document.activeElement===last){event.preventDefault();first.focus()}
+return;
+}
+if(event.key==="Escape"){
+event.preventDefault();
+event.stopImmediatePropagation();
+finishDialog(false);
+return;
+}
+if(event.key==="Enter"){
+event.preventDefault();
+event.stopImmediatePropagation();
+finishDialog(true);
+}
+},true);
+
+const api={
+alert(message,options){return enqueueDialog("alert",message,options)},
+confirm(message,options){return enqueueDialog("confirm",message,options)},
+prompt(message,options){return enqueueDialog("prompt",message,options)}
+};
+
+window.VAREXDialog=api;
+window.varexAlert=api.alert;
+window.varexConfirm=api.confirm;
+window.varexPrompt=api.prompt;
+})();
+
 /* ========================================================= FIXED LAYOUT - NO SHAKE ========================================================= */
 (function(){
 const s=document.createElement("style");

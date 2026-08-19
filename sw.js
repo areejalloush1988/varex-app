@@ -1,4 +1,4 @@
-const CACHE_NAME="varex-cache-v7";
+const CACHE_NAME="varex-cache-v8-dialogs";
 
 const FILES_TO_CACHE=[
 "./",

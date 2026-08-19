@@ -30,7 +30,7 @@ const old=document.getElementById("varexCoreScript");if(old)old.remove();
 const s=document.createElement("script");
 s.id="varexCoreScript";
 s.async=false;
-s.src="./varex.js?v=20260818-db10"+Date.now()+(retry?"-retry":"");
+s.src="./varex.js?v=20260820-dialogs1"+Date.now()+(retry?"-retry":"");
 s.onload=()=>{
 setTimeout(()=>{
 if(window.VAREX&&typeof window.VAREX.login==="function")resolve(true);
