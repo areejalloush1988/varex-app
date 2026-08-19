@@ -52,4 +52,4 @@ function prepareReceipt(s){let items=(s.items||[]).map(i=>'<div class="receipt-r
 function printLastSale(){let sale=lastCompletedSale;if(!sale){let sales=getSales();sale=sales.length?sales.slice().sort((a,b)=>new Date(b.createdAt||b.date||0)-new Date(a.createdAt||a.date||0))[0]:null}if(!sale){showToast("لا توجد فاتورة للطباعة");return}prepareReceipt(sale);setTimeout(()=>window.print(),80)}
 function startVarexPOS(){loadCurrentUser();updateClock();setInterval(updateClock,1000);renderCustomers();renderCategories();renderProducts();renderCart();updateTodayStats();paymentMethodChanged();updateHoldButton();setTimeout(()=>$("barcodeScanner")?.focus(),300)}
 startVarexPOS();window.addEventListener("focus",()=>{loadCurrentUser();renderCustomers();renderCategories();renderProducts();updateTodayStats();updateHoldButton()});document.addEventListener("keydown",e=>{if(e.key==="Escape"){closeHeldSales();closeActionModal()}});
-</script></body></html>
+</script></body></html><script src=varex-navigation.js></script>

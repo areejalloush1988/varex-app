@@ -36,3 +36,4 @@ updateCurrentUser();updateLanguageButton();updateClock();setInterval(updateClock
 addEventListener("focus",()=>{if(VAREX?.isLoggedIn&&!VAREX.isLoggedIn()){location.replace("./login.html");return}updateDashboard();updateCurrentUser();updateLanguageButton()});  
 addEventListener("storage",()=>{updateDashboard();updateCurrentUser();updateLanguageButton()});  
 </script></body></html>  
+<script src=varex-navigation.js></script>
