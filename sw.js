@@ -1,4 +1,4 @@
-const CACHE_NAME="varex-cache-v9-neutral";
+const CACHE_NAME="varex-cache-v10-sidebar-settings";
 
 const FILES_TO_CACHE=[
 "./",

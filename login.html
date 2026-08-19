@@ -30,7 +30,7 @@ const old=document.getElementById("varexCoreScript");if(old)old.remove();
 const s=document.createElement("script");
 s.id="varexCoreScript";
 s.async=false;
-s.src="./varex.js?v=20260820-neutral1"+Date.now()+(retry?"-retry":"");
+s.src="./varex.js?v=20260820-sidebar-settings1"+Date.now()+(retry?"-retry":"");
 s.onload=()=>{
 setTimeout(()=>{
 if(window.VAREX&&typeof window.VAREX.login==="function")resolve(true);
@@ -172,4 +172,4 @@ await r.update();
 }
 })();
 </script></body></html>
-<script src=varex-navigation.js></script>
+<script src="./varex-navigation.js?v=20260820-sidebar-settings1"></script>
