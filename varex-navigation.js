@@ -207,6 +207,7 @@
     init() {
       this.render();
       this.refreshActive();
+      if(typeof varexAddSidebarAction==="function")varexAddSidebarActions();
 
       document.documentElement.classList.add(
         "varex-navigation-ready"
