@@ -1,4 +1,5 @@
-/* VAREX CENTRAL THEME */ :root{--varex-navy:#172554;--varex-dark:#0f1d43;--varex-sidebar-width:240px;--varex-brand-height:170px;--varex-footer-height:54px;--varex-topbar-height:78px;--varex-nav-item-height:48px;--varex-nav-gap:5px;--varex-radius:10px}
+/* VAREX CENTRAL THEME */
+:root{--varex-navy:#172554;--varex-dark:#0f1d43;--varex-sidebar-width:240px;--varex-brand-height:170px;--varex-footer-height:54px;--varex-topbar-height:78px;--varex-nav-item-height:48px;--varex-nav-gap:5px;--varex-radius:10px}
 
 html{width:100%;min-height:100%;overflow-y:scroll;scrollbar-gutter:stable;scroll-behavior:auto!important}
 
@@ -54,16 +55,75 @@ body{width:100%;min-height:100vh;font-family:Arial,Tahoma,sans-serif!important;o
 
 .content{min-width:0!important;transform:none!important;animation:none!important}
 
-/* تثبيت محتوى الصفحات البيضاء فقط - بدون المساس بالقائمة الجانبية */
-.main .content,.main .content>*,.main .content section,.main .content .hero,.main .content .stats,.main .content .stat,.main .content .cards,.main .content .card,.main .content .panel,.main .content .toolbar,.main .content .filters,.main .content .table-wrap{animation:none!important;animation-name:none!important;animation-duration:0s!important;animation-delay:0s!important;transition:none!important;transition-property:none!important;transition-duration:0s!important;transition-delay:0s!important;transform:none!important;translate:none!important}
+/* إصلاح القفزة داخل محتوى الصفحة البيضاء فقط */
+.main .content,
+.main .content>*,
+.main .content section,
+.main .content .hero,
+.main .content .stats,
+.main .content .stat,
+.main .content .cards,
+.main .content .card,
+.main .content .panel,
+.main .content .toolbar,
+.main .content .filters,
+.main .content .table-wrap{
+animation:none!important;
+animation-name:none!important;
+animation-duration:0s!important;
+animation-delay:0s!important;
+transition:none!important;
+transition-property:none!important;
+transition-duration:0s!important;
+transition-delay:0s!important;
+transform:none!important;
+translate:none!important
+}
 
-.main .content .page-icon,.main .content .stat-icon,.main .content .card-icon,.main .content .icon,.main .content i,.main .content svg{animation:none!important;transition:none!important;transform:none!important;translate:none!important}
+.main .content .page-icon,
+.main .content .stat-icon,
+.main .content .card-icon,
+.main .content .icon,
+.main .content i,
+.main .content svg{
+animation:none!important;
+transition:none!important;
+transform:none!important;
+translate:none!important
+}
 
-.main .content .stat:hover,.main .content .card:hover,.main .content .panel:hover,.main .content .hero:hover,.main .content .stat:focus,.main .content .card:focus,.main .content .panel:focus{animation:none!important;transition:none!important;transform:none!important;translate:none!important}
+.main .content .stat:hover,
+.main .content .card:hover,
+.main .content .panel:hover,
+.main .content .hero:hover,
+.main .content .stat:focus,
+.main .content .card:focus,
+.main .content .panel:focus{
+animation:none!important;
+transition:none!important;
+transform:none!important;
+translate:none!important
+}
 
-.main .content button,.main .content a{animation:none!important;transition:none!important;transform:none!important;translate:none!important}
+.main .content button,
+.main .content a{
+animation:none!important;
+transition:none!important;
+transform:none!important;
+translate:none!important
+}
 
-.main .content button:hover,.main .content button:focus,.main .content button:active,.main .content a:hover,.main .content a:focus,.main .content a:active{animation:none!important;transition:none!important;transform:none!important;translate:none!important}
+.main .content button:hover,
+.main .content button:focus,
+.main .content button:active,
+.main .content a:hover,
+.main .content a:focus,
+.main .content a:active{
+animation:none!important;
+transition:none!important;
+transform:none!important;
+translate:none!important
+}
 
 .sidebar,.sidebar *,.topbar,.topbar *{box-sizing:border-box!important}
 
