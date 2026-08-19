@@ -1,4 +1,4 @@
-const CACHE_NAME="varex-cache-v10-sidebar-settings";
+const CACHE_NAME="varex-cache-v11-account-deletion";
 
 const FILES_TO_CACHE=[
 "./",
@@ -14,6 +14,7 @@ const FILES_TO_CACHE=[
 "./reports.html",
 "./setting.html",
 "./varex.js",
+"./account-deletion.js",
 "./manifest.json",
 "./varex-icon-192.png",
 "./varex-icon-512.png"

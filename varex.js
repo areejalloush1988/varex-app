@@ -63,6 +63,68 @@ isSubscriptionPage(){return location.pathname.toLowerCase().endsWith("subscripti
 isSubscriptionGateEnabled(){return localStorage.getItem(this.keys.subscriptionGate)==="true"},enableSubscriptionGate(){localStorage.setItem(this.keys.subscriptionGate,"true");return true},disableSubscriptionGate(){localStorage.setItem(this.keys.subscriptionGate,"false");return true},
 requireSubscription(){if(!this.isSubscriptionGateEnabled())return true;if(this.isLoginPage()||this.isRegisterPage()||this.isVerifyEmailPage()||this.isResetPasswordPage()||this.isSubscriptionPage()||this.isSubscriptionSuccessPage())return true;if(!this.isSubscriptionActive()){location.replace("./subscription.html");return false}return true},
 initialize(){[this.keys.products,this.keys.sales,this.keys.customers,this.keys.suppliers,this.keys.employees,this.keys.transactions,this.keys.heldSales].forEach(k=>{const sk=this.scopeKey(k);if(localStorage.getItem(sk)===null)localStorage.setItem(sk,"[]")});return true}};
+
+Object.assign(VAREX,{
+async prepareBusinessAccountDeletion(){
+const session=this.getSession();
+if(!session?.access_token)return{success:false,message:"انتهت جلسة حساب المالك. يرجى تسجيل الدخول من جديد."};
+try{
+const response=await fetch(this.config.supabaseUrl+"/functions/v1/delete-business-account",{method:"POST",headers:{apikey:this.config.supabaseKey,Authorization:`Bearer ${session.access_token}`,"Content-Type":"application/json",Accept:"application/json"},body:JSON.stringify({action:"prepare",confirmation:"DELETE_MY_VAREX_ACCOUNT"})});
+let data={};try{data=await response.json()}catch(e){}
+if(!response.ok)return{success:false,message:data?.message||"تعذر تجهيز طلب الحذف الآمن.",code:data?.code||"PREPARE_FAILED",retryable:data?.retryable!==false,status:response.status};
+return{success:true,...data};
+}catch(e){
+const message=String(e?.message||"").toLowerCase().includes("failed to fetch")?"تعذر الاتصال بخدمة الحذف. يرجى التحقق من اتصال الإنترنت ثم إعادة المحاولة.":e?.message||"تعذر تجهيز طلب الحذف الآمن.";
+return{success:false,message,code:"NETWORK_ERROR",retryable:true};
+}
+},
+async requestAccountDeletionOtp(){
+const session=this.getSession(),owner=this.getDeviceOwner(),email=this.normalizeEmail(session?.user?.email||owner?.email||"");
+if(!session?.access_token||!session?.user?.id)return{success:false,message:"انتهت جلسة حساب المالك. يرجى تسجيل الدخول من جديد."};
+if(!email)return{success:false,message:"تعذر تحديد البريد الإلكتروني لحساب المالك."};
+try{
+await this.authFetch("/auth/v1/otp",{method:"POST",body:JSON.stringify({email,create_user:false})});
+return{success:true,email,message:"تم إرسال رمز التحقق إلى بريد المالك."};
+}catch(e){return{success:false,message:this.mapAuthError(e)}}
+},
+async verifyAccountDeletionOtp(token){
+const before=this.getSession(),owner=this.getDeviceOwner(),expectedId=before?.user?.id||owner?.ownerId||"",expectedEmail=this.normalizeEmail(before?.user?.email||owner?.email||""),cleanToken=this.cleanText(token).replace(/\D/g,"");
+if(cleanToken.length!==6)return{success:false,message:"يرجى إدخال رمز التحقق المكوّن من 6 أرقام."};
+if(!expectedId||!expectedEmail)return{success:false,message:"تعذر تحديد حساب المالك المطلوب حذفه."};
+try{
+const data=await this.authFetch("/auth/v1/verify",{method:"POST",body:JSON.stringify({type:"email",email:expectedEmail,token:cleanToken})});
+const actualEmail=this.normalizeEmail(data?.user?.email||"");
+if(!data?.access_token||!data?.user?.id||data.user.id!==expectedId||actualEmail!==expectedEmail)return{success:false,message:"رمز التحقق لا يخص حساب المالك الحالي."};
+this.storeSession(data,true);this.authorizeDevice(data.user);this.clearBusinessIdCache();
+return{success:true,user:this.getSafeUser(data.user),message:"تم تأكيد رمز الحذف بنجاح."};
+}catch(e){return{success:false,message:this.mapAuthError(e)}}
+},
+async deleteBusinessAccount(){
+let session=this.getSession();
+if(!session?.access_token)return{success:false,message:"انتهت جلسة التحقق. يرجى طلب رمز جديد."};
+try{
+const response=await fetch(this.config.supabaseUrl+"/functions/v1/delete-business-account",{method:"POST",headers:{apikey:this.config.supabaseKey,Authorization:`Bearer ${session.access_token}`,"Content-Type":"application/json",Accept:"application/json"},body:JSON.stringify({action:"delete",confirmation:"DELETE_MY_VAREX_ACCOUNT"})});
+let data={};try{data=await response.json()}catch(e){}
+if(!response.ok){
+let message=data?.message||data?.error||"تعذر إكمال حذف الحساب.";
+if(response.status===401||response.status===403)message=data?.message||"انتهت صلاحية التحقق الآمن. يرجى طلب رمز جديد ثم إعادة المحاولة.";
+if(response.status===404&&!data?.message)message="خدمة الحذف الآمن غير منشورة على الخادم بعد.";
+return{success:false,message,code:data?.code||"DELETE_FAILED",retryable:data?.retryable!==false,partial:Boolean(data?.partial),status:response.status};
+}
+return{success:true,...data};
+}catch(e){
+let message=e?.message||"تعذر إكمال حذف الحساب.";
+if(String(message).toLowerCase().includes("failed to fetch"))message="تعذر الاتصال بخدمة الحذف. يرجى التحقق من اتصال الإنترنت ثم إعادة المحاولة.";
+return{success:false,message,code:"NETWORK_ERROR",retryable:true};
+}
+},
+clearDeletedAccountLocalData(){
+try{localStorage.clear()}catch(e){}
+try{sessionStorage.clear()}catch(e){}
+return true;
+}
+});
+
 VAREX.initialize();window.VAREX=VAREX;
 
 /* =========================================================

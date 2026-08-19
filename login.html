@@ -5,6 +5,7 @@ const LOGIN_VERSION="20260818-login-fix2",$=id=>document.getElementById(id);let 
 function wait(ms){return new Promise(r=>setTimeout(r,ms))}
 function validEmail(v){return/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(v||"").trim())}
 function showLogin(type,text){const b=$("loginMessage");b.className=type?"login-message "+type:"login-message";b.textContent=text||""}
+function showAccountDeletedNotice(){const q=new URLSearchParams(location.search);if(q.get("account_deleted")!=="1")return;showLogin("success","تم حذف حساب المنشأة وإغلاق حساب الدخول بنجاح.");q.delete("account_deleted");history.replaceState(null,"",location.pathname+(q.toString()?"?"+q.toString():"")+location.hash)}
 function showRecovery(type,text){const b=$("recoveryMessage");b.className=type?"login-message "+type:"login-message";b.textContent=text||""}
 function setSystemState(type,text){const e=$("systemState");e.className="system-loading"+(type?" "+type:"");e.innerHTML=type==="ready"?"<span>✓</span><span>"+text+"</span>":type==="error"?"<span>!</span><span>"+text+"</span>":'<span class="spinner"></span><span>'+text+"</span>"}
 function setLoginButtonBusy(busy,text){const b=$("loginButton");b.disabled=busy||!varexReady;b.innerHTML=busy?'<span class="spinner"></span><span>'+text+'</span>':"دخول إلى VAREX"}
@@ -30,7 +31,7 @@ const old=document.getElementById("varexCoreScript");if(old)old.remove();
 const s=document.createElement("script");
 s.id="varexCoreScript";
 s.async=false;
-s.src="./varex.js?v=20260820-sidebar-settings1"+Date.now()+(retry?"-retry":"");
+s.src="./varex.js?v=20260820-account-deletion1"+Date.now()+(retry?"-retry":"");
 s.onload=()=>{
 setTimeout(()=>{
 if(window.VAREX&&typeof window.VAREX.login==="function")resolve(true);
@@ -162,6 +163,7 @@ $("password").addEventListener("keydown",e=>{if(e.key==="Enter"&&!loginBusy&&var
 
 (async()=>{
 await loadVarexCore();
+showAccountDeletedNotice();
 if("serviceWorker"in navigator){
 addEventListener("load",async()=>{
 try{
@@ -172,4 +174,4 @@ await r.update();
 }
 })();
 </script></body></html>
-<script src="./varex-navigation.js?v=20260820-sidebar-settings1"></script>
+<script src="./varex-navigation.js?v=20260820-account-deletion1"></script>
