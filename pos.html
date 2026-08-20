@@ -65,4 +65,4 @@ function printLastSale(){let sale=lastCompletedSale;if(!sale){let sales=getSales
 async function startVarexPOS(){loadCurrentUser();updateClock();setInterval(updateClock,1000);renderCart();paymentMethodChanged();updateHoldButton();await loadPOSData();setTimeout(()=>$("barcodeScanner")?.focus(),300)}
 
 startVarexPOS();window.addEventListener("focus",()=>{loadCurrentUser();loadPOSData();updateHoldButton()});VAREX.onDataChanged?.(e=>{if(["purchase","transfer","return","settings"].includes(e?.type))loadPOSData()});document.addEventListener("keydown",e=>{if(e.key==="Escape"){closeHeldSales();closeActionModal()}});
-</script></body></html><script src="./varex-navigation.js?v=20260820-account-deletion1"></script>
+</script><script src="./varex-i18n.js?v=1"></script></body></html><script src="./varex-navigation.js?v=20260820-account-deletion1"></script>

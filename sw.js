@@ -1,4 +1,4 @@
-const CACHE_NAME="varex-cache-v17-brand-launcher";
+const CACHE_NAME="varex-cache-v18-english-interface";
 
 const FILES_TO_CACHE=[
 "./",
@@ -18,6 +18,7 @@ const FILES_TO_CACHE=[
 "./subscription.html",
 "./setting.html",
 "./varex.js",
+"./varex-i18n.js",
 "./varex-navigation.js",
 "./varex-theme.css",
 "./account-deletion.js",
