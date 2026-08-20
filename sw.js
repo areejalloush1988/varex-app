@@ -1,4 +1,4 @@
-const CACHE_NAME="varex-cache-v14-unified-clock-cards";
+const CACHE_NAME="varex-cache-v15-stable-header-icons";
 
 const FILES_TO_CACHE=[
 "./",
