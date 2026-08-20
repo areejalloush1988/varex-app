@@ -25,8 +25,62 @@ function refreshProductRows(){[...$("itemsBody").querySelectorAll("tr")].forEach
 function addItem(){const tr=document.createElement("tr");tr.innerHTML=`<td><select class="product">${productOptions()}</select><span class="stock-hint"></span></td><td><input class="qty" type="number" min="0.001" step="0.001" value="1"></td><td><input class="item-note" placeholder="اختياري"></td><td><button type="button" class="remove">×</button></td>`;tr.querySelector(".remove").addEventListener("click",()=>removeItem(tr.querySelector(".remove")));tr.querySelector(".product").addEventListener("change",()=>updateRowStock(tr));$("itemsBody").appendChild(tr);updateRowStock(tr)}
 function removeItem(btn){if($("itemsBody").children.length<=1){varexAlert("يجب أن يحتوي التحويل على منتج واحد على الأقل.");return}btn.closest("tr").remove()}
 function collectItems(){const fromId=$("fromBranch").value,rows=[...$("itemsBody").querySelectorAll("tr")],items=[],used=new Set();for(const row of rows){const pid=row.querySelector(".product").value,product=products.find(x=>String(x.id)===String(pid)),qty=Number(row.querySelector(".qty").value||0),note=row.querySelector(".item-note").value.trim();if(!pid||!product){varexAlert("يرجى اختيار المنتج في جميع الصفوف.");return null}if(used.has(String(pid))){varexAlert("لا يمكن إضافة المنتج نفسه أكثر من مرة.");return null}if(!Number.isFinite(qty)||qty<=0){varexAlert(`يرجى إدخال كمية صحيحة للمنتج: ${product.name||"المنتج"}`);return null}const available=sourceQty(pid,fromId);if(qty>available){varexAlert(`الكمية المطلوبة للمنتج "${product.name||"المنتج"}" أكبر من مخزون الفرع المرسل. المتوفر في هذا الفرع: ${available}`);return null}used.add(String(pid));items.push({product,qty,note,available})}return items}
-async function saveTransfer(status){if(busy)return;const fromId=$("fromBranch").value,toId=$("toBranch").value;if(!fromId||!toId){varexAlert("يرجى اختيار الفرع المرسل والفرع المستلم.");return}if(fromId===toId){varexAlert("يجب أن يكون الفرع المستلم مختلفاً عن الفرع المرسل.");return}if(!$("transferDate").value){varexAlert("يرجى اختيار تاريخ التحويل.");return}const items=collectItems();if(!items||!items.length)return;busy=true;$("sendBtn").disabled=true;$("draftBtn").disabled=true;sync("loading","جاري حفظ تحويل المخزون...");try{const businessId=await VAREX.getCurrentBusinessId();if(!businessId)throw new Error("تعذر تحديد المنشأة الحالية.");const userId=await currentVarexUserId(),user=VAREX.getActiveOperator?.()||VAREX.getCurrentUser?.()||{},from=branches.find(x=>String(x.id)===String(fromId)),to=branches.find(x=>String(x.id)===String(toId)),totalQty=items.reduce((a,x)=>a+x.qty,0),transferNumber="TRF-"+Date.now().toString().slice(-10),body={business_id:businessId,transfer_number:transferNumber,from_branch_id:fromId,from_branch_name:from?.branch_name||"",to_branch_id:toId,to_branch_name:to?.branch_name||"",transfer_date:$("transferDate").value,total_items:items.length,total_quantity:totalQty,user_id:userId||null,user_name:user.name||user.username||user.email||null,status,notes:$("notes").value.trim()||null,updated_at:VAREX.now()};const created=await VAREX.dbFetch("stock_transfers?select=*",{method:"POST",headers:{Prefer:"return=representation"},body:JSON.stringify(body)}),transfer=Array.isArray(created)?created[0]:null;if(!transfer?.id)throw new Error("تم إنشاء التحويل لكن تعذر الحصول على رقمه الداخلي.");try{const itemRows=items.map(i=>({business_id:businessId,transfer_id:transfer.id,product_id:i.product.id,product_name:i.product.name,barcode:i.product.barcode||null,quantity:i.qty,unit_cost:Number(i.product.cost||0),from_branch_id:fromId,to_branch_id:toId,notes:i.note||null,status,updated_at:VAREX.now()}));await VAREX.dbFetch("stock_transfers_items",{method:"POST",headers:{Prefer:"return=minimal"},body:JSON.stringify(itemRows)})}catch(itemError){await VAREX.dbFetch("stock_transfers?id=eq."+encodeURIComponent(transfer.id),{method:"DELETE",headers:{Prefer:"return=minimal"}}).catch(()=>{});throw itemError}closeTransfer();await load();showToast(status==="transit"?"تم إنشاء وإرسال التحويل":"تم حفظ التحويل كمسودة")}catch(e){console.error("TRANSFER SAVE:",e);sync("error",e?.message||"تعذر حفظ التحويل.");varexAlert(e?.message||"تعذر حفظ التحويل.")}finally{busy=false;$("sendBtn").disabled=false;$("draftBtn").disabled=false}}
-async function updateStatus(id,status){if(busy)return false;busy=true;try{sync("loading","جاري تحديث حالة التحويل...");await VAREX.dbFetch("stock_transfers?id=eq."+encodeURIComponent(id),{method:"PATCH",headers:{Prefer:"return=minimal"},body:JSON.stringify({status,updated_at:VAREX.now()})});await VAREX.dbFetch("stock_transfers_items?transfer_id=eq."+encodeURIComponent(id),{method:"PATCH",headers:{Prefer:"return=minimal"},body:JSON.stringify({status,updated_at:VAREX.now()})});await load();return true}catch(e){sync("error",e?.message||"تعذر تحديث التحويل.");varexAlert(e?.message||"تعذر تحديث التحويل.");return false}finally{busy=false}}
+async function applyTransferStatus(id,status){
+  return VAREX.dbFetch("rpc/varex_set_stock_transfer_status",{
+    method:"POST",
+    headers:{Prefer:"return=representation"},
+    body:JSON.stringify({p_transfer_id:id,p_status:status})
+  })
+}
+async function saveTransfer(status){
+  if(busy)return;
+  const fromId=$("fromBranch").value,toId=$("toBranch").value;
+  if(!fromId||!toId){varexAlert("يرجى اختيار الفرع المرسل والفرع المستلم.");return}
+  if(fromId===toId){varexAlert("يجب أن يكون الفرع المستلم مختلفاً عن الفرع المرسل.");return}
+  if(!$("transferDate").value){varexAlert("يرجى اختيار تاريخ التحويل.");return}
+  const items=collectItems();
+  if(!items||!items.length)return;
+  busy=true;$("sendBtn").disabled=true;$("draftBtn").disabled=true;
+  sync("loading","جاري حفظ تحويل المخزون...");
+  try{
+    const businessId=await VAREX.getCurrentBusinessId();
+    if(!businessId)throw new Error("تعذر تحديد المنشأة الحالية.");
+    const userId=await currentVarexUserId(),user=VAREX.getActiveOperator?.()||VAREX.getCurrentUser?.()||{},from=branches.find(x=>String(x.id)===String(fromId)),to=branches.find(x=>String(x.id)===String(toId)),totalQty=items.reduce((a,x)=>a+x.qty,0),transferNumber="TRF-"+Date.now().toString().slice(-10);
+    const body={business_id:businessId,transfer_number:transferNumber,from_branch_id:fromId,from_branch_name:from?.branch_name||"",to_branch_id:toId,to_branch_name:to?.branch_name||"",transfer_date:$("transferDate").value,total_items:items.length,total_quantity:totalQty,user_id:userId||null,user_name:user.name||user.username||user.email||null,status:"draft",notes:$("notes").value.trim()||null,updated_at:VAREX.now()};
+    const created=await VAREX.dbFetch("stock_transfers?select=*",{method:"POST",headers:{Prefer:"return=representation"},body:JSON.stringify(body)}),transfer=Array.isArray(created)?created[0]:null;
+    if(!transfer?.id)throw new Error("تم إنشاء التحويل لكن تعذر الحصول على رقمه الداخلي.");
+    try{
+      const itemRows=items.map(i=>({business_id:businessId,transfer_id:transfer.id,product_id:i.product.id,product_name:i.product.name,barcode:i.product.barcode||null,quantity:i.qty,unit_cost:Number(i.product.cost||0),from_branch_id:fromId,to_branch_id:toId,notes:i.note||null,status:"draft",updated_at:VAREX.now()}));
+      await VAREX.dbFetch("stock_transfers_items",{method:"POST",headers:{Prefer:"return=minimal"},body:JSON.stringify(itemRows)});
+      if(status!=="draft")await applyTransferStatus(transfer.id,status)
+    }catch(itemError){
+      await VAREX.dbFetch("stock_transfers_items?transfer_id=eq."+encodeURIComponent(transfer.id),{method:"DELETE",headers:{Prefer:"return=minimal"}}).catch(()=>{});
+      await VAREX.dbFetch("stock_transfers?id=eq."+encodeURIComponent(transfer.id),{method:"DELETE",headers:{Prefer:"return=minimal"}}).catch(()=>{});
+      throw itemError
+    }
+    closeTransfer();
+    await VAREX.syncProductsFromSupabase?.().catch(()=>{});
+    await load();
+    showToast(status==="transit"?"تم خصم المخزون وإرسال التحويل":"تم حفظ التحويل كمسودة")
+  }catch(e){
+    console.error("TRANSFER SAVE:",e);sync("error",e?.message||"تعذر حفظ التحويل.");varexAlert(e?.message||"تعذر حفظ التحويل.")
+  }finally{
+    busy=false;$("sendBtn").disabled=false;$("draftBtn").disabled=false
+  }
+}
+async function updateStatus(id,status){
+  if(busy)return false;
+  busy=true;
+  try{
+    sync("loading",status==="received"?"جاري استلام المخزون في الفرع الوجهة...":"جاري تحديث المخزون والتحويل...");
+    await applyTransferStatus(id,status);
+    await VAREX.syncProductsFromSupabase?.().catch(()=>{});
+    await load();
+    return true
+  }catch(e){
+    sync("error",e?.message||"تعذر تحديث التحويل والمخزون.");varexAlert(e?.message||"تعذر تحديث التحويل والمخزون.");return false
+  }finally{busy=false}
+}
 async function sendTransfer(id){if(!await varexConfirm("تأكيد إرسال هذا التحويل إلى الفرع المستلم؟"))return;if(await updateStatus(id,"transit"))showToast("أصبح التحويل قيد النقل")}
 async function receiveTransfer(id){if(!await varexConfirm("تأكيد استلام المنتجات في الفرع المستلم؟"))return;if(await updateStatus(id,"received"))showToast("تم تأكيد استلام التحويل وتحديث مخزون الفرعين")}
 async function cancelTransfer(id){const x=transfers.find(v=>String(v.id)===String(id));if(!x||x.status==="received")return;if(!await varexConfirm("تأكيد إلغاء هذا التحويل؟"))return;if(await updateStatus(id,"cancelled"))showToast("تم إلغاء التحويل")}
