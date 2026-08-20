@@ -289,6 +289,11 @@
         const now = new Date();
         const dateElement = document.getElementById("currentDate");
         const timeElement = document.getElementById("currentTime");
+        const setClockText = (element, value) => {
+          if (element && element.textContent !== value) {
+            element.textContent = value;
+          }
+        };
 
         try {
           const dateParts = Object.fromEntries(
@@ -313,23 +318,30 @@
           );
 
           if (dateElement) {
-            dateElement.textContent =
-              `${dateParts.day}/${dateParts.month}/${dateParts.year}`;
+            setClockText(
+              dateElement,
+              `${dateParts.day}/${dateParts.month}/${dateParts.year}`
+            );
           }
           if (timeElement) {
-            timeElement.textContent =
-              `${timeParts.hour}:${timeParts.minute} ${String(timeParts.dayPeriod || "").toUpperCase()}`;
+            setClockText(
+              timeElement,
+              `${timeParts.hour}:${timeParts.minute} ${String(timeParts.dayPeriod || "").toUpperCase()}`
+            );
           }
         } catch (error) {
           if (dateElement) {
-            dateElement.textContent = now.toLocaleDateString("en-GB");
+            setClockText(dateElement, now.toLocaleDateString("en-GB"));
           }
           if (timeElement) {
-            timeElement.textContent = now.toLocaleTimeString("en-US", {
-              hour: "2-digit",
-              minute: "2-digit",
-              hour12: true
-            });
+            setClockText(
+              timeElement,
+              now.toLocaleTimeString("en-US", {
+                hour: "2-digit",
+                minute: "2-digit",
+                hour12: true
+              })
+            );
           }
         }
       };
@@ -370,6 +382,22 @@
       if (!topInfo.__varexHeaderObserver) {
         topInfo.__varexHeaderObserver = new MutationObserver(classifyHeaderItems);
         topInfo.__varexHeaderObserver.observe(topInfo, { childList: true });
+      }
+
+      if (!topInfo.__varexClockObserver) {
+        topInfo.__varexClockObserver = new MutationObserver(formatClock);
+        [
+          document.getElementById("currentDate"),
+          document.getElementById("currentTime")
+        ]
+          .filter(Boolean)
+          .forEach(element => {
+            topInfo.__varexClockObserver.observe(element, {
+              childList: true,
+              characterData: true,
+              subtree: true
+            });
+          });
       }
 
       if (!window.__varexUnifiedClockTimer) {
