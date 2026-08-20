@@ -83,6 +83,12 @@
         href: "./reports.html"
       },
       {
+        id: "tax-return",
+        title: "الإقرار الضريبي",
+        icon: "🧮",
+        href: "./tax-return.html"
+      },
+      {
         id: "users",
         title: "المستخدمون والصلاحيات",
         icon: "👥",
@@ -99,6 +105,12 @@
         title: "سجل النشاط",
         icon: "📋",
         href: "./activity.html"
+      },
+      {
+        id: "subscription",
+        title: "الاشتراك والترخيص",
+        icon: "💎",
+        href: "./subscription.html"
       },
       {
         id: "settings",
