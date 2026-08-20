@@ -1,8 +1,10 @@
-const CACHE_NAME="varex-cache-v15-stable-header-icons";
+const CACHE_NAME="varex-cache-v16-systems-launcher";
 
 const FILES_TO_CACHE=[
 "./",
 "./index.html",
+"./systems.html",
+"./novarex.html",
 "./login.html",
 "./register.html",
 "./pos.html",

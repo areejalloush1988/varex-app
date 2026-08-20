@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+  <meta name="theme-color" content="#101d4c">\n  <meta name="application-name" content="VAREX">\n  <link rel="manifest" href="./manifest.json">\n  <link rel="icon" type="image/png" sizes="192x192" href="./varex-icon-192.png">\n  <link rel="apple-touch-icon" href="./varex-icon-192.png">
+  <title>VAREX | اختر نظامك</title>
+  <style>
+    :root{--navy:#101d4c;--blue:#2f67de;--text:#fff;--muted:#afbddc;--line:rgba(255,255,255,.13)}
+    *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+    html,body{margin:0;min-height:100%;font-family:Tahoma,Arial,sans-serif;background:#0a1435;color:var(--text)}
+    body{min-height:100svh;background:radial-gradient(circle at -8% 5%,rgba(72,116,230,.27),transparent 28%),radial-gradient(circle at 105% 55%,rgba(63,108,235,.17),transparent 32%),linear-gradient(145deg,#08112f,#102356 58%,#193574);overflow-x:hidden}
+    body:before{content:"";position:fixed;inset:0;pointer-events:none;background-image:linear-gradient(rgba(255,255,255,.025) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.025) 1px,transparent 1px);background-size:38px 38px;mask-image:linear-gradient(#000,transparent 78%)}
+    button{font:inherit}.shell{position:relative;min-height:100svh;padding:calc(env(safe-area-inset-top) + 14px) 14px calc(env(safe-area-inset-bottom) + 22px)}
+    .topbar{height:62px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--line)}
+    .brand{display:flex;align-items:center;gap:10px;direction:ltr}.mark{width:40px;height:40px;display:grid;place-items:center;border:1px solid rgba(255,255,255,.34);border-radius:13px 13px 13px 5px;background:rgba(255,255,255,.08);font:900 22px Arial}.brand-copy{display:flex;flex-direction:column;align-items:flex-start}.brand-copy strong{font:900 19px/1 Arial;letter-spacing:3px}.brand-copy small{margin-top:5px;color:#aebde0;font:700 5.8px Arial;letter-spacing:1px}.profile{position:relative;width:40px;height:40px;display:grid;place-items:center;padding:0;border:1px solid rgba(255,255,255,.17);border-radius:13px;background:rgba(255,255,255,.08);color:#16316d}.profile span{width:29px;height:29px;display:grid;place-items:center;border-radius:9px;background:#fff;font-size:11px;font-weight:900}.profile i{position:absolute;top:3px;right:3px;width:7px;height:7px;border:2px solid #18326e;border-radius:50%;background:#4bd5a0}
+    .intro{padding:31px 6px 25px;text-align:center}.kicker{display:flex;align-items:center;justify-content:center;gap:8px;color:#abc0ee;font-size:9px;font-weight:800}.kicker i{width:23px;height:2px;border-radius:9px;background:#759bff}.intro h1{margin:12px 0 0;font-size:27px;line-height:1.35;letter-spacing:-.6px}.intro p{margin:10px 0 0;color:#b6c3df;font-size:9px;line-height:1.8}
+    .grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;max-width:750px;margin:0 auto}.card{--accent:#467df3;position:relative;min-height:210px;display:flex;flex-direction:column;overflow:hidden;padding:15px;border:1px solid rgba(255,255,255,.16);border-radius:19px;background:linear-gradient(155deg,rgba(255,255,255,.14),rgba(255,255,255,.065));color:#fff;text-decoration:none;box-shadow:0 16px 32px rgba(1,7,25,.14);backdrop-filter:blur(14px);transition:.18s}.card:active{transform:scale(.975);background:rgba(255,255,255,.16)}.card:before{content:"";position:absolute;width:120px;height:120px;left:-68px;top:-75px;border-radius:50%;background:var(--accent);opacity:.2;filter:blur(16px)}.card.sky{--accent:#32b9e4}.card.violet{--accent:#8666f1}.card.gold{--accent:#e6ac2b}.card.coral{--accent:#ef6d57}.card.rose{--accent:#e8689e}.card-head{position:relative;display:flex;align-items:flex-start;justify-content:space-between;gap:8px}.icon{width:47px;height:47px;display:grid;place-items:center;border:1px solid rgba(255,255,255,.18);border-radius:15px;background:color-mix(in srgb,var(--accent) 60%,rgba(255,255,255,.12));box-shadow:0 10px 22px rgba(2,8,28,.16)}.icon svg{width:25px;height:25px;fill:none;stroke:#fff;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round}.status{display:flex;align-items:center;gap:5px;padding:5px 7px;border-radius:999px;font-size:6.6px;font-weight:900}.status.ready{background:rgba(72,214,160,.15);color:#8beac7}.status.ready i{width:5px;height:5px;border-radius:50%;background:#55dda8}.status.new{background:#fff;color:#16316d}.status.soon{border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.08);color:#c3cde2}.copy{position:relative;margin-top:16px}.copy small{color:#91aae1;font:800 5.7px Arial;letter-spacing:.8px}.copy h2{margin:6px 0 0;font-size:13.5px;line-height:1.45}.copy p{margin:7px 0 0;color:#adbad5;font-size:7.3px;line-height:1.65}.open{display:flex;align-items:center;gap:6px;margin-top:auto;padding-top:14px;font-size:7.5px;font-weight:900}.open svg{width:13px;height:13px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;transform:rotate(180deg)}
+    .note{max-width:520px;display:flex;align-items:center;justify-content:center;gap:9px;margin:22px auto 0;padding:12px 14px;border:1px solid rgba(255,255,255,.09);border-radius:15px;background:rgba(2,8,27,.18)}.note>span{width:25px;height:25px;display:grid;place-items:center;flex:0 0 auto;border-radius:8px;background:rgba(72,214,160,.13);color:#78dfb7;font:900 10px Arial}.note p{display:flex;flex-direction:column;gap:3px;margin:0}.note strong{font-size:8.5px}.note small{color:#9badd1;font-size:6.8px}.foot{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:20px;color:#768dbd}.foot b{font:900 8px Arial;letter-spacing:2px}.foot small{font-size:6.8px}
+    .toast{position:fixed;z-index:20;left:50%;bottom:calc(env(safe-area-inset-bottom) + 20px);width:calc(100% - 32px);max-width:420px;display:flex;align-items:center;gap:10px;padding:13px 14px;border:1px solid rgba(255,255,255,.16);border-radius:15px;background:rgba(8,18,48,.96);box-shadow:0 20px 45px rgba(0,0,0,.3);opacity:0;pointer-events:none;transform:translate(-50%,18px);transition:.25s}.toast.show{opacity:1;transform:translate(-50%,0)}.toast span{width:30px;height:30px;display:grid;place-items:center;border-radius:9px;background:#fff;color:#16316d;font-weight:900}.toast p{margin:0;font-size:8px;line-height:1.7;color:#c7d3ec}.toast strong{display:block;color:#fff;font-size:10px}
+    @media(min-width:700px){.shell{padding-inline:24px}.grid{grid-template-columns:repeat(3,minmax(0,1fr))}.card{min-height:225px}.intro h1{font-size:37px}.topbar{max-width:920px;margin:auto}.copy h2{font-size:15px}}
+    @media(max-width:350px){.grid{grid-template-columns:1fr}.card{min-height:190px}.intro h1{font-size:24px}}
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <header class="topbar">
+      <div class="brand"><span class="mark">V</span><span class="brand-copy"><strong>VAREX</strong><small>BUSINESS ECOSYSTEM</small></span></div>
+      <button class="profile" type="button" aria-label="الملف الشخصي"><span>أ</span><i></i></button>
+    </header>
+    <section class="intro">
+      <span class="kicker"><i></i> منظومة واحدة لكل أعمالك</span>
+      <h1>اختر النظام الذي تريد إدارته</h1>
+      <p>كل أعمالك تحت حساب واحد، بواجهات متخصصة وسهلة الوصول.</p>
+    </section>
+    <section class="grid" aria-label="أنظمة VAREX">
+      <a class="card" href="#" data-action="business"><div class="card-head"><span class="icon"><svg viewBox="0 0 24 24"><path d="M5 20V9l7-4 7 4v11M3 20h18M9 20v-5h6v5M8 11h.01M12 11h.01M16 11h.01"/></svg></span><span class="status ready"><i></i> جاهز</span></div><div class="copy"><small>VAREX BUSINESS</small><h2>إدارة الأعمال والمتاجر</h2><p>المبيعات، المخزون، الفروع والتقارير</p></div><span class="open">فتح النظام <svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span></a>
+      <a class="card sky" href="./novarex.html"><div class="card-head"><span class="icon"><svg viewBox="0 0 24 24"><path d="m3 11 9-7 9 7M5 10v10h14V10M9 20v-6h6v6M8 8V5h3"/></svg></span><span class="status new">جديد</span></div><div class="copy"><small>NOVAREX REAL ESTATE</small><h2>نوفاريكس للعقارات</h2><p>العقارات، الملاك، العملاء والعقود</p></div><span class="open">فتح النظام <svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span></a>
+      <a class="card violet" href="#" data-soon="فاريكس لتأجير السيارات"><div class="card-head"><span class="icon"><svg viewBox="0 0 24 24"><path d="M5 17h14l-1.5-6h-11zM7 11l1.4-4h7.2l1.4 4M4 17v2M20 17v2M7.5 15h.01M16.5 15h.01"/></svg></span><span class="status soon">قريباً</span></div><div class="copy"><small>VAREX RENT</small><h2>فاريكس لتأجير السيارات</h2><p>السيارات، الحجوزات والعقود</p></div><span class="open">عرض النظام <svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span></a>
+      <a class="card gold" href="#" data-soon="فاريكس تاكسي"><div class="card-head"><span class="icon"><svg viewBox="0 0 24 24"><path d="M5 18h14l-1-6H6zM7 12l1.5-4h7L17 12M9 8V5h6v3M4 18v2M20 18v2M8 15h.01M16 15h.01"/></svg></span><span class="status soon">قريباً</span></div><div class="copy"><small>VAREX TAXI</small><h2>فاريكس تاكسي</h2><p>الرحلات، السائقون والأسطول</p></div><span class="open">عرض النظام <svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span></a>
+      <a class="card coral" href="#" data-soon="فاريكس للمطاعم والمقاهي"><div class="card-head"><span class="icon"><svg viewBox="0 0 24 24"><path d="M4 3v7a3 3 0 0 0 6 0V3M7 3v18M15 3v18M15 3c3.3 1.2 5 3.4 5 6.5S18.3 14 15 14"/></svg></span><span class="status soon">قريباً</span></div><div class="copy"><small>VAREX FOOD</small><h2>فاريكس للمطاعم والمقاهي</h2><p>الطلبات، الطاولات والمطبخ</p></div><span class="open">عرض النظام <svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span></a>
+      <a class="card rose" href="#" data-soon="فاريكس للصالونات"><div class="card-head"><span class="icon"><svg viewBox="0 0 24 24"><circle cx="8" cy="8" r="3"/><circle cx="16" cy="8" r="3"/><path d="m10.5 10.5 6.8 8.3M13.5 10.5l-6.8 8.3M12 12l1.6-2"/></svg></span><span class="status soon">قريباً</span></div><div class="copy"><small>VAREX BEAUTY</small><h2>فاريكس للصالونات</h2><p>المواعيد، الخدمات والعملاء</p></div><span class="open">عرض النظام <svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span></a>
+    </section>
+    <div class="note"><span>✓</span><p><strong>دخول واحد لجميع أنظمتك</strong><small>يمكنك العودة لهذه الصفحة واختيار نظام آخر في أي وقت.</small></p></div>
+    <footer class="foot"><b>VAREX</b><small>منظومة أعمال متكاملة صُممت لتنمو معك</small></footer>
+  </main>
+  <div class="toast" id="toast" role="status"><span>V</span><p><strong id="toastTitle"></strong>تم تثبيت الأيقونة، وسيبدأ تطوير هذا النظام في المرحلة القادمة.</p></div>
+  <script>
+    const business=document.querySelector('[data-action="business"]');
+    business.addEventListener("click",function(event){
+      event.preventDefault();
+      const authorized=localStorage.getItem("varex_device_authorized")==="true"||!!localStorage.getItem("varex_session")||!!sessionStorage.getItem("varex_session");
+      sessionStorage.setItem("varex_active_system","business");
+      location.href=authorized?"./index.html":"./login.html";
+    });
+    const toast=document.getElementById("toast"),title=document.getElementById("toastTitle");let toastTimer;
+    document.querySelectorAll("[data-soon]").forEach(card=>card.addEventListener("click",function(event){event.preventDefault();title.textContent=this.dataset.soon;toast.classList.add("show");clearTimeout(toastTimer);toastTimer=setTimeout(()=>toast.classList.remove("show"),2800)}));
+    if("serviceWorker" in navigator)addEventListener("load",()=>navigator.serviceWorker.register("./sw.js",{scope:"./"}).catch(()=>{}));
+  </script>
+</body>
+</html>
