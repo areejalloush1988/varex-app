@@ -1,4 +1,4 @@
-const CACHE_NAME="varex-cache-v11-account-deletion";
+const CACHE_NAME="varex-cache-v12-tax-subscriptions";
 
 const FILES_TO_CACHE=[
 "./",
@@ -12,8 +12,12 @@ const FILES_TO_CACHE=[
 "./accounts.html",
 "./employees.html",
 "./reports.html",
+"./tax-return.html",
+"./subscription.html",
 "./setting.html",
 "./varex.js",
+"./varex-navigation.js",
+"./varex-theme.css",
 "./account-deletion.js",
 "./manifest.json",
 "./varex-icon-192.png",
