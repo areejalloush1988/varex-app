@@ -6,8 +6,63 @@ otp_expiry = 600
 max_frequency = "1m"
 
 [auth.email.template.magic_link]
-subject = "رمز التحقق لحذف حساب VAREX"
+subject = "رمز التحقق من VAREX"
 content_path = "./supabase/templates/magic_link.html"
+
+[auth.email.template.confirmation]
+subject = "رمز تفعيل حساب VAREX"
+content_path = "./supabase/templates/magic_link.html"
+
+[auth.email.template.email_change]
+subject = "رمز تأكيد البريد الجديد في VAREX"
+content_path = "./supabase/templates/magic_link.html"
+
+[auth.email.template.reauthentication]
+subject = "رمز التحقق الأمني من VAREX"
+content_path = "./supabase/templates/magic_link.html"
+
+[auth.email.template.invite]
+subject = "دعوة للانضمام إلى VAREX"
+content_path = "./supabase/templates/action_link.html"
+
+[auth.email.template.recovery]
+subject = "استعادة كلمة مرور VAREX"
+content_path = "./supabase/templates/action_link.html"
+
+[auth.email.notification.password_changed]
+enabled = true
+subject = "تم تغيير كلمة مرور VAREX"
+content_path = "./supabase/templates/security_alert.html"
+
+[auth.email.notification.email_changed]
+enabled = true
+subject = "تم تغيير البريد الإلكتروني في VAREX"
+content_path = "./supabase/templates/security_alert.html"
+
+[auth.email.notification.phone_changed]
+enabled = true
+subject = "تم تغيير رقم الهاتف في VAREX"
+content_path = "./supabase/templates/security_alert.html"
+
+[auth.email.notification.mfa_factor_enrolled]
+enabled = true
+subject = "تمت إضافة وسيلة تحقق إلى VAREX"
+content_path = "./supabase/templates/security_alert.html"
+
+[auth.email.notification.mfa_factor_unenrolled]
+enabled = true
+subject = "تمت إزالة وسيلة تحقق من VAREX"
+content_path = "./supabase/templates/security_alert.html"
+
+[auth.email.notification.identity_linked]
+enabled = true
+subject = "تم ربط طريقة دخول بحساب VAREX"
+content_path = "./supabase/templates/security_alert.html"
+
+[auth.email.notification.identity_unlinked]
+enabled = true
+subject = "تمت إزالة طريقة دخول من حساب VAREX"
+content_path = "./supabase/templates/security_alert.html"
 
 [functions.delete-business-account]
 # The function validates the bearer token and the recent OTP claim itself.

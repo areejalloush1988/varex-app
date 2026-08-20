@@ -18,6 +18,32 @@ grant select, insert, update, delete on table public.varex_account_deletion_jobs
 comment on table public.varex_account_deletion_jobs is
   'Server-only checkpoint used to make destructive VAREX account deletion retryable.';
 
+-- users.business_id and businesses.owner_id form a valid ownership cycle.
+-- Defer both foreign keys so the deletion transaction can remove both rows
+-- atomically without weakening either relationship.
+do $$
+declare
+  v_constraint record;
+begin
+  for v_constraint in
+    select conrelid::regclass as table_name, conname
+      from pg_constraint
+     where contype = 'f'
+       and (
+         (conrelid = 'public.users'::regclass and confrelid = 'public.businesses'::regclass)
+         or
+         (conrelid = 'public.businesses'::regclass and confrelid = 'public.users'::regclass)
+       )
+  loop
+    execute format(
+      'alter table %s alter constraint %I deferrable initially deferred',
+      v_constraint.table_name,
+      v_constraint.conname
+    );
+  end loop;
+end;
+$$;
+
 create or replace function public.varex_delete_business_data(
   p_business_id uuid,
   p_user_id uuid
