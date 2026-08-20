@@ -216,9 +216,94 @@
         });
     },
 
+    setupMobileDrawer() {
+      const sidebar = document.querySelector(".sidebar");
+      const topbar = document.querySelector(".topbar");
+
+      if (!sidebar || !topbar) return;
+      if (document.querySelector(".varex-mobile-menu-button")) return;
+
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "varex-mobile-menu-button";
+      button.setAttribute("aria-label", "فتح القائمة الرئيسية");
+      button.setAttribute("aria-expanded", "false");
+      button.innerHTML = "<span aria-hidden=\"true\">☰</span>";
+
+      const backdrop = document.createElement("div");
+      backdrop.className = "varex-mobile-backdrop";
+      backdrop.setAttribute("aria-hidden", "true");
+
+      const setOpen = open => {
+        document.body.classList.toggle("varex-menu-open", Boolean(open));
+        button.setAttribute("aria-expanded", open ? "true" : "false");
+        button.setAttribute(
+          "aria-label",
+          open ? "إغلاق القائمة الرئيسية" : "فتح القائمة الرئيسية"
+        );
+        button.querySelector("span").textContent = open ? "×" : "☰";
+      };
+
+      button.addEventListener("click", () => {
+        setOpen(!document.body.classList.contains("varex-menu-open"));
+      });
+
+      backdrop.addEventListener("click", () => setOpen(false));
+      sidebar.addEventListener("click", event => {
+        if (event.target.closest("a")) setOpen(false);
+      });
+      document.addEventListener("keydown", event => {
+        if (event.key === "Escape") setOpen(false);
+      });
+
+      const desktopQuery = window.matchMedia("(min-width: 821px)");
+      const resetDesktop = event => {
+        if (event.matches) setOpen(false);
+      };
+      if (desktopQuery.addEventListener) {
+        desktopQuery.addEventListener("change", resetDesktop);
+      } else if (desktopQuery.addListener) {
+        desktopQuery.addListener(resetDesktop);
+      }
+
+      topbar.prepend(button);
+      document.body.appendChild(backdrop);
+    },
+
+    setupNativeBackButton() {
+      const appPlugin = window.Capacitor?.Plugins?.App;
+      if (!appPlugin?.addListener || window.__varexNativeBackReady) return;
+
+      window.__varexNativeBackReady = true;
+      appPlugin.addListener("backButton", ({ canGoBack } = {}) => {
+        if (document.body.classList.contains("varex-menu-open")) {
+          document.body.classList.remove("varex-menu-open");
+          const button = document.querySelector(".varex-mobile-menu-button");
+          if (button) {
+            button.setAttribute("aria-expanded", "false");
+            button.setAttribute("aria-label", "فتح القائمة الرئيسية");
+            const icon = button.querySelector("span");
+            if (icon) icon.textContent = "☰";
+          }
+          return;
+        }
+
+        if (canGoBack || history.length > 1) {
+          history.back();
+        } else if (appPlugin.exitApp) {
+          appPlugin.exitApp();
+        }
+      });
+    },
+
     init() {
       this.render();
       this.refreshActive();
+      this.setupMobileDrawer();
+      if (window.Capacitor?.isNativePlatform?.()) {
+        document.documentElement.classList.add("varex-native-app");
+      }
+      this.setupNativeBackButton();
       if(typeof varexAddSidebarActions==="function")varexAddSidebarActions();
 
       document.documentElement.classList.add(

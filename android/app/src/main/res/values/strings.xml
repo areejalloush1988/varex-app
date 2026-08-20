@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">VAREX</string>
+    <string name="title_activity_main">VAREX</string>
+    <string name="package_name">com.varex.app</string>
+    <string name="custom_url_scheme">com.varex.app</string>
+</resources>

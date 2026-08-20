@@ -1,0 +1,31 @@
+{
+  "appId": "com.varex.app",
+  "appName": "VAREX",
+  "webDir": "www",
+  "backgroundColor": "#f4f6fb",
+  "loggingBehavior": "debug",
+  "server": {
+    "androidScheme": "https"
+  },
+  "android": {
+    "backgroundColor": "#f4f6fb",
+    "allowMixedContent": false,
+    "zoomEnabled": false
+  },
+  "plugins": {
+    "SplashScreen": {
+      "launchShowDuration": 1600,
+      "launchAutoHide": true,
+      "backgroundColor": "#172554",
+      "androidScaleType": "CENTER_CROP",
+      "showSpinner": false,
+      "splashFullScreen": true,
+      "splashImmersive": false
+    },
+    "StatusBar": {
+      "style": "LIGHT",
+      "backgroundColor": "#172554",
+      "overlaysWebView": false
+    }
+  }
+}
