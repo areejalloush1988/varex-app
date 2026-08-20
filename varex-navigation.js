@@ -285,6 +285,55 @@
         topInfo.style.removeProperty(property);
       });
 
+      const formatClock = () => {
+        const now = new Date();
+        const dateElement = document.getElementById("currentDate");
+        const timeElement = document.getElementById("currentTime");
+
+        try {
+          const dateParts = Object.fromEntries(
+            new Intl.DateTimeFormat("en-GB", {
+              timeZone: "Asia/Dubai",
+              year: "numeric",
+              month: "2-digit",
+              day: "2-digit"
+            })
+              .formatToParts(now)
+              .map(part => [part.type, part.value])
+          );
+          const timeParts = Object.fromEntries(
+            new Intl.DateTimeFormat("en-US", {
+              timeZone: "Asia/Dubai",
+              hour: "2-digit",
+              minute: "2-digit",
+              hour12: true
+            })
+              .formatToParts(now)
+              .map(part => [part.type, part.value])
+          );
+
+          if (dateElement) {
+            dateElement.textContent =
+              `${dateParts.day}/${dateParts.month}/${dateParts.year}`;
+          }
+          if (timeElement) {
+            timeElement.textContent =
+              `${timeParts.hour}:${timeParts.minute} ${String(timeParts.dayPeriod || "").toUpperCase()}`;
+          }
+        } catch (error) {
+          if (dateElement) {
+            dateElement.textContent = now.toLocaleDateString("en-GB");
+          }
+          if (timeElement) {
+            timeElement.textContent = now.toLocaleTimeString("en-US", {
+              hour: "2-digit",
+              minute: "2-digit",
+              hour12: true
+            });
+          }
+        }
+      };
+
       const classifyHeaderItems = () => {
         Array.from(topInfo.children).forEach(item => {
           const itemIsClock = item.id === "currentDate" || item.id === "currentTime";
@@ -295,17 +344,36 @@
           item.classList.toggle("varex-mobile-clock-chip", Boolean(clockValue));
           item.classList.toggle("varex-mobile-aux-chip", !clockValue);
           item.classList.toggle(
+            "varex-date-chip",
+            Boolean(clockValue?.id === "currentDate")
+          );
+          item.classList.toggle(
+            "varex-time-chip",
+            Boolean(clockValue?.id === "currentTime")
+          );
+          item.classList.toggle(
             "varex-mobile-clock-wrapper",
             Boolean(clockValue && clockValue !== item)
           );
+
+          if (clockValue && clockValue !== item) {
+            Array.from(item.childNodes).forEach(node => {
+              if (node.nodeType === Node.TEXT_NODE) node.remove();
+            });
+          }
         });
       };
 
       classifyHeaderItems();
+      formatClock();
 
       if (!topInfo.__varexHeaderObserver) {
         topInfo.__varexHeaderObserver = new MutationObserver(classifyHeaderItems);
         topInfo.__varexHeaderObserver.observe(topInfo, { childList: true });
+      }
+
+      if (!window.__varexUnifiedClockTimer) {
+        window.__varexUnifiedClockTimer = window.setInterval(formatClock, 1000);
       }
     },
 
