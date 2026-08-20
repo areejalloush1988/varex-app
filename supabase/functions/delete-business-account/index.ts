@@ -33,6 +33,22 @@ function requiredEnv(...names: string[]) {
   throw new Error(`Missing required secret: ${names.join(" or ")}`);
 }
 
+function requiredProjectKey(jsonName: string, legacyName: string) {
+  const dictionary = Deno.env.get(jsonName);
+  if (dictionary) {
+    try {
+      const keys = JSON.parse(dictionary) as Record<string, unknown>;
+      const preferred = keys.default;
+      if (typeof preferred === "string" && preferred) return preferred;
+      const fallback = Object.values(keys).find((value) => typeof value === "string" && value);
+      if (typeof fallback === "string") return fallback;
+    } catch {
+      // Fall back to the legacy plain-string environment variable below.
+    }
+  }
+  return requiredEnv(legacyName);
+}
+
 function decodeClaims(token: string): Record<string, unknown> {
   const part = token.split(".")[1];
   if (!part) throw new Error("Malformed access token.");
@@ -79,8 +95,8 @@ Deno.serve(async (request: Request) => {
     if (!token) return json(request, { success: false, code: "AUTH_REQUIRED", message: "يلزم تسجيل الدخول بحساب المالك." }, 401);
 
     const supabaseUrl = requiredEnv("SUPABASE_URL");
-    const publicKey = requiredEnv("SUPABASE_PUBLISHABLE_KEY", "SUPABASE_PUBLISHABLE_KEYS", "SUPABASE_ANON_KEY");
-    const serviceKey = requiredEnv("SUPABASE_SECRET_KEY", "SUPABASE_SECRET_KEYS", "SUPABASE_SERVICE_ROLE_KEY");
+    const publicKey = requiredProjectKey("SUPABASE_PUBLISHABLE_KEYS", "SUPABASE_ANON_KEY");
+    const serviceKey = requiredProjectKey("SUPABASE_SECRET_KEYS", "SUPABASE_SERVICE_ROLE_KEY");
     const admin = createClient(supabaseUrl, serviceKey, { auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false } });
 
     const { data: authData, error: authError } = await admin.auth.getUser(token);
