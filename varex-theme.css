@@ -993,3 +993,353 @@ padding-right:4px!important;
 padding-left:4px!important;
 }
 }
+
+/* =========================================================
+   VAREX TABLET WEB HEADER — shared by every business page
+   Order: time, date, system, switch user, language, vibration, sound
+========================================================= */
+@media(min-width:821px){
+:root{
+--varex-topbar-height:96px;
+}
+
+.topbar{
+height:var(--varex-topbar-height)!important;
+min-height:var(--varex-topbar-height)!important;
+max-height:var(--varex-topbar-height)!important;
+padding:0 22px!important;
+overflow:visible!important;
+}
+
+.page-name h1,
+.page-name h2{
+font-size:21px!important;
+line-height:27px!important;
+}
+
+.page-name small{
+height:auto!important;
+font-size:13px!important;
+line-height:17px!important;
+}
+
+.topbar .top-info.varex-unified-header{
+height:48px!important;
+min-height:48px!important;
+display:flex!important;
+align-items:center!important;
+justify-content:flex-start!important;
+gap:8px!important;
+direction:ltr!important;
+overflow:visible!important;
+}
+
+.topbar .top-info.varex-unified-header>.info-chip,
+.topbar .top-info.varex-unified-header>.language-selector,
+.topbar .top-info.varex-unified-header>.varex-feedback-controls{
+flex:0 0 auto!important;
+}
+
+.topbar .top-info.varex-unified-header>.info-chip{
+height:44px!important;
+min-height:44px!important;
+max-height:44px!important;
+margin:0!important;
+padding:0 11px!important;
+border-radius:10px!important;
+font-size:13px!important;
+line-height:44px!important;
+text-decoration:none!important;
+direction:inherit!important;
+transform:none!important;
+translate:none!important;
+transition:none!important;
+}
+
+html .topbar .top-info.varex-mobile-top-info.varex-unified-header>.varex-mobile-clock-chip,
+html .topbar .top-info.varex-unified-header>.varex-header-clock{
+height:44px!important;
+min-height:44px!important;
+max-height:44px!important;
+padding:0 8px!important;
+font-size:12px!important;
+font-weight:800!important;
+line-height:44px!important;
+font-variant-numeric:tabular-nums!important;
+direction:ltr!important;
+}
+
+html .topbar .top-info.varex-unified-header>.varex-header-time{
+width:94px!important;
+min-width:94px!important;
+max-width:94px!important;
+}
+
+html .topbar .top-info.varex-unified-header>.varex-header-date{
+width:104px!important;
+min-width:104px!important;
+max-width:104px!important;
+}
+
+.varex-header-action{
+display:flex!important;
+align-items:center!important;
+justify-content:center!important;
+gap:7px!important;
+font-family:Arial,Tahoma,sans-serif!important;
+cursor:pointer!important;
+white-space:nowrap!important;
+}
+
+.varex-header-system{
+min-width:96px!important;
+}
+
+.varex-top-switch-user{
+min-width:126px!important;
+}
+
+.varex-header-language,
+.varex-header-language .language-button{
+width:118px!important;
+min-width:118px!important;
+max-width:118px!important;
+height:44px!important;
+min-height:44px!important;
+max-height:44px!important;
+}
+
+.varex-header-language .language-button{
+padding:0 10px!important;
+gap:7px!important;
+font-size:13px!important;
+transform:none!important;
+translate:none!important;
+transition:none!important;
+}
+
+.varex-header-language .language-menu{
+top:52px!important;
+left:0!important;
+right:auto!important;
+width:174px!important;
+direction:ltr!important;
+}
+
+.varex-header-language .language-option{
+min-height:42px!important;
+font-size:13px!important;
+text-align:left!important;
+}
+
+.varex-header-legacy-users{
+display:none!important;
+}
+
+.topbar .varex-feedback-controls{
+height:44px!important;
+gap:8px!important;
+overflow:visible!important;
+}
+
+.varex-feedback-selector{
+position:relative!important;
+width:48px!important;
+height:44px!important;
+flex:0 0 48px!important;
+}
+
+.varex-feedback-button{
+width:48px!important;
+min-width:48px!important;
+max-width:48px!important;
+height:44px!important;
+min-height:44px!important;
+max-height:44px!important;
+overflow:hidden!important;
+}
+
+.varex-feedback-button svg{
+width:20px!important;
+height:20px!important;
+margin-left:-7px!important;
+}
+
+.varex-feedback-level{
+position:absolute!important;
+right:5px!important;
+bottom:4px!important;
+min-width:14px!important;
+height:14px!important;
+padding:0 2px!important;
+border-radius:5px!important;
+display:flex!important;
+align-items:center!important;
+justify-content:center!important;
+background:rgba(255,255,255,.18)!important;
+font-size:8px!important;
+font-weight:900!important;
+line-height:1!important;
+}
+
+.varex-feedback-arrow{
+position:absolute!important;
+right:4px!important;
+top:1px!important;
+font-size:10px!important;
+line-height:1!important;
+}
+
+.varex-feedback-menu{
+position:absolute!important;
+top:52px!important;
+right:0!important;
+z-index:10050!important;
+width:166px!important;
+padding:7px!important;
+display:none!important;
+border:1px solid #dbe3ef!important;
+border-radius:11px!important;
+background:#fff!important;
+box-shadow:0 14px 35px rgba(15,23,42,.16)!important;
+direction:ltr!important;
+}
+
+.varex-feedback-selector.open .varex-feedback-menu{
+display:block!important;
+}
+
+.varex-feedback-option{
+width:100%!important;
+min-height:40px!important;
+margin:0!important;
+padding:8px 10px!important;
+border:0!important;
+border-radius:8px!important;
+display:block!important;
+background:#fff!important;
+color:#334155!important;
+font-family:Arial,Tahoma,sans-serif!important;
+font-size:12px!important;
+font-weight:700!important;
+text-align:left!important;
+box-shadow:none!important;
+transform:none!important;
+transition:none!important;
+}
+
+.varex-feedback-option:hover,
+.varex-feedback-option.is-selected{
+background:#eef2ff!important;
+color:#172554!important;
+}
+
+body.varex-dark .varex-feedback-menu,
+html[data-theme="dark"] .varex-feedback-menu,
+html[data-varex-theme="dark"] .varex-feedback-menu{
+border-color:#29415f!important;
+background:#132641!important;
+}
+
+body.varex-dark .varex-feedback-option,
+html[data-theme="dark"] .varex-feedback-option,
+html[data-varex-theme="dark"] .varex-feedback-option{
+background:#132641!important;
+color:#e2e8f0!important;
+}
+
+body.varex-dark .varex-feedback-option:hover,
+body.varex-dark .varex-feedback-option.is-selected,
+html[data-theme="dark"] .varex-feedback-option:hover,
+html[data-theme="dark"] .varex-feedback-option.is-selected{
+background:#1b3455!important;
+color:#fff!important;
+}
+
+/* Increase primary and supporting system text by two points. */
+.hero h1{font-size:27px!important}
+.hero p{font-size:15px!important}
+.section-header h3,
+.section-title,
+.section-title h2,
+.panel-head h3,
+.panel-header h3,
+.section-head h3,
+.panel>h2{font-size:18px!important}
+.module h3{font-size:16px!important}
+.module p,
+.stat-small,
+.panel-head span,
+.panel-header span,
+.section-head span{font-size:12px!important}
+.stat-label,
+.field label,
+.form-group label{font-size:12px!important}
+input,
+select,
+textarea,
+button{font-size:13px}
+
+/* Settings appearance cards stay centered in both directions. */
+.theme-options{
+align-items:stretch!important;
+}
+.theme-option,
+.theme-option .theme-name,
+.theme-option .theme-desc{
+text-align:center!important;
+}
+.theme-option{
+align-items:center!important;
+justify-content:center!important;
+}
+}
+
+@media(min-width:821px) and (max-width:1200px){
+:root{--varex-topbar-height:126px}
+.topbar{
+flex-wrap:wrap!important;
+align-content:center!important;
+gap:4px 14px!important;
+padding-top:8px!important;
+padding-bottom:8px!important;
+}
+.page-name{
+width:100%!important;
+height:46px!important;
+justify-content:center!important;
+}
+.topbar .top-info.varex-unified-header{
+width:100%!important;
+justify-content:center!important;
+}
+}
+
+/* No visual jump when pressing or navigating between cards/pages. */
+html body a:active,
+html body button:active,
+html body [role="button"]:active,
+html body .module:active,
+html body .card:active,
+html body .panel:active,
+html body .stat:active{
+transform:none!important;
+translate:none!important;
+scale:1!important;
+}
+
+.main,
+.content,
+.topbar,
+.sidebar,
+.sidebar .nav,
+.sidebar .nav a,
+.module,
+.card,
+.panel,
+.stat,
+.page-icon{
+animation:none!important;
+transform:none!important;
+translate:none!important;
+}
