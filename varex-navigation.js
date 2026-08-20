@@ -210,6 +210,13 @@
       }
     },
 
+    playInteractionVibration(pattern = 12) {
+      // Keep Arabic haptic taps as requested, but prevent card/button taps from
+      // shaking the device while the English interface is active.
+      if (this.currentLanguage() === "en") return;
+      this.playFeedbackVibration(pattern);
+    },
+
     updateFeedbackControls() {
       const language = this.currentLanguage();
       document.querySelectorAll("[data-varex-feedback-toggle]").forEach(button => {
@@ -256,8 +263,8 @@
             this.playFeedbackSound(enabled ? "enabled" : "disabled", true);
           }
           this.setFeedbackEnabled(type, enabled);
-          if (type === "vibration" && enabled) this.playFeedbackVibration(24, true);
-          else if (type === "sound") this.playFeedbackVibration(10);
+          if (type === "vibration" && enabled && this.currentLanguage() !== "en") this.playFeedbackVibration(24, true);
+          else if (type === "sound") this.playInteractionVibration(10);
 
           this.updateFeedbackControls();
           window.dispatchEvent(new CustomEvent("varex-feedback-changed", {
@@ -285,7 +292,7 @@
           );
           if (!target || target.disabled || target.closest("[data-varex-feedback-toggle]")) return;
           this.playFeedbackSound("tap");
-          this.playFeedbackVibration(10);
+          this.playInteractionVibration(10);
         }, { passive: true, capture: true });
       }
 
@@ -294,7 +301,7 @@
       window.VAREX_FEEDBACK = {
         tap: () => {
           this.playFeedbackSound("tap");
-          this.playFeedbackVibration(10);
+          this.playInteractionVibration(10);
         },
         success: () => {
           this.playFeedbackSound("success");

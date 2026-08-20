@@ -98,6 +98,62 @@
     ["قد تُحدث هذه السياسة عند تطوير الخدمة. يظهر تاريخ آخر تحديث في أعلى الصفحة، وسيتم طلب موافقة جديدة إذا كان التغيير جوهرياً. للاستفسارات تُستخدم قنوات الدعم المعلنة داخل النظام.","This policy may be updated as the service develops. The latest update date appears at the top, and renewed consent will be requested for material changes. Questions can be sent through the support channels shown in the system."]
   );
 
+  /* System-owned labels and runtime messages only. User-entered records are
+     intentionally not included, so names, products and notes stay unchanged. */
+  pairs.push(
+    ["تبديل المستخدم","Switch User"],["تسجيل خروج المستخدم","Sign Out User"],["تسجيل خروج المنشأة","Sign Out Business"],
+    ["اختيار مستخدم النظام","Select System User"],["يرجى اختيار الحساب ثم إدخال كلمة المرور.","Select an account, then enter the password."],["رجوع","Back"],
+    ["المالك / Owner","Owner"],["المالك","Owner"],["مالك","Owner"],["جاري تسجيل الدخول...","Signing in..."],["✓ تم تسجيل الدخول بنجاح","✓ Signed in successfully"],
+    ["الوضع النهاري","Light Mode"],["الوضع الليلي","Dark Mode"],["الحساب","Account"],["تأكيد الإجراء","Confirm Action"],["حسنًا","OK"],["متابعة","Continue"],
+
+    ["سياسة الاسترجاع والاستبدال المطبوعة","Printed Return & Exchange Policy"],["الاسترجاع والاستبدال حسب سياسة المتجر وبإبراز الفاتورة الأصلية.","Returns and exchanges follow the store policy and require the original receipt."],
+    ["الطابعة ودرج الكاشير","Printer & Cash Drawer"],["طريقة الاتصال بالطابعة","Printer Connection"],["طابعة بلوتوث ESC/POS","Bluetooth ESC/POS Printer"],
+    ["طابعة شبكة LAN / Wi-Fi","LAN / Wi-Fi Network Printer"],["طباعة المتصفح اليدوية","Manual Browser Printing"],["طابعة البلوتوث المقترنة","Paired Bluetooth Printer"],
+    ["يرجى البحث عن الطابعات المقترنة","Search for paired printers"],["عنوان IP للطابعة","Printer IP Address"],["المنفذ","Port"],["عرض ورق الفاتورة","Receipt Paper Width"],
+    ["80 mm — موصى به","80 mm — Recommended"],["طباعة الفاتورة فور إتمام البيع","Print Receipt Immediately After Sale"],["فتح درج الكاشير تلقائياً للبيع النقدي فقط","Open Cash Drawer Automatically for Cash Sales Only"],
+    ["تفعيل قارئ الباركود الخارجي USB / Bluetooth","Enable External USB / Bluetooth Barcode Scanner"],["البحث عن الطابعات","Find Printers"],["طباعة تجريبية","Test Print"],
+    ["اختر الطابعة ثم نفّذ طباعة تجريبية قبل بدء البيع.","Select a printer and run a test print before starting sales."],["في المتصفح ستظهر نافذة الطباعة. الطباعة الصامتة المباشرة تعمل داخل تطبيق VAREX على أندرويد.","The browser print dialog will open. Direct silent printing is available in the VAREX Android app."],
+    ["جاري البحث عن الطابعات المقترنة...","Searching for paired printers..."],["اختر الطابعة","Select Printer"],["لا توجد طابعة مقترنة. اربط الطابعة من إعدادات بلوتوث الجهاز ثم أعد البحث.","No paired printer found. Pair one in the device Bluetooth settings, then search again."],
+    ["تعذر البحث عن الطابعات.","Unable to search for printers."],["يرجى اختيار الطابعة أو إدخال عنوان الشبكة أولاً.","Select a printer or enter its network address first."],["جاري إرسال الفاتورة التجريبية إلى الطابعة...","Sending the test receipt to the printer..."],
+    ["✓ نجحت الطباعة التجريبية والطابعة جاهزة.","✓ Test print succeeded. The printer is ready."],["تم فتح نافذة الطباعة التجريبية في المتصفح.","The browser test-print dialog was opened."],["فشلت الطباعة التجريبية.","Test print failed."],["الطابعة المحفوظة","Saved Printer"],
+
+    ["اختيار الاشتراك المدفوع لا يفعّله تلقائياً، ويصبح فعالاً بعد نجاح عملية الدفع والتحقق منها. أما التجربة المجانية فتبدأ فور تأكيد تشغيلها وتستمر لمدة 7 أيام.","Selecting a paid plan does not activate it automatically. It becomes active after successful payment and verification. The free trial starts immediately after confirmation and lasts 7 days."],
+    ["إعطاء خصم","Apply Discount"],["مرحباً","Welcome"],["اسم المنشأة","Business Name"],["بالباركود","by barcode"],["تغيير الفرع سيمسح أصناف الفاتورة الحالية. متابعة؟","Changing the branch will clear the current invoice items. Continue?"],
+    ["مدفوع جزئياً","Partially Paid"],["تأكيد حذف هذه الحركة المالية؟","Delete this financial transaction?"],["تأكيد حذف هذا المصروف؟","Delete this expense?"],["تأكيد إغلاق واعتماد هذه الوردية؟","Close and approve this shift?"],
+    ["تعذر نسخ المفتاح تلقائياً","Unable to copy the key automatically"],["مجاناً","Free"],["يوماً","Days"],
+
+    ["اسم المنتج مطلوب.","Product name is required."],["الاسم الكامل مطلوب.","Full name is required."],["البريد الإلكتروني أو كلمة المرور غير صحيحة.","The email or password is incorrect."],["البريد الإلكتروني غير مؤكد.","The email address is not verified."],
+    ["الكمية المتوفرة غير كافية.","The available quantity is insufficient."],["المنتج غير موجود.","Product not found."],["المورد المكتوب غير موجود في قائمة الموردين.","The entered supplier is not in the supplier list."],
+    ["المورد المكتوب غير موجود في قائمة الموردين. يرجى إضافة المورد أولاً، أو يمكن ترك خانة المورد فارغة.","The entered supplier is not in the supplier list. Add the supplier first, or leave the supplier field empty."],
+    ["انتهت جلسة التحقق. يرجى طلب رمز جديد.","The verification session expired. Request a new code."],["انتهت جلسة المستخدم. يرجى تسجيل الدخول من جديد.","The user session expired. Sign in again."],
+    ["انتهت جلسة حساب المالك. يرجى تسجيل الدخول من جديد.","The owner session expired. Sign in again."],["انتهت صلاحية التحقق الآمن. يرجى طلب رمز جديد ثم إعادة المحاولة.","Secure verification expired. Request a new code and try again."],
+    ["انتهت صلاحية رمز التحقق.","The verification code expired."],["تأكيد الهوية","Verify Identity"],["تعذر إكمال حذف الحساب.","Unable to complete account deletion."],["تعذر إنشاء جلسة آمنة مع قاعدة البيانات.","Unable to create a secure database session."],
+    ["تعذر إنشاء جلسة المستخدم.","Unable to create the user session."],["تعذر الاتصال بالخادم. يرجى التحقق من اتصال الإنترنت ثم إعادة المحاولة.","Unable to connect to the server. Check your internet connection and try again."],
+    ["تعذر الاتصال بخدمة الحذف. يرجى التحقق من اتصال الإنترنت ثم إعادة المحاولة.","Unable to connect to the deletion service. Check your internet connection and try again."],["تعذر الاتصال بخدمة الحسابات.","Unable to connect to the account service."],
+    ["تعذر التحقق من حساب المالك.","Unable to verify the owner account."],["تعذر تجهيز طلب الحذف الآمن.","Unable to prepare the secure deletion request."],["تعذر تحديد البريد الإلكتروني لحساب المالك.","Unable to identify the owner account email."],
+    ["تعذر تحديد حساب المالك المطلوب حذفه.","Unable to identify the owner account to delete."],["تعذر تنفيذ العملية على قاعدة البيانات.","Unable to complete the database operation."],["تم إجراء محاولات كثيرة خلال وقت قصير. يرجى الانتظار قليلاً ثم المحاولة من جديد.","Too many attempts were made in a short time. Wait a moment and try again."],
+    ["تم إرسال رمز التحقق إلى بريد المالك.","A verification code was sent to the owner's email."],["تم إرسال رمز تحقق جديد.","A new verification code was sent."],["تم إنشاء الحساب.","Account created."],["تم إنشاء الحساب. أرسلنا رمز التحقق إلى بريدك الإلكتروني.","Account created. We sent a verification code to your email."],
+    ["تم تأكيد البريد الإلكتروني بنجاح.","Email verified successfully."],["تم تأكيد رمز الحذف بنجاح.","Deletion code verified successfully."],["تم تغيير كلمة المرور بنجاح.","Password changed successfully."],["حدث خطأ في خدمة الحسابات.","An account service error occurred."],
+    ["خدمة الحذف الآمن غير منشورة على الخادم بعد.","The secure deletion service is not yet available on the server."],["رمز التحقق غير صحيح.","The verification code is incorrect."],["رمز التحقق لا يخص حساب المالك الحالي.","The verification code does not belong to the current owner account."],
+    ["كلمة المرور الجديدة يجب أن تحتوي على 8 أحرف على الأقل.","The new password must contain at least 8 characters."],["كلمة المرور غير صحيحة.","The password is incorrect."],["كلمة المرور يجب أن تحتوي على 8 أحرف على الأقل.","The password must contain at least 8 characters."],
+    ["لا توجد جلسة مستخدم صالحة.","There is no valid user session."],["لا توجد منتجات في الفاتورة.","The invoice contains no products."],["لم يتم العثور على منشأة مرتبطة بهذا الحساب.","No business is linked to this account."],
+    ["لم يتم تعيين كلمة مرور لهذا المستخدم. يرجى تعديل المستخدم وتحديد كلمة مرور ثم الحفظ.","No password is set for this user. Edit the user, set a password and save."],["معرّف المنتج غير موجود.","Product ID is missing."],
+    ["هذا البريد الإلكتروني مرتبط بحساب موجود مسبقاً. يرجى تسجيل الدخول بدلاً من إنشاء حساب جديد.","This email is already linked to an account. Sign in instead of creating a new one."],["هذا الجهاز غير مرتبط بحساب المنشأة.","This device is not linked to the business account."],
+    ["يجب التحقق من حساب المالك أولاً.","Verify the owner account first."],["يجب الموافقة على شروط الخدمة وسياسة الخصوصية.","You must accept the Terms of Service and Privacy Policy."],["يجب تسجيل الدخول بحساب المالك أولاً.","Sign in with the owner account first."],
+    ["يرجى إدخال كلمة مرور المالك.","Enter the owner password."],["يرجى إدخال كلمة المرور.","Enter the password."],["الكمية غير متوفرة للمنتج:","The quantity is unavailable for product:"],
+    ["فاتورة ضريبية مبسطة / Simplified Tax Invoice","Simplified Tax Invoice"],["فاتورة مبيعات / Sales Receipt","Sales Receipt"],["— مشمولة / Included","— Included"],
+    ["الإجمالي / TOTAL","TOTAL"],["الإجمالي / Total","Total"],["الباقي / Change","Change"],["التاريخ / Date","Date"],["الخصم / Discount","Discount"],["الصنف / Item","Item"],
+    ["العميل / Customer","Customer"],["الكاشير / Cashier","Cashier"],["المتبقي / Due","Due"],["المجموع الفرعي / Subtotal","Subtotal"],["المدفوع / Paid","Paid"],
+    ["الوقت / Time","Time"],["رقم الفاتورة / Invoice","Invoice Number"],["طريقة الدفع / Payment","Payment Method"],["هاتف:","Phone:"],["اختبار","Test"],
+
+    ["إعادة الإرسال","Resend"],["إعادة المحاولة","Try Again"],["اكتملت عملية الحذف بنجاح.","Deletion completed successfully."],["بدء التحقق من جديد","Restart Verification"],["تعذر إعادة إرسال الرمز.","Unable to resend the code."],
+    ["تعذر إكمال الحذف.","Unable to complete deletion."],["تعذر إكمال العملية. يمكن إعادة المحاولة ما دامت جلسة التحقق صالحة.","Unable to complete the operation. You can try again while the verification session remains valid."],["تعذر التحقق من الرمز.","Unable to verify the code."],
+    ["تم تأكيد الرمز. جاري إنشاء اتصال حذف آمن...","Code verified. Creating a secure deletion connection..."],["تم حذف بيانات المنشأة. جاري إنهاء الجلسات...","Business data deleted. Ending sessions..."],["جاري إرسال الرمز...","Sending code..."],
+    ["جاري إزالة بيانات المنشأة بأمان...","Securely removing business data..."],["جاري إغلاق حساب الدخول...","Closing the sign-in account..."],["جاري التحقق من ملكية المنشأة...","Verifying business ownership..."],["جاري التحقق...","Verifying..."],
+    ["جاري تثبيت التحقق الآمن...","Securing verification..."],["جاري تجهيز الحذف الآمن...","Preparing secure deletion..."],["جاري قفل عملية الحذف ومنع التنفيذ المكرر...","Locking the deletion operation to prevent duplicate execution..."],["حدث خطأ أثناء التحقق.","An error occurred during verification."],
+    ["خدمة التحقق الآمن غير متوفرة في هذا الإصدار.","Secure verification is unavailable in this version."],["يرجى تأكيد فهم أن عملية الحذف نهائية.","Confirm that you understand deletion is permanent."]
+  );
+
   const dictionary=new Map(pairs);
   const textOriginals=new WeakMap(),attributeOriginals=new WeakMap();
   let applying=false,currentLanguage="ar";
@@ -137,16 +193,35 @@
       .replace(/^المتوفر في الفرع المصدر:\s*(.+)$/,"Available at source branch: $1");
     translated=translated.replace(/^تمت إضافة\s+(.+)\s+بالبا?ركود$/,"$1 added by barcode")
       .replace(/^تم العثور على\s+(\d+)\s+جهاز\/طابعة مقترنة\.$/,"$1 paired device(s)/printer(s) found.")
-      .replace(/^ضريبة القيمة المضافة\s+([\d.]+)%\s*—\s*مشمولة$/,"VAT $1% — Included");
+      .replace(/^ضريبة القيمة المضافة\s+([\d.]+)%\s*—\s*مشمولة$/,"VAT $1% — Included")
+      .replace(/^الكمية غير متوفرة للمنتج:\s*(.+)$/,"The quantity is unavailable for product: $1")
+      .replace(/^المخزون الحالي\s*—\s*(.+)$/,"Current Inventory — $1")
+      .replace(/^📁\s*وثائق الموظف\s*—\s*(.+)$/,"📁 Employee Documents — $1")
+      .replace(/^إعادة الإرسال\s*\((\d+)\)$/,"Resend ($1)")
+      .replace(/^تعذر تحميل\s+(.+):\s*(.+)$/,"Unable to load $1: $2")
+      .replace(/^(\d+)\s+فاتورة مبيعات$/,"$1 sales invoices")
+      .replace(/^(.+)\s+—\s+المالك$/,"$1 — Owner")
+      .replace(/^(.+)\s+—\s+المدير$/,"$1 — Manager")
+      .replace(/^(.+)\s+—\s+المحاسب$/,"$1 — Accountant")
+      .replace(/^(.+)\s+—\s+الكاشير$/,"$1 — Cashier")
+      .replace(/^(.+)\s+—\s+موظف$/,"$1 — Employee")
+      .replace(/^(.+)\s+—\s+مستخدم النظام$/,"$1 — System User");
     return translated;
+  }
+
+  function englishDigits(value){
+    return String(value).replace(/[٠-٩]/g,d=>"٠١٢٣٤٥٦٧٨٩".indexOf(d)).replace(/\s*ص\s*$/," AM").replace(/\s*م\s*$/," PM");
   }
 
   function translateTextNode(node,language){
     if(!textOriginals.has(node))textOriginals.set(node,node.nodeValue);
-    const original=textOriginals.get(node);
+    let original=textOriginals.get(node);
+    const current=node.nodeValue,previousEnglish=coreTranslation(original);
+    if(current!==original&&current!==previousEnglish){textOriginals.set(node,current);original=current}
     if(language==="ar"){if(node.nodeValue!==original)node.nodeValue=original;return}
     const leading=(original.match(/^\s*/)||[""])[0],trailing=(original.match(/\s*$/)||[""])[0];
-    const translated=coreTranslation(original);
+    let translated=coreTranslation(original);
+    if(node.parentElement&&["currentDate","currentTime"].includes(node.parentElement.id))translated=englishDigits(translated);
     const next=leading+translated+trailing;
     if(node.nodeValue!==next)node.nodeValue=next;
   }
@@ -157,6 +232,7 @@
     if(!originals){originals={};attributeOriginals.set(element,originals)}
     for(const name of names){
       if(element.hasAttribute(name)&&originals[name]===undefined)originals[name]=element.getAttribute(name);
+      else if(element.hasAttribute(name)&&originals[name]!==undefined){const current=element.getAttribute(name),previousEnglish=coreTranslation(originals[name]);if(current!==originals[name]&&current!==previousEnglish)originals[name]=current}
       if(originals[name]!==undefined)element.setAttribute(name,language==="ar"?originals[name]:coreTranslation(originals[name]));
     }
     if(element instanceof HTMLInputElement&&["button","submit","reset"].includes(element.type)){

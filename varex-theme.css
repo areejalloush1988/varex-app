@@ -26,6 +26,27 @@ font-family:Arial,Tahoma,sans-serif!important;
 overflow-x:hidden;
 }
 
+/* English UI: taps stay visually fixed instead of pressing/moving cards. */
+html[dir="ltr"] button:active,
+html[dir="ltr"] a:active,
+html[dir="ltr"] [role="button"]:active,
+html[dir="ltr"] .module:active,
+html[dir="ltr"] .card:active,
+html[dir="ltr"] .panel:active,
+html[dir="ltr"] .stat:active{
+transform:none!important;
+translate:none!important;
+}
+
+@media(min-width:821px){
+html[dir="ltr"] .main{
+width:calc(100% - var(--varex-sidebar-width))!important;
+max-width:calc(100% - var(--varex-sidebar-width))!important;
+margin-left:var(--varex-sidebar-width)!important;
+margin-right:0!important;
+}
+}
+
 .sidebar{
 position:fixed!important;
 top:0!important;
