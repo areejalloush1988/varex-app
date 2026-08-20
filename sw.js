@@ -1,4 +1,4 @@
-const CACHE_NAME="varex-cache-v20-pos-hardware";
+const CACHE_NAME="varex-cache-v21-header-feedback";
 const IS_NATIVE_APP=self.location.hostname==="localhost";
 
 const FILES_TO_CACHE=[
