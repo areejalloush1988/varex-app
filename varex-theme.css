@@ -457,6 +457,10 @@ max-height:calc(var(--varex-mobile-topbar-height) + env(safe-area-inset-top,0px)
 padding:env(safe-area-inset-top,0px) 62px 0 14px!important;
 z-index:20000!important;
 box-shadow:0 2px 12px rgba(15,23,42,.06)!important;
+display:flex!important;
+align-items:center!important;
+gap:8px!important;
+overflow:hidden!important;
 }
 
 .varex-mobile-menu-button{
@@ -503,7 +507,9 @@ pointer-events:auto!important;
 }
 
 .page-name{
-width:100%!important;
+width:auto!important;
+min-width:0!important;
+flex:1 1 auto!important;
 gap:9px!important;
 overflow:hidden!important;
 }
@@ -541,8 +547,62 @@ text-overflow:ellipsis!important;
 white-space:nowrap!important;
 }
 
-.top-info{
+html .topbar .top-info.varex-mobile-top-info{
+width:auto!important;
+min-width:0!important;
+flex:0 0 auto!important;
+display:flex!important;
+align-items:center!important;
+gap:4px!important;
+margin:0!important;
+padding:0!important;
+visibility:visible!important;
+opacity:1!important;
+overflow:visible!important;
+}
+
+html .topbar .top-info.varex-mobile-top-info>*{
 display:none!important;
+}
+
+html .topbar .top-info.varex-mobile-top-info>.varex-mobile-clock-chip{
+min-width:0!important;
+width:auto!important;
+height:30px!important;
+min-height:30px!important;
+max-height:30px!important;
+display:flex!important;
+align-items:center!important;
+justify-content:center!important;
+gap:0!important;
+margin:0!important;
+padding:4px 6px!important;
+border:1px solid #e2e8f0!important;
+border-radius:9px!important;
+background:#f8fafc!important;
+box-shadow:none!important;
+color:#475569!important;
+font-size:9px!important;
+font-weight:800!important;
+line-height:1.2!important;
+white-space:nowrap!important;
+}
+
+html .topbar .top-info.varex-mobile-top-info>.varex-mobile-clock-wrapper{
+font-size:0!important;
+}
+
+html .topbar .top-info.varex-mobile-top-info>.varex-mobile-clock-wrapper #currentDate,
+html .topbar .top-info.varex-mobile-top-info>.varex-mobile-clock-wrapper #currentTime{
+font-size:9px!important;
+margin:0!important;
+color:inherit!important;
+}
+
+body.varex-dark .topbar .top-info.varex-mobile-top-info>.varex-mobile-clock-chip{
+background:#10233d!important;
+border-color:#29415f!important;
+color:#e2e8f0!important;
 }
 
 .content{
@@ -605,6 +665,15 @@ min-height:44px;
 }
 
 @media(max-width:480px){
+.page-name small{
+display:none!important;
+}
+
+.page-name h1,
+.page-name h2{
+font-size:14px!important;
+}
+
 .content{
 padding-right:10px!important;
 padding-left:10px!important;
@@ -620,5 +689,26 @@ padding-left:10px!important;
 .modules,
 .modules-grid{
 grid-template-columns:1fr!important;
+}
+}
+
+@media(max-width:390px){
+.topbar{
+padding-left:9px!important;
+}
+
+.page-icon{
+display:none!important;
+}
+
+html .topbar .top-info.varex-mobile-top-info>.varex-mobile-clock-chip{
+padding-right:5px!important;
+padding-left:5px!important;
+font-size:8px!important;
+}
+
+html .topbar .top-info.varex-mobile-top-info>.varex-mobile-clock-wrapper #currentDate,
+html .topbar .top-info.varex-mobile-top-info>.varex-mobile-clock-wrapper #currentTime{
+font-size:8px!important;
 }
 }
