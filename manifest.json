@@ -1,16 +1,22 @@
 {
-"id": "./",
+"id": "/",
 "name": "VAREX Business Management System",
 "short_name": "VAREX",
 "description": "VAREX Business Management System - Sales, Inventory, Customers, Suppliers, Accounts and Reports",
-"start_url": "./index.html",
-"scope": "./",
+"start_url": "/index.html?source=pwa",
+"scope": "/",
 "display": "standalone",
+"display_override": ["standalone", "minimal-ui"],
 "orientation": "any",
 "background_color": "#f4f6fb",
 "theme_color": "#172554",
 "lang": "ar",
 "dir": "rtl",
+"categories": ["business", "finance", "productivity"],
+"prefer_related_applications": false,
+"launch_handler": {
+"client_mode": "navigate-existing"
+},
 "icons": [
 {
 "src": "./varex-icon-192.png",
@@ -29,6 +35,26 @@
 "sizes": "512x512",
 "type": "image/png",
 "purpose": "maskable"
+}
+],
+"shortcuts": [
+{
+"name": "شاشة المبيعات",
+"short_name": "المبيعات",
+"url": "/pos.html?source=pwa-shortcut",
+"icons": [{"src": "/varex-icon-192.png", "sizes": "192x192", "type": "image/png"}]
+},
+{
+"name": "المنتجات والمخزون",
+"short_name": "المخزون",
+"url": "/products.html?source=pwa-shortcut",
+"icons": [{"src": "/varex-icon-192.png", "sizes": "192x192", "type": "image/png"}]
+},
+{
+"name": "التقارير",
+"short_name": "التقارير",
+"url": "/reports.html?source=pwa-shortcut",
+"icons": [{"src": "/varex-icon-192.png", "sizes": "192x192", "type": "image/png"}]
 }
 ]
 }

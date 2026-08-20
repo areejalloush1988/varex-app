@@ -5,6 +5,8 @@ on:
   push:
     branches:
       - main
+      - mobile-standalone-20260820
+      - android-apk-20260820
     paths:
       - "android/**"
       - "scripts/**"

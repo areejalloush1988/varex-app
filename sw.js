@@ -1,4 +1,4 @@
-const CACHE_NAME="varex-cache-v15-stable-header-icons";
+const CACHE_NAME="varex-cache-v16-standalone-app";
 
 const FILES_TO_CACHE=[
 "./",
@@ -11,10 +11,20 @@ const FILES_TO_CACHE=[
 "./suppliers.html",
 "./accounts.html",
 "./employees.html",
+"./branches.html",
+"./transfers.html",
+"./purchases.html",
+"./expenses.html",
+"./shifts.html",
+"./users.html",
+"./notifications.html",
+"./activity.html",
 "./reports.html",
 "./tax-return.html",
 "./subscription.html",
 "./setting.html",
+"./reset-password.html",
+"./verify-email.html",
 "./varex.js",
 "./varex-navigation.js",
 "./varex-theme.css",

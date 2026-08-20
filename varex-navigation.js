@@ -137,6 +137,56 @@
       return this.normalizeFileName(window.location.pathname);
     },
 
+    setupStandaloneApp() {
+      const head = document.head;
+      if (!head) return;
+
+      const ensureMeta = (name, content) => {
+        let meta = head.querySelector(`meta[name="${name}"]`);
+        if (!meta) {
+          meta = document.createElement("meta");
+          meta.name = name;
+          head.appendChild(meta);
+        }
+        meta.content = content;
+      };
+
+      if (!head.querySelector('link[rel="manifest"]')) {
+        const manifest = document.createElement("link");
+        manifest.rel = "manifest";
+        manifest.href = "./manifest.json";
+        head.appendChild(manifest);
+      }
+
+      if (!head.querySelector('link[rel="apple-touch-icon"]')) {
+        const icon = document.createElement("link");
+        icon.rel = "apple-touch-icon";
+        icon.href = "./varex-icon-192.png";
+        head.appendChild(icon);
+      }
+
+      ensureMeta("theme-color", "#172554");
+      ensureMeta("application-name", "VAREX");
+      ensureMeta("mobile-web-app-capable", "yes");
+      ensureMeta("apple-mobile-web-app-capable", "yes");
+      ensureMeta("apple-mobile-web-app-title", "VAREX");
+      ensureMeta("apple-mobile-web-app-status-bar-style", "default");
+
+      const standalone = window.matchMedia?.("(display-mode: standalone)")?.matches ||
+        window.navigator.standalone === true ||
+        window.Capacitor?.isNativePlatform?.();
+      document.documentElement.classList.toggle("varex-standalone-app", Boolean(standalone));
+
+      if (!window.Capacitor?.isNativePlatform?.() && "serviceWorker" in navigator) {
+        window.addEventListener("load", () => {
+          navigator.serviceWorker.register("./sw.js", {
+            scope: "./",
+            updateViaCache: "none"
+          }).then(registration => registration.update()).catch(() => {});
+        }, { once: true });
+      }
+    },
+
     isActive(pageHref) {
       const current = this.getCurrentPage();
       const target = this.normalizeFileName(pageHref);
@@ -432,6 +482,7 @@
     },
 
     init() {
+      this.setupStandaloneApp();
       this.render();
       this.refreshActive();
       this.setupMobileDrawer();
