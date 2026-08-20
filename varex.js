@@ -125,6 +125,66 @@ return true;
 }
 });
 
+Object.assign(VAREX,{
+  _dataChannel:null,
+  notifyDataChanged(type="all",detail={}){
+    const event={type,detail,at:this.now()};
+    try{localStorage.setItem("varex_data_changed",JSON.stringify(event))}catch(e){}
+    try{
+      if("BroadcastChannel" in window){
+        if(!this._dataChannel)this._dataChannel=new BroadcastChannel("varex-data-sync");
+        this._dataChannel.postMessage(event);
+      }
+    }catch(e){}
+    try{window.dispatchEvent(new CustomEvent("varex:data-changed",{detail:event}))}catch(e){}
+    return event;
+  },
+  onDataChanged(handler){
+    if(typeof handler!=="function")return()=>{};
+    const local=e=>handler(e.detail||{type:"all"});
+    const storage=e=>{if(e.key==="varex_data_changed")try{handler(JSON.parse(e.newValue||"{}"))}catch(x){}};
+    window.addEventListener("varex:data-changed",local);
+    window.addEventListener("storage",storage);
+    let channel=null;
+    try{if("BroadcastChannel" in window){channel=new BroadcastChannel("varex-data-sync");channel.onmessage=e=>handler(e.data||{type:"all"})}}catch(e){}
+    return()=>{window.removeEventListener("varex:data-changed",local);window.removeEventListener("storage",storage);try{channel?.close()}catch(e){}};
+  },
+  async syncSettingsFromSupabase(){
+    const rows=await this.dbFetch("varex_business_settings?select=settings,updated_at&limit=1");
+    const remote=Array.isArray(rows)&&rows[0]?.settings&&typeof rows[0].settings==="object"?rows[0].settings:null;
+    if(remote){this.saveObject(this.keys.settings,{...this.getSettings(),...remote,updatedAt:rows[0].updated_at||this.now()});return this.getSettings()}
+    return this.getSettings();
+  },
+  async saveSettingsRemote(settings={}){
+    const businessId=await this.getCurrentBusinessId(),body={business_id:businessId,settings:{...this.getSettings(),...settings},updated_at:this.now(),updated_by:this.getSession()?.user?.id||null};
+    await this.dbFetch("varex_business_settings?on_conflict=business_id",{method:"POST",headers:{Prefer:"resolution=merge-duplicates,return=minimal"},body:JSON.stringify(body)});
+    this.saveSettings(settings);this.notifyDataChanged("settings");return this.getSettings();
+  },
+  mapRemoteSale(row){return{id:row.id,invoiceNumber:row.sale_number,branchId:row.branch_id,branchName:row.branch_name,customerId:row.customer_ref||"",customerName:row.customer_name||"عميل نقدي",paymentMethod:row.payment_method,subtotal:this.toNumber(row.subtotal),discount:this.toNumber(row.discount),tax:this.toNumber(row.tax_amount),total:this.toNumber(row.total),paid:this.toNumber(row.paid_amount),due:this.toNumber(row.remaining_amount),remaining:this.toNumber(row.remaining_amount),date:row.sale_date,createdAt:row.created_at,status:row.status||"completed"}},
+  async syncSalesFromSupabase(){
+    const rows=await this.dbFetch("varex_sales?select=*&order=created_at.asc");
+    const sales=(Array.isArray(rows)?rows:[]).map(x=>this.mapRemoteSale(x));this.saveSales(sales);return sales;
+  },
+  async completeSaleRemote(data={}){
+    const items=(Array.isArray(data.items)?data.items:[]).map(x=>({product_id:String(x.productId||x.id||""),name:x.name||"",barcode:x.barcode||"",quantity:this.positiveNumber(x.quantity||x.qty),price:this.positiveNumber(x.price)}));
+    const body={p_branch_id:data.branchId,p_customer_ref:data.customerId||"",p_customer_name:data.customerName||"عميل نقدي",p_payment_method:data.paymentMethod||"نقدي",p_subtotal:this.positiveNumber(data.subtotal),p_discount:this.positiveNumber(data.discount),p_tax:this.positiveNumber(data.tax),p_total:this.positiveNumber(data.total),p_paid:this.positiveNumber(data.paid),p_items:items};
+    const result=await this.dbFetch("rpc/varex_complete_sale",{method:"POST",body:JSON.stringify(body)});
+    await Promise.all([this.syncProductsFromSupabase(),this.syncSalesFromSupabase()]);
+    this.notifyDataChanged("sale",{saleId:result?.sale_id,branchId:data.branchId});
+    return{success:true,sale:{...data,id:result?.sale_id,invoiceNumber:result?.sale_number,createdAt:result?.created_at||this.now()}};
+  },
+  async addFinancialEntryRemote(entry={}){
+    const businessId=await this.getCurrentBusinessId(),body={business_id:businessId,branch_id:entry.branchId||null,entry_date:entry.date||this.today(),entry_type:entry.type==="expense"?"expense":"income",source_type:"manual",description:this.cleanText(entry.description),category:this.cleanText(entry.category)||null,amount:this.positiveNumber(entry.amount),payment_method:this.cleanText(entry.payment)||null,user_id:this.getSession()?.user?.id||null,updated_at:this.now()};
+    const rows=await this.dbFetch("varex_financial_entries?select=*",{method:"POST",headers:{Prefer:"return=representation"},body:JSON.stringify(body)});this.notifyDataChanged("finance");return Array.isArray(rows)?rows[0]:null;
+  },
+  async deleteFinancialEntryRemote(id){await this.dbFetch("varex_financial_entries?id=eq."+encodeURIComponent(id)+"&source_type=eq.manual",{method:"DELETE",headers:{Prefer:"return=minimal"}});this.notifyDataChanged("finance");return true},
+  async bootstrapSharedState(){
+    if(!this.isLoggedIn())return false;
+    const jobs=[this.syncSettingsFromSupabase(),this.syncProductsFromSupabase(),this.syncSalesFromSupabase()];
+    await Promise.allSettled(jobs);return true;
+  }
+});
+
 VAREX.initialize();window.VAREX=VAREX;
 
 /* =========================================================
@@ -407,7 +467,7 @@ body.varex-dark .varex-staff-user small{color:#cbd5e1}
 `;document.head.prepend(s)}
 
 /* ========================================================= START ========================================================= */
-function varexStartUI(){const publicPage=VAREX.isLoginPage()||VAREX.isRegisterPage()||VAREX.isVerifyEmailPage()||VAREX.isResetPasswordPage();if(publicPage)return;if(!VAREX.requireLogin())return;if(!VAREX.requireSubscription())return;varexInstallSharedStyles();varexApplyTheme(varexGetTheme());varexInstallStaffUI();const access=varexInitStaffAccess();varexBuildMenu();varexInstallTopSwitchUserButton();varexShowCurrentUser();if(access!==false)varexCheckCurrentPermission()}
+function varexStartUI(){const publicPage=VAREX.isLoginPage()||VAREX.isRegisterPage()||VAREX.isVerifyEmailPage()||VAREX.isResetPasswordPage();if(publicPage)return;if(!VAREX.requireLogin())return;if(!VAREX.requireSubscription())return;varexInstallSharedStyles();varexApplyTheme(varexGetTheme());varexInstallStaffUI();const access=varexInitStaffAccess();varexBuildMenu();varexInstallTopSwitchUserButton();varexShowCurrentUser();VAREX.bootstrapSharedState?.().then(()=>VAREX.notifyDataChanged?.("bootstrap")).catch(()=>{});if(access!==false)varexCheckCurrentPermission()}
 window.addEventListener("focus",()=>{varexApplyTheme(varexGetTheme());varexInstallTopSwitchUserButton();varexShowCurrentUser()});
 if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",varexStartUI,{once:true});else varexStartUI();
 /* ================= VAREX THEME + FIXED SIDEBAR SCROLL ================= */

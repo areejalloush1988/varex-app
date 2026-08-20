@@ -75,6 +75,7 @@ async function updateStatus(id,status){
     sync("loading",status==="received"?"جاري استلام المخزون في الفرع الوجهة...":"جاري تحديث المخزون والتحويل...");
     await applyTransferStatus(id,status);
     await VAREX.syncProductsFromSupabase?.().catch(()=>{});
+    VAREX.notifyDataChanged?.("transfer",{transferId:id,status});
     await load();
     return true
   }catch(e){
