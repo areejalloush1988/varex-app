@@ -69,7 +69,7 @@ async prepareBusinessAccountDeletion(){
 const session=this.getSession();
 if(!session?.access_token)return{success:false,message:"انتهت جلسة حساب المالك. يرجى تسجيل الدخول من جديد."};
 try{
-const response=await fetch(this.config.supabaseUrl+"/functions/v1/delete-business-account",{method:"POST",headers:{apikey:this.config.supabaseKey,Authorization:`Bearer ${session.access_token}`,"Content-Type":"application/json",Accept:"application/json"},body:JSON.stringify({action:"prepare",confirmation:"DELETE_MY_VAREX_ACCOUNT"})});
+const response=await fetch(this.config.supabaseUrl+"/functions/v1/smart-endpoint",{method:"POST",headers:{apikey:this.config.supabaseKey,Authorization:`Bearer ${session.access_token}`,"Content-Type":"application/json",Accept:"application/json"},body:JSON.stringify({action:"prepare",confirmation:"DELETE_MY_VAREX_ACCOUNT"})});
 let data={};try{data=await response.json()}catch(e){}
 if(!response.ok)return{success:false,message:data?.message||"تعذر تجهيز طلب الحذف الآمن.",code:data?.code||"PREPARE_FAILED",retryable:data?.retryable!==false,status:response.status};
 return{success:true,...data};
@@ -103,7 +103,7 @@ async deleteBusinessAccount(){
 let session=this.getSession();
 if(!session?.access_token)return{success:false,message:"انتهت جلسة التحقق. يرجى طلب رمز جديد."};
 try{
-const response=await fetch(this.config.supabaseUrl+"/functions/v1/delete-business-account",{method:"POST",headers:{apikey:this.config.supabaseKey,Authorization:`Bearer ${session.access_token}`,"Content-Type":"application/json",Accept:"application/json"},body:JSON.stringify({action:"delete",confirmation:"DELETE_MY_VAREX_ACCOUNT"})});
+const response=await fetch(this.config.supabaseUrl+"/functions/v1/smart-endpoint",{method:"POST",headers:{apikey:this.config.supabaseKey,Authorization:`Bearer ${session.access_token}`,"Content-Type":"application/json",Accept:"application/json"},body:JSON.stringify({action:"delete",confirmation:"DELETE_MY_VAREX_ACCOUNT"})});
 let data={};try{data=await response.json()}catch(e){}
 if(!response.ok){
 let message=data?.message||data?.error||"تعذر إكمال حذف الحساب.";
