@@ -14,7 +14,8 @@
     "android:release": "npm run android:sync && cd android && ./gradlew bundleRelease",
     "ios:add": "npm run build:web && cap add ios",
     "ios:sync": "npm run build:web && cap sync ios",
-    "ios:open": "cap open ios"
+    "ios:open": "cap open ios",
+    "ios:build:simulator": "npm run ios:sync"
   },
   "dependencies": {
     "@capacitor/android": "8.5.0",
