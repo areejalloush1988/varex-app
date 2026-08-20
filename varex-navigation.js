@@ -270,6 +270,45 @@
       document.body.appendChild(backdrop);
     },
 
+    setupMobileHeader() {
+      const topbar = document.querySelector(".topbar");
+      const topInfo = topbar?.querySelector(".top-info");
+
+      if (!topbar || !topInfo) return;
+
+      topbar.classList.add("varex-compact-mobile-header");
+      topInfo.classList.add("varex-mobile-top-info");
+
+      // Some legacy pages force these properties inline. The central mobile
+      // header owns them now so every page behaves consistently.
+      ["display", "visibility", "opacity", "width"].forEach(property => {
+        topInfo.style.removeProperty(property);
+      });
+
+      const classifyHeaderItems = () => {
+        Array.from(topInfo.children).forEach(item => {
+          const itemIsClock = item.id === "currentDate" || item.id === "currentTime";
+          const clockValue = itemIsClock
+            ? item
+            : item.querySelector("#currentDate, #currentTime");
+
+          item.classList.toggle("varex-mobile-clock-chip", Boolean(clockValue));
+          item.classList.toggle("varex-mobile-aux-chip", !clockValue);
+          item.classList.toggle(
+            "varex-mobile-clock-wrapper",
+            Boolean(clockValue && clockValue !== item)
+          );
+        });
+      };
+
+      classifyHeaderItems();
+
+      if (!topInfo.__varexHeaderObserver) {
+        topInfo.__varexHeaderObserver = new MutationObserver(classifyHeaderItems);
+        topInfo.__varexHeaderObserver.observe(topInfo, { childList: true });
+      }
+    },
+
     setupNativeBackButton() {
       const appPlugin = window.Capacitor?.Plugins?.App;
       if (!appPlugin?.addListener || window.__varexNativeBackReady) return;
@@ -300,6 +339,7 @@
       this.render();
       this.refreshActive();
       this.setupMobileDrawer();
+      this.setupMobileHeader();
       if (window.Capacitor?.isNativePlatform?.()) {
         document.documentElement.classList.add("varex-native-app");
       }
