@@ -213,16 +213,21 @@
     return String(value).replace(/[٠-٩]/g,d=>"٠١٢٣٤٥٦٧٨٩".indexOf(d)).replace(/\s*ص\s*$/," AM").replace(/\s*م\s*$/," PM");
   }
 
-  function translateTextNode(node,language){
-    if(!textOriginals.has(node))textOriginals.set(node,node.nodeValue);
-    let original=textOriginals.get(node);
-    const current=node.nodeValue,previousEnglish=coreTranslation(original);
-    if(current!==original&&current!==previousEnglish){textOriginals.set(node,current);original=current}
-    if(language==="ar"){if(node.nodeValue!==original)node.nodeValue=original;return}
+  function translatedTextValue(original,node){
+    if(!String(original??"").trim())return original;
     const leading=(original.match(/^\s*/)||[""])[0],trailing=(original.match(/\s*$/)||[""])[0];
     let translated=coreTranslation(original);
     if(node.parentElement&&["currentDate","currentTime"].includes(node.parentElement.id))translated=englishDigits(translated);
-    const next=leading+translated+trailing;
+    return leading+translated+trailing;
+  }
+
+  function translateTextNode(node,language){
+    if(!textOriginals.has(node))textOriginals.set(node,node.nodeValue);
+    let original=textOriginals.get(node);
+    const current=node.nodeValue,previousEnglish=translatedTextValue(original,node);
+    if(current!==original&&current!==previousEnglish){textOriginals.set(node,current);original=current}
+    if(language==="ar"){if(node.nodeValue!==original)node.nodeValue=original;return}
+    const next=translatedTextValue(original,node);
     if(node.nodeValue!==next)node.nodeValue=next;
   }
 
