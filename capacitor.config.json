@@ -12,6 +12,11 @@
     "allowMixedContent": false,
     "zoomEnabled": false
   },
+  "ios": {
+    "backgroundColor": "#f4f6fb",
+    "contentInset": "automatic",
+    "preferredContentMode": "mobile"
+  },
   "plugins": {
     "SplashScreen": {
       "launchShowDuration": 1600,
