@@ -1,4 +1,4 @@
-const CACHE_NAME="varex-cache-v12-tax-subscriptions";
+const CACHE_NAME="varex-cache-v13-mobile-header";
 
 const FILES_TO_CACHE=[
 "./",
