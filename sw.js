@@ -1,12 +1,28 @@
-const CACHE_NAME="varex-cache-v18-english-interface";
+const CACHE_NAME="varex-cache-v20-pos-hardware";
+const IS_NATIVE_APP=self.location.hostname==="localhost";
 
 const FILES_TO_CACHE=[
 "./",
 "./index.html",
 "./systems.html",
 "./novarex.html",
+"./real-estate-properties.html",
+"./real-estate-owners.html",
+"./real-estate-clients.html",
+"./real-estate-deals.html",
+"./real-estate-contracts.html",
+"./real-estate-payments.html",
+"./real-estate-maintenance.html",
+"./real-estate-employees.html",
+"./real-estate-reports.html",
+"./real-estate-settings.html",
+"./real-estate.css",
+"./real-estate.js",
+"./varex-real-estate-icon.svg",
 "./login.html",
 "./register.html",
+"./terms.html",
+"./privacy.html",
 "./pos.html",
 "./products.html",
 "./customers.html",
@@ -18,6 +34,7 @@ const FILES_TO_CACHE=[
 "./subscription.html",
 "./setting.html",
 "./varex.js",
+"./varex-hardware.js",
 "./varex-i18n.js",
 "./varex-navigation.js",
 "./varex-theme.css",
@@ -29,6 +46,7 @@ const FILES_TO_CACHE=[
 ];
 
 self.addEventListener("install",event=>{
+if(IS_NATIVE_APP){event.waitUntil(self.registration.unregister());return}
 event.waitUntil(
 caches.open(CACHE_NAME)
 .then(cache=>cache.addAll(FILES_TO_CACHE))
@@ -37,6 +55,7 @@ self.skipWaiting();
 });
 
 self.addEventListener("activate",event=>{
+if(IS_NATIVE_APP){event.waitUntil(self.registration.unregister());return}
 event.waitUntil(
 caches.keys()
 .then(names=>Promise.all(
@@ -49,6 +68,7 @@ names
 });
 
 self.addEventListener("fetch",event=>{
+if(IS_NATIVE_APP)return;
 if(event.request.method!=="GET")return;
 
 const request=event.request;

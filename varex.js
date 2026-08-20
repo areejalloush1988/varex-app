@@ -30,7 +30,7 @@ getHeldSales(){return this.getData(this.keys.heldSales)},saveHeldSales(x){return
 _add(k,p,x={}){const a=this.getData(k),o={...x,id:x.id||this.generateId(p),createdAt:x.createdAt||this.now(),updatedAt:this.now()};a.push(o);this.saveData(k,a);return o},
 _update(k,id,c={}){const a=this.getData(k),i=a.findIndex(x=>String(x.id)===String(id));if(i<0)return false;a[i]={...a[i],...c,id:a[i].id,updatedAt:this.now()};this.saveData(k,a);return a[i]},
 _delete(k,id){const a=this.getData(k),b=a.filter(x=>String(x.id)!==String(id));this.saveData(k,b);return b.length!==a.length},
-getSettings(){const d={businessName:"VAREX",currency:"AED",currencySymbol:"د.إ",taxEnabled:true,taxRate:5,lowStockLimit:5,language:"ar"},p=this.getObject(this.keys.settings,{});return{...d,...p}},
+getSettings(){const d={businessName:"VAREX",currency:"AED",currencySymbol:"د.إ",taxEnabled:true,taxRate:5,taxIncluded:true,showTRN:true,invoiceMessage:"شكراً لتسوقكم معنا",returnPolicy:"الاسترجاع والاستبدال حسب سياسة المتجر وبإبراز الفاتورة الأصلية.",printerTransport:"browser",printerAddress:"",printerPort:9100,paperWidth:"80",autoPrint:true,openDrawerOnCash:true,barcodeScannerEnabled:true,lowStockLimit:5,language:"ar"},p=this.getObject(this.keys.settings,{});return{...d,...p}},
 saveSettings(s={}){const d={...this.getSettings(),...s,updatedAt:this.now()};this.saveObject(this.keys.settings,d);return true},
 money(v){const s=this.getSettings(),sym=this.cleanText(s.currencySymbol)||(s.currency==="AED"?"د.إ":s.currency);return`${this.formatNumber(v,2)} ${sym}`},
 calculateTax(v){const s=this.getSettings();return s.taxEnabled===false?0:this.positiveNumber(v)*this.toNumber(s.taxRate,5)/100},
@@ -184,6 +184,22 @@ Object.assign(VAREX,{
     await Promise.allSettled(jobs);return true;
   }
 });
+
+VAREX.createUserWithConsent=async function(u={}){
+  const name=this.cleanText(u.name),username=this.normalizeUsername(u.username),email=this.normalizeEmail(u.email),password=String(u.password||""),termsAcceptedAt=this.cleanText(u.termsAcceptedAt),termsVersion=this.cleanText(u.termsVersion);
+  if(!termsAcceptedAt||!termsVersion)return{success:false,message:"يجب الموافقة على شروط الخدمة وسياسة الخصوصية."};
+  if(!name)return{success:false,message:"الاسم الكامل مطلوب."};
+  if(username.length<3)return{success:false,message:"اسم المستخدم يجب أن يحتوي على 3 أحرف على الأقل."};
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))return{success:false,message:"يرجى إدخال بريد إلكتروني صحيح."};
+  if(password.length<8)return{success:false,message:"كلمة المرور يجب أن تحتوي على 8 أحرف على الأقل."};
+  try{
+    const data={name,full_name:name,username,role:"مالك",terms_accepted_at:termsAcceptedAt,terms_version:termsVersion};
+    const response=await this.authFetch("/auth/v1/signup",{method:"POST",body:JSON.stringify({email,password,data})});
+    if(response?.user&&!response?.session&&Array.isArray(response?.user?.identities)&&response.user.identities.length===0)return{success:false,message:"هذا البريد الإلكتروني مرتبط بحساب موجود مسبقاً. يرجى تسجيل الدخول بدلاً من إنشاء حساب جديد."};
+    this.setPendingVerification({email,name,username});
+    return{success:true,user:this.getSafeUser(response.user),needsEmailConfirmation:!response?.session?.access_token,email,message:response?.session?.access_token?"تم إنشاء الحساب.":"تم إنشاء الحساب. أرسلنا رمز التحقق إلى بريدك الإلكتروني."};
+  }catch(error){return{success:false,message:this.mapAuthError(error)}}
+};
 
 VAREX.initialize();window.VAREX=VAREX;
 
