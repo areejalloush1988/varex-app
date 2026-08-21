@@ -4,7 +4,7 @@ import { fileURLToPath } from "node:url";
 
 const root = fileURLToPath(new URL("../", import.meta.url));
 const output = join(root, "www");
-const allowedExtensions = new Set([".html", ".css", ".js", ".png"]);
+const allowedExtensions = new Set([".html", ".css", ".js", ".png", ".svg"]);
 
 await rm(output, { recursive: true, force: true });
 await mkdir(output, { recursive: true });

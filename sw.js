@@ -1,4 +1,4 @@
-const CACHE_NAME="varex-cache-v32-real-estate-green-theme";
+const CACHE_NAME="varex-cache-v33-salon-systems";
 const IS_NATIVE_APP=self.location.hostname==="localhost";
 
 const FILES_TO_CACHE=[
@@ -20,6 +20,22 @@ const FILES_TO_CACHE=[
 "./real-estate.css",
 "./real-estate.js",
 "./varex-real-estate-icon.svg",
+"./salons.html",
+"./salon-women.html",
+"./salon-men.html",
+"./salon-appointments.html",
+"./salon-clients.html",
+"./salon-services.html",
+"./salon-staff.html",
+"./salon-facilities.html",
+"./salon-pos.html",
+"./salon-inventory.html",
+"./salon-commissions.html",
+"./salon-reports.html",
+"./salon-settings.html",
+"./salon.css",
+"./salon.js",
+"./varex-salon-icon.svg",
 "./login.html",
 "./register.html",
 "./terms.html",
