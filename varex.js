@@ -184,7 +184,7 @@ Object.assign(VAREX,{
     await Promise.allSettled(jobs);return true;
   },
   getOnboardingModuleIds(){
-    return["dashboard","pos","products","purchases","suppliers","customers","accounts","employees","branches","transfers","shifts","reports","tax-return","users","notifications","activity","security-center","ai-assistant","subscription","settings","salon-appointments","salon-clients","salon-services","salon-staff","salon-facilities","salon-pos","salon-inventory","salon-commissions","salon-reports","salon-settings","dining-pos","dining-orders","dining-tables","dining-menu","dining-kitchen","dining-clients","dining-staff","dining-inventory","dining-suppliers","dining-reports","dining-settings"];
+    return["dashboard","pos","products","purchases","suppliers","customers","accounts","employees","branches","transfers","shifts","reports","tax-return","users","notifications","activity","security-center","ai-assistant","subscription","settings","salon-appointments","salon-clients","salon-services","salon-staff","salon-facilities","salon-pos","salon-inventory","salon-commissions","salon-reports","salon-settings","dining-pos","dining-orders","dining-tables","dining-menu","dining-kitchen","dining-clients","dining-staff","dining-inventory","dining-suppliers","dining-reports","dining-settings","car-fleet","car-reservations","car-contracts","car-customers","car-inspections","car-payments","car-fines","car-maintenance","car-staff","car-reports","car-settings","taxi-dispatch","taxi-trips","taxi-drivers","taxi-fleet","taxi-customers","taxi-bookings","taxi-payments","taxi-maintenance","taxi-staff","taxi-reports","taxi-settings"];
   },
   getMandatoryModuleIds(){return["dashboard","subscription"]},
   normalizeEnabledModules(modules=[]){
@@ -198,7 +198,9 @@ Object.assign(VAREX,{
       accounting:["dashboard","accounts","purchases","suppliers","customers","employees","reports","tax-return","notifications","activity","subscription","settings"],
       "real-estate":["dashboard","customers","accounts","employees","reports","notifications","activity","subscription","settings"],
       salons:["dashboard","salon-appointments","salon-clients","salon-services","salon-staff","salon-facilities","salon-pos","salon-inventory","salon-commissions","salon-reports","subscription","salon-settings"],
-      dining:["dashboard","dining-pos","dining-orders","dining-tables","dining-menu","dining-kitchen","dining-clients","dining-staff","dining-inventory","dining-suppliers","dining-reports","subscription","dining-settings"]
+      dining:["dashboard","dining-pos","dining-orders","dining-tables","dining-menu","dining-kitchen","dining-clients","dining-staff","dining-inventory","dining-suppliers","dining-reports","subscription","dining-settings"],
+      "car-rental":["dashboard","car-fleet","car-reservations","car-contracts","car-customers","car-inspections","car-payments","car-fines","car-maintenance","car-staff","car-reports","subscription","car-settings"],
+      taxi:["dashboard","taxi-dispatch","taxi-trips","taxi-drivers","taxi-fleet","taxi-customers","taxi-bookings","taxi-payments","taxi-maintenance","taxi-staff","taxi-reports","subscription","taxi-settings"]
     };
     return this.normalizeEnabledModules(defaults[system]||defaults.cashier);
   },
@@ -239,14 +241,16 @@ Object.assign(VAREX,{
     if(value==="accounting")return"./accounts.html";
     if(value==="salons"){const type=this.getSalonType();localStorage.setItem("varex_salon_type",type);return type==="men"?"./salon-men.html?type=men":"./salon-women.html?type=women"}
     if(value==="dining"){const type=this.getDiningType();localStorage.setItem("varex_dining_type",type);return type==="cafe"?"./cafe.html?type=cafe":"./restaurant.html?type=restaurant"}
+    if(value==="car-rental")return"./car-rental.html";
+    if(value==="taxi")return"./taxi.html";
     return"./index.html";
   },
   setPendingSystem(system){
-    const value=["cashier","accounting","real-estate","salons","dining"].includes(system)?system:"cashier";
+    const value=["cashier","accounting","real-estate","salons","dining","car-rental","taxi"].includes(system)?system:"cashier";
     sessionStorage.setItem("varex_pending_system",value);return value;
   },
   setActiveSystem(system){
-    const value=["cashier","accounting","real-estate","salons","dining"].includes(system)?system:"cashier";
+    const value=["cashier","accounting","real-estate","salons","dining","car-rental","taxi"].includes(system)?system:"cashier";
     sessionStorage.setItem("varex_active_system",value);
     localStorage.setItem(`varex_last_system__${this.getAccountScope()}`,value);
     return value;
@@ -273,7 +277,7 @@ Object.assign(VAREX,{
     return profile;
   },
   async saveOnboardingProfile(input={}){
-    const current=this.getOnboardingProfile()||{},now=this.now(),selectedSystem=["cashier","accounting","real-estate","salons","dining"].includes(input.selectedSystem)?input.selectedSystem:(current.selectedSystem||"cashier"),businessName=this.cleanText(input.businessName||current.businessName),ownerName=this.cleanText(input.ownerName||current.ownerName||this.getCurrentUser()?.name||"مالك المنشأة");
+    const current=this.getOnboardingProfile()||{},now=this.now(),selectedSystem=["cashier","accounting","real-estate","salons","dining","car-rental","taxi"].includes(input.selectedSystem)?input.selectedSystem:(current.selectedSystem||"cashier"),businessName=this.cleanText(input.businessName||current.businessName),ownerName=this.cleanText(input.ownerName||current.ownerName||this.getCurrentUser()?.name||"مالك المنشأة");
     if(!businessName)return{success:false,message:"اسم المنشأة مطلوب."};
     const profile={version:"1.0",completed:true,selectedSystem,businessType:this.cleanText(input.businessType||current.businessType||"retail"),businessName,ownerName,ownerRole:"owner",enabledModules:this.normalizeEnabledModules(input.enabledModules?.length?input.enabledModules:this.getDefaultOnboardingModules(selectedSystem)),completedAt:current.completedAt||now,updatedAt:now,migrated:false};
     if(selectedSystem==="salons")localStorage.setItem("varex_salon_type",this.getSalonType(profile.businessType));
