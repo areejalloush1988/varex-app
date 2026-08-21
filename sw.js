@@ -1,4 +1,4 @@
-const CACHE_NAME="varex-cache-v30-logout-action-icons";
+const CACHE_NAME="varex-cache-v31-real-estate-system";
 const IS_NATIVE_APP=self.location.hostname==="localhost";
 
 const FILES_TO_CACHE=[
