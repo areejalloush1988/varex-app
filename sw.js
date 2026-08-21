@@ -1,4 +1,4 @@
-const CACHE_NAME="varex-cache-v31-real-estate-system";
+const CACHE_NAME="varex-cache-v32-real-estate-green-theme";
 const IS_NATIVE_APP=self.location.hostname==="localhost";
 
 const FILES_TO_CACHE=[
