@@ -89,7 +89,7 @@ return false;
 (function(){
 try{
 if(typeof VAREX!=="undefined"&&typeof VAREX.isLoggedIn==="function"&&VAREX.isLoggedIn()){
-window.location.replace("./index.html");
+window.location.replace(VAREX.getSavedLaunchRoute?.()||"./systems.html?onboarding=1");
 }
 }catch(error){console.error(error)}
 })();
@@ -200,7 +200,7 @@ return;
 
 showMessage("success","تم إنشاء الحساب بنجاح.");
 await wait(600);
-window.location.replace("./index.html");
+window.location.replace("./login.html?new_account=1");
 
 }catch(error){
 console.error("VAREX REGISTER ERROR:",error);

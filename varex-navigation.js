@@ -462,11 +462,11 @@
 
       const system = document.createElement("a");
       system.className = "info-chip varex-header-action varex-header-system";
-      system.href = "./systems.html";
+      system.href = "./systems.html?manage=1";
       system.dataset.varexHeaderSystem = "true";
       system.setAttribute("data-varex-no-translate", "true");
       system.innerHTML = '<span aria-hidden="true">▦</span><span>النظام</span>';
-      system.addEventListener("click", () => sessionStorage.removeItem("varex_active_system"));
+      system.addEventListener("click", () => sessionStorage.setItem("varex_manage_systems", "true"));
 
       const switchUser = document.createElement("button");
       switchUser.type = "button";
@@ -602,7 +602,8 @@
 
       const fragment = document.createDocumentFragment();
 
-      this.pages.forEach(page => {
+      const enabled = new Set(window.VAREX?.getEnabledModuleIds?.() || this.pages.map(page => page.id));
+      this.pages.filter(page => enabled.has(page.id)).forEach(page => {
         fragment.appendChild(this.createItem(page));
       });
 

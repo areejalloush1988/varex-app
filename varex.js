@@ -182,6 +182,101 @@ Object.assign(VAREX,{
     if(!this.isLoggedIn())return false;
     const jobs=[this.syncSettingsFromSupabase(),this.syncProductsFromSupabase(),this.syncSalesFromSupabase()];
     await Promise.allSettled(jobs);return true;
+  },
+  getOnboardingModuleIds(){
+    return["dashboard","pos","products","purchases","suppliers","customers","accounts","employees","branches","transfers","shifts","reports","tax-return","users","notifications","activity","security-center","ai-assistant","subscription","settings"];
+  },
+  getMandatoryModuleIds(){return["dashboard","subscription"]},
+  normalizeEnabledModules(modules=[]){
+    const available=new Set(this.getOnboardingModuleIds()),selected=[];
+    [...this.getMandatoryModuleIds(),...(Array.isArray(modules)?modules:[])].forEach(id=>{if(available.has(id)&&!selected.includes(id))selected.push(id)});
+    return selected;
+  },
+  getDefaultOnboardingModules(system="cashier"){
+    const defaults={
+      cashier:["dashboard","pos","products","purchases","suppliers","accounts","employees","reports","tax-return","notifications","subscription","settings"],
+      accounting:["dashboard","accounts","purchases","suppliers","customers","employees","reports","tax-return","notifications","activity","subscription","settings"],
+      "real-estate":["dashboard","customers","accounts","employees","reports","notifications","activity","subscription","settings"]
+    };
+    return this.normalizeEnabledModules(defaults[system]||defaults.cashier);
+  },
+  getOnboardingProfile(){
+    const settings=this.getSettings(),raw=settings?.onboarding;
+    if(!raw||typeof raw!=="object"||Array.isArray(raw))return null;
+    return{
+      version:String(raw.version||"1.0"),
+      completed:raw.completed===true,
+      selectedSystem:String(raw.selectedSystem||"cashier"),
+      businessType:String(raw.businessType||""),
+      businessName:String(raw.businessName||settings.businessName||""),
+      ownerName:String(raw.ownerName||this.getCurrentUser()?.name||""),
+      ownerRole:"owner",
+      enabledModules:this.normalizeEnabledModules(raw.enabledModules),
+      completedAt:raw.completedAt||"",
+      updatedAt:raw.updatedAt||"",
+      migrated:raw.migrated===true
+    };
+  },
+  isOnboardingComplete(){return this.getOnboardingProfile()?.completed===true},
+  getEnabledModuleIds(){
+    const profile=this.getOnboardingProfile();
+    return profile?.completed?profile.enabledModules:this.getOnboardingModuleIds();
+  },
+  isModuleEnabled(id){return this.getEnabledModuleIds().includes(String(id||""))},
+  getSystemStartPage(system){
+    return String(system||"cashier")==="real-estate"?"./novarex.html":String(system||"")==="accounting"?"./accounts.html":"./index.html";
+  },
+  setPendingSystem(system){
+    const value=["cashier","accounting","real-estate"].includes(system)?system:"cashier";
+    sessionStorage.setItem("varex_pending_system",value);return value;
+  },
+  setActiveSystem(system){
+    const value=["cashier","accounting","real-estate"].includes(system)?system:"cashier";
+    sessionStorage.setItem("varex_active_system",value);
+    localStorage.setItem(`varex_last_system__${this.getAccountScope()}`,value);
+    return value;
+  },
+  getActiveSystem(){
+    const profile=this.getOnboardingProfile(),saved=localStorage.getItem(`varex_last_system__${this.getAccountScope()}`);
+    return profile?.selectedSystem||saved||"cashier";
+  },
+  isLegacyOnboardingAccount(){
+    const createdAt=Date.parse(this.getCurrentUser()?.createdAt||""),cutoff=Date.parse("2026-08-21T01:50:00.000Z");
+    if(Number.isFinite(createdAt))return createdAt<cutoff;
+    const settings=this.getSettings();
+    return Boolean((settings.businessName&&settings.businessName!=="VAREX")||this.getProducts().length>0||this.getSales().length>0);
+  },
+  async ensureOnboardingState(){
+    if(this.isLoggedIn())try{await this.syncSettingsFromSupabase()}catch(error){console.warn("VAREX onboarding sync:",error)}
+    let profile=this.getOnboardingProfile();
+    if(profile?.completed)return profile;
+    if(!this.isLegacyOnboardingAccount())return profile;
+    const settings=this.getSettings(),now=this.now();
+    profile={version:"1.0",completed:true,selectedSystem:"cashier",businessType:settings.businessType||"retail",businessName:settings.businessName||"VAREX",ownerName:this.getCurrentUser()?.name||"مالك المنشأة",ownerRole:"owner",enabledModules:this.getOnboardingModuleIds(),completedAt:now,updatedAt:now,migrated:true};
+    this.saveSettings({...settings,onboarding:profile});
+    if(this.isLoggedIn())try{await this.saveSettingsRemote({onboarding:profile})}catch(error){console.warn("VAREX onboarding migration:",error)}
+    return profile;
+  },
+  async saveOnboardingProfile(input={}){
+    const current=this.getOnboardingProfile()||{},now=this.now(),selectedSystem=["cashier","accounting","real-estate"].includes(input.selectedSystem)?input.selectedSystem:(current.selectedSystem||"cashier"),businessName=this.cleanText(input.businessName||current.businessName),ownerName=this.cleanText(input.ownerName||current.ownerName||this.getCurrentUser()?.name||"مالك المنشأة");
+    if(!businessName)return{success:false,message:"اسم المنشأة مطلوب."};
+    const profile={version:"1.0",completed:true,selectedSystem,businessType:this.cleanText(input.businessType||current.businessType||"retail"),businessName,ownerName,ownerRole:"owner",enabledModules:this.normalizeEnabledModules(input.enabledModules?.length?input.enabledModules:this.getDefaultOnboardingModules(selectedSystem)),completedAt:current.completedAt||now,updatedAt:now,migrated:false};
+    const payload={businessName,businessType:profile.businessType,onboarding:profile};
+    this.saveSettings(payload);let synced=false;
+    if(this.isLoggedIn())try{await this.saveSettingsRemote(payload);synced=true}catch(error){console.warn("VAREX onboarding save:",error)}
+    this.setActiveSystem(selectedSystem);sessionStorage.removeItem("varex_pending_system");sessionStorage.removeItem("varex_system_was_chosen");this.notifyDataChanged("onboarding",{selectedSystem,enabledModules:profile.enabledModules});
+    return{success:true,profile,synced,route:this.getSystemStartPage(selectedSystem)};
+  },
+  async resolvePostLoginRoute(){
+    const profile=await this.ensureOnboardingState();
+    if(profile?.completed){this.setActiveSystem(profile.selectedSystem);return this.getSystemStartPage(profile.selectedSystem)}
+    const pending=this.setPendingSystem(sessionStorage.getItem("varex_pending_system")||"cashier");
+    return sessionStorage.getItem("varex_system_was_chosen")==="true"?`./business-setup.html?system=${encodeURIComponent(pending)}`:"./systems.html?onboarding=1";
+  },
+  getSavedLaunchRoute(){
+    const profile=this.getOnboardingProfile();
+    if(!profile?.completed)return"";
+    this.setActiveSystem(profile.selectedSystem);return this.getSystemStartPage(profile.selectedSystem);
   }
 });
 

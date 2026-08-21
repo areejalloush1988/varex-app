@@ -1,10 +1,11 @@
-const CACHE_NAME="varex-cache-v28-security-center-ar";
+const CACHE_NAME="varex-cache-v29-first-use-onboarding";
 const IS_NATIVE_APP=self.location.hostname==="localhost";
 
 const FILES_TO_CACHE=[
 "./",
 "./index.html",
 "./systems.html",
+"./business-setup.html",
 "./novarex.html",
 "./real-estate-properties.html",
 "./real-estate-owners.html",

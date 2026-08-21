@@ -50,7 +50,7 @@ await injectVarexScript(false);
 varexReady=true;
 $("loginButton").disabled=false;
 setSystemState("ready","نظام VAREX جاهز");
-preloadLogin();
+await preloadLogin();
 return true;
 }catch(firstError){
 console.warn("VAREX FIRST LOAD:",firstError);
@@ -62,7 +62,7 @@ await injectVarexScript(true);
 varexReady=true;
 $("loginButton").disabled=false;
 setSystemState("ready","نظام VAREX جاهز");
-preloadLogin();
+await preloadLogin();
 return true;
 }catch(secondError){
 console.error("VAREX CORE LOAD FAILED:",secondError);
@@ -75,14 +75,17 @@ return false;
 }
 }
 
-function preloadLogin(){
+async function preloadLogin(){
 try{
 if(!varexReady||typeof VAREX==="undefined")return;
 const remembered=VAREX.getRememberedUser?.()||"";
 const owner=VAREX.getDeviceOwner?.();
 $("email").value=remembered||owner?.email||"";
 $("rememberMe").checked=!!remembered;
-if(VAREX.isLoggedIn?.()){location.replace("./index.html?v="+Date.now());return}
+if(VAREX.isLoggedIn?.()){
+const route=await VAREX.resolvePostLoginRoute?.()||"./index.html";
+location.replace(route+(route.includes("?")?"&":"?")+"v="+Date.now());return
+}
 }catch(e){console.error("VAREX LOGIN PRELOAD:",e)}
 }
 
@@ -114,7 +117,8 @@ return;
 showLogin("success","تم تسجيل الدخول بنجاح. جاري فتح VAREX...");
 setLoginButtonBusy(true,"تم تسجيل الدخول");
 await wait(450);
-location.replace("./index.html?v="+Date.now());
+const route=await VAREX.resolvePostLoginRoute?.()||"./index.html";
+location.replace(route+(route.includes("?")?"&":"?")+"v="+Date.now());
 }catch(error){
 console.error("VAREX LOGIN:",error);
 showLogin("error",error?.message||"حدث خطأ أثناء تسجيل الدخول.");
