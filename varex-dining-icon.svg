@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title">
+  <title id="title">VAREX Restaurants and Cafés</title>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#E56F2D"/>
+      <stop offset="0.49" stop-color="#E56F2D"/>
+      <stop offset="0.51" stop-color="#8A5A44"/>
+      <stop offset="1" stop-color="#62402F"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="122" fill="url(#bg)"/>
+  <path d="M151 112v111c0 35 24 62 57 69v108M117 112v92M151 112v92M185 112v92" fill="none" stroke="#fff" stroke-width="28" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M280 156h93v104c0 51-31 83-78 83h-15V156Zm93 27h23c28 0 45 18 45 43 0 27-19 45-49 45h-19" fill="none" stroke="#fff" stroke-width="28" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M270 400h131" stroke="#fff" stroke-width="28" stroke-linecap="round"/>
+</svg>

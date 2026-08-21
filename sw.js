@@ -1,4 +1,4 @@
-const CACHE_NAME="varex-cache-v33-salon-systems";
+const CACHE_NAME="varex-cache-v34-dining-systems";
 const IS_NATIVE_APP=self.location.hostname==="localhost";
 
 const FILES_TO_CACHE=[
@@ -36,6 +36,23 @@ const FILES_TO_CACHE=[
 "./salon.css",
 "./salon.js",
 "./varex-salon-icon.svg",
+"./dining.html",
+"./restaurant.html",
+"./cafe.html",
+"./dining-pos.html",
+"./dining-orders.html",
+"./dining-tables.html",
+"./dining-menu.html",
+"./dining-kitchen.html",
+"./dining-clients.html",
+"./dining-staff.html",
+"./dining-inventory.html",
+"./dining-suppliers.html",
+"./dining-reports.html",
+"./dining-settings.html",
+"./dining.css",
+"./dining.js",
+"./varex-dining-icon.svg",
 "./login.html",
 "./register.html",
 "./terms.html",
