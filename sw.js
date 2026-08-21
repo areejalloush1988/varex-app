@@ -1,4 +1,4 @@
-const CACHE_NAME="varex-cache-v27-stable-system-navigation";
+const CACHE_NAME="varex-cache-v28-security-center-ar";
 const IS_NATIVE_APP=self.location.hostname==="localhost";
 
 const FILES_TO_CACHE=[
@@ -33,6 +33,10 @@ const FILES_TO_CACHE=[
 "./tax-return.html",
 "./subscription.html",
 "./setting.html",
+"./security-center.html",
+"./varex-security.js",
+"./varex-ai-assistant.html",
+"./varex-ai.js",
 "./varex.js",
 "./varex-hardware.js",
 "./varex-i18n.js",

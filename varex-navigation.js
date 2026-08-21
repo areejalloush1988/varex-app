@@ -133,6 +133,20 @@
         href: "./activity.html"
       },
       {
+        id: "security-center",
+        title: "مركز الأمان",
+        titleEn: "Security Center",
+        icon: "🛡️",
+        href: "./security-center.html"
+      },
+      {
+        id: "ai-assistant",
+        title: "مساعد VAREX الذكي",
+        titleEn: "VAREX AI Assistant",
+        icon: "✦",
+        href: "./varex-ai-assistant.html"
+      },
+      {
         id: "subscription",
         title: "الاشتراك والترخيص",
         titleEn: "Subscription & Licensing",
