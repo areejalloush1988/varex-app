@@ -310,14 +310,22 @@ const input=overlay.querySelector("#varexDialogInput");
 const confirmButton=overlay.querySelector("#varexDialogConfirm");
 const cancelButton=overlay.querySelector("#varexDialogCancel");
 const defaults=kind==="confirm"?{title:"تأكيد الإجراء",icon:"?",confirmText:"تأكيد"}:kind==="prompt"?{title:"تأكيد الهوية",icon:"🔒",confirmText:"متابعة"}:{title:"تنبيه VAREX",icon:"!",confirmText:"حسنًا"};
+const language=(localStorage.getItem("varex_language")||localStorage.getItem("varex_launcher_language")||document.documentElement.lang||"ar").toLowerCase().startsWith("en")?"en":"ar";
+const translate=value=>{
+const original=String(value??"");
+if(language!=="en")return original;
+try{return window.VAREXI18N?.translate?.(original)||original}catch(e){return original}
+};
 overlay.dataset.kind=kind;
-title.textContent=String(options.title||defaults.title);
-text.textContent=String(message??"");
+overlay.lang=language;
+overlay.dir=language==="en"?"ltr":"rtl";
+title.textContent=translate(options.title||defaults.title);
+text.textContent=translate(message);
 icon.textContent=String(options.icon||defaults.icon);
-confirmButton.textContent=String(options.confirmText||defaults.confirmText);
-cancelButton.textContent=String(options.cancelText||"إلغاء");
+confirmButton.textContent=translate(options.confirmText||defaults.confirmText);
+cancelButton.textContent=translate(options.cancelText||"إلغاء");
 input.value=String(options.defaultValue??"");
-input.placeholder=String(options.placeholder||"");
+input.placeholder=translate(options.placeholder||"");
 input.type=["text","password","email","number","tel"].includes(options.type)?options.type:"text";
 input.maxLength=Number.isFinite(Number(options.maxLength))?Math.max(1,Number(options.maxLength)):256;
 previousFocus=document.activeElement;

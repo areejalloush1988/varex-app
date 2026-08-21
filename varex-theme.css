@@ -1034,6 +1034,31 @@ direction:ltr!important;
 overflow:visible!important;
 }
 
+/* One shared header palette in both appearance modes. */
+.topbar .top-info.varex-unified-header>.info-chip,
+.topbar .top-info.varex-unified-header>.varex-header-language>.language-button,
+.topbar .top-info.varex-unified-header>.varex-feedback-controls .varex-feedback-button{
+border:1px solid #172554!important;
+background:#172554!important;
+color:#fff!important;
+box-shadow:0 4px 0 #0f1d43,0 8px 15px rgba(23,37,84,.18)!important;
+}
+
+body.varex-dark .topbar .top-info.varex-unified-header>.info-chip,
+html[data-theme="dark"] .topbar .top-info.varex-unified-header>.info-chip,
+html[data-varex-theme="dark"] .topbar .top-info.varex-unified-header>.info-chip,
+body.varex-dark .topbar .top-info.varex-unified-header>.varex-header-language>.language-button,
+html[data-theme="dark"] .topbar .top-info.varex-unified-header>.varex-header-language>.language-button,
+html[data-varex-theme="dark"] .topbar .top-info.varex-unified-header>.varex-header-language>.language-button,
+body.varex-dark .topbar .top-info.varex-unified-header>.varex-feedback-controls .varex-feedback-button,
+html[data-theme="dark"] .topbar .top-info.varex-unified-header>.varex-feedback-controls .varex-feedback-button,
+html[data-varex-theme="dark"] .topbar .top-info.varex-unified-header>.varex-feedback-controls .varex-feedback-button{
+border-color:#fff!important;
+background:#fff!important;
+color:#172554!important;
+box-shadow:0 4px 0 #94a3b8,0 8px 15px rgba(0,0,0,.26)!important;
+}
+
 .topbar .top-info.varex-unified-header>.info-chip,
 .topbar .top-info.varex-unified-header>.language-selector,
 .topbar .top-info.varex-unified-header>.varex-feedback-controls{
@@ -1290,8 +1315,37 @@ align-items:stretch!important;
 text-align:center!important;
 }
 .theme-option{
+min-height:140px!important;
+display:flex!important;
+flex-direction:column!important;
 align-items:center!important;
 justify-content:center!important;
+gap:5px!important;
+transform:none!important;
+translate:none!important;
+transition:none!important;
+}
+.theme-option .theme-icon{
+width:100%!important;
+min-height:38px!important;
+margin:0 auto 5px!important;
+display:flex!important;
+align-items:center!important;
+justify-content:center!important;
+font-size:30px!important;
+line-height:38px!important;
+text-align:center!important;
+}
+.theme-option .theme-name{
+width:100%!important;
+font-size:14px!important;
+line-height:20px!important;
+}
+.theme-option .theme-desc{
+width:100%!important;
+margin:0!important;
+font-size:11px!important;
+line-height:17px!important;
 }
 }
 
@@ -1312,6 +1366,11 @@ justify-content:center!important;
 .topbar .top-info.varex-unified-header{
 width:100%!important;
 justify-content:center!important;
+}
+.topbar .top-info:not(.varex-unified-header){
+width:100%!important;
+min-height:48px!important;
+visibility:hidden!important;
 }
 }
 
@@ -1342,4 +1401,46 @@ scale:1!important;
 animation:none!important;
 transform:none!important;
 translate:none!important;
+}
+
+/* Touch hover/press states must never move the tablet layout. */
+html,
+body,
+.main,
+.content{
+overflow-anchor:none!important;
+}
+
+.sidebar .nav a,
+.sidebar .nav a:hover,
+.sidebar .nav a:focus,
+.sidebar .nav a:active,
+.module,
+.module:hover,
+.module:focus,
+.module:active,
+.card,
+.card:hover,
+.card:focus,
+.card:active,
+.stat,
+.stat:hover,
+.stat:focus,
+.stat:active,
+.theme-option,
+.theme-option:hover,
+.theme-option:focus,
+.theme-option:active{
+transform:none!important;
+translate:none!important;
+scale:1!important;
+animation:none!important;
+transition:none!important;
+filter:none!important;
+}
+
+a,
+button,
+[role="button"]{
+-webkit-tap-highlight-color:transparent!important;
 }

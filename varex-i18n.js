@@ -168,8 +168,15 @@
     if(!normalized)return normalized;
     if(normalized==="الصلاحية"&&/notifications\.html$/i.test(location.pathname))return "Expiry";
     if(dictionary.has(normalized))return englishDigits(dictionary.get(normalized));
-    const lead=normalized.match(/^([^\p{L}\p{N}]*)(.*)$/u);
+    const arabicStart=normalized.search(/[\u0600-\u06ff]/u);
+    const genericLead=normalized.match(/^([^\p{L}\p{N}]*)(.*)$/u);
+    const lead=genericLead?.[1]?genericLead:arabicStart>0?[normalized,normalized.slice(0,arabicStart),normalized.slice(arabicStart)]:genericLead;
     if(lead&&lead[1]&&dictionary.has(lead[2]))return englishDigits(lead[1]+dictionary.get(lead[2]));
+    const prefix=lead?.[1]||"",body=lead?.[2]||normalized,terminal=body.match(/^(.*?)([؟?!،,.:؛;]+)$/u);
+    if(terminal&&dictionary.has(terminal[1].trim())){
+      const punctuation=terminal[2].replace(/؟/g,"?").replace(/،/g,",").replace(/؛/g,";");
+      return englishDigits(prefix+dictionary.get(terminal[1].trim())+punctuation);
+    }
     let translated=normalized;
     let titleMatch=translated.match(/^VAREX\s*\|\s*(.+)$/);if(titleMatch&&dictionary.has(titleMatch[1]))translated="VAREX | "+dictionary.get(titleMatch[1]);
     titleMatch=translated.match(/^(.+)\s+-\s+VAREX$/);if(titleMatch&&dictionary.has(titleMatch[1]))translated=dictionary.get(titleMatch[1])+" - VAREX";
@@ -214,7 +221,7 @@
   }
 
   function englishDigits(value){
-    return String(value).replace(/[٠-٩]/g,d=>"٠١٢٣٤٥٦٧٨٩".indexOf(d)).replace(/\s*ص\s*$/," AM").replace(/\s*م\s*$/," PM");
+    return String(value).replace(/[٠-٩]/g,d=>"٠١٢٣٤٥٦٧٨٩".indexOf(d)).replace(/([0-9:]+)\s*ص\s*$/,"$1 AM").replace(/([0-9:]+)\s*م\s*$/,"$1 PM");
   }
 
   function localizeNativeInputs(language){

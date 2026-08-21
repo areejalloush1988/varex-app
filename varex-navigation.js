@@ -372,7 +372,9 @@
           );
           if (!target || target.disabled || target.closest(".varex-feedback-controls,.language-selector")) return;
           this.playFeedbackSound("tap");
-          this.playInteractionVibration(10);
+          // Page navigation stays physically steady; vibration remains available
+          // for actions and controls according to the selected feedback level.
+          if (!target.closest('a[href],.sidebar .nav')) this.playInteractionVibration(10);
         }, { passive: true, capture: true });
       }
 
