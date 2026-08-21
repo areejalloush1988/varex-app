@@ -1140,6 +1140,47 @@ min-width:96px!important;
 min-width:126px!important;
 }
 
+.varex-switch-icon,
+.varex-power-icon{
+width:30px!important;
+height:30px!important;
+min-width:30px!important;
+max-width:30px!important;
+flex:0 0 30px!important;
+display:grid!important;
+place-items:center!important;
+border-radius:50%!important;
+line-height:0!important;
+transform:none!important;
+translate:none!important;
+}
+
+.varex-switch-icon{
+background:#eef2ff!important;
+color:#172554!important;
+border:1px solid #cbd5e1!important;
+}
+
+.varex-power-icon{
+background:linear-gradient(145deg,#ff4d4f,#dc2626)!important;
+color:#fff!important;
+border:2px solid #fecaca!important;
+box-shadow:0 2px 7px rgba(220,38,38,.28)!important;
+}
+
+.varex-switch-icon svg,
+.varex-power-icon svg{
+width:18px!important;
+height:18px!important;
+display:block!important;
+fill:none!important;
+stroke:currentColor!important;
+stroke-width:2.25!important;
+stroke-linecap:round!important;
+stroke-linejoin:round!important;
+transform:none!important;
+}
+
 .varex-header-language,
 .varex-header-language .language-button{
 width:132px!important;

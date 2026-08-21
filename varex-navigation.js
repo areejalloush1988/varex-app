@@ -473,7 +473,7 @@
       switchUser.className = "info-chip varex-header-action varex-top-switch-user";
       switchUser.dataset.varexHeaderSwitchUser = "true";
       switchUser.setAttribute("data-varex-no-translate", "true");
-      switchUser.innerHTML = '<span aria-hidden="true">👥</span><span>تبديل المستخدم</span>';
+      switchUser.innerHTML = '<span class="varex-switch-icon" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><path d="M20 11a8 8 0 0 0-14.9-4M4 4v4h4M4 13a8 8 0 0 0 14.9 4M20 20v-4h-4"/></svg></span><span>تبديل المستخدم</span>';
       switchUser.addEventListener("click", event => {
         event.preventDefault();
         if (typeof window.varexSwitchUser === "function") window.varexSwitchUser();
