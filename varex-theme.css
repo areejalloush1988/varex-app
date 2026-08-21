@@ -24,6 +24,22 @@ width:100%;
 min-height:100vh;
 font-family:Arial,Tahoma,sans-serif!important;
 overflow-x:hidden;
+animation:none!important;
+transform:none!important;
+translate:none!important;
+transition:none!important;
+}
+
+/* Keep business pages hidden for the few milliseconds needed to finish the
+   saved language direction, shared header and sidebar. This prevents the
+   visible RTL/LTR and legacy-header jump between pages. */
+html:not([data-varex-nav-ready]) body:has(.sidebar),
+html:not([data-varex-i18n-ready]) body:has(.sidebar){
+visibility:hidden!important;
+}
+
+html[data-varex-nav-ready][data-varex-i18n-ready] body:has(.sidebar){
+visibility:visible!important;
 }
 
 /* English UI: taps stay visually fixed instead of pressing/moving cards. */
@@ -1486,9 +1502,19 @@ scale:1!important;
 .main,
 .content,
 .topbar,
+.top-info,
+.page-name,
 .sidebar,
+.sidebar .brand,
+.sidebar .sidebar-footer,
 .sidebar .nav,
 .sidebar .nav a,
+.hero,
+.quick-stats,
+.modules,
+.grid,
+.stats,
+.filter-panel,
 .module,
 .card,
 .panel,
@@ -1497,6 +1523,7 @@ scale:1!important;
 animation:none!important;
 transform:none!important;
 translate:none!important;
+transition:none!important;
 }
 
 /* Touch hover/press states must never move the tablet layout. */

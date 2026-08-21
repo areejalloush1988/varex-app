@@ -1,4 +1,4 @@
-const CACHE_NAME="varex-cache-v25-language-menu-stability";
+const CACHE_NAME="varex-cache-v27-stable-system-navigation";
 const IS_NATIVE_APP=self.location.hostname==="localhost";
 
 const FILES_TO_CACHE=[

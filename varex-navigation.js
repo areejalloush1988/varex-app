@@ -593,6 +593,7 @@
       });
 
       nav.appendChild(fragment);
+      nav.scrollTop = savedScroll;
       requestAnimationFrame(() => {
         nav.scrollTop = savedScroll;
       });
@@ -855,9 +856,15 @@
       this.setupNativeBackButton();
       if(typeof varexAddSidebarActions==="function")varexAddSidebarActions();
 
-      document.documentElement.classList.add(
-        "varex-navigation-ready"
-      );
+      /* The menu restores its saved scroll position in the next animation
+         frame. Reveal the page only after that frame so navigation never
+         produces a visible jump on Dashboard, POS, VAT or Settings. */
+      requestAnimationFrame(() => {
+        document.documentElement.classList.add(
+          "varex-navigation-ready"
+        );
+        document.documentElement.dataset.varexNavReady = "true";
+      });
     }
   };
 

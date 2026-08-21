@@ -350,6 +350,7 @@
     installDirectionStyles();currentLanguage=savedLanguage();apply(currentLanguage);wrapDialogs();
     const observer=new MutationObserver(records=>{if(applying)return;applying=true;for(const record of records){if(record.type==="characterData")translateTree(record.target,currentLanguage);else for(const node of record.addedNodes)translateTree(node,currentLanguage)}applying=false});observer.observe(document.body,{subtree:true,childList:true,characterData:true});
     let last=savedLanguage();setInterval(()=>{const next=savedLanguage();if(next!==last){last=next;apply(next)}else{localizeNativeInputs(currentLanguage);translateSystemFormValues(currentLanguage)}},350);
+    document.documentElement.dataset.varexI18nReady="true";
   }
 
   window.VAREXI18N={setLanguage,getLanguage:()=>currentLanguage,translate:value=>currentLanguage==="en"?coreTranslation(value):value};
