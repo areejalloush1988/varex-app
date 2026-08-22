@@ -1,8 +1,9 @@
-@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap');
 
 :root{
-  --indigo-950:#1e1b4b;--indigo-900:#312e81;--indigo-800:#3730a3;--indigo-700:#4338ca;
-  --indigo-600:#4f46e5;--indigo-500:#6366f1;--indigo-100:#e0e7ff;--indigo-50:#eef2ff;
+  --pharmacy:#4e4b9a;--pharmacy-dark:#37346f;--pharmacy-soft:#f1f0fa;
+  --indigo-950:#37346f;--indigo-900:#403d80;--indigo-800:#47448c;--indigo-700:#4b4893;
+  --indigo-600:#4e4b9a;--indigo-500:#6763b0;--indigo-100:#e2e1f3;--indigo-50:#f1f0fa;
   --violet-50:#f5f3ff;--ink:#172033;--muted:#68738a;--line:#e6e8f0;--surface:#fff;
   --green:#059669;--green-soft:#ecfdf5;--amber:#d97706;--amber-soft:#fffbeb;
   --red:#dc2626;--red-soft:#fef2f2;--blue:#2563eb;--blue-soft:#eff6ff;
@@ -93,3 +94,44 @@ body{background:radial-gradient(circle at 84% 12%,rgba(99,102,241,.10),transpare
 @media(max-width:920px){.app-shell{display:grid;grid-template-columns:1fr}.topbar{min-height:96px;grid-template-columns:minmax(0,1fr) auto;padding:8px 16px}.app-logo{width:78px;height:78px;border-radius:20px}.top-title h1{font-size:18px}.clock-console{min-width:145px}.module-ribbon{top:96px;padding:9px 12px}.module-btn{min-height:64px}.content-stage{grid-template-columns:84px minmax(0,1fr)}.utility-rail{top:178px;height:calc(100vh / var(--ui-scale) - 260px)}.utility-btn{width:66px}.main-content{padding:20px 16px 118px}.control-dock{grid-template-columns:auto 1fr;gap:9px;padding:8px 12px}.dock-user{display:none}.zoom-control{justify-self:start}.dock-system{justify-self:end}.tool-btn .tool-label{display:none}.hero{grid-template-columns:1fr}.hero-side{display:none}.grid-2,.grid-equal,.pos-layout{grid-template-columns:1fr}.product-grid{grid-template-columns:repeat(2,1fr)}.cart-panel{position:static}.settings-grid{grid-template-columns:1fr}.report-cards{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:620px){.auth-logo{width:175px}.app-shell{display:grid;grid-template-columns:1fr}.topbar{grid-template-columns:1fr;min-height:86px}.app-logo{width:68px;height:68px}.top-title span,.top-title p,.clock-console{display:none}.module-ribbon{top:86px;grid-template-columns:repeat(9,88px)}.module-btn{min-height:58px;gap:5px;flex-direction:column}.module-btn svg{width:24px;height:24px}.content-stage{display:block}.utility-rail{position:fixed;z-index:125;top:auto;right:0;left:0;bottom:68px;width:100%;height:58px;min-height:0;display:flex;flex-direction:row;justify-content:center;padding:5px;background:#eef0ff}.rail-title,.rail-pharmacy-mark{display:none}.utility-btn{width:72px;min-height:46px;display:flex;gap:5px}.utility-btn svg{width:22px;height:22px}.main-content{padding:16px 11px 146px}.control-dock{min-height:68px;grid-template-columns:1fr auto}.control-label{display:none}.dock-system{gap:4px}.dock-system .tool-btn{min-width:40px;padding:0 9px}.page-head{flex-direction:column}.hero{padding:23px 20px}.hero h3{font-size:23px}.stats-grid,.vat-summary,.report-cards{grid-template-columns:1fr}.product-grid{grid-template-columns:1fr 1fr}.toast-stack{right:10px;bottom:136px}}
 @media print{.topbar,.module-ribbon,.utility-rail,.control-dock,.page-head,.no-print,.toast-stack,.modal-layer{display:none!important}.app-shell,.content-stage{display:block;min-height:0}.main-content{padding:0}.panel,.table-card,.report-card,.vat-card{box-shadow:none;border-color:#ddd}body{background:#fff}#appScale{width:100%!important;min-height:0!important;transform:none!important}}
+
+/* Approved pharmacy identity: exact indigo from the supplied VAREX icon. */
+body{font-weight:600;background:linear-gradient(145deg,#fdfdff,#f7f6fc 48%,#f1f0fa)}
+.auth-body{background:radial-gradient(circle at 14% 14%,rgba(78,75,154,.2),transparent 27%),radial-gradient(circle at 89% 82%,rgba(78,75,154,.14),transparent 31%),#f8f7fc}
+.auth-shell{border-color:rgba(78,75,154,.18);box-shadow:0 28px 90px rgba(55,52,111,.2)}
+.auth-brand{background:linear-gradient(145deg,var(--pharmacy-dark),var(--pharmacy) 62%,#625eae)}
+.auth-logo{width:min(315px,82%);border-radius:30px;filter:drop-shadow(0 18px 34px rgba(27,25,72,.28))}
+.auth-copy h1{font-size:38px;font-weight:900}.auth-copy p{font-size:15px;font-weight:700}.auth-pills span,.auth-brand-foot{font-size:12px;font-weight:800}
+.auth-heading h2{font-size:32px;font-weight:900;color:var(--pharmacy-dark)}.auth-heading p{font-size:14px;font-weight:700}
+.field label{font-size:13px;font-weight:900}.input,.select,.textarea{font-size:14px;font-weight:700}.auth-options,.text-link{font-size:12px;font-weight:800}
+.primary-btn,.secondary-btn,.danger-btn,.demo-btn{font-size:13px;font-weight:900}.auth-footer,.form-message{font-size:12px;font-weight:700}
+
+.topbar{min-height:132px;padding:10px 30px;background:var(--pharmacy);box-shadow:0 18px 48px rgba(55,52,111,.24)}
+.brand-station{gap:20px}.app-logo{width:112px;height:112px;border-radius:24px;background:#fff;box-shadow:0 12px 30px rgba(31,28,84,.26)}
+.top-title span{font-size:10px;font-weight:900;color:#e8e7f7}.top-title h1{font-size:27px;font-weight:900}.top-title p{font-size:12px;font-weight:800;color:#fff}
+.shift-status{min-width:250px}.shift-status strong{font-size:13px;font-weight:900}.shift-status small{font-size:10px;font-weight:700;color:#f0effa}
+.clock-console{color:var(--pharmacy-dark)}.clock-console svg{width:25px;height:25px;stroke:var(--pharmacy)}.clock-console span{font-size:13px;font-weight:900}
+
+.module-ribbon{top:132px;grid-template-columns:repeat(9,minmax(108px,1fr));gap:11px;padding:13px 22px;background:rgba(247,246,252,.96);border-color:rgba(78,75,154,.18)}
+.module-btn{min-height:80px;border-color:rgba(78,75,154,.18);font-weight:900}.module-btn svg{width:32px;height:32px;stroke:var(--pharmacy);stroke-width:1.9}.module-btn span{font-size:12px;font-weight:900}.module-btn:hover{border-color:#9d99cc;background:var(--pharmacy-soft)}.module-btn.active{background:var(--pharmacy);border-color:var(--pharmacy);box-shadow:0 13px 27px rgba(78,75,154,.28)}
+
+.content-stage{grid-template-columns:118px minmax(0,1fr);min-height:calc(100vh / var(--ui-scale) - 326px)}
+.utility-rail{top:238px;height:calc(100vh / var(--ui-scale) - 322px);padding:17px 11px;background:#ecebf7;border-color:rgba(78,75,154,.2)}
+.rail-title{font-size:10px;font-weight:900}.utility-btn{width:90px;min-height:78px}.utility-btn svg{width:35px;height:35px;stroke:var(--pharmacy);stroke-width:1.9}.utility-btn span{font-size:11px;font-weight:900}.utility-btn.active{background:var(--pharmacy);box-shadow:0 11px 23px rgba(78,75,154,.26)}.utility-btn.active svg{stroke:#fff}.rail-pharmacy-mark{width:72px;height:72px;background:var(--pharmacy);font-size:25px;box-shadow:0 12px 24px rgba(78,75,154,.28)}
+
+.main-content{padding:29px 31px 122px}.page-head h2{font-size:31px;font-weight:900;color:var(--pharmacy-dark)}.page-head p{font-size:13px;font-weight:700}.page-actions .primary-btn,.page-actions .secondary-btn{font-size:13px;font-weight:900}
+.hero{border-color:rgba(78,75,154,.2);box-shadow:0 20px 50px rgba(78,75,154,.11)}.hero:before{background:var(--pharmacy)}.hero:after{color:rgba(78,75,154,.065)}.hero-kicker{font-size:13px;font-weight:900;color:var(--pharmacy)}.hero h3{font-size:35px;font-weight:900;color:var(--pharmacy-dark)}.hero p{font-size:14px;font-weight:700}.hero-btn{font-size:13px;font-weight:900}.hero-btn.white{background:var(--pharmacy)}.hero-btn.ghost{background:var(--pharmacy-soft);color:var(--pharmacy-dark)}.pharmacy-mark{background:var(--pharmacy);border-color:#e5e3f4;box-shadow:0 18px 38px rgba(78,75,154,.26)}
+
+.stat-card:first-child,.cart-head,.vat-card.accent,.operator-option .operator-avatar{background:var(--pharmacy);border-color:var(--pharmacy)}
+.stat-icon{width:45px;height:45px;font-size:21px}.stat-trend{font-size:11px}.stat-card strong{font-size:28px;font-weight:900}.stat-card span.label{font-size:12px;font-weight:800}
+.panel-head h3{font-size:17px;font-weight:900}.panel-head small{font-size:11px;font-weight:700}.panel-head button{font-size:11px;font-weight:900}
+.alert-row strong{font-size:13px;font-weight:900}.alert-row span,.alert-value{font-size:11px!important;font-weight:700}.bar-wrap span{font-size:10px;font-weight:700}
+.data-table th{height:50px;font-size:12px;font-weight:900;background:#f0eff9}.data-table td{height:64px;font-size:12px;font-weight:700}.med-avatar{width:42px;height:42px;font-size:19px}.med-cell strong{font-size:12px;font-weight:900}.med-cell small{font-size:10px;font-weight:700}.badge{font-size:10px;font-weight:900}.icon-action{width:36px;height:36px}
+.product-card strong{font-size:13px;font-weight:900}.product-card small,.stock-mini{font-size:10px;font-weight:700}.product-price{font-size:15px;font-weight:900}.cart-head h3{font-size:17px;font-weight:900}.cart-count,.cart-empty,.cart-line strong,.summary-row{font-size:12px;font-weight:800}.cart-line small{font-size:10px}.summary-row.total{font-size:17px}.checkout-btn{font-size:13px;font-weight:900}
+.settings-card h3{font-size:16px;font-weight:900}.settings-card>p{font-size:11px;font-weight:700}.setting-switch strong{font-size:13px;font-weight:900}.setting-switch span{font-size:10px;font-weight:700}.report-card .report-label,.vat-card span{font-size:11px;font-weight:800}.report-card strong,.vat-card strong{font-weight:900}.report-card small,.vat-card small{font-size:10px;font-weight:800}
+.modal-head h3{font-size:19px;font-weight:900}.confirm-copy h4{font-size:20px;font-weight:900}.confirm-copy p{font-size:13px;font-weight:700}.toast strong{font-size:12px;font-weight:900}.toast span{font-size:10px;font-weight:700}
+
+.control-dock{min-height:84px;border-color:rgba(78,75,154,.2);box-shadow:0 -16px 44px rgba(78,75,154,.12)}.user-avatar{width:48px;height:48px;background:var(--pharmacy);font-size:20px}.dock-user small{font-size:10px;font-weight:700}.dock-user strong{font-size:12px;font-weight:900;color:var(--pharmacy-dark)}.control-label{font-size:10px;font-weight:900}.tool-btn,.zoom-select{color:var(--pharmacy-dark);font-weight:900}.tool-btn{min-width:48px;height:48px}.tool-btn svg{width:24px;height:24px;stroke-width:1.9}.tool-btn .tool-label{font-size:11px;font-weight:900}.zoom-control .zoom-step{font-size:22px}.zoom-select{font-size:12px}.tool-btn.active{background:var(--pharmacy-soft);border-color:#aaa6d2}.tool-btn.switch-user{background:#f0eff9}
+
+@media(max-width:920px){.topbar{min-height:108px}.app-logo{width:90px;height:90px}.top-title h1{font-size:22px}.module-ribbon{top:108px}.module-btn{min-height:70px}.content-stage{grid-template-columns:94px minmax(0,1fr)}.utility-rail{top:204px}.utility-btn{width:74px}.page-head h2{font-size:27px}.hero h3{font-size:30px}}
+@media(max-width:620px){.auth-logo{width:210px}.topbar{min-height:94px}.app-logo{width:76px;height:76px}.top-title h1{font-size:20px}.module-ribbon{top:94px;grid-template-columns:repeat(9,104px)}.module-btn{min-height:68px}.module-btn span{font-size:11px}.utility-rail{height:66px;bottom:72px}.utility-btn{width:84px;min-height:54px}.utility-btn span{font-size:10px}.main-content{padding-bottom:160px}.page-head h2{font-size:25px}.page-head p{font-size:12px}.hero h3{font-size:27px}.hero p{font-size:13px}.product-grid{grid-template-columns:1fr}}

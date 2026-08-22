@@ -7,9 +7,9 @@
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
-  "background_color": "#f5f3ff",
-  "theme_color": "#312e81",
+  "background_color": "#f1f0fa",
+  "theme_color": "#4e4b9a",
   "icons": [
-    {"src":"./varex-pharmacy-logo.png","sizes":"1254x1254","type":"image/png","purpose":"any maskable"}
+    {"src":"./varex-pharmacy-logo.png","sizes":"500x500","type":"image/png","purpose":"any maskable"}
   ]
 }
