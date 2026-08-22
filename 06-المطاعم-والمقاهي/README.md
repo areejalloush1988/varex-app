@@ -9,11 +9,23 @@
 
 ## الملفات الرئيسية
 
-- `dining.html`: اختيار المطاعم أو المقاهي.
-- `restaurant.html`: لوحة تحكم المطاعم.
-- `cafe.html`: لوحة تحكم المقاهي.
-- `dining.js`: منطق النظام والبيانات والعمليات.
-- `dining.css`: التصميم المشترك والهوية اللونية.
+- [dining.html](./dining.html): اختيار المطاعم أو المقاهي.
+- [restaurant.html](./restaurant.html): لوحة تحكم المطاعم.
+- [cafe.html](./cafe.html): لوحة تحكم المقاهي.
+- [dining-pos.html](./dining-pos.html): الكاشير ونقطة البيع.
+- [dining-orders.html](./dining-orders.html): الطلبات.
+- [dining-tables.html](./dining-tables.html): الطاولات والحجوزات.
+- [dining-menu.html](./dining-menu.html): المنيو والوصفات.
+- [dining-kitchen.html](./dining-kitchen.html): شاشة المطبخ.
+- [dining-clients.html](./dining-clients.html): العملاء والولاء.
+- [dining-staff.html](./dining-staff.html): الموظفون والورديات.
+- [dining-inventory.html](./dining-inventory.html): المكونات والمخزون.
+- [dining-suppliers.html](./dining-suppliers.html): الموردون والمشتريات.
+- [dining-reports.html](./dining-reports.html): التقارير والتحليلات.
+- [dining-settings.html](./dining-settings.html): الإعدادات.
+- [dining.js](./dining.js): منطق النظام والبيانات والعمليات.
+- [dining.css](./dining.css): التصميم المشترك والهوية اللونية.
+- [varex-dining-icon.svg](./varex-dining-icon.svg): أيقونة النظام.
 
 ## الأقسام
 

@@ -71,8 +71,8 @@
     document.querySelectorAll("[data-system]").forEach(card=>card.addEventListener("click",event=>{
       event.preventDefault();const system=card.dataset.system||"cashier";
       window.VAREX?.setPendingSystem?.(system);sessionStorage.setItem("varex_system_was_chosen","true");
-      if(system==="salons"){location.href="./salons.html?onboarding=1";return}
-      if(system==="dining"){location.href="./dining.html?onboarding=1";return}
+      if(system==="salons"){location.href="./05-الصالونات-والسبا/salons.html?onboarding=1";return}
+      if(system==="dining"){location.href="./06-المطاعم-والمقاهي/dining.html?onboarding=1";return}
       location.href=launcherAuthorized()?"./business-setup.html?system="+encodeURIComponent(system):"./login.html";
     }));
     routeSavedSystem();

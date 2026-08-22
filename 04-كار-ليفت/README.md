@@ -20,6 +20,24 @@
 
 **الحالة:** نظام VAREX Taxi & Car Lift جاهز ومربوط بواجهة اختيار الأنظمة. اللون المعتمد: الأصفر الذهبي `#D9A400` مع الكحلي والأبيض.
 
-**صفحة البداية:** `taxi.html`
+## ملفات النظام
+
+- [لوحة التحكم](./taxi.html)
+- [مركز التشغيل](./taxi-dispatch.html)
+- [الرحلات](./taxi-trips.html)
+- [السائقون](./taxi-drivers.html)
+- [المركبات والأسطول](./taxi-fleet.html)
+- [العملاء والركاب](./taxi-customers.html)
+- [الحجوزات والمسارات](./taxi-bookings.html)
+- [الدفعات](./taxi-payments.html)
+- [الصيانة](./taxi-maintenance.html)
+- [الموظفون والورديات](./taxi-staff.html)
+- [التقارير](./taxi-reports.html)
+- [الإعدادات](./taxi-settings.html)
+- [محرك النظام](./mobility.js)
+- [تصميم النظام](./mobility.css)
+- [أيقونة النظام](./varex-taxi-icon.svg)
+
+**صفحة البداية:** [taxi.html](./taxi.html)
 
 **مفتاح البيانات:** `varex_taxi_system_v1` — منفصل عن نظام تأجير السيارات وبقية أنظمة VAREX.

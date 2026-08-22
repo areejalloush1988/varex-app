@@ -19,6 +19,24 @@
 
 **الحالة:** النظام جاهز ومربوط بواجهة اختيار الأنظمة. اللون المعتمد: الموف الملكي `#7048A8` مع الأبيض.
 
-**صفحة البداية:** `car-rental.html`
+## ملفات النظام
+
+- [لوحة التحكم](./car-rental.html)
+- [السيارات والأسطول](./car-rental-fleet.html)
+- [الحجوزات](./car-rental-reservations.html)
+- [عقود التأجير](./car-rental-contracts.html)
+- [العملاء والسائقون](./car-rental-customers.html)
+- [الفحص والاستلام](./car-rental-inspections.html)
+- [الدفعات](./car-rental-payments.html)
+- [المخالفات](./car-rental-fines.html)
+- [الصيانة](./car-rental-maintenance.html)
+- [الموظفون والفروع](./car-rental-staff.html)
+- [التقارير](./car-rental-reports.html)
+- [الإعدادات](./car-rental-settings.html)
+- [محرك النظام](./mobility.js)
+- [تصميم النظام](./mobility.css)
+- [أيقونة النظام](./varex-car-rental-icon.svg)
+
+**صفحة البداية:** [car-rental.html](./car-rental.html)
 
 **مفتاح البيانات:** `varex_car_rental_system_v1` — منفصل عن جميع أنظمة VAREX الأخرى.

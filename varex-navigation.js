@@ -462,7 +462,7 @@
 
       const system = document.createElement("a");
       system.className = "info-chip varex-header-action varex-header-system";
-      system.href = "./systems.html?manage=1";
+      system.href = window.VAREX?.rootPath?.("systems.html?manage=1") || "./systems.html?manage=1";
       system.dataset.varexHeaderSystem = "true";
       system.setAttribute("data-varex-no-translate", "true");
       system.innerHTML = '<span aria-hidden="true">▦</span><span>النظام</span>';
