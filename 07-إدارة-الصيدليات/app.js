@@ -344,7 +344,7 @@
   function renderPage(page=ui.page) {
     ui.page=renderers[page]?page:"dashboard";
     host.innerHTML=renderers[ui.page]();
-    document.querySelectorAll(".dock-btn[data-page]").forEach(btn=>btn.classList.toggle("active",btn.dataset.page===ui.page));
+    document.querySelectorAll("[data-page]").forEach(btn=>btn.classList.toggle("active",btn.dataset.page===ui.page));
     document.title=`VAREX | ${pageMeta[ui.page][0]}`;
     if (location.hash !== `#${ui.page}`) history.replaceState(null,"",`#${ui.page}`);
     host.scrollTop=0; window.scrollTo({top:0,behavior:"instant"});
