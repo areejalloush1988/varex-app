@@ -30,62 +30,9 @@
   const profile = () => JSON.parse(localStorage.getItem(PROFILE_KEY) || "{}");
 
   function seedData() {
-    // All records returned by this function are fictional demo fixtures only.
     return {
-      settings:{pharmacyName:profile().pharmacyName||"صيدلية VAREX التجريبية",ownerName:profile().ownerName||"مالك الصيدلية",branch:"الفرع الرئيسي",phone:profile().phone||"",email:profile().email||"",trn:"",licenseNo:profile().licenseNo||"DEMO-PHARMACY",vat:5,lowStock:10,expiryAlert:60,autoPrint:true},
-      medicines:[
-        {id:"med-1",name:"بانادول أدفانس",scientific:"Paracetamol 500mg",barcode:"6291100211012",category:"مسكنات",price:18.50,cost:11.20,stock:74,minStock:15,prescription:false},
-        {id:"med-2",name:"أوجمنتين 1 جم",scientific:"Amoxicillin/Clavulanate",barcode:"6291100211029",category:"مضادات حيوية",price:67.00,cost:49.00,stock:8,minStock:12,prescription:true},
-        {id:"med-3",name:"فولتارين جل",scientific:"Diclofenac Gel 1%",barcode:"6291100211036",category:"آلام العضلات",price:31.75,cost:21.30,stock:35,minStock:10,prescription:false},
-        {id:"med-4",name:"كونكور 5 مجم",scientific:"Bisoprolol 5mg",barcode:"6291100211043",category:"القلب والضغط",price:42.00,cost:30.50,stock:21,minStock:10,prescription:true},
-        {id:"med-5",name:"فيتامين د3",scientific:"Cholecalciferol",barcode:"6291100211050",category:"فيتامينات",price:39.00,cost:22.00,stock:56,minStock:15,prescription:false},
-        {id:"med-6",name:"جلوكوفاج 500",scientific:"Metformin 500mg",barcode:"6291100211067",category:"السكري",price:26.50,cost:18.25,stock:9,minStock:15,prescription:true},
-        {id:"med-7",name:"كلاريتين",scientific:"Loratadine 10mg",barcode:"6291100211074",category:"الحساسية",price:24.00,cost:15.10,stock:43,minStock:10,prescription:false},
-        {id:"med-8",name:"سيباميد غسول",scientific:"Skin Cleanser",barcode:"6291100211081",category:"العناية الشخصية",price:29.50,cost:17.80,stock:27,minStock:8,prescription:false}
-      ],
-      batches:[
-        {id:"bat-1",medicineId:"med-1",batchNo:"PND-26031",quantity:32,received:iso(-55),expiry:iso(38),supplierId:"sup-1"},
-        {id:"bat-2",medicineId:"med-2",batchNo:"AUG-7712",quantity:8,received:iso(-42),expiry:iso(21),supplierId:"sup-2"},
-        {id:"bat-3",medicineId:"med-3",batchNo:"VLT-5428",quantity:35,received:iso(-35),expiry:iso(175),supplierId:"sup-1"},
-        {id:"bat-4",medicineId:"med-4",batchNo:"CNC-0914",quantity:21,received:iso(-60),expiry:iso(54),supplierId:"sup-3"},
-        {id:"bat-5",medicineId:"med-5",batchNo:"VD3-6021",quantity:56,received:iso(-25),expiry:iso(260),supplierId:"sup-2"},
-        {id:"bat-6",medicineId:"med-6",batchNo:"GLU-8170",quantity:9,received:iso(-52),expiry:iso(46),supplierId:"sup-3"}
-      ],
-      suppliers:[
-        {id:"sup-1",name:"مورد أدوية تجريبي 001",contact:"مسؤول تجريبي 001",phone:"—",email:"—",balance:12450,status:"نشط"},
-        {id:"sup-2",name:"مورد أدوية تجريبي 002",contact:"مسؤول تجريبي 002",phone:"—",email:"—",balance:6800,status:"نشط"},
-        {id:"sup-3",name:"مورد أدوية تجريبي 003",contact:"مسؤول تجريبي 003",phone:"—",email:"—",balance:3250,status:"نشط"}
-      ],
-      customers:[
-        {id:"cus-1",name:"عميل تجريبي 001",phone:"—",insurance:"تأمين تجريبي",visits:8,total:1460},
-        {id:"cus-2",name:"عميل تجريبي 002",phone:"—",insurance:"تأمين تجريبي",visits:5,total:775},
-        {id:"cus-3",name:"عميل تجريبي 003",phone:"—",insurance:"دفع نقدي",visits:3,total:392}
-      ],
-      prescriptions:[
-        {id:"rx-1",number:"RX-DEMO-001",patient:"مريض تجريبي 001",doctor:"طبيب تجريبي 001",date:iso(-1),items:"أوجمنتين، بانادول",status:"تم الصرف"},
-        {id:"rx-2",number:"RX-DEMO-002",patient:"مريض تجريبي 002",doctor:"طبيب تجريبي 002",date:iso(0),items:"كونكور 5 مجم",status:"بانتظار الصرف"}
-      ],
-      purchases:[
-        {id:"pur-1",invoice:"PUR-1048",supplierId:"sup-1",date:iso(-12),medicineId:"med-1",quantity:40,cost:448,vat:22.4,status:"مكتملة"},
-        {id:"pur-2",invoice:"PUR-1051",supplierId:"sup-2",date:iso(-5),medicineId:"med-5",quantity:60,cost:1320,vat:66,status:"مكتملة"}
-      ],
-      sales:[
-        {id:"sal-1",invoice:"INV-260822-001",date:iso(0),time:"09:18",subtotal:92.86,vat:4.64,total:97.5,method:"بطاقة",items:[{medicineId:"med-1",name:"بانادول أدفانس",qty:2,price:18.5},{medicineId:"med-5",name:"فيتامين د3",qty:1,price:39}]},
-        {id:"sal-2",invoice:"INV-260821-014",date:iso(-1),time:"18:42",subtotal:137.14,vat:6.86,total:144,method:"نقدي",items:[{medicineId:"med-2",name:"أوجمنتين 1 جم",qty:1,price:67},{medicineId:"med-7",name:"كلاريتين",qty:2,price:24}]},
-        {id:"sal-3",invoice:"INV-260820-009",date:iso(-2),time:"13:10",subtotal:80.48,vat:4.02,total:84.5,method:"بطاقة",items:[{medicineId:"med-3",name:"فولتارين جل",qty:1,price:31.75},{medicineId:"med-6",name:"جلوكوفاج 500",qty:1,price:26.5}]},
-        {id:"sal-4",invoice:"INV-260819-011",date:iso(-3),time:"16:55",subtotal:111.43,vat:5.57,total:117,method:"نقدي",items:[]},
-        {id:"sal-5",invoice:"INV-260818-007",date:iso(-4),time:"11:27",subtotal:158.10,vat:7.90,total:166,method:"بطاقة",items:[]},
-        {id:"sal-6",invoice:"INV-260817-012",date:iso(-5),time:"20:02",subtotal:203.81,vat:10.19,total:214,method:"بطاقة",items:[]}
-      ],
-      expenses:[
-        {id:"exp-1",date:iso(-2),category:"إيجار",description:"إيجار الفرع الرئيسي",amount:6500,vat:325,method:"تحويل بنكي"},
-        {id:"exp-2",date:iso(-1),category:"تشغيل",description:"مواد تعبئة وأكياس",amount:280,vat:14,method:"نقدي"}
-      ],
-      employees:[
-        {id:"emp-1",name:"موظف تجريبي 001",role:"صيدلي مسؤول",phone:"—",shift:"صباحية",license:"DEMO-LIC-001",status:"نشط"},
-        {id:"emp-2",name:"موظف تجريبي 002",role:"صيدلي",phone:"—",shift:"مسائية",license:"DEMO-LIC-002",status:"نشط"},
-        {id:"emp-3",name:"موظف تجريبي 003",role:"أمين صندوق",phone:"—",shift:"متغيرة",license:"—",status:"نشط"}
-      ]
+      settings:{pharmacyName:profile().pharmacyName||"صيدلية VAREX",ownerName:profile().ownerName||"مالك الصيدلية",branch:"الفرع الرئيسي",phone:profile().phone||"",email:profile().email||"",trn:"",licenseNo:profile().licenseNo||"",vat:5,lowStock:10,expiryAlert:60,autoPrint:true},
+      medicines:[],batches:[],suppliers:[],customers:[],prescriptions:[],purchases:[],sales:[],expenses:[],employees:[]
     };
   }
 
@@ -169,9 +116,18 @@
     $("modalCancel").onclick = closeModal;
     $("modalForm").onsubmit = event => {
       event.preventDefault();
-      const fd = new FormData(event.currentTarget), result = {};
-      fields.forEach(field => result[field.name] = field.type === "checkbox" ? event.currentTarget.elements[field.name].checked : fd.get(field.name));
-      onSubmit(result); closeModal();
+      const submittedForm = event.currentTarget;
+      if (!submittedForm.reportValidity()) return;
+      const fd = new FormData(submittedForm), result = {};
+      fields.forEach(field => result[field.name] = field.type === "checkbox" ? submittedForm.elements[field.name].checked : fd.get(field.name));
+      try {
+        const accepted = onSubmit(result);
+        if (accepted === false) return;
+        if ($("modalForm") === submittedForm) closeModal();
+      } catch (error) {
+        console.error(error);
+        toast("error","تعذر حفظ البيانات",error?.message || "يرجى المحاولة مرة أخرى");
+      }
     };
   }
 
@@ -335,7 +291,7 @@
       <article class="settings-card"><h3>بيانات الصيدلية</h3><p>تظهر هذه المعلومات في الفواتير والتقارير.</p><div class="field"><label>اسم الصيدلية</label><input class="input" name="pharmacyName" value="${escapeHTML(s.pharmacyName)}" required></div><div class="field"><label>اسم المالك</label><input class="input" name="ownerName" value="${escapeHTML(s.ownerName)}"></div><div class="field"><label>الفرع</label><input class="input" name="branch" value="${escapeHTML(s.branch)}"></div><div class="field"><label>الهاتف</label><input class="input" name="phone" value="${escapeHTML(s.phone)}" dir="ltr"></div></article>
       <article class="settings-card"><h3>الترخيص والضريبة</h3><p>بيانات الامتثال والفاتورة الضريبية.</p><div class="field"><label>البريد الإلكتروني</label><input class="input" name="email" type="email" value="${escapeHTML(s.email)}" dir="ltr"></div><div class="field"><label>رقم الترخيص</label><input class="input" name="licenseNo" value="${escapeHTML(s.licenseNo)}" dir="ltr"></div><div class="field"><label>الرقم الضريبي TRN</label><input class="input" name="trn" value="${escapeHTML(s.trn)}" dir="ltr"></div><div class="field"><label>نسبة ضريبة القيمة المضافة %</label><input class="input" name="vat" type="number" min="0" step="0.01" value="${s.vat}"></div></article>
       <article class="settings-card"><h3>تنبيهات المخزون والصلاحية</h3><p>حدد متى يظهر التنبيه في لوحة التحكم.</p><div class="field"><label>الحد الافتراضي للمخزون المنخفض</label><input class="input" name="lowStock" type="number" min="0" value="${s.lowStock}"></div><div class="field"><label>التنبيه قبل انتهاء الصلاحية — بالأيام</label><input class="input" name="expiryAlert" type="number" min="1" value="${s.expiryAlert}"></div><div class="setting-switch"><div><strong>الطباعة المباشرة بعد البيع</strong><span>فتح فاتورة الطباعة فور إتمام العملية</span></div><button class="switch ${s.autoPrint?"on":""}" type="button" data-action="toggle-autoprint" aria-label="تبديل الطباعة"></button></div><div class="setting-switch"><div><strong>صوت النقر</strong><span>صوت خفيف عند الضغط على الأزرار</span></div><button class="switch ${ui.sound?"on":""}" type="button" data-action="toggle-sound-setting" aria-label="تبديل الصوت"></button></div></article>
-      <article class="settings-card"><h3>النسخ الاحتياطي والبيانات</h3><p>احتفظ بنسخة من بيانات الصيدلية أو استعدها عند الحاجة.</p><button class="secondary-btn full-btn" type="button" data-action="backup-data">⇩ تنزيل نسخة احتياطية</button><button class="secondary-btn full-btn" style="margin-top:9px" type="button" data-action="restore-data">⇧ استعادة نسخة احتياطية</button><input id="restoreFile" type="file" accept="application/json" hidden><button class="danger-btn full-btn" style="margin-top:22px" type="button" data-action="reset-data">إعادة البيانات التجريبية</button></article>
+      <article class="settings-card"><h3>النسخ الاحتياطي والبيانات</h3><p>احتفظ بنسخة من بيانات الصيدلية أو استعدها عند الحاجة.</p><button class="secondary-btn full-btn" type="button" data-action="backup-data">⇩ تنزيل نسخة احتياطية</button><button class="secondary-btn full-btn" style="margin-top:9px" type="button" data-action="restore-data">⇧ استعادة نسخة احتياطية</button><input id="restoreFile" type="file" accept="application/json" hidden><button class="danger-btn full-btn" style="margin-top:22px" type="button" data-action="reset-data">إعادة ضبط بيانات النظام</button></article>
     </section></form>`;
   }
 
@@ -351,14 +307,17 @@
   }
 
   const medicineCategories=["مسكنات","مضادات حيوية","آلام العضلات","القلب والضغط","السكري","الحساسية","فيتامينات","العناية الشخصية","الأم والطفل","أجهزة طبية","تصنيف آخر"];
-  function openMedicine(record=null) {
-    formModal({title:record?"تعديل بيانات الدواء":"إضافة دواء جديد",values:record||{minStock:data.settings.lowStock,stock:0},fields:[
+  function openMedicine(record=null,prefill={}) {
+    formModal({title:record?"تعديل بيانات الدواء":"إضافة دواء جديد",values:record||{minStock:data.settings.lowStock,stock:0,...prefill},fields:[
       {name:"name",label:"الاسم التجاري",required:true},{name:"scientific",label:"الاسم العلمي",required:true},{name:"barcode",label:"الباركود",required:true},{name:"category",label:"التصنيف",type:"select",options:medicineCategories},
       {name:"cost",label:"سعر التكلفة",type:"number",min:0,step:"0.01",required:true},{name:"price",label:"سعر البيع",type:"number",min:0,step:"0.01",required:true},{name:"stock",label:"الكمية الحالية",type:"number",min:0,step:"1",required:true},{name:"minStock",label:"حد المخزون المنخفض",type:"number",min:0,step:"1",required:true},{name:"prescription",label:"يتطلب وصفة طبية",type:"checkbox",checkLabel:"لا يُصرف هذا الدواء إلا بوصفة طبية",full:true}
     ],onSubmit:v=>{
-      const clean={...v,cost:num(v.cost),price:num(v.price),stock:num(v.stock),minStock:num(v.minStock),prescription:Boolean(v.prescription)};
+      const clean={...v,name:String(v.name||"").trim(),scientific:String(v.scientific||"").trim(),barcode:String(v.barcode||"").trim(),cost:num(v.cost),price:num(v.price),stock:num(v.stock),minStock:num(v.minStock),prescription:Boolean(v.prescription)};
+      if(!clean.name||!clean.scientific||!clean.barcode){toast("error","البيانات غير مكتملة","أدخل اسم الدواء والاسم العلمي والباركود");return false;}
+      const duplicate=data.medicines.find(m=>m.id!==record?.id&&String(m.barcode).trim()===clean.barcode);
+      if(duplicate){toast("error","الباركود مستخدم مسبقاً",duplicate.name);return false;}
       if(record) Object.assign(record,clean); else data.medicines.unshift({id:id("med"),...clean});
-      persist();renderPage(ui.page);toast("success",record?"تم تحديث الدواء":"تمت إضافة الدواء",clean.name);
+      persist();renderPage("medicines");toast("success",record?"تم تحديث الدواء":"تمت إضافة الدواء",`${clean.name} • ${clean.barcode}`);return true;
     }});
   }
 
@@ -377,7 +336,7 @@
   function openEmployee(record=null) {
     formModal({title:record?"تعديل الموظف":"إضافة موظف",values:record||{status:"نشط",shift:"صباحية"},fields:[
       {name:"name",label:"اسم الموظف",required:true},{name:"role",label:"المسمى الوظيفي",type:"select",options:["صيدلي مسؤول","صيدلي","فني صيدلة","أمين صندوق","مدير فرع","محاسب"],required:true},{name:"phone",label:"رقم الهاتف",required:true},{name:"shift",label:"فترة الدوام",type:"select",options:["صباحية","مسائية","ليلية","متغيرة"]},{name:"license",label:"رقم الترخيص",placeholder:"—"},{name:"status",label:"الحالة",type:"select",options:["نشط","موقوف"]}
-    ],onSubmit:v=>{if(record)Object.assign(record,v);else data.employees.unshift({id:id("emp"),...v});persist();renderPage();toast("success",record?"تم تحديث الموظف":"تمت إضافة الموظف",v.name);}});
+    ],onSubmit:v=>{const clean={...v,name:String(v.name||"").trim(),phone:String(v.phone||"").trim(),license:String(v.license||"").trim()};if(!clean.name||!clean.phone){toast("error","البيانات غير مكتملة","أدخل اسم الموظف ورقم الهاتف");return false;}if(record)Object.assign(record,clean);else data.employees.unshift({id:id("emp"),...clean});persist();renderPage("employees");toast("success",record?"تم تحديث الموظف":"تمت إضافة الموظف",clean.name);return true;}});
   }
 
   function openBatch() {
@@ -406,11 +365,12 @@
     ],onSubmit:v=>{v.amount=num(v.amount);v.vat=num(v.vat);data.expenses.unshift({id:id("exp"),...v});persist();renderPage();toast("success","تم تسجيل المصروف",v.description);}});
   }
 
-  function openBarcode() {
-    formModal({title:"إدخال باركود المنتج",fields:[{name:"barcode",label:"امسح الباركود أو اكتبه",required:true,full:true}],submitText:"إضافة إلى الفاتورة",onSubmit:v=>{
-      const med=data.medicines.find(m=>String(m.barcode)===String(v.barcode).trim());
-      if(!med)return toast("error","الباركود غير موجود",v.barcode);
-      addToCart(med.id);
+  function openBarcode(initialBarcode="") {
+    formModal({title:"إدخال باركود المنتج",values:{barcode:initialBarcode},fields:[{name:"barcode",label:"امسح الباركود أو اكتبه",required:true,full:true}],submitText:"إضافة إلى الفاتورة",onSubmit:v=>{
+      const barcode=String(v.barcode||"").trim();
+      const med=data.medicines.find(m=>String(m.barcode).trim()===barcode);
+      if(!med){toast("info","باركود جديد","أكمل بيانات الدواء ليتم حفظه في المخزون");openMedicine(null,{barcode});return true;}
+      addToCart(med.id);return true;
     }});
   }
 
@@ -491,7 +451,7 @@
       case "toggle-sound-setting": return toggleSound(true);
       case "backup-data": downloadFile(`varex-pharmacy-backup-${iso()}.json`,JSON.stringify(data,null,2),"application/json");return toast("success","تم تجهيز النسخة الاحتياطية");
       case "restore-data": return $("restoreFile")?.click();
-      case "reset-data": { const ok=await confirmModal("إعادة البيانات التجريبية","سيتم استبدال جميع البيانات الحالية بالبيانات التجريبية الأساسية.","إعادة الضبط");if(ok){data=seedData();persist();renderPage();toast("success","تمت إعادة البيانات التجريبية");}return; }
+      case "reset-data": { const ok=await confirmModal("إعادة ضبط بيانات النظام","سيتم حذف سجلات التشغيل الحالية وإعادة النظام فارغاً. نزّل نسخة احتياطية أولاً عند الحاجة.","إعادة الضبط");if(ok){data=seedData();persist();renderPage();toast("success","تمت إعادة ضبط بيانات النظام");}return; }
       case "export-medicines": exportCSV(`varex-medicines-${iso()}.csv`,["الاسم التجاري","الاسم العلمي","الباركود","التصنيف","التكلفة","سعر البيع","المخزون","يتطلب وصفة"],data.medicines.map(m=>[m.name,m.scientific,m.barcode,m.category,m.cost,m.price,m.stock,m.prescription?"نعم":"لا"]));return toast("success","تم تصدير قائمة الأدوية");
       case "export-report": { const r=reportNumbers();exportCSV(`varex-pharmacy-report-${iso()}.csv`,["المؤشر","القيمة"],[["الإيرادات",r.revenue],["تكلفة البضاعة",r.cogs],["المصروفات",r.expenses],["صافي الربح",r.net],["ضريبة المخرجات",r.vatOut],["ضريبة المدخلات",r.vatIn],["الضريبة المستحقة",r.vatDue]]);return toast("success","تم تصدير التقرير المالي"); }
       case "export-vat": { const r=vatReportData();exportCSV(`varex-pharmacy-vat-${iso()}.csv`,["التاريخ","المرجع","نوع الحركة","المبلغ قبل الضريبة","قيمة VAT","الإجمالي"],r.transactions.map(item=>[item.date,item.reference,item.type,item.base,item.vat,item.total]));return toast("success","تم تصدير تقرير VAT"); }
@@ -563,7 +523,16 @@
   document.addEventListener("click",event=>{if(event.target.closest("button,a,select,input[type=checkbox]"))clickSound();},{passive:true});
   addEventListener("hashchange",()=>renderPage(location.hash.slice(1)||"dashboard"));
 
-  function updateClock() { const now=new Date();$("liveClock").textContent=`${now.toLocaleTimeString("ar-AE",{hour:"2-digit",minute:"2-digit"})} • ${now.toLocaleDateString("ar-AE",{day:"2-digit",month:"2-digit"})}`; }
+  function updateClock() {
+    const now=new Date();
+    $("liveClock").textContent=now.toLocaleTimeString("ar-AE",{hour:"2-digit",minute:"2-digit"});
+    $("liveDate").textContent=now.toLocaleDateString("ar-AE",{year:"numeric",month:"2-digit",day:"2-digit"});
+  }
+
+  window.VarexPharmacyDevices={
+    openBarcodeReader(barcode=""){navigate("pos");setTimeout(()=>openBarcode(String(barcode||"").trim()),0);},
+    printCurrent(){window.print();}
+  };
 
   async function init() {
     try {

@@ -178,3 +178,53 @@ body.theme-dark .zoom-control{background:#28263c;border-color:#55516f;box-shadow
 @media(max-width:1200px){.control-dock{grid-template-columns:max-content max-content max-content;overflow-x:auto;overscroll-behavior-inline:contain}.dock-user{display:grid}.dock-system{justify-self:start}.module-ribbon{top:216px}}
 @media(max-width:920px){.control-dock{top:108px;min-height:84px;padding:8px 14px}.module-ribbon{top:192px}.utility-rail{top:288px;height:calc(100vh / var(--ui-scale) - 372px)}.content-stage{min-height:calc(100vh / var(--ui-scale) - 372px)}.dock-user{display:grid}.main-content{padding-bottom:38px}.module-btn span{font-size:13px}.utility-btn span{font-size:12px}}
 @media(max-width:620px){.control-dock{top:94px;min-height:76px;display:flex;align-items:center;gap:10px;padding:7px 10px;overflow-x:auto}.dock-user{display:grid;flex:0 0 210px}.zoom-control{flex:0 0 auto}.dock-system{display:flex;flex:0 0 auto}.dock-system .tool-btn{min-width:82px}.module-ribbon{top:170px}.utility-rail{bottom:0}.main-content{padding-bottom:92px}.module-btn span{font-size:12px}.utility-btn span{font-size:11px}.page-head h2{font-size:27px}.page-head p{font-size:14px}.data-table th,.data-table td{font-size:13px}.product-card strong{font-size:14px}.product-card small{font-size:11px}}
+
+/* V6: white identity header, indigo system toolbar and connected device controls. */
+.topbar{
+  background:#fff;
+  border-bottom:1px solid rgba(78,75,154,.22);
+  box-shadow:0 14px 38px rgba(55,52,111,.12);
+}
+.top-title span,.top-title h1,.top-title p{color:var(--pharmacy)}
+.top-title span{color:#6c68a9}.top-title p{color:#58548f}
+.app-logo{box-shadow:0 10px 24px rgba(55,52,111,.2)}
+.shift-status{background:var(--pharmacy-soft);border-color:rgba(78,75,154,.22);color:var(--pharmacy-dark)}
+.shift-status small{color:#6662a1}.pulse-ring{background:rgba(5,150,105,.1);border-color:rgba(5,150,105,.24)}
+.date-time-console{direction:ltr;display:flex;align-items:center;gap:9px;justify-self:start}
+.clock-console,.date-console{height:58px;display:flex;align-items:center;justify-content:center;gap:9px;padding:0 15px;border:1px solid rgba(78,75,154,.22);border-radius:18px;background:#fff;color:var(--pharmacy);font-size:13px;font-weight:900;box-shadow:0 7px 18px rgba(55,52,111,.07)}
+.clock-console{min-width:126px}.date-console{min-width:154px}
+.clock-console svg,.date-console svg{width:24px;height:24px;fill:none;stroke:var(--pharmacy);stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+.clock-console span,.date-console span{direction:ltr;font-size:13px;font-weight:900;white-space:nowrap}
+
+.control-dock,body.theme-dark .control-dock{
+  background:var(--pharmacy);
+  border-bottom-color:rgba(255,255,255,.18);
+  box-shadow:0 13px 30px rgba(55,52,111,.24);
+}
+.dock-user{background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.3);box-shadow:none}
+.dock-user .user-avatar{background:#fff;color:var(--pharmacy)}
+.dock-user small,.dock-user strong,body.theme-dark .dock-user strong{color:#fff}
+.zoom-control,body.theme-dark .zoom-control{padding:5px;background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.28);box-shadow:none}
+.zoom-control .tool-btn{background:transparent;border:1px solid rgba(255,255,255,.24);color:#fff;box-shadow:none}
+.zoom-control .tool-btn:hover{background:rgba(255,255,255,.14)}
+.zoom-control .zoom-select{min-width:72px;background:#fff;color:var(--pharmacy);border:0}
+.dock-system .tool-btn,.dock-system .tool-btn.switch-user,.dock-system .tool-btn.logout{
+  background:rgba(255,255,255,.1);
+  border-color:rgba(255,255,255,.28);
+  color:#fff;
+  box-shadow:none;
+}
+.dock-system .tool-btn:hover,.dock-system .tool-btn.active,.dock-system .tool-btn.logout:hover{background:rgba(255,255,255,.2);border-color:rgba(255,255,255,.42);color:#fff}
+.dock-system .tool-btn.logout{background:rgba(123,23,45,.22)}
+.dock-system .tool-btn svg{stroke:#fff}
+.tool-btn.device-ready{background:rgba(52,211,153,.22)!important;border-color:rgba(110,231,183,.6)!important}
+
+@media(max-width:1200px){.topbar{grid-template-columns:minmax(300px,1fr) auto}.date-time-console{justify-self:start}.dock-system{padding-inline-end:4px}}
+@media(max-width:920px){.date-time-console{gap:6px}.clock-console,.date-console{height:52px;border-radius:15px;padding:0 12px}.clock-console{min-width:112px}.date-console{min-width:136px}}
+@media(max-width:620px){
+  .topbar{grid-template-columns:minmax(0,1fr) auto;padding:7px 10px}
+  .brand-station{gap:10px}.app-logo{width:72px;height:72px}.top-title h1{font-size:17px}
+  .date-time-console{gap:4px}.clock-console,.date-console{display:flex;height:42px;padding:0 8px;border-radius:12px;min-width:0}
+  .clock-console svg,.date-console svg{width:18px;height:18px}.clock-console span,.date-console span{font-size:10px}
+  .dock-system .tool-btn{min-width:92px}
+}
