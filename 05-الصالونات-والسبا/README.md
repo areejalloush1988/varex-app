@@ -7,7 +7,26 @@
 - VAREX Women’s Salon — الصالون النسائي والسبا (`#C9577A`)
 - VAREX Men’s Salon — الصالون الرجالي والحلاقة (`#2F80B9`)
 
-تبدأ البوابة من `salons.html`، ويحفظ النظام اختيار نوع الصالون ثم يفتح الواجهة المناسبة مباشرةً في الزيارات التالية.
+تبدأ البوابة من [salons.html](./salons.html)، ويحفظ النظام اختيار نوع الصالون ثم يفتح الواجهة المناسبة مباشرةً في الزيارات التالية.
+
+## ملفات النظام
+
+- [بوابة اختيار نوع الصالون](./salons.html)
+- [الصالون النسائي](./salon-women.html)
+- [الصالون الرجالي](./salon-men.html)
+- [المواعيد](./salon-appointments.html)
+- [العملاء](./salon-clients.html)
+- [الخدمات](./salon-services.html)
+- [الموظفون](./salon-staff.html)
+- [المرافق والغرف](./salon-facilities.html)
+- [نقطة البيع](./salon-pos.html)
+- [المخزون](./salon-inventory.html)
+- [العمولات](./salon-commissions.html)
+- [التقارير](./salon-reports.html)
+- [الإعدادات](./salon-settings.html)
+- [محرك النظام](./salon.js)
+- [تصميم النظام](./salon.css)
+- [أيقونة النظام](./varex-salon-icon.svg)
 
 ## الوحدات
 
