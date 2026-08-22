@@ -1,4 +1,4 @@
-const CACHE_NAME="varex-cache-v37-organized-cashier";
+const CACHE_NAME="varex-cache-v38-display-controls";
 const IS_NATIVE_APP=self.location.hostname==="localhost";
 
 const FILES_TO_CACHE=[
