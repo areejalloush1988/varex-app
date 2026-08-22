@@ -5,16 +5,18 @@
   const PROFILE_KEY = "varex_pharmacy_profile";
   const ZOOM_KEY = "varex_pharmacy_zoom";
   const SOUND_KEY = "varex_pharmacy_sound";
+  const OPERATOR_KEY = "varex_pharmacy_operator";
   const $ = id => document.getElementById(id);
   const host = $("pageHost");
   const modal = $("modalLayer");
-  const ui = { page: "dashboard", cart: [], sound: localStorage.getItem(SOUND_KEY) !== "off" };
+  const ui = { page: "dashboard", cart: [], vatPeriod: "all", sound: localStorage.getItem(SOUND_KEY) !== "off" };
   const pageMeta = {
     dashboard:["لوحة التحكم","نظرة شاملة على الصيدلية والمخزون والتنبيهات"],pos:["نقطة البيع","بيع الأدوية والمنتجات وإصدار الفاتورة"],
     medicines:["الأدوية والمخزون","إدارة الأصناف والأسعار والكميات والباركود"],batches:["التشغيلات والصلاحية","متابعة أرقام التشغيلات والكميات وتواريخ الانتهاء"],
     purchases:["المشتريات","تسجيل فواتير التوريد وتحديث المخزون"],suppliers:["الموردون","إدارة شركات وموردي الأدوية"],
     customers:["العملاء","بيانات العملاء والتأمين والمشتريات"],prescriptions:["الوصفات الطبية","حفظ الوصفات ومتابعة حالة الصرف"],
     expenses:["المصروفات","تسجيل المصروفات التشغيلية والضريبة"],employees:["الموظفون","إدارة فريق الصيدلية والصلاحيات"],
+    vat:["ضريبة القيمة المضافة VAT","ملخص ضريبة المخرجات والمدخلات وصافي الضريبة المستحقة"],
     reports:["التقارير والتحليلات","المبيعات والأرباح والمخزون والصلاحية"],settings:["إعدادات الصيدلية","بيانات المنشأة والضرائب والطباعة والنسخ الاحتياطي"]
   };
 
@@ -94,6 +96,36 @@
 
   function persist() { localStorage.setItem(DATA_KEY, JSON.stringify(data)); }
   if (!localStorage.getItem(DATA_KEY)) persist();
+
+  function operatorChoices() {
+    return [
+      {id:"owner",name:data.settings.ownerName||"مالك الصيدلية",role:"مالك الصيدلية • صلاحية كاملة"},
+      ...data.employees.filter(employee=>employee.status==="نشط").map(employee=>({id:employee.id,name:employee.name,role:`${employee.role} • دوام ${employee.shift}`}))
+    ];
+  }
+
+  function currentOperator() {
+    try {
+      const saved=JSON.parse(localStorage.getItem(OPERATOR_KEY)||"null");
+      return operatorChoices().find(item=>item.id===saved?.id)||operatorChoices()[0];
+    } catch (_) { return operatorChoices()[0]; }
+  }
+
+  function updateOperatorUI() {
+    const active=currentOperator(),nameNode=$("sidebarUserName");
+    if(nameNode)nameNode.textContent=active.name;
+  }
+
+  function openSwitchUser() {
+    const active=currentOperator();
+    const choices=operatorChoices().map(item=>`<button class="operator-option ${item.id===active.id?"selected":""}" type="button" data-operator-id="${escapeHTML(item.id)}"><span class="operator-avatar">${escapeHTML(item.name.trim().charAt(0)||"V")}</span><span><strong>${escapeHTML(item.name)}</strong><small>${escapeHTML(item.role)}</small></span><span class="operator-check">${item.id===active.id?"✓":""}</span></button>`).join("");
+    openModal("تبديل المستخدم",`<div class="operator-list">${choices}</div>`,`<button class="secondary-btn" id="operatorCancel" type="button">إلغاء</button>`);
+    $("operatorCancel").onclick=closeModal;
+    $("modalBody").querySelectorAll("[data-operator-id]").forEach(button=>button.onclick=()=>{
+      const selected=operatorChoices().find(item=>item.id===button.dataset.operatorId);if(!selected)return;
+      localStorage.setItem(OPERATOR_KEY,JSON.stringify({id:selected.id,name:selected.name}));updateOperatorUI();closeModal();toast("success","تم تبديل المستخدم",selected.name);
+    });
+  }
 
   function toast(type, title, detail = "") {
     const stack = $("toastStack"), node = document.createElement("div");
@@ -263,6 +295,30 @@
     return {revenue,vatOut,purchases,vatIn,expenses,cogs,net:revenue-cogs-expenses,vatDue:Math.max(0,vatOut-vatIn)};
   }
 
+  function vatReportData() {
+    const periodDays={quarter:90,half:183,year:365,all:Infinity}[ui.vatPeriod]??Infinity;
+    const inPeriod=date=>periodDays===Infinity||(Date.now()-new Date(`${date}T23:59:59`).getTime())/86400000<=periodDays;
+    const sales=data.sales.filter(item=>inPeriod(item.date)),purchases=data.purchases.filter(item=>inPeriod(item.date)),expenses=data.expenses.filter(item=>inPeriod(item.date));
+    const taxableSales=sales.reduce((sum,item)=>sum+num(item.subtotal),0),vatOut=sales.reduce((sum,item)=>sum+num(item.vat),0);
+    const taxablePurchases=purchases.reduce((sum,item)=>sum+num(item.cost),0)+expenses.reduce((sum,item)=>sum+num(item.amount),0);
+    const vatIn=purchases.reduce((sum,item)=>sum+num(item.vat),0)+expenses.reduce((sum,item)=>sum+num(item.vat),0),vatNet=vatOut-vatIn;
+    const transactions=[
+      ...sales.map(item=>({date:item.date,reference:item.invoice,type:"مبيعات",base:num(item.subtotal),vat:num(item.vat),total:num(item.total)})),
+      ...purchases.map(item=>({date:item.date,reference:item.invoice,type:"مشتريات",base:num(item.cost),vat:num(item.vat),total:num(item.cost)+num(item.vat)})),
+      ...expenses.map(item=>({date:item.date,reference:item.description,type:"مصروفات",base:num(item.amount),vat:num(item.vat),total:num(item.amount)+num(item.vat)}))
+    ].sort((a,b)=>new Date(b.date)-new Date(a.date));
+    return {sales,purchases,expenses,taxableSales,taxablePurchases,vatOut,vatIn,vatNet,transactions};
+  }
+
+  function renderVAT() {
+    const r=vatReportData(),periodLabels={all:"كل الفترات",quarter:"آخر 3 أشهر",half:"آخر 6 أشهر",year:"آخر سنة"};
+    const rows=r.transactions.map(item=>`<tr data-filter-item="${escapeHTML(`${item.reference} ${item.type}`.toLowerCase())}"><td>${dateAR(item.date)}</td><td dir="ltr"><strong>${escapeHTML(item.reference)}</strong></td><td><span class="tax-type ${item.type==="مبيعات"?"":"purchase"}"><i></i>${escapeHTML(item.type)}</span></td><td>${money(item.base)}</td><td><strong>${money(item.vat)}</strong></td><td>${money(item.total)}</td></tr>`).join("");
+    return `${pageHead(`<div class="vat-period"><select class="select" id="vatPeriod" aria-label="الفترة الضريبية"><option value="all" ${ui.vatPeriod==="all"?"selected":""}>كل الفترات</option><option value="quarter" ${ui.vatPeriod==="quarter"?"selected":""}>آخر 3 أشهر</option><option value="half" ${ui.vatPeriod==="half"?"selected":""}>آخر 6 أشهر</option><option value="year" ${ui.vatPeriod==="year"?"selected":""}>آخر سنة</option></select><button class="secondary-btn" data-action="print-vat">🖨 طباعة</button><button class="primary-btn" data-action="export-vat">⇩ تصدير VAT</button></div>`)}
+      <section class="vat-summary"><article class="vat-card"><span>المبيعات الخاضعة للضريبة</span><strong>${money(r.taxableSales)}</strong><small>${r.sales.length} فاتورة بيع • ${periodLabels[ui.vatPeriod]}</small></article><article class="vat-card"><span>ضريبة المخرجات</span><strong>${money(r.vatOut)}</strong><small>الضريبة المحصلة من المبيعات</small></article><article class="vat-card"><span>ضريبة المدخلات القابلة للخصم</span><strong>${money(r.vatIn)}</strong><small>${r.purchases.length+r.expenses.length} حركة شراء ومصروف</small></article><article class="vat-card accent"><span>${r.vatNet>=0?"صافي الضريبة المستحقة":"رصيد ضريبي دائن"}</span><strong>${money(Math.abs(r.vatNet))}</strong><small>المخرجات ناقص المدخلات</small></article></section>
+      <section class="panel panel-pad" style="margin-bottom:16px"><div class="grid-equal"><div><span class="muted" style="font-size:9px">قيمة المشتريات والمصروفات قبل الضريبة</span><strong style="display:block;margin-top:5px;font-size:18px;color:var(--indigo-950)">${money(r.taxablePurchases)}</strong></div><div><span class="muted" style="font-size:9px">الرقم الضريبي TRN</span><strong style="display:block;margin-top:5px;font-size:18px;color:var(--indigo-950)" dir="ltr">${escapeHTML(data.settings.trn||"غير مسجل")}</strong></div></div></section>
+      ${tableShell({search:"بحث برقم المرجع أو نوع الحركة...",head:"<tr><th>التاريخ</th><th>المرجع</th><th>نوع الحركة</th><th>المبلغ قبل الضريبة</th><th>قيمة VAT</th><th>الإجمالي</th></tr>",rows,empty:"لا توجد حركات ضريبية في هذه الفترة"})}`;
+  }
+
   function renderReports() {
     const r=reportNumbers();
     const topMeds={};data.sales.forEach(s=>(s.items||[]).forEach(item=>{topMeds[item.name]=(topMeds[item.name]||0)+num(item.qty)}));
@@ -283,7 +339,7 @@
     </section></form>`;
   }
 
-  const renderers={dashboard:renderDashboard,pos:renderPOS,medicines:renderMedicines,batches:renderBatches,purchases:renderPurchases,suppliers:renderSuppliers,customers:renderCustomers,prescriptions:renderPrescriptions,expenses:renderExpenses,employees:renderEmployees,reports:renderReports,settings:renderSettings};
+  const renderers={dashboard:renderDashboard,pos:renderPOS,medicines:renderMedicines,batches:renderBatches,purchases:renderPurchases,suppliers:renderSuppliers,customers:renderCustomers,prescriptions:renderPrescriptions,expenses:renderExpenses,employees:renderEmployees,vat:renderVAT,reports:renderReports,settings:renderSettings};
 
   function renderPage(page=ui.page) {
     ui.page=renderers[page]?page:"dashboard";
@@ -438,7 +494,9 @@
       case "reset-data": { const ok=await confirmModal("إعادة البيانات التجريبية","سيتم استبدال جميع البيانات الحالية بالبيانات التجريبية الأساسية.","إعادة الضبط");if(ok){data=seedData();persist();renderPage();toast("success","تمت إعادة البيانات التجريبية");}return; }
       case "export-medicines": exportCSV(`varex-medicines-${iso()}.csv`,["الاسم التجاري","الاسم العلمي","الباركود","التصنيف","التكلفة","سعر البيع","المخزون","يتطلب وصفة"],data.medicines.map(m=>[m.name,m.scientific,m.barcode,m.category,m.cost,m.price,m.stock,m.prescription?"نعم":"لا"]));return toast("success","تم تصدير قائمة الأدوية");
       case "export-report": { const r=reportNumbers();exportCSV(`varex-pharmacy-report-${iso()}.csv`,["المؤشر","القيمة"],[["الإيرادات",r.revenue],["تكلفة البضاعة",r.cogs],["المصروفات",r.expenses],["صافي الربح",r.net],["ضريبة المخرجات",r.vatOut],["ضريبة المدخلات",r.vatIn],["الضريبة المستحقة",r.vatDue]]);return toast("success","تم تصدير التقرير المالي"); }
+      case "export-vat": { const r=vatReportData();exportCSV(`varex-pharmacy-vat-${iso()}.csv`,["التاريخ","المرجع","نوع الحركة","المبلغ قبل الضريبة","قيمة VAT","الإجمالي"],r.transactions.map(item=>[item.date,item.reference,item.type,item.base,item.vat,item.total]));return toast("success","تم تصدير تقرير VAT"); }
       case "print-report": return window.print();
+      case "print-vat": return window.print();
     }
   }
 
@@ -458,10 +516,11 @@
     event.preventDefault();const fd=new FormData(event.target);
     Object.assign(data.settings,{pharmacyName:fd.get("pharmacyName").trim(),ownerName:fd.get("ownerName").trim(),branch:fd.get("branch").trim(),phone:fd.get("phone").trim(),email:fd.get("email").trim(),licenseNo:fd.get("licenseNo").trim(),trn:fd.get("trn").trim(),vat:num(fd.get("vat")),lowStock:num(fd.get("lowStock")),expiryAlert:num(fd.get("expiryAlert"))});
     localStorage.setItem(PROFILE_KEY,JSON.stringify({...profile(),pharmacyName:data.settings.pharmacyName,ownerName:data.settings.ownerName,email:data.settings.email,phone:data.settings.phone,licenseNo:data.settings.licenseNo}));
-    persist();$("headerPharmacyName").textContent=data.settings.pharmacyName;toast("success","تم حفظ إعدادات الصيدلية");renderPage("settings");
+    persist();$("headerPharmacyName").textContent=data.settings.pharmacyName;updateOperatorUI();toast("success","تم حفظ إعدادات الصيدلية");renderPage("settings");
   });
 
   host.addEventListener("change",event=>{
+    if(event.target.id==="vatPeriod"){ui.vatPeriod=event.target.value;renderPage("vat");return;}
     if(event.target.id!=="restoreFile"||!event.target.files?.[0])return;
     const reader=new FileReader();reader.onload=()=>{try{const restored=JSON.parse(reader.result);if(!restored.medicines||!restored.settings)throw new Error();data=restored;persist();renderPage();toast("success","تمت استعادة النسخة الاحتياطية");}catch(_){toast("error","ملف النسخة الاحتياطية غير صالح");}};reader.readAsText(event.target.files[0]);
   });
@@ -491,6 +550,7 @@
   }
 
   $("mainNav").addEventListener("click",event=>{const button=event.target.closest("[data-page]");if(button)navigate(button.dataset.page);});
+  $("switchUserButton").addEventListener("click",openSwitchUser);
   $("logoutButton").addEventListener("click",logout);
   $("modalClose").addEventListener("click",closeModal);
   modal.addEventListener("click",event=>{if(event.target===modal)closeModal();});
@@ -512,7 +572,7 @@
       const meta=user.user_metadata||{};
       if(meta.pharmacy_name&&!profile().pharmacyName){data.settings.pharmacyName=meta.pharmacy_name;data.settings.ownerName=meta.full_name||data.settings.ownerName;persist();}
       $("headerPharmacyName").textContent=data.settings.pharmacyName;
-      applyZoom(localStorage.getItem(ZOOM_KEY)||100);updateSoundButton();updateClock();setInterval(updateClock,30000);
+      applyZoom(localStorage.getItem(ZOOM_KEY)||100);updateSoundButton();updateOperatorUI();updateClock();setInterval(updateClock,30000);
       renderPage(location.hash.slice(1)||"dashboard");
       if("serviceWorker" in navigator&&(location.protocol==="https:"||location.hostname==="localhost"))navigator.serviceWorker.register("./sw.js").catch(()=>{});
     } catch(error) { console.error(error);location.replace("./login.html"); }

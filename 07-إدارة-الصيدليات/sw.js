@@ -1,4 +1,4 @@
-const CACHE="varex-pharmacy-v1-20260822";
+const CACHE="varex-pharmacy-v2-20260822";
 const ASSETS=["./","./index.html","./login.html","./register.html","./forgot-password.html","./verify-email.html","./reset-password.html","./app.html","./styles.css","./auth.js","./app.js","./manifest.json","./varex-pharmacy-logo.svg"];
 
 self.addEventListener("install",event=>{
