@@ -1,0 +1,15 @@
+{
+  "name": "VAREX - نظام إدارة الصيدليات",
+  "short_name": "VAREX Pharmacy",
+  "description": "نظام متكامل لإدارة الصيدليات والمخزون والتشغيلات والصلاحية والمبيعات",
+  "lang": "ar",
+  "dir": "rtl",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f5f3ff",
+  "theme_color": "#312e81",
+  "icons": [
+    {"src":"./varex-pharmacy-logo.svg","sizes":"any","type":"image/svg+xml","purpose":"any maskable"}
+  ]
+}
