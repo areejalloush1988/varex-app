@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1.0">
   <script>(function(){try{const l=(localStorage.getItem("varex_language")||localStorage.getItem("varex_launcher_language"))==="en"?"en":"ar";document.documentElement.lang=l;document.documentElement.dir=l==="en"?"ltr":"rtl";document.documentElement.dataset.varexBootLanguage=l}catch(e){}})();</script>
   <title>الإقرار الضريبي - VAREX</title>
-  <link id="varexCentralTheme" rel="stylesheet" href="./varex-theme.css?v=20260820-tax1">
+  <link id="varexCentralTheme" rel="stylesheet" href="../varex-theme.css?v=20260820-tax1">
   <style>
     *{box-sizing:border-box;margin:0;padding:0}:root{--navy:#172554;--navy2:#243b70;--bg:#f4f6fb;--card:#fff;--card2:#f8fafc;--field:#fff;--border:#e5eaf2;--line:#edf0f5;--text:#172554;--body:#475569;--muted:#64748b;--green:#15803d;--red:#b91c1c;--orange:#c2410c;--blue:#2563eb;--sidebar:240px;--brand:170px;--shadow:0 8px 25px rgba(15,23,42,.07)}
     html[data-theme="dark"],html[data-varex-theme="dark"],body.varex-dark{--bg:#0b1120;--card:#111c33;--card2:#162139;--field:#17233d;--border:#263550;--line:#263550;--text:#f1f5f9;--body:#cbd5e1;--muted:#94a3b8;--green:#4ade80;--red:#f87171;--orange:#fdba74;--blue:#93c5fd;--shadow:0 9px 28px rgba(0,0,0,.24)}
@@ -60,7 +60,7 @@
       <section class="panel"><div class="section-head"><div><h3>تفاصيل مصادر التقرير</h3><span>مبيعات، مشتريات، مصروفات، مرتجعات</span></div></div><div class="table-wrap"><table><thead><tr><th>المصدر</th><th>المرجع</th><th>التاريخ</th><th>الفرع</th><th>المبلغ قبل الضريبة</th><th>VAT</th><th>الحالة</th></tr></thead><tbody id="detailBody"></tbody></table></div><div class="footer-note">هذا التقرير أداة مساعدة للمراجعة المحاسبية ولا يرسل الإقرار تلقائياً إلى الهيئة الاتحادية للضرائب أو منصة EmaraTax. يجب مراجعته واعتماده محاسبياً قبل التقديم.</div></section>
     </main>
   </div>
-  <script src="./varex.js?v=20260820-tax1"></script>
+  <script src="../varex.js?v=20260820-tax1"></script>
   <script>
   (()=>{
     const $=id=>document.getElementById(id);let reportRows=[],lastSummary=null;
@@ -108,6 +108,6 @@
     $("periodType").addEventListener("change",fillSlots);$("periodYear").addEventListener("change",applyPreset);$("periodSlot").addEventListener("change",applyPreset);$("refreshBtn").addEventListener("click",load);$("printBtn").addEventListener("click",()=>window.print());$("csvBtn").addEventListener("click",exportCsv);load();VAREX.onDataChanged?.(()=>load());
   })();
   </script>
-  <script src="./varex-navigation.js?v=20260820-tax1"></script>
-<script src="./varex-i18n.js?v=1"></script></body>
+  <script src="../varex-navigation.js?v=20260820-tax1"></script>
+<script src="../varex-i18n.js?v=1"></script></body>
 </html>

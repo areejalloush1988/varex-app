@@ -10,7 +10,7 @@
 .hardware-actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:12px}.hardware-button{min-height:40px;padding:9px 14px;border:1px solid #172554;border-radius:9px;background:#172554;color:#fff;font-family:inherit;font-size:11px;font-weight:800;cursor:pointer}.hardware-button.secondary-hardware{background:var(--field);color:var(--text);border-color:var(--border)}.hardware-status{margin-top:12px;padding:11px 12px;border:1px solid var(--border);border-radius:9px;background:var(--soft);color:var(--muted);font-size:11px;line-height:1.7}.hardware-status.success{border-color:#bbf7d0;background:#f0fdf4;color:#166534}.hardware-status.error{border-color:#fecaca;background:#fef2f2;color:#991b1b}.printer-network-fields{display:none}.printer-network-fields.active{display:grid;grid-template-columns:2fr 1fr;gap:10px}@media(max-width:520px){.printer-network-fields.active{grid-template-columns:1fr}}
 </style>
 <script>(function(){const m=localStorage.getItem("varexThemeMode")||"system",d=m==="dark"||(m==="system"&&matchMedia("(prefers-color-scheme:dark)").matches);document.documentElement.setAttribute("data-theme",d?"dark":"light");localStorage.removeItem("varexTypography")})();</script>
-<link id="varexCentralTheme" rel="stylesheet" href="./varex-theme.css?v=20260818-3">
+<link id="varexCentralTheme" rel="stylesheet" href="../varex-theme.css?v=20260818-3">
 </head>
 <body>
 <aside class="sidebar"><div class="brand"><div class="logo">VAREX</div><div class="brand-small">BUSINESS MANAGEMENT SYSTEM</div><div class="system-status"><span class="status-dot"></span><span>النظام متصل وجاهز للعمل</span></div></div><nav class="nav"></nav><div class="sidebar-footer">VAREX BUSINESS SYSTEM</div></aside>
@@ -27,7 +27,7 @@
 <div class="panel settings-paired-panel delete-account-panel"><h2>🗑️ حذف الحساب</h2><div class="delete-info"><div class="delete-copy"><strong>حذف حساب المنشأة نهائيًا</strong><span>تتطلب العملية كلمة مرور المالك ورمز تحقق يُرسل إلى البريد الإلكتروني، ثم يتم حذف بيانات المنشأة وإغلاق حساب الدخول بأمان.</span></div><button type="button" class="delete-account-btn" onclick="deleteAccountRequest()"><span class="delete-x">✕</span>حذف الحساب نهائيًا</button></div></div>
 <div class="panel"><h2>ℹ️ معلومات النظام</h2><div class="system-info"><strong>VAREX</strong><br>BUSINESS MANAGEMENT SYSTEM<br><br>الإصدار: <strong>1.0</strong><br>نظام متكامل لإدارة المبيعات والمخزون والعملاء والموردين والحسابات والموظفين والتقارير.<div class="system-ready"><span class="status-dot"></span><span>النظام متصل وجاهز للعمل</span></div></div></div>
 </div><div class="actions"><button id="saveSettingsBtn" class="save" onclick="saveSettings()">حفظ الإعدادات</button><button class="reset" onclick="resetSettings()">إعادة الإعدادات الافتراضية</button></div><div class="message" id="message">✓ تم حفظ الإعدادات بنجاح</div></main></div>
-<script src="./varex.js?v=20260821-hardware1"></script><script src="./varex-hardware.js?v=20260821-hardware1"></script><script src="./account-deletion.js?v=20260820-account-deletion2"></script><script>
+<script src="../varex.js?v=20260821-hardware1"></script><script src="./varex-hardware.js?v=20260821-hardware1"></script><script src="./account-deletion.js?v=20260820-account-deletion2"></script><script>
 const fields=["businessName","phone","email","address","trn","currency","taxRate","taxEnabled","taxIncluded","invoicePrefix","invoiceStart","invoiceMessage","returnPolicy","showTRN","printerTransport","printerAddress","printerPort","paperWidth","autoPrint","openDrawerOnCash","barcodeScannerEnabled","lowStockLimit","stockAlert","preventNegativeStock","autoStock","defaultPayment","allowDiscount","allowCredit","requireCustomer","autoLockEnabled","autoLockMinutes","requirePasswordOnReturn","lockOnClose"];
 function updateClock(){const n=new Date(),d=document.getElementById("currentDate"),t=document.getElementById("currentTime");if(d)d.textContent=n.toLocaleDateString("ar-AE",{year:"numeric",month:"2-digit",day:"2-digit"});if(t)t.textContent=n.toLocaleTimeString("ar-AE",{hour:"2-digit",minute:"2-digit",second:"2-digit"})}updateClock();setInterval(updateClock,1000);
 function applyTheme(m){const d=m==="dark"||(m==="system"&&matchMedia("(prefers-color-scheme:dark)").matches);document.documentElement.setAttribute("data-theme",d?"dark":"light")}
@@ -46,7 +46,7 @@ async function resetSettings(){if(!await varexConfirm("تأكيد إعادة ا�
 function deleteAccountRequest(){window.VarexAccountDeletion?.open()}
 loadSettings();
 </script>
-<script src="./varex-i18n.js?v=1"></script>
-<script src="./varex-navigation.js?v=20260820-account-deletion2"></script>
+<script src="../varex-i18n.js?v=1"></script>
+<script src="../varex-navigation.js?v=20260820-account-deletion2"></script>
 </body>
 </html>

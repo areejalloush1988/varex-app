@@ -8,6 +8,10 @@
 (function () {
   "use strict";
 
+  const cashierPath = file =>
+    window.VAREX?.rootPath?.(`01-الكاشير-والحسابات/${file}`) ||
+    `./01-الكاشير-والحسابات/${file}`;
+
   const VAREX_NAVIGATION = {
     feedbackKeys: {
       sound: "varex_sound_enabled",
@@ -25,140 +29,140 @@
         title: "لوحة التحكم",
         titleEn: "Dashboard",
         icon: "▦",
-        href: "./index.html"
+        href: cashierPath("index.html")
       },
       {
         id: "pos",
         title: "شاشة المبيعات",
         titleEn: "Point of Sale",
         icon: "🛒",
-        href: "./pos.html"
+        href: cashierPath("pos.html")
       },
       {
         id: "products",
         title: "المنتجات والمخزون",
         titleEn: "Products & Inventory",
         icon: "📦",
-        href: "./products.html"
+        href: cashierPath("products.html")
       },
       {
         id: "purchases",
         title: "المشتريات",
         titleEn: "Purchases",
         icon: "🧾",
-        href: "./purchases.html"
+        href: cashierPath("purchases.html")
       },
       {
         id: "suppliers",
         title: "الموردون",
         titleEn: "Suppliers",
         icon: "🚚",
-        href: "./suppliers.html"
+        href: cashierPath("suppliers.html")
       },
       {
         id: "customers",
         title: "العملاء",
         titleEn: "Customers",
         icon: "👥",
-        href: "./customers.html"
+        href: cashierPath("customers.html")
       },
       {
         id: "accounts",
         title: "الحسابات",
         titleEn: "Accounts",
         icon: "💰",
-        href: "./accounts.html"
+        href: cashierPath("accounts.html")
       },
       {
         id: "employees",
         title: "الموظفون",
         titleEn: "Employees",
         icon: "👤",
-        href: "./employees.html"
+        href: cashierPath("employees.html")
       },
       {
         id: "branches",
         title: "الفروع",
         titleEn: "Branches",
         icon: "🏢",
-        href: "./branches.html"
+        href: cashierPath("branches.html")
       },
       {
         id: "transfers",
         title: "تحويلات المخزون",
         titleEn: "Stock Transfers",
         icon: "🔄",
-        href: "./transfers.html"
+        href: cashierPath("transfers.html")
       },
       {
         id: "shifts",
         title: "الورديات",
         titleEn: "Shifts",
         icon: "🕒",
-        href: "./shifts.html"
+        href: cashierPath("shifts.html")
       },
       {
         id: "reports",
         title: "التقارير",
         titleEn: "Reports",
         icon: "📊",
-        href: "./reports.html"
+        href: cashierPath("reports.html")
       },
       {
         id: "tax-return",
         title: "الإقرار الضريبي",
         titleEn: "Tax Return",
         icon: "🧮",
-        href: "./tax-return.html"
+        href: cashierPath("tax-return.html")
       },
       {
         id: "users",
         title: "المستخدمون والصلاحيات",
         titleEn: "Users & Permissions",
         icon: "👥",
-        href: "./users.html"
+        href: cashierPath("users.html")
       },
       {
         id: "notifications",
         title: "الإشعارات",
         titleEn: "Notifications",
         icon: "🔔",
-        href: "./notifications.html"
+        href: cashierPath("notifications.html")
       },
       {
         id: "activity",
         title: "سجل النشاط",
         titleEn: "Activity Log",
         icon: "📋",
-        href: "./activity.html"
+        href: cashierPath("activity.html")
       },
       {
         id: "security-center",
         title: "مركز الأمان",
         titleEn: "Security Center",
         icon: "🛡️",
-        href: "./security-center.html"
+        href: cashierPath("security-center.html")
       },
       {
         id: "ai-assistant",
         title: "مساعد VAREX الذكي",
         titleEn: "VAREX AI Assistant",
         icon: "✦",
-        href: "./varex-ai-assistant.html"
+        href: cashierPath("varex-ai-assistant.html")
       },
       {
         id: "subscription",
         title: "الاشتراك والترخيص",
         titleEn: "Subscription & Licensing",
         icon: "💎",
-        href: "./subscription.html"
+        href: cashierPath("subscription.html")
       },
       {
         id: "settings",
         title: "الإعدادات",
         titleEn: "Settings",
         icon: "⚙️",
-        href: "./setting.html"
+        href: cashierPath("setting.html")
       }
     ],
 
@@ -477,7 +481,7 @@
       switchUser.addEventListener("click", event => {
         event.preventDefault();
         if (typeof window.varexSwitchUser === "function") window.varexSwitchUser();
-        else location.href = "./users.html";
+        else location.href = cashierPath("users.html");
       });
 
       const languageSelector = document.createElement("div");

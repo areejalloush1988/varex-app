@@ -13,27 +13,34 @@
 
 ## صفحات الكاشير والإدارة
 
-- [لوحة التحكم](../index.html)
-- [شاشة المبيعات POS](../pos.html)
-- [المنتجات والمخزون](../products.html)
-- [المشتريات](../purchases.html)
-- [الموردون](../suppliers.html)
-- [العملاء](../customers.html)
-- [الحسابات](../accounts.html)
-- [المصروفات](../expenses.html)
-- [الموظفون](../employees.html)
-- [الفروع](../branches.html)
-- [تحويلات المخزون](../transfers.html)
-- [الورديات](../shifts.html)
-- [التقارير](../reports.html)
-- [الإقرار الضريبي](../tax-return.html)
-- [المستخدمون والصلاحيات](../users.html)
-- [الإشعارات](../notifications.html)
-- [سجل النشاط](../activity.html)
-- [مركز الأمان](../security-center.html)
-- [مساعد VAREX الذكي](../varex-ai-assistant.html)
-- [الاشتراك والترخيص](../subscription.html)
-- [الإعدادات](../setting.html)
+- [لوحة التحكم](./index.html)
+- [شاشة المبيعات POS](./pos.html)
+- [المنتجات والمخزون](./products.html)
+- [المشتريات](./purchases.html)
+- [الموردون](./suppliers.html)
+- [العملاء](./customers.html)
+- [الحسابات](./accounts.html)
+- [المصروفات](./expenses.html)
+- [الموظفون](./employees.html)
+- [الفروع](./branches.html)
+- [تحويلات المخزون](./transfers.html)
+- [الورديات](./shifts.html)
+- [التقارير](./reports.html)
+- [الإقرار الضريبي](./tax-return.html)
+- [المستخدمون والصلاحيات](./users.html)
+- [الإشعارات](./notifications.html)
+- [سجل النشاط](./activity.html)
+- [مركز الأمان](./security-center.html)
+- [مساعد VAREX الذكي](./varex-ai-assistant.html)
+- [الاشتراك والترخيص](./subscription.html)
+- [الإعدادات](./setting.html)
+
+## ملفات خاصة بالكاشير
+
+- [الطابعة والباركود والأجهزة](./varex-hardware.js)
+- [حذف حساب المنشأة](./account-deletion.js)
+- [حماية مركز الأمان](./varex-security.js)
+- [خدمات المساعد الذكي](./varex-ai.js)
 
 ## الملفات المركزية المشتركة
 
@@ -41,9 +48,6 @@
 - [التنقل والقائمة المركزية](../varex-navigation.js)
 - [التصميم المركزي](../varex-theme.css)
 - [الترجمة العربية والإنجليزية](../varex-i18n.js)
-- [الطابعة والباركود والأجهزة](../varex-hardware.js)
-- [الحماية والأمان](../varex-security.js)
-- [خدمات المساعد الذكي](../varex-ai.js)
 
 ## التطبيق وقاعدة البيانات
 
@@ -54,4 +58,4 @@
 - [أدوات البناء](../scripts/)
 - [إعداد Capacitor](../capacitor.config.json)
 
-> هذا المجلد هو الفهرس الرسمي لنظام الكاشير والحسابات. بقي المصدر التشغيلي في الجذر حتى تستمر الروابط الحالية والتطبيق المنشور بالعمل دون تغيير.
+> هذا المجلد هو المصدر التشغيلي الرسمي لنظام الكاشير والحسابات. بقيت في الجذر فقط ملفات الدخول والتشغيل المشتركة بين الأنظمة الستة.
