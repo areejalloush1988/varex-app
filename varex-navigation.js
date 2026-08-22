@@ -23,6 +23,10 @@
       vibration: "varex_vibration_level"
     },
 
+    displayZoomKey: "varex_display_zoom",
+    displayZoomLevels: [100, 90, 80, 70, 60, 50],
+    centralThemeRevision: "20260822-display1",
+
     pages: [
       {
         id: "dashboard",
@@ -196,6 +200,205 @@
         localStorage.getItem("varex_language") === "en"
         ? "en"
         : "ar";
+    },
+
+
+    refreshCentralTheme() {
+      const link = document.getElementById("varexCentralTheme");
+      if (!link?.href) return;
+      try {
+        const url = new URL(link.href, location.href);
+        if (url.searchParams.get("v") === this.centralThemeRevision) return;
+        url.searchParams.set("v", this.centralThemeRevision);
+        link.href = url.href;
+      } catch (error) {
+        console.debug("VAREX theme refresh unavailable", error);
+      }
+    },
+
+    displayZoom() {
+      const value = Number(localStorage.getItem(this.displayZoomKey) || 100);
+      return this.displayZoomLevels.includes(value) ? value : 100;
+    },
+
+    applyDisplayZoom(level, persist = true) {
+      const requested = Number(level);
+      const zoom = this.displayZoomLevels.includes(requested) ? requested : 100;
+      document.documentElement.style.zoom = String(zoom / 100);
+      document.documentElement.dataset.varexDisplayZoom = String(zoom);
+      if (persist) localStorage.setItem(this.displayZoomKey, String(zoom));
+      this.updateDisplayControls();
+      window.dispatchEvent(new CustomEvent("varex-display-zoom-changed", {
+        detail: { zoom }
+      }));
+      return zoom;
+    },
+
+    isFullscreen() {
+      return Boolean(document.fullscreenElement || document.webkitFullscreenElement);
+    },
+
+    displayZoomIcon() {
+      return '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m15.2 15.2 5 5M10.5 7.5v6M7.5 10.5h6"/></svg>';
+    },
+
+    fullscreenIcon(active = this.isFullscreen()) {
+      return active
+        ? '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 3v6H3M15 3v6h6M9 21v-6H3M15 21v-6h6"/></svg>'
+        : '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 3H3v5M16 3h5v5M8 21H3v-5M16 21h5v-5"/></svg>';
+    },
+
+    updateDisplayControls() {
+      const language = this.currentLanguage();
+      const zoom = this.displayZoom();
+      document.querySelectorAll("[data-varex-zoom-button]").forEach(button => {
+        button.innerHTML = this.displayZoomIcon() +
+          '<span data-varex-zoom-value>' + zoom + '%</span>' +
+          '<span class="varex-display-arrow" aria-hidden="true">⌄</span>';
+        button.setAttribute(
+          "aria-label",
+          language === "en" ? "Screen size " + zoom + "%" : "حجم الشاشة " + zoom + "%"
+        );
+        button.setAttribute("title", language === "en" ? "Screen size" : "حجم الشاشة");
+      });
+
+      document.querySelectorAll("[data-varex-zoom-option]").forEach(option => {
+        const selected = Number(option.dataset.varexZoomOption) === zoom;
+        option.classList.toggle("is-selected", selected);
+        option.setAttribute("aria-checked", selected ? "true" : "false");
+      });
+
+      const fullscreen = this.isFullscreen();
+      document.querySelectorAll("[data-varex-fullscreen-button]").forEach(button => {
+        const label = fullscreen
+          ? (language === "en" ? "Exit full screen" : "الخروج من ملء الشاشة")
+          : (language === "en" ? "Full screen" : "ملء الشاشة");
+        button.innerHTML = this.fullscreenIcon(fullscreen);
+        button.classList.toggle("is-active", fullscreen);
+        button.setAttribute("aria-label", label);
+        button.setAttribute("title", label);
+      });
+    },
+
+    async toggleFullscreen() {
+      const target = document.documentElement;
+      try {
+        if (this.isFullscreen()) {
+          const exit = document.exitFullscreen || document.webkitExitFullscreen;
+          if (exit) await Promise.resolve(exit.call(document));
+        } else {
+          const request = target.requestFullscreen || target.webkitRequestFullscreen;
+          if (!request) throw new Error("FULLSCREEN_UNAVAILABLE");
+          await Promise.resolve(request.call(target));
+        }
+      } catch (error) {
+        const message = this.currentLanguage() === "en"
+          ? "Full screen is not available on this device."
+          : "ملء الشاشة غير متاح على هذا الجهاز.";
+        if (typeof window.varexAlert === "function") window.varexAlert(message);
+        else console.debug(message, error);
+      }
+      this.updateDisplayControls();
+    },
+
+    setupDisplayControls() {
+      const topInfo = document.querySelector(".topbar .top-info");
+      if (!topInfo || topInfo.querySelector(".varex-display-controls")) return;
+
+      const controls = document.createElement("div");
+      controls.className = "varex-display-controls";
+      controls.setAttribute("data-varex-no-translate", "true");
+
+      const selector = document.createElement("div");
+      selector.className = "varex-display-selector";
+
+      const zoomButton = document.createElement("button");
+      zoomButton.type = "button";
+      zoomButton.className = "varex-display-zoom-button";
+      zoomButton.dataset.varexZoomButton = "true";
+      zoomButton.setAttribute("aria-haspopup", "true");
+      zoomButton.setAttribute("aria-expanded", "false");
+      zoomButton.addEventListener("click", event => {
+        event.preventDefault();
+        event.stopPropagation();
+        document.querySelectorAll(".language-selector.open,.varex-feedback-selector.open").forEach(item => item.classList.remove("open"));
+        const open = selector.classList.toggle("open");
+        zoomButton.setAttribute("aria-expanded", open ? "true" : "false");
+      });
+
+      const menu = document.createElement("div");
+      menu.className = "varex-display-menu";
+      menu.setAttribute("role", "radiogroup");
+      menu.setAttribute("aria-label", "Screen size");
+
+      this.displayZoomLevels.forEach(level => {
+        const option = document.createElement("button");
+        option.type = "button";
+        option.className = "varex-display-option";
+        option.dataset.varexZoomOption = String(level);
+        option.setAttribute("role", "radio");
+        option.innerHTML = '<span>' + level + '%</span>' +
+          (level === 100 ? '<small>FULL</small>' : "");
+        option.addEventListener("click", event => {
+          event.preventDefault();
+          event.stopPropagation();
+          this.applyDisplayZoom(level);
+          selector.classList.remove("open");
+          zoomButton.setAttribute("aria-expanded", "false");
+          this.playFeedbackSound("tap");
+          this.playInteractionVibration(10);
+        });
+        menu.appendChild(option);
+      });
+
+      const fullscreenButton = document.createElement("button");
+      fullscreenButton.type = "button";
+      fullscreenButton.className = "varex-display-fullscreen-button";
+      fullscreenButton.dataset.varexFullscreenButton = "true";
+      fullscreenButton.addEventListener("click", event => {
+        event.preventDefault();
+        event.stopPropagation();
+        this.toggleFullscreen();
+      });
+
+      selector.append(zoomButton, menu);
+      controls.append(selector, fullscreenButton);
+
+      const languageControl = topInfo.querySelector(".language-selector, .varex-i18n-switch");
+      if (languageControl) languageControl.after(controls);
+      else {
+        const feedbackControls = topInfo.querySelector(".varex-feedback-controls");
+        if (feedbackControls) topInfo.insertBefore(controls, feedbackControls);
+        else topInfo.appendChild(controls);
+      }
+
+      this.applyDisplayZoom(this.displayZoom(), false);
+      this.updateDisplayControls();
+
+      if (!document.documentElement.dataset.varexDisplayControlsReady) {
+        document.documentElement.dataset.varexDisplayControlsReady = "true";
+        document.addEventListener("click", event => {
+          if (!selector.contains(event.target)) {
+            selector.classList.remove("open");
+            zoomButton.setAttribute("aria-expanded", "false");
+          }
+        });
+        ["fullscreenchange", "webkitfullscreenchange"].forEach(eventName => {
+          document.addEventListener(eventName, () => this.updateDisplayControls());
+        });
+        window.addEventListener("storage", event => {
+          if (event.key === this.displayZoomKey) {
+            this.applyDisplayZoom(this.displayZoom(), false);
+          }
+        });
+      }
+
+      window.VAREX_DISPLAY = {
+        zoom: level => this.applyDisplayZoom(level),
+        fullscreen: () => this.toggleFullscreen(),
+        currentZoom: () => this.displayZoom(),
+        isFullscreen: () => this.isFullscreen()
+      };
     },
 
     feedbackIcon(type, level) {
@@ -388,7 +591,7 @@
           const target = event.target.closest?.(
             'a[href],button,[role="button"],select,input[type="button"],input[type="submit"],input[type="checkbox"],input[type="radio"],.module'
           );
-          if (!target || target.disabled || target.closest(".varex-feedback-controls,.language-selector")) return;
+          if (!target || target.disabled || target.closest(".varex-feedback-controls,.language-selector,.varex-display-controls")) return;
           this.playFeedbackSound("tap");
           // Page navigation stays physically steady; vibration remains available
           // for actions and controls according to the selected feedback level.
@@ -444,6 +647,7 @@
         input.lang = language === "en" ? "en-GB" : "ar-AE";
       });
       this.updateFeedbackControls();
+      this.updateDisplayControls();
     },
 
     setupUnifiedHeader() {
@@ -863,11 +1067,13 @@
     },
 
     init() {
+      this.refreshCentralTheme();
       this.render();
       this.refreshActive();
       this.setupMobileDrawer();
       this.setupUnifiedHeader();
       this.setupFeedbackControls();
+      this.setupDisplayControls();
       this.setupMobileHeader();
       if (window.Capacitor?.isNativePlatform?.()) {
         document.documentElement.classList.add("varex-native-app");
