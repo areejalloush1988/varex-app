@@ -234,7 +234,7 @@ setStep("Failure");return;
 setProgress(92,"تم حذف بيانات المنشأة. جاري إنهاء الجلسات...");await sleep(450);setProgress(100,"اكتملت عملية الحذف بنجاح.");await sleep(450);
 setStep("Success");
 try{VAREX.clearDeletedAccountLocalData?.()}catch(error){}
-await sleep(1800);location.replace("./login.html?account_deleted=1");
+await sleep(1800);location.replace("../login.html?account_deleted=1");
 }
 
 async function retryDeletion(){
