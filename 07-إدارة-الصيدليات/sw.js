@@ -1,5 +1,5 @@
-const CACHE="varex-pharmacy-v4-20260822";
-const ASSETS=["./","./index.html","./login.html","./register.html","./forgot-password.html","./verify-email.html","./reset-password.html","./app.html","./styles.css?v=4","./auth.js","./app.js","./manifest.json","./varex-pharmacy-logo.png?v=4"];
+const CACHE="varex-pharmacy-v5-20260822";
+const ASSETS=["./","./index.html","./login.html","./register.html","./forgot-password.html","./verify-email.html","./reset-password.html","./app.html","./styles.css?v=5","./auth.js","./app.js","./ui-controls.js?v=5","./manifest.json","./varex-pharmacy-logo.png?v=5"];
 
 self.addEventListener("install",event=>{
   event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(ASSETS)).then(()=>self.skipWaiting()));

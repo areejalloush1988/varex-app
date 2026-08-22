@@ -135,3 +135,46 @@ body{font-weight:600;background:linear-gradient(145deg,#fdfdff,#f7f6fc 48%,#f1f0
 
 @media(max-width:920px){.topbar{min-height:108px}.app-logo{width:90px;height:90px}.top-title h1{font-size:22px}.module-ribbon{top:108px}.module-btn{min-height:70px}.content-stage{grid-template-columns:94px minmax(0,1fr)}.utility-rail{top:204px}.utility-btn{width:74px}.page-head h2{font-size:27px}.hero h3{font-size:30px}}
 @media(max-width:620px){.auth-logo{width:210px}.topbar{min-height:94px}.app-logo{width:76px;height:76px}.top-title h1{font-size:20px}.module-ribbon{top:94px;grid-template-columns:repeat(9,104px)}.module-btn{min-height:68px}.module-btn span{font-size:11px}.utility-rail{height:66px;bottom:72px}.utility-btn{width:84px;min-height:54px}.utility-btn span{font-size:10px}.main-content{padding-bottom:160px}.page-head h2{font-size:25px}.page-head p{font-size:12px}.hero h3{font-size:27px}.hero p{font-size:13px}.product-grid{grid-template-columns:1fr}}
+
+/* V5: top control strip, metallic indigo logo, readable card typography. */
+.app-shell{grid-template-rows:auto auto auto minmax(0,1fr)}
+.app-logo{background:transparent;object-fit:contain;box-shadow:0 12px 30px rgba(31,28,84,.28)}
+.control-dock{position:sticky;top:132px;bottom:auto;z-index:118;grid-template-columns:minmax(220px,1fr) auto minmax(610px,auto);min-height:84px;padding:10px 22px;background:rgba(248,247,252,.98);border-top:0;border-bottom:1px solid rgba(78,75,154,.2);box-shadow:0 12px 30px rgba(78,75,154,.12)}
+.dock-user{min-width:215px;padding:7px 14px;border:1px solid rgba(255,255,255,.18);border-radius:16px;background:var(--pharmacy);color:#fff;box-shadow:0 9px 22px rgba(78,75,154,.23)}
+.dock-user .user-avatar{background:#fff;color:var(--pharmacy);box-shadow:0 4px 12px rgba(32,29,83,.18)}
+.dock-user small,.dock-user strong{color:#fff}.dock-user small{font-size:12px;font-weight:800}.dock-user strong{font-size:14px;font-weight:900}.dock-user .online-dot{background:#6ee7b7}
+.dock-system{min-width:max-content;gap:8px}.dock-system .tool-btn{min-width:86px;padding:0 13px;background:var(--pharmacy);border-color:var(--pharmacy);color:#fff;box-shadow:0 7px 17px rgba(78,75,154,.18)}
+.dock-system .tool-btn:hover,.dock-system .tool-btn.active{background:#5f5baa;border-color:#5f5baa;color:#fff}
+.dock-system .tool-btn.logout{background:#fff1f2;border-color:#fecdd3;color:#b91c1c;box-shadow:none}.dock-system .tool-btn.logout:hover{background:#ffe4e6}
+.dock-system .tool-btn svg{stroke:currentColor}.tool-btn .tool-label{display:inline!important;font-size:13px;font-weight:900;white-space:nowrap}
+.zoom-control{justify-self:center;border:1px solid rgba(78,75,154,.25);background:#eeedf7;box-shadow:inset 0 1px 0 #fff}.zoom-control .tool-btn{background:var(--pharmacy);color:#fff}.zoom-control .zoom-select{min-width:70px;background:#fff;color:var(--pharmacy-dark);font-size:14px;font-weight:900}.control-label{font-size:12px;font-weight:900;color:var(--pharmacy-dark)}
+.module-ribbon{top:216px}.content-stage{min-height:calc(100vh / var(--ui-scale) - 406px)}.utility-rail{top:322px;height:calc(100vh / var(--ui-scale) - 406px)}.main-content{padding-bottom:42px}
+
+/* Increase text only; card dimensions stay unchanged. */
+.module-btn span{font-size:14px;font-weight:900}.utility-btn span{font-size:13px;font-weight:900}.rail-title{font-size:11px}
+.page-head h2{font-size:32px}.page-head p{font-size:15px;font-weight:800}.page-actions .primary-btn,.page-actions .secondary-btn{font-size:14px}
+.hero-kicker{font-size:14px}.hero h3{font-size:36px}.hero p{font-size:15px;line-height:2}.hero-btn{font-size:14px}
+.stat-trend{font-size:12px}.stat-card strong{font-size:30px}.stat-card span.label{font-size:14px;font-weight:900}
+.panel-head h3{font-size:19px}.panel-head small{font-size:13px;font-weight:800}.panel-head button{font-size:13px}
+.alert-row strong{font-size:15px}.alert-row span,.alert-value{font-size:13px!important}.bar-wrap span{font-size:12px}
+.data-table th{font-size:14px}.data-table td{font-size:14px}.med-cell strong{font-size:14px}.med-cell small{font-size:12px}.badge{font-size:11.5px}.empty-state strong{font-size:17px}.empty-state span{font-size:13px}
+.product-card strong{font-size:15px}.product-card small,.stock-mini{font-size:12px}.product-price{font-size:17px}.cart-head h3{font-size:19px}.cart-count,.cart-empty,.cart-line strong,.summary-row{font-size:14px}.cart-line small{font-size:12px}.summary-row.total{font-size:19px}.checkout-btn{font-size:14px}
+.field label{font-size:14px}.input,.select,.textarea{font-size:15px}.settings-card h3{font-size:18px}.settings-card>p{font-size:13px}.setting-switch strong{font-size:15px}.setting-switch span{font-size:12px}.report-card .report-label,.vat-card span{font-size:13px}.report-card small,.vat-card small{font-size:12px}
+.modal-head h3{font-size:20px}.confirm-copy h4{font-size:22px}.confirm-copy p{font-size:15px}.toast strong{font-size:14px}.toast span{font-size:12px}
+
+/* Functional dark appearance. */
+body.theme-dark{--ink:#f5f4fb;--muted:#bbb8cf;--line:#403d58;background:#171624;color:var(--ink)}
+body.theme-dark .module-ribbon,body.theme-dark .control-dock{background:rgba(29,27,45,.98);border-color:#413e59}
+body.theme-dark .main-content,body.theme-dark .content-stage{background:#171624}
+body.theme-dark .panel,body.theme-dark .table-card,body.theme-dark .settings-card,body.theme-dark .report-card,body.theme-dark .vat-card,body.theme-dark .stat-card,body.theme-dark .product-card,body.theme-dark .cart-panel,body.theme-dark .modal-card,body.theme-dark .hero{background:#242238;border-color:#45415f;color:#f5f4fb}
+body.theme-dark .page-head h2,body.theme-dark .hero h3,body.theme-dark .panel-head h3,body.theme-dark .stat-card strong,body.theme-dark .dock-user strong,body.theme-dark .modal-head h3,body.theme-dark .confirm-copy h4{color:#fff}
+body.theme-dark .hero p,body.theme-dark .page-head p,body.theme-dark .panel-head small,body.theme-dark .med-cell small,body.theme-dark .product-card small{color:#c8c5da}
+body.theme-dark .module-btn{background:#28263c;border-color:#45415f;color:#f5f4fb}body.theme-dark .module-btn.active{background:var(--pharmacy);border-color:var(--pharmacy)}
+body.theme-dark .utility-rail{background:#201e32;border-color:#45415f}.theme-dark .utility-btn{color:#e6e4f1}
+body.theme-dark .data-table th{background:#2d2a43;color:#dedbea}body.theme-dark .data-table td{border-color:#3a3750}body.theme-dark .data-table tr:hover td{background:#2a273f}
+body.theme-dark .input,body.theme-dark .select,body.theme-dark .textarea,body.theme-dark .search-box input{background:#1d1b2d;border-color:#49455f;color:#fff}
+body.theme-dark .zoom-control{background:#28263c;border-color:#55516f;box-shadow:none}body.theme-dark .control-label{color:#fff}
+
+@media(max-width:1200px){.control-dock{grid-template-columns:max-content max-content max-content;overflow-x:auto;overscroll-behavior-inline:contain}.dock-user{display:grid}.dock-system{justify-self:start}.module-ribbon{top:216px}}
+@media(max-width:920px){.control-dock{top:108px;min-height:84px;padding:8px 14px}.module-ribbon{top:192px}.utility-rail{top:288px;height:calc(100vh / var(--ui-scale) - 372px)}.content-stage{min-height:calc(100vh / var(--ui-scale) - 372px)}.dock-user{display:grid}.main-content{padding-bottom:38px}.module-btn span{font-size:13px}.utility-btn span{font-size:12px}}
+@media(max-width:620px){.control-dock{top:94px;min-height:76px;display:flex;align-items:center;gap:10px;padding:7px 10px;overflow-x:auto}.dock-user{display:grid;flex:0 0 210px}.zoom-control{flex:0 0 auto}.dock-system{display:flex;flex:0 0 auto}.dock-system .tool-btn{min-width:82px}.module-ribbon{top:170px}.utility-rail{bottom:0}.main-content{padding-bottom:92px}.module-btn span{font-size:12px}.utility-btn span{font-size:11px}.page-head h2{font-size:27px}.page-head p{font-size:14px}.data-table th,.data-table td{font-size:13px}.product-card strong{font-size:14px}.product-card small{font-size:11px}}
