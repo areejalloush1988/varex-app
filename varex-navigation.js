@@ -25,7 +25,7 @@
 
     displayZoomKey: "varex_display_zoom",
     displayZoomLevels: [100, 90, 80, 70, 60, 50],
-    centralThemeRevision: "20260822-display1",
+    centralThemeRevision: "20260823-native-display2",
 
     pages: [
       {
@@ -321,7 +321,9 @@
       zoomButton.addEventListener("click", event => {
         event.preventDefault();
         event.stopPropagation();
-        document.querySelectorAll(".language-selector.open,.varex-feedback-selector.open").forEach(item => item.classList.remove("open"));
+        document.querySelectorAll(".language-selector.open,.varex-feedback-selector.open,.varex-display-selector.open").forEach(item => {
+          if (item !== selector) item.classList.remove("open");
+        });
         const open = selector.classList.toggle("open");
         zoomButton.setAttribute("aria-expanded", open ? "true" : "false");
       });
@@ -539,7 +541,7 @@
         button.addEventListener("click", event => {
           event.preventDefault();
           event.stopPropagation();
-          document.querySelectorAll(".varex-feedback-selector.open").forEach(item => {
+          document.querySelectorAll(".language-selector.open,.varex-display-selector.open,.varex-feedback-selector.open").forEach(item => {
             if (item !== selector) item.classList.remove("open");
           });
           selector.classList.toggle("open");
@@ -651,7 +653,6 @@
     },
 
     setupUnifiedHeader() {
-      if (window.Capacitor?.isNativePlatform?.()) return;
       const topInfo = document.querySelector(".topbar .top-info");
       if (!topInfo || topInfo.dataset.varexUnified === "true") return;
 
@@ -1067,6 +1068,10 @@
     },
 
     init() {
+      const nativePlatform = Boolean(window.Capacitor?.isNativePlatform?.());
+      if (nativePlatform) {
+        document.documentElement.classList.add("varex-native-app");
+      }
       this.refreshCentralTheme();
       this.render();
       this.refreshActive();
@@ -1075,9 +1080,6 @@
       this.setupFeedbackControls();
       this.setupDisplayControls();
       this.setupMobileHeader();
-      if (window.Capacitor?.isNativePlatform?.()) {
-        document.documentElement.classList.add("varex-native-app");
-      }
       this.setupNativeBackButton();
       if(typeof varexAddSidebarActions==="function")varexAddSidebarActions();
 
