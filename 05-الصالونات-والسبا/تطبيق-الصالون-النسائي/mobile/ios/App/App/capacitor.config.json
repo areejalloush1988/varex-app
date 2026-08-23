@@ -1,0 +1,51 @@
+{
+	"appId": "com.varex.womenssalon",
+	"appName": "VAREX Women's Salon",
+	"webDir": "www",
+	"backgroundColor": "#F8EEF2",
+	"loggingBehavior": "none",
+	"server": {
+		"url": "https://varex-womens-salon.areejalloush1988.chatgpt.site",
+		"androidScheme": "https",
+		"cleartext": false,
+		"allowNavigation": [
+			"varex-womens-salon.areejalloush1988.chatgpt.site",
+			"www.paypal.com",
+			"paypal.com"
+		]
+	},
+	"android": {
+		"backgroundColor": "#F8EEF2",
+		"allowMixedContent": false,
+		"zoomEnabled": false,
+		"captureInput": true
+	},
+	"ios": {
+		"backgroundColor": "#F8EEF2",
+		"contentInset": "automatic",
+		"preferredContentMode": "mobile",
+		"allowsLinkPreview": false,
+		"scrollEnabled": true
+	},
+	"plugins": {
+		"SplashScreen": {
+			"launchShowDuration": 1600,
+			"launchAutoHide": true,
+			"backgroundColor": "#8F164C",
+			"androidScaleType": "CENTER_CROP",
+			"showSpinner": false,
+			"splashFullScreen": true,
+			"splashImmersive": false
+		},
+		"StatusBar": {
+			"style": "LIGHT",
+			"backgroundColor": "#8F164C",
+			"overlaysWebView": false
+		}
+	},
+	"packageClassList": [
+		"AppPlugin",
+		"SplashScreenPlugin",
+		"StatusBarPlugin"
+	]
+}

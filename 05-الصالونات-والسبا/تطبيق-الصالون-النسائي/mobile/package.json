@@ -1,0 +1,31 @@
+{
+  "name": "varex-womens-salon-mobile",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "VAREX Women's Salon for Android, Android Tablet, iPhone and iPad",
+  "scripts": {
+    "prepare:assets": "node scripts/prepare-assets.mjs",
+    "assets:android": "npm run prepare:assets && capacitor-assets generate --android",
+    "assets:ios": "npm run prepare:assets && capacitor-assets generate --ios",
+    "sync": "cap sync",
+    "android:sync": "cap sync android",
+    "android:debug": "npm run assets:android && cap sync android && cd android && ./gradlew assembleDebug",
+    "android:bundle": "npm run assets:android && cap sync android && cd android && ./gradlew bundleRelease",
+    "ios:sync": "npm run assets:ios && cap sync ios",
+    "ios:open": "cap open ios"
+  },
+  "dependencies": {
+    "@capacitor/android": "8.5.0",
+    "@capacitor/app": "8.1.1",
+    "@capacitor/core": "8.5.0",
+    "@capacitor/ios": "8.5.0",
+    "@capacitor/splash-screen": "8.0.2",
+    "@capacitor/status-bar": "8.0.3"
+  },
+  "devDependencies": {
+    "@capacitor/assets": "^3.0.5",
+    "@capacitor/cli": "8.5.0",
+    "sharp": "^0.33.5"
+  }
+}

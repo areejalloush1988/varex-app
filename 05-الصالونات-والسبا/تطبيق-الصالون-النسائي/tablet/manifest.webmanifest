@@ -1,0 +1,14 @@
+{
+  "name": "VAREX Women's Salon",
+  "short_name": "VAREX Salon",
+  "description": "VAREX Women's Salon Business Management System",
+  "start_url": "https://varex-womens-salon.areejalloush1988.chatgpt.site",
+  "scope": "https://varex-womens-salon.areejalloush1988.chatgpt.site/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#F8EEF2",
+  "theme_color": "#8F164C",
+  "lang": "ar",
+  "dir": "rtl"
+}
+

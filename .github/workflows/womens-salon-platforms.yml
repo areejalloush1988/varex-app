@@ -1,0 +1,99 @@
+name: Build VAREX Women's Salon Apps
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '05-الصالونات-والسبا/تطبيق-الصالون-النسائي/**'
+      - '.github/workflows/womens-salon-platforms.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  android:
+    name: Android phone and tablet
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: '05-الصالونات-والسبا/تطبيق-الصالون-النسائي/mobile'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: '05-الصالونات-والسبا/تطبيق-الصالون-النسائي/mobile/package-lock.json'
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: gradle
+      - run: npm ci
+      - run: npm run assets:android
+      - run: ./node_modules/.bin/cap sync android
+      - run: chmod +x android/gradlew
+      - run: ./gradlew assembleDebug
+        working-directory: '05-الصالونات-والسبا/تطبيق-الصالون-النسائي/mobile/android'
+      - run: ./gradlew bundleRelease
+        working-directory: '05-الصالونات-والسبا/تطبيق-الصالون-النسائي/mobile/android'
+      - uses: actions/upload-artifact@v4
+        with:
+          name: VAREX-Salon-Android
+          path: |
+            05-الصالونات-والسبا/تطبيق-الصالون-النسائي/mobile/android/app/build/outputs/apk/debug/app-debug.apk
+            05-الصالونات-والسبا/تطبيق-الصالون-النسائي/mobile/android/app/build/outputs/bundle/release/app-release.aab
+
+  ios:
+    name: iPhone and iPad
+    runs-on: macos-latest
+    defaults:
+      run:
+        working-directory: '05-الصالونات-والسبا/تطبيق-الصالون-النسائي/mobile'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: '05-الصالونات-والسبا/تطبيق-الصالون-النسائي/mobile/package-lock.json'
+      - run: npm ci
+      - run: npm run assets:ios
+      - run: ./node_modules/.bin/cap sync ios
+      - name: Build unsigned iPhone and iPad simulator app
+        run: >-
+          xcodebuild
+          -project ios/App/App.xcodeproj
+          -scheme App
+          -configuration Release
+          -sdk iphonesimulator
+          -derivedDataPath build
+          CODE_SIGNING_ALLOWED=NO
+          build
+      - name: Package iOS simulator build
+        run: ditto -c -k --sequesterRsrc --keepParent build/Build/Products/Release-iphonesimulator/App.app VAREX-Salon-iPhone-iPad-Simulator.zip
+      - uses: actions/upload-artifact@v4
+        with:
+          name: VAREX-Salon-iPhone-iPad
+          path: '05-الصالونات-والسبا/تطبيق-الصالون-النسائي/mobile/VAREX-Salon-iPhone-iPad-Simulator.zip'
+
+  windows:
+    name: Windows installer and portable
+    runs-on: windows-latest
+    defaults:
+      run:
+        working-directory: '05-الصالونات-والسبا/تطبيق-الصالون-النسائي/windows'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: '05-الصالونات-والسبا/تطبيق-الصالون-النسائي/windows/package-lock.json'
+      - run: npm ci
+      - run: npm run build
+      - uses: actions/upload-artifact@v4
+        with:
+          name: VAREX-Salon-Windows
+          path: '05-الصالونات-والسبا/تطبيق-الصالون-النسائي/windows/release/*.exe'

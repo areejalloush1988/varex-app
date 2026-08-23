@@ -1,0 +1,17 @@
+{
+  "appName": "VAREX Women's Salon",
+  "appId": "com.varex.womenssalon",
+  "version": "1.0.0",
+  "brandColor": "#8F164C",
+  "productionUrl": "https://varex-womens-salon.areejalloush1988.chatgpt.site",
+  "targets": {
+    "androidPhone": true,
+    "androidTablet": true,
+    "iphone": true,
+    "ipad": true,
+    "windowsInstaller": true,
+    "windowsPortable": true,
+    "tabletPwa": true
+  }
+}
+

@@ -1,0 +1,45 @@
+{
+  "name": "varex-womens-salon-windows",
+  "version": "1.0.0",
+  "private": true,
+  "description": "VAREX Women's Salon for Windows",
+  "main": "main.cjs",
+  "scripts": {
+    "prepare:assets": "node scripts/prepare-assets.cjs",
+    "start": "npm run prepare:assets && electron .",
+    "build": "npm run prepare:assets && electron-builder --win nsis portable"
+  },
+  "devDependencies": {
+    "electron": "39.2.7",
+    "electron-builder": "26.0.12"
+  },
+  "build": {
+    "appId": "com.varex.womenssalon",
+    "productName": "VAREX Women's Salon",
+    "artifactName": "VAREX-Womens-Salon-${version}-${arch}.${ext}",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "main.cjs",
+      "preload.cjs",
+      "renderer/**/*",
+      "assets/**/*",
+      "package.json"
+    ],
+    "win": {
+      "icon": "assets/icon.png",
+      "target": [
+        { "target": "nsis", "arch": ["x64"] },
+        { "target": "portable", "arch": ["x64"] }
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "VAREX Women's Salon"
+    }
+  }
+}

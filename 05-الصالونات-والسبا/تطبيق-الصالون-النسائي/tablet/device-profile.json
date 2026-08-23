@@ -1,0 +1,9 @@
+{
+  "defaultOrientation": "landscape",
+  "minimumViewportWidth": 768,
+  "recommendedViewport": "1280x800",
+  "androidTabletProject": "../mobile/android",
+  "ipadProject": "../mobile/ios",
+  "browserInstallUrl": "https://varex-womens-salon.areejalloush1988.chatgpt.site"
+}
+
