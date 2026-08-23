@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#4e4b9a">
+  <meta http-equiv="refresh" content="4;url=../07-إدارة-الصيدليات/login.html">
+  <title>VAREX | فتح نظام الصيدليات</title>
+  <style>
+    *{box-sizing:border-box}body{margin:0;min-height:100vh;display:grid;place-items:center;padding:22px;font-family:Arial,Tahoma,sans-serif;background:radial-gradient(circle at 18% 12%,#6561ad 0,transparent 28%),linear-gradient(145deg,#24205f,#4e4b9a 62%,#6864b4);color:#fff}
+    main{width:min(520px,100%);padding:34px 26px;text-align:center;border:1px solid rgba(255,255,255,.2);border-radius:30px;background:rgba(255,255,255,.1);box-shadow:0 24px 70px rgba(22,18,76,.32);backdrop-filter:blur(14px)}
+    img{width:164px;height:164px;object-fit:contain;border-radius:30px;filter:drop-shadow(0 14px 24px rgba(14,12,48,.3))}
+    h1{margin:22px 0 10px;font-size:28px;font-weight:900}p{margin:8px 0;color:#efeffb;font-size:16px;font-weight:700;line-height:1.8}
+    .device{display:inline-flex;align-items:center;gap:8px;margin:18px 0 4px;padding:11px 16px;border-radius:999px;background:#fff;color:#4e4b9a;font-weight:900}
+    .loader{width:42px;height:42px;margin:22px auto;border:4px solid rgba(255,255,255,.25);border-top-color:#fff;border-radius:50%;animation:spin .8s linear infinite}
+    a{display:inline-flex;min-height:50px;align-items:center;justify-content:center;padding:0 22px;border-radius:15px;background:#fff;color:#3a377d;text-decoration:none;font-weight:900}
+    @keyframes spin{to{transform:rotate(360deg)}}@media(max-width:520px){main{padding:28px 18px}img{width:140px;height:140px}h1{font-size:24px}}
+  </style>
+</head>
+<body>
+  <main>
+    <img src="../07-إدارة-الصيدليات/varex-pharmacy-logo.png?v=6" alt="VAREX Business Management System">
+    <h1>نظام إدارة الصيدليات</h1>
+    <p id="message">جاري التعرّف على جهازك وفتح النسخة المناسبة…</p>
+    <div class="device" id="device">جاري الفحص</div>
+    <div class="loader" aria-hidden="true"></div>
+    <a id="openButton" href="../07-إدارة-الصيدليات/login.html">فتح النظام الآن</a>
+  </main>
+  <script>
+    (() => {
+      const ua=navigator.userAgent||"";
+      const platform=/Android/i.test(ua)?"هاتف أو تابلت Android":/iPhone|iPad|iPod/i.test(ua)?"جهاز Apple":/Windows/i.test(ua)?"جهاز Windows":"متصفح ويب";
+      const target="../07-إدارة-الصيدليات/login.html";
+      document.getElementById("device").textContent=platform;
+      document.getElementById("message").textContent="تم التعرّف على جهازك — سيتم فتح نسخة الويب الآمنة.";
+      document.getElementById("openButton").href=target;
+      sessionStorage.setItem("varex_pharmacy_platform",platform);
+      window.setTimeout(()=>location.replace(target),900);
+    })();
+  </script>
+</body>
+</html>
