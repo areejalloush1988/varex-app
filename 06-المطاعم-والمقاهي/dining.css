@@ -1,11 +1,11 @@
 :root{
   --sl-sidebar:270px;
   --sl-topbar:82px;
-  --sl-primary:#E56F2D;
-  --sl-deep:#B74716;
-  --sl-soft:#FFF1E8;
-  --sl-line:#F1C9B5;
-  --sl-shadow-color:rgba(183,71,22,.14);
+  --sl-primary:#B6533E;
+  --sl-deep:#7E3427;
+  --sl-soft:#F8EEEB;
+  --sl-line:#E6C5BC;
+  --sl-shadow-color:rgba(126,52,39,.14);
   --sl-bg:#f4f6f9;
   --sl-card:#fff;
   --sl-text:#253047;
@@ -18,11 +18,11 @@
   --sl-shadow:0 8px 24px rgba(28,38,58,.07)
 }
 html[data-dining-type="restaurant"]{
-  --sl-primary:#E56F2D;
-  --sl-deep:#B74716;
-  --sl-soft:#FFF1E8;
-  --sl-line:#F1C9B5;
-  --sl-shadow-color:rgba(183,71,22,.14)
+  --sl-primary:#B6533E;
+  --sl-deep:#7E3427;
+  --sl-soft:#F8EEEB;
+  --sl-line:#E6C5BC;
+  --sl-shadow-color:rgba(126,52,39,.14)
 }
 html[data-dining-type="cafe"]{
   --sl-primary:#8A5A44;
@@ -41,7 +41,7 @@ svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.8;stroke
 .sl-sidebar{position:fixed;z-index:100;inset-block:0;inset-inline-start:0;width:var(--sl-sidebar);display:flex;flex-direction:column;overflow:hidden;background:linear-gradient(180deg,var(--sl-primary),var(--sl-deep));color:#fff;box-shadow:10px 0 34px var(--sl-shadow-color);transform:none}
 html[dir="rtl"] .sl-sidebar{box-shadow:-10px 0 34px var(--sl-shadow-color)}
 .sl-brand{min-height:174px;display:flex;align-items:center;justify-content:center;gap:13px;padding:24px 17px;border-bottom:1px solid rgba(255,255,255,.17);text-align:start}
-.sl-brand-mark{width:62px;height:62px;display:grid;place-items:center;flex:0 0 62px;border:1px solid rgba(255,255,255,.35);border-radius:18px;background:rgba(255,255,255,.13);font-size:29px}
+.sl-brand-mark{width:62px;height:62px;display:grid;place-items:center;flex:0 0 62px;border:1px solid rgba(255,255,255,.35);border-radius:18px;background:rgba(255,255,255,.13);font-size:29px}.sl-brand-mark.sl-brand-logo{overflow:hidden;padding:0;border:0;background:transparent}.sl-brand-mark.sl-brand-logo img{width:100%;height:100%;display:block;object-fit:cover}
 .sl-brand-copy strong{display:block;color:#fff;font-size:25px;letter-spacing:4px;direction:ltr}
 .sl-brand-copy small{display:block;margin-top:6px;color:rgba(255,255,255,.82);font-size:8px;font-weight:800;line-height:1.45;letter-spacing:1.1px;direction:ltr}
 .sl-online{display:flex;align-items:center;gap:6px;margin-top:12px;color:#fff;font-size:9px}.sl-online i{width:7px;height:7px;border-radius:50%;background:#8ef0ba;box-shadow:0 0 0 4px rgba(142,240,186,.14)}

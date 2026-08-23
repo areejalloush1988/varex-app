@@ -3,7 +3,7 @@
 
   const SUBSCRIPTION_KEY="varex_subscription";
   const SELECTED_PLAN_KEY="varex_selected_plan";
-  const SCALE_STEPS=[50,60,75,100];
+  const SCALE_STEPS=[50,60,70,80,90,100];
   const esc=value=>String(value??"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#039;");
 
   function installStyles(){
@@ -65,7 +65,7 @@
     if(!wrap||!trigger||!target)return;
     const key=options.storageKey||"varex_screen_scale";
     let scale=Number(localStorage.getItem(key));
-    if(!SCALE_STEPS.includes(scale))scale=matchMedia("(min-width: 800px) and (max-width: 1400px)").matches?75:100;
+    if(!SCALE_STEPS.includes(scale))scale=100;
     const apply=value=>{
       scale=SCALE_STEPS.reduce((best,current)=>Math.abs(current-value)<Math.abs(best-value)?current:best,SCALE_STEPS[0]);
       const ratio=scale/100;
@@ -131,7 +131,7 @@
     const body=document.body;
     if(body.hasAttribute("data-re-page"))return {page:body.dataset.rePage,root:"reApp",shell:".re-app",content:"#reContent",top:".re-top-actions",button:"re-icon-btn",haptic:"#reHaptic",nav:".re-nav",settings:'a[data-route-page="settings"]',title:".re-page-title h2",pageIcon:".re-page-icon",accent:"#166B45",key:"varex_re_screen_scale",name:"VAREX REAL ESTATE"};
     if(body.hasAttribute("data-mobility-page")){const taxi=body.dataset.mobilitySystem==="taxi";return {page:body.dataset.mobilityPage,root:"slApp",shell:".sl-app",content:"#slContent",top:".sl-top-actions",button:"sl-icon-btn",haptic:"#slHaptic",nav:".sl-nav",settings:'a[data-route-page="settings"]',title:".sl-page-title h2",pageIcon:".sl-page-icon",accent:taxi?"#D9A400":"#7048A8",key:taxi?"varex_taxi_screen_scale":"varex_car_screen_scale",name:taxi?"VAREX TAXI":"VAREX CAR RENTAL"};}
-    if(body.hasAttribute("data-dining-page")){const restaurant=body.dataset.diningType==="restaurant";return {page:body.dataset.diningPage,root:"slApp",shell:".sl-app",content:"#slContent",top:".sl-top-actions",button:"sl-icon-btn",haptic:"#slHaptic",nav:".sl-nav",settings:'a[data-route-page="settings"]',title:".sl-page-title h2",pageIcon:".sl-page-icon",accent:restaurant?"#E56F2D":"#8A5A44",key:restaurant?"varex_restaurant_screen_scale":"varex_cafe_screen_scale",name:restaurant?"VAREX RESTAURANT":"VAREX CAFÉ"};}
+    if(body.hasAttribute("data-dining-page")){const restaurant=body.dataset.diningType==="restaurant";return {page:body.dataset.diningPage,root:"slApp",shell:".sl-app",content:"#slContent",top:".sl-top-actions",button:"sl-icon-btn",haptic:"#slHaptic",nav:".sl-nav",settings:'a[data-route-page="settings"]',title:".sl-page-title h2",pageIcon:".sl-page-icon",accent:restaurant?"#B6533E":"#8A5A44",key:restaurant?"varex_restaurant_screen_scale":"varex_cafe_screen_scale",name:restaurant?"VAREX RESTAURANT":"VAREX CAFÉ"};}
     if(body.hasAttribute("data-salon-page")){const women=body.dataset.salonType==="women";return {page:body.dataset.salonPage,root:"slApp",shell:".sl-app",content:"#slContent",top:".sl-top-actions",button:"sl-icon-btn",haptic:"#slHaptic",nav:".sl-nav",settings:'a[data-route-page="settings"]',title:".sl-page-title h2",pageIcon:".sl-page-icon",accent:women?"#C9577A":"#2F80B9",key:women?"varex_women_salon_screen_scale":"varex_men_salon_screen_scale",name:women?"VAREX WOMEN SALON":"VAREX MEN SALON"};}
     return null;
   }

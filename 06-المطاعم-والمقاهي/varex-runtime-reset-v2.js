@@ -8,7 +8,7 @@
     if(!installPrompt||window.matchMedia("(display-mode: standalone)").matches||document.getElementById("varexInstallApp"))return;
     var button=document.createElement("button");
     button.type="button";button.id="varexInstallApp";button.textContent="تثبيت التطبيق";
-    button.style.cssText="position:fixed;z-index:500;inset-inline-start:18px;bottom:18px;min-height:46px;padding:10px 16px;border:1px solid #fff;border-radius:13px;background:#E56F2D;color:#fff;box-shadow:0 12px 30px rgba(0,0,0,.24);font:800 12px Arial,Tahoma,sans-serif;cursor:pointer;animation:none;transition:none";
+    button.style.cssText="position:fixed;z-index:500;inset-inline-start:18px;bottom:18px;min-height:46px;padding:10px 16px;border:1px solid #fff;border-radius:13px;background:#172554;color:#fff;box-shadow:0 12px 30px rgba(0,0,0,.24);font:800 12px Arial,Tahoma,sans-serif;cursor:pointer;animation:none;transition:none";
     button.addEventListener("click",async function(){if(!installPrompt)return;button.disabled=true;await installPrompt.prompt();await installPrompt.userChoice;installPrompt=null;button.remove()});
     document.body.appendChild(button);
   }

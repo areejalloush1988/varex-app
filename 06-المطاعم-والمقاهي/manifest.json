@@ -1,4 +1,26 @@
 {
-  "id":"./","name":"VAREX Restaurant Management System","short_name":"VAREX Restaurant","description":"Restaurant POS, orders, tables, menu, kitchen, inventory and reports","start_url":"./index.html","scope":"./","display":"standalone","display_override":["standalone","minimal-ui"],"orientation":"any","background_color":"#FFF7F2","theme_color":"#E56F2D","lang":"ar","dir":"rtl",
-  "icons":[{"src":"./varex-app-icon-192.png","sizes":"192x192","type":"image/png","purpose":"any"},{"src":"./varex-app-icon-512.png","sizes":"512x512","type":"image/png","purpose":"any"},{"src":"./varex-app-icon-512.png","sizes":"512x512","type":"image/png","purpose":"maskable"}]
+  "id": "./restaurant.html",
+  "name": "VAREX Restaurant Management System",
+  "short_name": "VAREX Restaurant",
+  "description": "Restaurant POS, orders, tables, menu, kitchen, inventory and reports",
+  "start_url": "./restaurant.html?type=restaurant",
+  "scope": "./",
+  "display": "standalone",
+  "display_override": [
+    "standalone",
+    "minimal-ui"
+  ],
+  "orientation": "any",
+  "background_color": "#F8EEEB",
+  "theme_color": "#B6533E",
+  "lang": "ar",
+  "dir": "rtl",
+  "icons": [
+    {
+      "src": "./varex-restaurant-logo.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
 }
