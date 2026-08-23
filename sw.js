@@ -1,4 +1,4 @@
-const CACHE_NAME="varex-cache-v39-cashier-controls";
+const CACHE_NAME="varex-cache-v40-paypal-usd";
 const IS_NATIVE_APP=self.location.hostname==="localhost";
 
 const FILES_TO_CACHE=[
