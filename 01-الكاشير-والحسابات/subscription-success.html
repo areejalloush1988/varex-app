@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#172554">
+  <title>تأكيد دفع الاشتراك - VAREX</title>
+  <link id="varexCentralTheme" rel="stylesheet" href="../varex-theme.css?v=20260823-paypal1">
+  <style>
+    *{box-sizing:border-box}body{margin:0;min-height:100vh;font-family:Arial,Tahoma,sans-serif;background:#f4f6fb;color:#172554;display:grid;place-items:center;padding:24px}.result-card{width:min(590px,100%);background:#fff;border:1px solid #e2e8f0;border-radius:24px;padding:34px;text-align:center;box-shadow:0 25px 70px rgba(23,37,84,.14)}.brand{font-size:31px;font-weight:900;letter-spacing:5px;direction:ltr}.subtitle{margin-top:7px;color:#64748b;font-size:10px;letter-spacing:1px;direction:ltr}.state-icon{width:78px;height:78px;border-radius:50%;margin:27px auto 18px;display:grid;place-items:center;font-size:37px;background:#eff6ff;color:#2563eb}.state-icon.success{background:#dcfce7;color:#15803d}.state-icon.error{background:#fef2f2;color:#dc2626}.state-icon.pending{background:#fff7ed;color:#ea580c}.spinner{width:34px;height:34px;border:4px solid #bfdbfe;border-top-color:#172554;border-radius:50%;animation:spin .8s linear infinite}@keyframes spin{to{transform:rotate(360deg)}}h1{font-size:24px;margin:0 0 10px}p{margin:0;color:#64748b;font-size:13px;line-height:1.9}.details{display:none;margin-top:22px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:14px;padding:16px;text-align:right}.details-row{display:flex;justify-content:space-between;gap:16px;font-size:12px;margin-bottom:10px}.details-row:last-child{margin-bottom:0}.details-row span{color:#64748b}.details-row strong{overflow-wrap:anywhere}.actions{display:flex;gap:10px;margin-top:24px}.actions a,.actions button{flex:1;min-height:46px;border-radius:11px;display:flex;align-items:center;justify-content:center;text-decoration:none;font-family:inherit;font-size:12px;font-weight:800;cursor:pointer}.primary{background:#172554;color:#fff;border:1px solid #172554}.secondary{background:#f8fafc;color:#172554;border:1px solid #cbd5e1}.retry{display:none;width:100%;margin-top:11px}@media(max-width:520px){.result-card{padding:28px 18px}.actions{flex-direction:column}}body.varex-dark{background:#081426;color:#fff}.varex-dark .result-card{background:#132641;border-color:#29415f}.varex-dark p,.varex-dark .details-row span{color:#cbd5e1}.varex-dark .details{background:#10233d;border-color:#29415f}.varex-dark .secondary{background:#10233d;color:#fff;border-color:#475569}
+  </style>
+</head>
+<body>
+  <main class="result-card">
+    <div class="brand">VAREX</div>
+    <div class="subtitle">BUSINESS MANAGEMENT SYSTEM</div>
+    <div class="state-icon" id="stateIcon"><span class="spinner"></span></div>
+    <h1 id="stateTitle">جاري التحقق من الدفع</h1>
+    <p id="stateMessage">يرجى الانتظار قليلاً. لن يتم تفعيل الاشتراك إلا بعد تأكيد اكتمال الدفعة من PayPal.</p>
+    <section class="details" id="details">
+      <div class="details-row"><span>الباقة</span><strong id="planName">—</strong></div>
+      <div class="details-row"><span>حالة الاشتراك</span><strong id="subscriptionState">—</strong></div>
+      <div class="details-row"><span>تاريخ الانتهاء</span><strong id="expiryDate">—</strong></div>
+      <div class="details-row"><span>رقم العملية</span><strong id="captureId">—</strong></div>
+    </section>
+    <div class="actions">
+      <a class="primary" href="./index.html">الانتقال إلى لوحة التحكم</a>
+      <a class="secondary" href="./subscription.html">العودة إلى الاشتراكات</a>
+    </div>
+    <button class="secondary retry" id="retryButton" type="button">إعادة التحقق</button>
+  </main>
+
+  <script src="../varex.js?v=20260823-paypal1"></script>
+  <script>
+    const PAYPAL_EDGE_URL="https://eibadfdqzpeigccfdipt.supabase.co/functions/v1/paypal-checkout";
+    let currentOrderId="";
+
+    async function callPaymentService(action,extra={}){
+      let session=window.VAREX?.getSession?.();
+      if(!session?.access_token)throw new Error("يلزم تسجيل الدخول بحساب مالك المنشأة.");
+      if((session.expires_at||0)<=Math.floor(Date.now()/1000)+60){
+        await VAREX.refreshSession();session=VAREX.getSession()
+      }
+      const response=await fetch(PAYPAL_EDGE_URL,{method:"POST",headers:{"Content-Type":"application/json",apikey:VAREX.config.supabaseKey,Authorization:`Bearer ${session.access_token}`},body:JSON.stringify({action,...extra})});
+      const data=await response.json().catch(()=>({}));
+      if(!response.ok||data.success===false)throw new Error(data.message||"تعذر التحقق من عملية الدفع.");
+      return data
+    }
+
+    function formatDate(value){if(!value)return"غير محدد";const date=new Date(value);return Number.isNaN(date.getTime())?"غير محدد":date.toLocaleDateString("ar-AE",{year:"numeric",month:"2-digit",day:"2-digit"})}
+    function showState(type,title,message){stateIcon.className="state-icon "+type;stateIcon.innerHTML=type==="success"?"✓":type==="error"?"!":type==="pending"?"⌛":"<span class=\"spinner\"></span>";stateTitle.textContent=title;stateMessage.textContent=message;retryButton.style.display=type==="error"||type==="pending"?"block":"none"}
+    function applySubscription(subscription,transactionId=""){
+      if(!subscription)return false;
+      VAREX.saveSubscription(subscription);
+      details.style.display="block";
+      planName.textContent=subscription.planName||"VAREX Business";
+      subscriptionState.textContent=subscription.status==="active"?"نشط":"قيد المراجعة";
+      expiryDate.textContent=subscription.lifetime?"مدى الحياة":formatDate(subscription.expiresAt);
+      captureId.textContent=transactionId||subscription.paypalCaptureId||"—";
+      return subscription.status==="active"
+    }
+
+    async function pollStatus(){
+      for(let attempt=0;attempt<10;attempt++){
+        await new Promise(resolve=>setTimeout(resolve,3000));
+        const status=await callPaymentService("status");
+        if(applySubscription(status.subscription,status.latestPayment?.paypal_capture_id||""))return true
+      }
+      return false
+    }
+
+    async function verifyPayment(){
+      retryButton.disabled=true;showState("loading","جاري التحقق من الدفع","يرجى الانتظار قليلاً. لن يتم تفعيل الاشتراك إلا بعد تأكيد اكتمال الدفعة من PayPal.");
+      try{
+        let result;
+        if(currentOrderId)result=await callPaymentService("capture-order",{orderId:currentOrderId});
+        else result=await callPaymentService("status");
+        if(applySubscription(result.subscription,result.captureId||result.latestPayment?.paypal_capture_id||"")){
+          showState("success","تم الدفع وتفعيل الاشتراك","اكتملت الدفعة بنجاح وتم تفعيل اشتراك VAREX تلقائياً.");
+          localStorage.removeItem("varex_selected_plan");return
+        }
+        showState("pending","الدفعة قيد المعالجة","استلم PayPal العملية، لكنها لم تصل إلى حالة مكتملة بعد. سنعيد التحقق تلقائياً.");
+        if(await pollStatus()){
+          showState("success","تم الدفع وتفعيل الاشتراك","اكتملت الدفعة بنجاح وتم تفعيل اشتراك VAREX تلقائياً.");
+          localStorage.removeItem("varex_selected_plan");return
+        }
+        showState("pending","ما زالت الدفعة قيد المعالجة","لم يؤكد PayPal اكتمال الدفعة بعد. يمكن إعادة التحقق بعد قليل.")
+      }catch(error){showState("error","تعذر تأكيد الدفع",error?.message||"لم يتم تفعيل الاشتراك. يرجى إعادة المحاولة.")}
+      finally{retryButton.disabled=false}
+    }
+
+    retryButton.addEventListener("click",verifyPayment);
+    window.addEventListener("DOMContentLoaded",()=>{
+      currentOrderId=new URLSearchParams(location.search).get("token")||"";
+      verifyPayment()
+    },{once:true});
+  </script>
+</body>
+</html>

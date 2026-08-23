@@ -67,3 +67,8 @@ content_path = "./supabase/templates/security_alert.html"
 [functions.delete-business-account]
 # The function validates the bearer token and the recent OTP claim itself.
 verify_jwt = false
+
+[functions.paypal-checkout]
+# Browser requests are verified against Supabase Auth inside the function, while
+# PayPal webhook requests are verified with PayPal's signed-webhook endpoint.
+verify_jwt = false
