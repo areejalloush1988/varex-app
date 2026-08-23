@@ -25,7 +25,8 @@
 
     displayZoomKey: "varex_display_zoom",
     displayZoomLevels: [100, 90, 80, 70, 60, 50],
-    centralThemeRevision: "20260823-cashier-controls3",
+    newCashierZoomOffset: 4,
+    centralThemeRevision: "20260824-new-cashier-scale4",
 
     pages: [
       {
@@ -220,8 +221,12 @@
     applyDisplayZoom(level, persist = true) {
       const requested = Number(level);
       const zoom = this.displayZoomLevels.includes(requested) ? requested : 100;
-      document.documentElement.style.zoom = String(zoom / 100);
+      const currentPath = decodeURI(window.location.pathname);
+      const isNewCashierApp = currentPath.includes("/01-الكاشير-والحسابات/");
+      const effectiveZoom = Math.max(10, zoom - (isNewCashierApp ? this.newCashierZoomOffset : 0));
+      document.documentElement.style.zoom = String(effectiveZoom / 100);
       document.documentElement.dataset.varexDisplayZoom = String(zoom);
+      document.documentElement.dataset.varexEffectiveDisplayZoom = String(effectiveZoom);
       if (persist) localStorage.setItem(this.displayZoomKey, String(zoom));
       this.updateDisplayControls();
       window.dispatchEvent(new CustomEvent("varex-display-zoom-changed", {
