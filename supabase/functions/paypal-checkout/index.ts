@@ -1,3 +1,4 @@
+import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "npm:@supabase/supabase-js@2";
 
 type Json = Record<string, unknown>;
@@ -6,6 +7,7 @@ type PlanKey = "monthly" | "yearly" | "lifetime";
 const allowedOrigins = new Set([
   "https://varexapp.com",
   "https://www.varexapp.com",
+  "https://app.varexapp.com",
   "https://areejalloush1988.github.io",
 ]);
 
@@ -336,8 +338,8 @@ async function createOrder(request: Request, admin: ReturnType<typeof createClie
               landing_page: "LOGIN",
               shipping_preference: "NO_SHIPPING",
               user_action: "PAY_NOW",
-              return_url: "https://varexapp.com/01-الكاشير-والحسابات/subscription-success.html",
-              cancel_url: "https://varexapp.com/01-الكاشير-والحسابات/subscription.html?payment=cancelled",
+              return_url: "https://app.varexapp.com/cashier/subscription-success.html",
+              cancel_url: "https://app.varexapp.com/cashier/subscription.html?payment=cancelled",
             },
           },
         },
@@ -534,7 +536,7 @@ async function webhook(request: Request, admin: ReturnType<typeof createClient>)
   }
 }
 
-Deno.serve(async (request: Request) => {
+const handler = async (request: Request) => {
   if (request.method === "OPTIONS") return new Response("ok", { headers: corsHeaders(request) });
   if (request.method !== "POST") return json(request, { success: false, code: "METHOD_NOT_ALLOWED", message: "طريقة الطلب غير مسموحة." }, 405);
 
@@ -569,4 +571,6 @@ Deno.serve(async (request: Request) => {
       message: publicError?.message || "حدث خطأ في خدمة الدفع الآمن. لم يتم تفعيل أي اشتراك.",
     }, publicError?.status || 500);
   }
-});
+};
+
+export default { fetch: handler };
