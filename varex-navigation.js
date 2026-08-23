@@ -25,7 +25,7 @@
 
     displayZoomKey: "varex_display_zoom",
     displayZoomLevels: [100, 90, 80, 70, 60, 50],
-    centralThemeRevision: "20260823-native-display2",
+    centralThemeRevision: "20260823-cashier-controls3",
 
     pages: [
       {
@@ -171,28 +171,24 @@
     ],
 
     feedbackLevel(type) {
-      const key = this.feedbackLevelKeys[type];
-      if (!key) return "off";
-      const saved = localStorage.getItem(key);
-      if (["off", "low", "high"].includes(saved)) return saved;
-
-      const legacy = localStorage.getItem(this.feedbackKeys[type]);
-      if (legacy === "0") return "off";
-      return type === "sound" ? "high" : "low";
+      if (type === "sound") return "high";
+      if (type === "vibration") return "off";
+      return "off";
     },
 
     feedbackEnabled(type) {
-      return this.feedbackLevel(type) !== "off";
+      return type === "sound";
     },
 
-    setFeedbackLevel(type, level) {
-      if (!this.feedbackLevelKeys[type] || !["off", "low", "high"].includes(level)) return;
+    setFeedbackLevel(type) {
+      const level = type === "sound" ? "high" : type === "vibration" ? "off" : "";
+      if (!level || !this.feedbackLevelKeys[type]) return;
       localStorage.setItem(this.feedbackLevelKeys[type], level);
       localStorage.setItem(this.feedbackKeys[type], level === "off" ? "0" : "1");
     },
 
-    setFeedbackEnabled(type, enabled) {
-      this.setFeedbackLevel(type, enabled ? (type === "sound" ? "high" : "low") : "off");
+    setFeedbackEnabled(type) {
+      this.setFeedbackLevel(type);
     },
 
     currentLanguage() {
@@ -234,18 +230,8 @@
       return zoom;
     },
 
-    isFullscreen() {
-      return Boolean(document.fullscreenElement || document.webkitFullscreenElement);
-    },
-
     displayZoomIcon() {
       return '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m15.2 15.2 5 5M10.5 7.5v6M7.5 10.5h6"/></svg>';
-    },
-
-    fullscreenIcon(active = this.isFullscreen()) {
-      return active
-        ? '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 3v6H3M15 3v6h6M9 21v-6H3M15 21v-6h6"/></svg>'
-        : '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 3H3v5M16 3h5v5M8 21H3v-5M16 21h5v-5"/></svg>';
     },
 
     updateDisplayControls() {
@@ -268,37 +254,6 @@
         option.setAttribute("aria-checked", selected ? "true" : "false");
       });
 
-      const fullscreen = this.isFullscreen();
-      document.querySelectorAll("[data-varex-fullscreen-button]").forEach(button => {
-        const label = fullscreen
-          ? (language === "en" ? "Exit full screen" : "الخروج من ملء الشاشة")
-          : (language === "en" ? "Full screen" : "ملء الشاشة");
-        button.innerHTML = this.fullscreenIcon(fullscreen);
-        button.classList.toggle("is-active", fullscreen);
-        button.setAttribute("aria-label", label);
-        button.setAttribute("title", label);
-      });
-    },
-
-    async toggleFullscreen() {
-      const target = document.documentElement;
-      try {
-        if (this.isFullscreen()) {
-          const exit = document.exitFullscreen || document.webkitExitFullscreen;
-          if (exit) await Promise.resolve(exit.call(document));
-        } else {
-          const request = target.requestFullscreen || target.webkitRequestFullscreen;
-          if (!request) throw new Error("FULLSCREEN_UNAVAILABLE");
-          await Promise.resolve(request.call(target));
-        }
-      } catch (error) {
-        const message = this.currentLanguage() === "en"
-          ? "Full screen is not available on this device."
-          : "ملء الشاشة غير متاح على هذا الجهاز.";
-        if (typeof window.varexAlert === "function") window.varexAlert(message);
-        else console.debug(message, error);
-      }
-      this.updateDisplayControls();
     },
 
     setupDisplayControls() {
@@ -348,23 +303,12 @@
           selector.classList.remove("open");
           zoomButton.setAttribute("aria-expanded", "false");
           this.playFeedbackSound("tap");
-          this.playInteractionVibration(10);
         });
         menu.appendChild(option);
       });
 
-      const fullscreenButton = document.createElement("button");
-      fullscreenButton.type = "button";
-      fullscreenButton.className = "varex-display-fullscreen-button";
-      fullscreenButton.dataset.varexFullscreenButton = "true";
-      fullscreenButton.addEventListener("click", event => {
-        event.preventDefault();
-        event.stopPropagation();
-        this.toggleFullscreen();
-      });
-
       selector.append(zoomButton, menu);
-      controls.append(selector, fullscreenButton);
+      controls.appendChild(selector);
 
       const languageControl = topInfo.querySelector(".language-selector, .varex-i18n-switch");
       if (languageControl) languageControl.after(controls);
@@ -385,9 +329,6 @@
             zoomButton.setAttribute("aria-expanded", "false");
           }
         });
-        ["fullscreenchange", "webkitfullscreenchange"].forEach(eventName => {
-          document.addEventListener(eventName, () => this.updateDisplayControls());
-        });
         window.addEventListener("storage", event => {
           if (event.key === this.displayZoomKey) {
             this.applyDisplayZoom(this.displayZoom(), false);
@@ -397,9 +338,7 @@
 
       window.VAREX_DISPLAY = {
         zoom: level => this.applyDisplayZoom(level),
-        fullscreen: () => this.toggleFullscreen(),
-        currentZoom: () => this.displayZoom(),
-        isFullscreen: () => this.isFullscreen()
+        currentZoom: () => this.displayZoom()
       };
     },
 
@@ -476,49 +415,26 @@
       }
     },
 
-    playFeedbackVibration(pattern = 12, force = false) {
-      const level = this.feedbackLevel("vibration");
-      if (level === "off") return;
-      if (!force && !this.feedbackEnabled("vibration")) return;
-      if (typeof navigator.vibrate !== "function") return;
-      try {
-        const scale = level === "high" ? 2.25 : 0.8;
-        const adjusted = Array.isArray(pattern)
-          ? pattern.map((value, index) => index % 2 === 0 ? Math.max(8, Math.round(value * scale)) : value)
-          : Math.max(8, Math.round(Number(pattern || 12) * scale));
-        navigator.vibrate(adjusted);
-      } catch (error) {
-        console.debug("VAREX vibration unavailable", error);
-      }
+    playFeedbackVibration() {
+      // Vibration is intentionally disabled across VAREX.
     },
 
-    playInteractionVibration(pattern = 12) {
-      this.playFeedbackVibration(pattern);
+    playInteractionVibration() {
+      // Kept as a compatibility no-op for older pages.
     },
 
     updateFeedbackControls() {
       const language = this.currentLanguage();
-      document.querySelectorAll("[data-varex-feedback-toggle]").forEach(button => {
-        const type = button.dataset.varexFeedbackToggle;
-        const level = this.feedbackLevel(type);
-        const enabled = level !== "off";
-        const label = this.feedbackLabel(type, level, language);
-        button.classList.toggle("is-enabled", enabled);
-        button.dataset.level = level;
-        button.setAttribute("aria-pressed", enabled ? "true" : "false");
+      this.setFeedbackLevel("sound");
+      this.setFeedbackLevel("vibration");
+
+      document.querySelectorAll("[data-varex-feedback-toggle=\"sound\"]").forEach(button => {
+        const label = this.feedbackLabel("sound", "high", language);
+        button.classList.add("is-enabled");
+        button.dataset.level = "high";
         button.setAttribute("aria-label", label);
         button.setAttribute("title", label);
-        button.innerHTML = this.feedbackIcon(type, level) +
-          '<span class="varex-feedback-level" aria-hidden="true">' +
-          (level === "high" ? "H" : level === "low" ? "L" : "×") +
-          '</span><span class="varex-feedback-arrow" aria-hidden="true">⌄</span>';
-      });
-
-      document.querySelectorAll("[data-varex-feedback-option]").forEach(option => {
-        const type = option.dataset.varexFeedbackType;
-        const level = option.dataset.varexFeedbackOption;
-        option.textContent = this.feedbackLabel(type, level, language);
-        option.classList.toggle("is-selected", this.feedbackLevel(type) === level);
+        button.innerHTML = this.feedbackIcon("sound", "high");
       });
     },
 
@@ -526,59 +442,23 @@
       const topInfo = document.querySelector(".topbar .top-info");
       if (!topInfo || topInfo.querySelector(".varex-feedback-controls")) return;
 
+      this.setFeedbackLevel("sound");
+      this.setFeedbackLevel("vibration");
+
       const controls = document.createElement("div");
       controls.className = "varex-feedback-controls";
       controls.setAttribute("data-varex-no-translate", "true");
 
-      ["vibration", "sound"].forEach(type => {
-        const selector = document.createElement("div");
-        selector.className = "varex-feedback-selector";
-
-        const button = document.createElement("button");
-        button.type = "button";
-        button.className = "varex-feedback-button";
-        button.dataset.varexFeedbackToggle = type;
-        button.addEventListener("click", event => {
-          event.preventDefault();
-          event.stopPropagation();
-          document.querySelectorAll(".language-selector.open,.varex-display-selector.open,.varex-feedback-selector.open").forEach(item => {
-            if (item !== selector) item.classList.remove("open");
-          });
-          selector.classList.toggle("open");
-        });
-
-        const menu = document.createElement("div");
-        menu.className = "varex-feedback-menu";
-        ["off", "low", "high"].forEach(level => {
-          const option = document.createElement("button");
-          option.type = "button";
-          option.className = "varex-feedback-option";
-          option.dataset.varexFeedbackType = type;
-          option.dataset.varexFeedbackOption = level;
-          option.addEventListener("click", event => {
-            event.preventDefault();
-            event.stopPropagation();
-            this.setFeedbackLevel(type, level);
-            selector.classList.remove("open");
-            if (type === "sound") this.playFeedbackSound(level === "off" ? "disabled" : "enabled", true);
-            if (type === "vibration" && level !== "off") this.playFeedbackVibration(20, true);
-            if (type === "vibration") this.playFeedbackSound("tap");
-            this.updateFeedbackControls();
-            window.dispatchEvent(new CustomEvent("varex-feedback-changed", {
-              detail: {
-                sound: this.feedbackEnabled("sound"),
-                vibration: this.feedbackEnabled("vibration"),
-                soundLevel: this.feedbackLevel("sound"),
-                vibrationLevel: this.feedbackLevel("vibration")
-              }
-            }));
-          });
-          menu.appendChild(option);
-        });
-
-        selector.append(button, menu);
-        controls.appendChild(selector);
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "varex-feedback-button varex-sound-button";
+      button.dataset.varexFeedbackToggle = "sound";
+      button.addEventListener("click", event => {
+        event.preventDefault();
+        event.stopPropagation();
+        this.playFeedbackSound("notification", true);
       });
+      controls.appendChild(button);
 
       const languageControl = topInfo.querySelector(".language-selector, .varex-i18n-switch");
       if (languageControl) languageControl.after(controls);
@@ -595,38 +475,20 @@
           );
           if (!target || target.disabled || target.closest(".varex-feedback-controls,.language-selector,.varex-display-controls")) return;
           this.playFeedbackSound("tap");
-          // Page navigation stays physically steady; vibration remains available
-          // for actions and controls according to the selected feedback level.
-          if (!target.closest('a[href],.sidebar .nav')) this.playInteractionVibration(10);
         }, { passive: true, capture: true });
       }
 
       window.addEventListener("storage", () => this.updateFeedbackControls());
       window.addEventListener("varex-language-changed", () => this.updateFeedbackControls());
-      document.addEventListener("click", () => {
-        document.querySelectorAll(".varex-feedback-selector.open").forEach(item => item.classList.remove("open"));
-      });
       window.VAREX_FEEDBACK = {
-        tap: () => {
-          this.playFeedbackSound("tap");
-          this.playInteractionVibration(10);
-        },
-        success: () => {
-          this.playFeedbackSound("success");
-          this.playFeedbackVibration([18, 35, 22]);
-        },
-        notification: () => {
-          this.playFeedbackSound("notification");
-          this.playFeedbackVibration([20, 45, 20]);
-        },
-        warning: () => {
-          this.playFeedbackSound("warning");
-          this.playFeedbackVibration([35, 55, 35]);
-        },
-        soundEnabled: () => this.feedbackEnabled("sound"),
-        vibrationEnabled: () => this.feedbackEnabled("vibration"),
-        soundLevel: () => this.feedbackLevel("sound"),
-        vibrationLevel: () => this.feedbackLevel("vibration")
+        tap: () => this.playFeedbackSound("tap"),
+        success: () => this.playFeedbackSound("success"),
+        notification: () => this.playFeedbackSound("notification"),
+        warning: () => this.playFeedbackSound("warning"),
+        soundEnabled: () => true,
+        vibrationEnabled: () => false,
+        soundLevel: () => "high",
+        vibrationLevel: () => "off"
       };
     },
 
@@ -728,7 +590,7 @@
       legacyUsers.setAttribute("aria-hidden", "true");
       legacyUsers.innerHTML = '<span id="topUserName"></span><span id="currentUserName"></span><span id="settingsUserName"></span><span id="currentAccount"></span><span id="currentUser"></span>';
 
-      topInfo.replaceChildren(time, date, system, switchUser, languageSelector, legacyUsers);
+      topInfo.replaceChildren(date, time, system, switchUser, languageSelector, legacyUsers);
       document.addEventListener("click", event => {
         if (!languageSelector.contains(event.target)) {
           languageSelector.classList.remove("open");
