@@ -1,4 +1,4 @@
-const CACHE_NAME="varex-cache-v41-paypal-checkout";
+const CACHE_NAME="varex-cache-v42-login-stability";
 const IS_NATIVE_APP=self.location.hostname==="localhost";
 
 const FILES_TO_CACHE=[

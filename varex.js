@@ -66,6 +66,16 @@ isSubscriptionGateEnabled(){return localStorage.getItem(this.keys.subscriptionGa
 requireSubscription(){if(!this.isSubscriptionGateEnabled())return true;if(this.isLoginPage()||this.isRegisterPage()||this.isVerifyEmailPage()||this.isResetPasswordPage()||this.isSubscriptionPage()||this.isSubscriptionSuccessPage())return true;if(!this.isSubscriptionActive()){location.replace(this.rootPath("01-الكاشير-والحسابات/subscription.html"));return false}return true},
 initialize(){[this.keys.products,this.keys.sales,this.keys.customers,this.keys.suppliers,this.keys.employees,this.keys.transactions,this.keys.heldSales].forEach(k=>{const sk=this.scopeKey(k);if(localStorage.getItem(sk)===null)localStorage.setItem(sk,"[]")});return true}};
 
+/* Friendly application routes such as /cashier/login do not end in .html.
+   Treat them as public authentication pages to prevent redirect loops. */
+Object.assign(VAREX,{
+currentRouteName(){let path=String(location.pathname||"").replace(/\/+$/,"");try{path=decodeURIComponent(path)}catch(e){}return(path.split("/").pop()||"").toLowerCase()},
+isLoginPage(){return["login","login.html"].includes(this.currentRouteName())},
+isRegisterPage(){return["register","register.html"].includes(this.currentRouteName())},
+isVerifyEmailPage(){return["verify-email","verify-email.html"].includes(this.currentRouteName())},
+isResetPasswordPage(){return["reset-password","reset-password.html"].includes(this.currentRouteName())}
+});
+
 Object.assign(VAREX,{
 async prepareBusinessAccountDeletion(){
 const session=this.getSession();
@@ -130,7 +140,7 @@ return true;
 Object.assign(VAREX,{
   _dataChannel:null,
   rootPath(path=""){
-    const clean=String(path||"").replace(/^(?:\.\/|\/)+/,"");
+    let clean=String(path||"").replace(/^(?:\.\/|\/)+/,"");
     const systemFolders=new Set([
       "01-الكاشير-والحسابات",
       "02-إدارة-العقارات",
@@ -140,10 +150,17 @@ Object.assign(VAREX,{
       "06-المطاعم-والمقاهي"
     ]);
     const parts=location.pathname.split("/");
+    const decodedParts=parts.map(part=>{try{return decodeURIComponent(part)}catch(e){return part}});
+    const cashierIndex=decodedParts.findIndex(part=>String(part).toLowerCase()==="cashier");
+    if(cashierIndex>=0){
+      const cashierFolder="01-الكاشير-والحسابات/";
+      if(clean.startsWith(cashierFolder))clean="cashier/"+clean.slice(cashierFolder.length);
+      const base=parts.slice(0,cashierIndex).join("/");
+      return`${base}/${clean}`.replace(/\/{2,}/g,"/");
+    }
     let systemIndex=-1;
     for(let i=0;i<parts.length;i++){
-      let part=parts[i];
-      try{part=decodeURIComponent(part)}catch(e){}
+      const part=decodedParts[i];
       if(systemFolders.has(part)){systemIndex=i;break}
     }
     const base=(systemIndex>=0?parts.slice(0,systemIndex):parts.slice(0,-1)).join("/");
@@ -637,7 +654,24 @@ body.varex-dark .varex-staff-user small{color:#cbd5e1}
 `;document.head.prepend(s)}
 
 /* ========================================================= START ========================================================= */
-async function varexStartUI(){const publicPage=VAREX.isLoginPage()||VAREX.isRegisterPage()||VAREX.isVerifyEmailPage()||VAREX.isResetPasswordPage();if(publicPage)return;if(!VAREX.requireLogin())return;try{await VAREX.syncSubscriptionFromServer?.()}catch(e){}if(!VAREX.requireSubscription())return;varexInstallSharedStyles();varexApplyTheme(varexGetTheme());varexInstallStaffUI();const access=varexInitStaffAccess();varexBuildMenu();varexInstallTopSwitchUserButton();varexShowCurrentUser();VAREX.bootstrapSharedState?.().then(()=>VAREX.notifyDataChanged?.("bootstrap")).catch(()=>{});if(access!==false)varexCheckCurrentPermission()}
+async function varexStartUI(){
+const publicPage=VAREX.isLoginPage()||VAREX.isRegisterPage()||VAREX.isVerifyEmailPage()||VAREX.isResetPasswordPage();
+if(publicPage)return;
+if(!VAREX.requireLogin())return;
+const gateEnabled=VAREX.isSubscriptionGateEnabled?.()===true;
+if(gateEnabled&&!VAREX.isSubscriptionActive?.())try{await VAREX.syncSubscriptionFromServer?.()}catch(e){}
+if(!VAREX.requireSubscription())return;
+varexInstallSharedStyles();
+varexApplyTheme(varexGetTheme());
+varexInstallStaffUI();
+const access=varexInitStaffAccess();
+varexBuildMenu();
+varexInstallTopSwitchUserButton();
+varexShowCurrentUser();
+VAREX.bootstrapSharedState?.().then(()=>VAREX.notifyDataChanged?.("bootstrap")).catch(()=>{});
+if(access!==false)varexCheckCurrentPermission();
+if(!gateEnabled)VAREX.syncSubscriptionFromServer?.().catch(()=>{});
+}
 window.addEventListener("focus",()=>{VAREX.syncSubscriptionFromServer?.().catch(()=>{});varexApplyTheme(varexGetTheme());varexInstallTopSwitchUserButton();varexShowCurrentUser()});
 if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",varexStartUI,{once:true});else varexStartUI();
 /* ================= VAREX THEME + FIXED SIDEBAR SCROLL ================= */
