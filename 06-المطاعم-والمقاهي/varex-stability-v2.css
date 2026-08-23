@@ -1,0 +1,2 @@
+html.varex-no-motion,html.varex-no-motion body{scroll-behavior:auto!important;overflow-anchor:none!important}
+html.varex-no-motion *,html.varex-no-motion *::before,html.varex-no-motion *::after{animation:none!important;transition:none!important}
