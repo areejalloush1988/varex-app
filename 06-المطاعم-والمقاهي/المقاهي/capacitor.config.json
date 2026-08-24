@@ -1,0 +1,19 @@
+{
+  "appId": "com.varex.cafe",
+  "appName": "VAREX Café",
+  "webDir": "dist",
+  "server": {
+    "androidScheme": "https"
+  },
+  "plugins": {
+    "SplashScreen": {
+      "launchShowDuration": 1800,
+      "backgroundColor": "#C75A1B",
+      "showSpinner": false
+    },
+    "StatusBar": {
+      "backgroundColor": "#C75A1B",
+      "style": "LIGHT"
+    }
+  }
+}

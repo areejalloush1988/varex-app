@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate"><meta name="theme-color" content="#C75A1B">
+  <title>تأكيد البريد | VAREX CAFÉ</title>
+  <link rel="icon" type="image/png" sizes="192x192" href="./varex-app-icon-192.png"><link rel="apple-touch-icon" href="./varex-app-icon-192.png"><link rel="stylesheet" href="./cafe-auth.css?v=8">
+</head>
+<body data-auth-page="verify">
+  <main class="auth-shell">
+    <section class="auth-brand">
+      <div class="auth-brand-top"><a class="auth-logo" href="./login.html"><span class="auth-logo-tile"><img src="./varex-approved-transparent-512.png" alt="شعار VAREX"></span><span><strong>VAREX</strong><span>BUSINESS MANAGEMENT SYSTEM</span></span></a></div>
+      <div class="auth-brand-copy"><small>تأكيد البريد الإلكتروني</small><h1>خطوة واحدة لحماية الحساب.</h1><p>تم إرسال رمز من 6 أرقام إلى البريد، ويُستخدم لتفعيل حساب المقهى.</p><div class="auth-points"><div class="auth-point"><i>✓</i><span>رمز صالح لفترة محدودة</span></div><div class="auth-point"><i>✓</i><span>إعادة إرسال محمية بالوقت</span></div><div class="auth-point"><i>✓</i><span>دخول بعد تأكيد البريد</span></div></div></div>
+      <div class="auth-brand-foot">VAREX BUSINESS MANAGEMENT SYSTEM</div>
+    </section>
+    <section class="auth-panel"><div class="auth-form-wrap">
+      <div id="authVerifyContent">
+        <span class="auth-kicker">رمز OTP</span>
+        <header class="auth-header"><h2>إدخال رمز التأكيد</h2><p>تم إرسال الرمز إلى <strong class="auth-email-display" id="authVerifyEmail">—</strong></p></header>
+        <form class="auth-form" id="authVerifyForm" novalidate>
+          <div class="auth-otp" dir="ltr" aria-label="رمز التأكيد المكون من 6 أرقام">
+            <input class="auth-otp-input" data-otp-index="0" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="1" autocomplete="one-time-code" aria-label="الرقم الأول">
+            <input class="auth-otp-input" data-otp-index="1" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="1" aria-label="الرقم الثاني">
+            <input class="auth-otp-input" data-otp-index="2" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="1" aria-label="الرقم الثالث">
+            <input class="auth-otp-input" data-otp-index="3" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="1" aria-label="الرقم الرابع">
+            <input class="auth-otp-input" data-otp-index="4" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="1" aria-label="الرقم الخامس">
+            <input class="auth-otp-input" data-otp-index="5" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="1" aria-label="الرقم السادس">
+          </div>
+          <div class="auth-message" id="authMessage" role="alert" aria-live="polite"></div>
+          <button class="auth-submit" id="authSubmit" type="submit"><span>تأكيد البريد وتفعيل الحساب</span><svg viewBox="0 0 24 24"><path d="m5 12 4 4L19 6"/></svg></button>
+        </form>
+        <div class="auth-resend"><span>لم يتم استلام الرمز؟</span><button id="authResend" type="button">إعادة إرسال الرمز</button><span id="authResendTimer"></span></div>
+        <p class="auth-help"><a class="auth-link" href="./register.html">تغيير البريد أو بيانات الحساب</a></p>
+      </div>
+      <div class="auth-result" id="authVerifySuccess" hidden>
+        <div class="auth-result-icon"><svg viewBox="0 0 24 24"><path d="m5 12 4 4L19 6"/></svg></div><h2>تم تفعيل الحساب</h2><p>تم تأكيد البريد بنجاح. يتم الانتقال الآن إلى تسجيل الدخول.</p><a class="auth-submit" href="./login.html?verified=1">الذهاب إلى تسجيل الدخول</a>
+      </div>
+    </div></section>
+  </main>
+  <script src="./varex.js?v=20260824-re-auth4"></script><script src="./cafe-auth.js?v=8"></script>
+</body>
+</html>

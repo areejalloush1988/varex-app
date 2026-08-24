@@ -1,0 +1,4 @@
+{
+  "id":"/","name":"VAREX Café Management System","short_name":"VAREX Café","description":"Beverage flow, barista stations, recipes, coffee batches, waste and guest care","start_url":"/cafe-system/","scope":"/","display":"standalone","display_override":["standalone","minimal-ui"],"orientation":"any","background_color":"#F2ECE5","theme_color":"#C75A1B","lang":"ar","dir":"rtl",
+  "icons":[{"src":"/varex-app-icon-192.png","sizes":"192x192","type":"image/png","purpose":"any"},{"src":"/varex-app-icon-512.png","sizes":"512x512","type":"image/png","purpose":"any"},{"src":"/varex-app-icon-512.png","sizes":"512x512","type":"image/png","purpose":"maskable"}]
+}

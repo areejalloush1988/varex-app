@@ -1,0 +1,22 @@
+import assert from "node:assert/strict";
+import {readFile} from "node:fs/promises";
+import test from "node:test";
+test("café auth is isolated from other VAREX apps",async()=>{
+  const hosting=JSON.parse(await readFile(new URL("../.openai/hosting.json",import.meta.url),"utf8"));
+  const auth=await readFile(new URL("../lib/auth.ts",import.meta.url),"utf8");
+  const relay=await readFile(new URL("../lib/otp-relay.ts",import.meta.url),"utf8");
+  const client=await readFile(new URL("../public/varex.js",import.meta.url),"utf8");
+  const worker=await readFile(new URL("../worker/index.ts",import.meta.url),"utf8");
+  assert.equal(hosting.d1,"DB");
+  assert.match(auth,/cookiePrefix:"varex_cafe"/);
+  assert.match(auth,/requireEmailVerification:true/);
+  assert.match(relay,/varex_system: "cafe"/);
+  assert.match(relay,/VAREX_THEME_SYNC_SECRET/);
+  assert.match(relay,/varex_sync_email_theme/);
+  assert.match(relay,/varex_theme: theme\.name/);
+  assert.match(client,/\/api\/auth\/sign-in\/email/);
+  assert.match(client,/\/api\/auth\/sign-up\/email/);
+  assert.match(client,/\/api\/varex-auth\/reset-password/);
+  assert.match(worker,/createCafeAuth/);
+  assert.match(worker,/\/login\.html\?return_to=/);
+});

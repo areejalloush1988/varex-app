@@ -1,0 +1,8 @@
+{
+  "app": "VAREX Café",
+  "version": "1.0.0",
+  "themeSource": "/api/cafe-settings",
+  "downloadPage": "https://varex-cafe.areejalloush1988.chatgpt.site/cafe-download.html",
+  "installPage": "https://varex-cafe.areejalloush1988.chatgpt.site/cafe-install.html",
+  "platforms": ["android", "iphone", "tablet", "windows", "web"]
+}

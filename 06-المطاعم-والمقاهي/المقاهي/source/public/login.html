@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate"><meta name="theme-color" content="#C75A1B">
+  <title>تسجيل الدخول | VAREX CAFÉ</title>
+  <link rel="icon" type="image/png" sizes="192x192" href="./varex-app-icon-192.png"><link rel="apple-touch-icon" href="./varex-app-icon-192.png"><link rel="stylesheet" href="./cafe-auth.css?v=8">
+</head>
+<body data-auth-page="login">
+  <main class="auth-shell">
+    <section class="auth-brand">
+      <div class="auth-brand-top"><a class="auth-logo" href="./login.html"><span class="auth-logo-tile"><img src="./varex-approved-transparent-512.png" alt="شعار VAREX"></span><span><strong>VAREX</strong><span>BUSINESS MANAGEMENT SYSTEM</span></span></a></div>
+      <div class="auth-brand-copy"><small>نظام إدارة المقاهي</small><h1>كل أعمال المقهى، في مكان واحد.</h1><p>مساحة عمل موحدة لمتابعة الطلبات والضيوف والتشغيل بوضوح.</p><div class="auth-points"><div class="auth-point"><i>✓</i><span>وصول آمن لبيانات المقهى</span></div><div class="auth-point"><i>✓</i><span>حماية متقدمة وتحقق آمن للحساب</span></div><div class="auth-point"><i>✓</i><span>متابعة كل العمليات من لوحة واحدة</span></div></div></div>
+      <div class="auth-brand-foot">VAREX BUSINESS MANAGEMENT SYSTEM</div>
+    </section>
+    <section class="auth-panel"><div class="auth-form-wrap">
+      <span class="auth-kicker">بوابة المقهى</span>
+      <header class="auth-header"><h2>تسجيل الدخول</h2><p>يرجى إدخال بيانات الحساب للوصول إلى نظام المقاهي.</p></header>
+      <form class="auth-form" id="authLoginForm" novalidate>
+        <div class="auth-field"><label for="authEmail">البريد الإلكتروني</label><div class="auth-control-wrap" data-field-icon="mail"><input class="auth-control" id="authEmail" type="email" autocomplete="username" inputmode="email" placeholder="name@company.com"></div></div>
+        <div class="auth-field"><label for="authPassword">كلمة المرور</label><div class="auth-control-wrap" data-field-icon="lock"><input class="auth-control" id="authPassword" type="password" autocomplete="current-password" placeholder="إدخال كلمة المرور"><button class="auth-eye" type="button" data-toggle-password="authPassword" aria-label="إظهار كلمة المرور"></button></div></div>
+        <div class="auth-row"><label class="auth-check"><input id="authRemember" type="checkbox"><span>حفظ بيانات الدخول على هذا الجهاز</span></label><a class="auth-link" href="./forgot-password.html">استعادة كلمة المرور</a></div>
+        <div class="auth-message" id="authMessage" role="alert" aria-live="polite"></div>
+        <button class="auth-submit" id="authSubmit" type="submit"><span>دخول إلى النظام</span><svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
+      </form>
+      <div class="auth-divider"><span>أو</span></div>
+      <a class="auth-secondary" id="authCreateAccount" href="./register.html"><svg viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8M19 8v6M22 11h-6"/></svg><span>إنشاء حساب جديد</span></a>
+      <p class="auth-help">بعد إنشاء الحساب، تصل رسالة تحتوي رمز OTP لتأكيد البريد.</p>
+    </div></section>
+  </main>
+  <script src="./varex.js?v=20260824-re-auth4"></script><script src="./cafe-auth.js?v=8"></script>
+</body>
+</html>

@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate"><meta name="theme-color" content="#C75A1B">
+  <title>إنشاء حساب | VAREX CAFÉ</title>
+  <link rel="icon" type="image/png" sizes="192x192" href="./varex-app-icon-192.png"><link rel="apple-touch-icon" href="./varex-app-icon-192.png"><link rel="stylesheet" href="./cafe-auth.css?v=8">
+</head>
+<body data-auth-page="register">
+  <main class="auth-shell">
+    <section class="auth-brand">
+      <div class="auth-brand-top"><a class="auth-logo" href="./login.html"><span class="auth-logo-tile"><img src="./varex-approved-transparent-512.png" alt="شعار VAREX"></span><span><strong>VAREX</strong><span>BUSINESS MANAGEMENT SYSTEM</span></span></a></div>
+      <div class="auth-brand-copy"><small>حساب مقهى جديد</small><h1>إدارة المقهى بوضوح من اليوم الأول.</h1><p>إنشاء الحساب ثم تأكيد البريد برمز OTP قبل أول تسجيل دخول.</p><div class="auth-points"><div class="auth-point"><i>1</i><span>إدخال بيانات الحساب</span></div><div class="auth-point"><i>2</i><span>استلام رمز التأكيد بالبريد</span></div><div class="auth-point"><i>3</i><span>تفعيل الحساب وتسجيل الدخول</span></div></div></div>
+      <div class="auth-brand-foot">VAREX BUSINESS MANAGEMENT SYSTEM</div>
+    </section>
+    <section class="auth-panel"><div class="auth-form-wrap">
+      <span class="auth-kicker">بوابة الحسابات</span>
+      <header class="auth-header"><h2>إنشاء حساب جديد</h2><p>بيانات الحساب محمية، ولا يكتمل الإنشاء قبل تأكيد البريد الإلكتروني.</p></header>
+      <form class="auth-form" id="authRegisterForm" novalidate>
+        <div class="auth-field"><label for="authCafeName">اسم المقهى</label><div class="auth-control-wrap" data-field-icon="cafe"><input class="auth-control" id="authCafeName" type="text" autocomplete="organization" placeholder="اسم المقهى"></div></div>
+        <div class="auth-field"><label for="authEmail">البريد الإلكتروني</label><div class="auth-control-wrap" data-field-icon="mail"><input class="auth-control" id="authEmail" type="email" autocomplete="email" inputmode="email" placeholder="name@company.com"></div><small class="auth-hint">سنرسل رمز OTP إلى هذا البريد لتأكيد الحساب.</small></div>
+        <div class="auth-form-grid">
+          <div class="auth-field"><label for="authNewPassword">كلمة المرور</label><div class="auth-control-wrap" data-field-icon="lock"><input class="auth-control" id="authNewPassword" type="password" autocomplete="new-password" placeholder="كلمة مرور قوية"><button class="auth-eye" type="button" data-toggle-password="authNewPassword" aria-label="إظهار كلمة المرور"></button></div></div>
+          <div class="auth-field"><label for="authConfirmPassword">تأكيد كلمة المرور</label><div class="auth-control-wrap" data-field-icon="lock"><input class="auth-control" id="authConfirmPassword" type="password" autocomplete="new-password" placeholder="إعادة إدخال كلمة المرور"><button class="auth-eye" type="button" data-toggle-password="authConfirmPassword" aria-label="إظهار كلمة المرور"></button></div></div>
+        </div>
+        <div class="password-rules"><span class="password-rule" data-password-rule>8 أحرف على الأقل</span><span class="password-rule" data-password-rule>حرف إنجليزي كبير</span><span class="password-rule" data-password-rule>حرف إنجليزي صغير</span><span class="password-rule" data-password-rule>رقم واحد على الأقل</span><span class="password-rule" data-password-rule>رمز خاص مثل ! @ #</span></div>
+        <div class="auth-message" id="authMessage" role="alert" aria-live="polite"></div>
+        <button class="auth-submit" id="authSubmit" type="submit"><span>إنشاء الحساب وإرسال الرمز</span><svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
+      </form>
+      <p class="auth-help">حساب موجود بالفعل؟ <a class="auth-link" href="./login.html">تسجيل الدخول</a></p>
+    </div></section>
+  </main>
+  <script src="./varex.js?v=20260824-re-auth4"></script><script src="./cafe-auth.js?v=8"></script>
+</body>
+</html>
