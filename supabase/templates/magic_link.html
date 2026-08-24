@@ -1,59 +1,61 @@
+{{- $brand := "#C75A1B" -}}
+{{- $soft := "#F8EBE4" -}}
+{{- if eq .Data.varex_theme "coffee" -}}{{- $brand = "#8A4B2A" -}}{{- $soft = "#F1E9E5" -}}
+{{- else if eq .Data.varex_theme "olive" -}}{{- $brand = "#6F7A3D" -}}{{- $soft = "#EEEFE8" -}}
+{{- else if eq .Data.varex_theme "teal" -}}{{- $brand = "#2F6F68" -}}{{- $soft = "#E6EEED" -}}
+{{- else if eq .Data.varex_theme "plum" -}}{{- $brand = "#76506F" -}}{{- $soft = "#EFEAEE" -}}
+{{- else if eq .Data.varex_theme "navy" -}}{{- $brand = "#243B67" -}}{{- $soft = "#E5E7ED" -}}
+{{- else if eq .Data.varex_theme "royal" -}}{{- $brand = "#2F5FA7" -}}{{- $soft = "#E6ECF4" -}}
+{{- else if eq .Data.varex_theme "berry" -}}{{- $brand = "#9A3E68" -}}{{- $soft = "#F3E8ED" -}}
+{{- else if eq .Data.varex_theme "maroon" -}}{{- $brand = "#7A2639" -}}{{- $soft = "#EFE5E7" -}}
+{{- else if eq .Data.varex_theme "graphite" -}}{{- $brand = "#4B5057" -}}{{- $soft = "#E9EAEB" -}}
+{{- else if eq .Data.varex_theme "emerald" -}}{{- $brand = "#2F7A56" -}}{{- $soft = "#E6EFEB" -}}
+{{- else if eq .Data.varex_theme "forest" -}}{{- $brand = "#3F6842" -}}{{- $soft = "#E8EDE8" -}}
+{{- else if eq .Data.varex_theme "mint" -}}{{- $brand = "#4F8D78" -}}{{- $soft = "#EAF1EF" -}}
+{{- else if eq .Data.varex_theme "cyan" -}}{{- $brand = "#287C91" -}}{{- $soft = "#E5EFF2" -}}
+{{- else if eq .Data.varex_theme "sky" -}}{{- $brand = "#4B86B4" -}}{{- $soft = "#E9F0F6" -}}
+{{- else if eq .Data.varex_theme "indigo" -}}{{- $brand = "#4B4F9A" -}}{{- $soft = "#E9EAF3" -}}
+{{- else if eq .Data.varex_theme "violet" -}}{{- $brand = "#6C4AA1" -}}{{- $soft = "#EDE9F4" -}}
+{{- else if eq .Data.varex_theme "lavender" -}}{{- $brand = "#8A6CAD" -}}{{- $soft = "#F1EDF5" -}}
+{{- else if eq .Data.varex_theme "magenta" -}}{{- $brand = "#A43D82" -}}{{- $soft = "#F4E8F0" -}}
+{{- else if eq .Data.varex_theme "rose" -}}{{- $brand = "#B44F65" -}}{{- $soft = "#F6EAED" -}}
+{{- else if eq .Data.varex_theme "coral" -}}{{- $brand = "#C65F4A" -}}{{- $soft = "#F8ECE9" -}}
+{{- else if eq .Data.varex_theme "brick" -}}{{- $brand = "#A44832" -}}{{- $soft = "#F4E9E6" -}}
+{{- else if eq .Data.varex_theme "red" -}}{{- $brand = "#B43B32" -}}{{- $soft = "#F6E7E6" -}}
+{{- else if eq .Data.varex_theme "gold" -}}{{- $brand = "#B88422" -}}{{- $soft = "#F6F0E4" -}}
+{{- else if eq .Data.varex_theme "mustard" -}}{{- $brand = "#A87A18" -}}{{- $soft = "#F5EFE3" -}}
+{{- else if eq .Data.varex_theme "sand" -}}{{- $brand = "#A66E45" -}}{{- $soft = "#F4EEE9" -}}
+{{- else if eq .Data.varex_theme "caramel" -}}{{- $brand = "#B86B31" -}}{{- $soft = "#F6EDE6" -}}
+{{- else if eq .Data.varex_theme "steel" -}}{{- $brand = "#567488" -}}{{- $soft = "#EBEEF1" -}}
+{{- else if eq .Data.varex_theme "slate" -}}{{- $brand = "#5E6878" -}}{{- $soft = "#ECEDEF" -}}
+{{- else if eq .Data.varex_theme "charcoal" -}}{{- $brand = "#343A40" -}}{{- $soft = "#E7E7E8" -}}
+{{- end -}}
 <!doctype html>
 <html lang="ar" dir="rtl">
-  <body style="margin:0;padding:0;background-color:#f3f6fb;font-family:Tahoma,Arial,sans-serif;color:#172554">
-    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="width:100%;background-color:#f3f6fb">
-      <tr>
-        <td align="center" style="padding:38px 14px">
-          <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="width:100%;max-width:590px;background-color:#ffffff;border:1px solid #dfe7f1;border-radius:22px;overflow:hidden;box-shadow:0 14px 36px rgba(23,37,84,.10)">
-            <tr>
-              <td align="center" style="padding:27px 24px 25px;background-color:#172554">
-                <div dir="ltr" style="color:#ffffff;font-family:Arial,sans-serif;font-size:29px;font-weight:900;letter-spacing:6px;line-height:1">VAREX</div>
-                <div style="margin-top:9px;color:#cbd5e1;font-size:10px;letter-spacing:1px">BUSINESS MANAGEMENT SYSTEM</div>
-              </td>
-            </tr>
-            <tr>
-              <td align="center" style="padding:34px 34px 12px">
-                <table role="presentation" cellspacing="0" cellpadding="0" border="0">
-                  <tr><td style="padding:7px 14px;border-radius:999px;background-color:#eef3ff;color:#1e3a6d;font-size:11px;font-weight:700">رسالة تحقق آمنة</td></tr>
-                </table>
-                <h1 style="margin:20px 0 10px;color:#172554;font-size:24px;line-height:1.5">رمز التحقق من VAREX</h1>
-                <p style="margin:0;color:#64748b;font-size:14px;line-height:2">استخدم رمز التحقق التالي داخل VAREX لإكمال العملية المطلوبة بأمان:</p>
-              </td>
-            </tr>
-            <tr>
-              <td align="center" style="padding:18px 34px 22px">
-                <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="width:100%;max-width:390px">
-                  <tr>
-                    <td align="center" style="padding:21px 16px;border:2px solid #d7e2f3;border-radius:16px;background-color:#f8faff">
-                      <div style="margin-bottom:8px;color:#64748b;font-size:10px;font-weight:700">رمز التحقق</div>
-                      <div dir="ltr" style="color:#172554;font-family:Arial,sans-serif;font-size:36px;font-weight:900;letter-spacing:10px;line-height:1.2">{{ .Token }}</div>
-                    </td>
-                  </tr>
-                </table>
-                <p style="margin:15px 0 0;color:#475569;font-size:12px;font-weight:700">تنتهي صلاحية الرمز خلال 10 دقائق</p>
-              </td>
-            </tr>
-            <tr>
-              <td style="padding:0 34px 32px">
-                <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="width:100%;background-color:#fff8f8;border:1px solid #fecaca;border-radius:14px">
-                  <tr>
-                    <td style="padding:15px 17px;color:#991b1b;font-size:12px;line-height:1.9;text-align:right">
-                      <strong style="display:block;margin-bottom:3px">تنبيه أمان</strong>
-                      لا تشارك هذا الرمز مع أي شخص. إذا لم تطلب هذه العملية، تجاهل الرسالة وسيبقى حسابك دون أي تغيير.
-                    </td>
-                  </tr>
-                </table>
-              </td>
-            </tr>
-            <tr>
-              <td align="center" style="padding:18px 22px;background-color:#f8fafc;border-top:1px solid #e5eaf2;color:#94a3b8;font-size:10px;line-height:1.8">
-                هذه رسالة آلية من نظام VAREX، يرجى عدم الرد عليها.<br>
-                <span dir="ltr">VAREX BUSINESS MANAGEMENT SYSTEM</span>
-              </td>
-            </tr>
-          </table>
-        </td>
-      </tr>
+  <body style="margin:0;padding:0;background-color:#f7f3ef;font-family:Tahoma,Arial,sans-serif;color:#111111">
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="width:100%;background-color:#f7f3ef">
+      <tr><td align="center" style="padding:38px 14px">
+        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="width:100%;max-width:590px;background-color:#ffffff;border:1px solid #ead8cc;border-radius:22px;overflow:hidden;box-shadow:0 14px 36px rgba(83,42,18,.10)">
+          <tr><td align="center" style="padding:28px 24px;background-color:{{ $brand }}">
+            <div dir="ltr" style="color:#ffffff;font-family:Arial,sans-serif;font-size:29px;font-weight:900;letter-spacing:6px;line-height:1">VAREX</div>
+            <div style="margin-top:9px;color:#ffffff;font-size:10px;font-weight:700;letter-spacing:1px">BUSINESS MANAGEMENT SYSTEM</div>
+          </td></tr>
+          <tr><td align="center" style="padding:34px 34px 12px">
+            <table role="presentation" cellspacing="0" cellpadding="0" border="0"><tr><td style="padding:7px 14px;border-radius:999px;background-color:{{ $soft }};color:#111111;font-size:11px;font-weight:700">رسالة تحقق آمنة</td></tr></table>
+            <h1 style="margin:20px 0 10px;color:#111111;font-size:24px;line-height:1.5">رمز التحقق من VAREX</h1>
+            <p style="margin:0;color:#5f5148;font-size:14px;line-height:2">يُستخدم الرمز التالي مرة واحدة لإكمال العملية المطلوبة بأمان:</p>
+          </td></tr>
+          <tr><td align="center" style="padding:18px 34px 22px">
+            <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="width:100%;max-width:390px"><tr><td align="center" style="padding:21px 16px;border:2px solid {{ $brand }};border-radius:16px;background-color:{{ $soft }}">
+              <div style="margin-bottom:8px;color:#5f5148;font-size:10px;font-weight:700">رمز التحقق</div>
+              <div dir="ltr" style="color:#111111;font-family:Arial,sans-serif;font-size:36px;font-weight:900;letter-spacing:10px;line-height:1.2">{{ .Token }}</div>
+            </td></tr></table>
+            <p style="margin:15px 0 0;color:#475569;font-size:12px;font-weight:700">تنتهي صلاحية الرمز خلال 10 دقائق</p>
+          </td></tr>
+          <tr><td style="padding:0 34px 32px"><table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="width:100%;background-color:#fff8f8;border:1px solid #fecaca;border-radius:14px"><tr><td style="padding:15px 17px;color:#991b1b;font-size:12px;line-height:1.9;text-align:right"><strong style="display:block;margin-bottom:3px">تنبيه أمان</strong>لا تتم مشاركة الرمز مع أي جهة. عند عدم طلب هذه العملية، لا يلزم تنفيذ أي إجراء.</td></tr></table></td></tr>
+          <tr><td align="center" style="padding:18px 22px;background-color:#faf7f4;border-top:1px solid #eee3dc;color:#8b7b70;font-size:10px;line-height:1.8">هذه رسالة آلية من نظام VAREX، يرجى عدم الرد عليها.<br><span dir="ltr">VAREX BUSINESS MANAGEMENT SYSTEM</span></td></tr>
+        </table>
+      </td></tr>
     </table>
   </body>
 </html>
