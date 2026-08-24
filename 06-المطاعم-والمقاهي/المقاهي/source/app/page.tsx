@@ -141,7 +141,6 @@ function Icon({ name, size = 20 }: { name: string; size?: number }) {
     case "wallet": return <svg {...p}><path d="M4 6h15a2 2 0 0 1 2 2v10H4a2 2 0 0 1-2-2V6a3 3 0 0 1 3-3h13v3"/><path d="M16 11h5v4h-5a2 2 0 0 1 0-4Z"/></svg>;
     case "tax": return <svg {...p}><path d="M6 3h12v18H6zM9 7h6M9 11h6M9 15h3"/><path d="m15 14 3 3M18 14l-3 3"/></svg>;
     case "settings": return <svg {...p}><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1-2.8 2.8-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.6v.2h-4V21a1.7 1.7 0 0 0-1-1.6 1.7 1.7 0 0 0-1.9.3l-.1.1L4.2 17l.1-.1a1.7 1.7 0 0 0 .3-1.9A1.7 1.7 0 0 0 3 14H2.8v-4H3a1.7 1.7 0 0 0 1.6-1 1.7 1.7 0 0 0-.3-1.9L4.2 7 7 4.2l.1.1A1.7 1.7 0 0 0 9 4.6a1.7 1.7 0 0 0 1-1.6v-.2h4V3a1.7 1.7 0 0 0 1 1.6 1.7 1.7 0 0 0 1.9-.3l.1-.1L19.8 7l-.1.1a1.7 1.7 0 0 0-.3 1.9 1.7 1.7 0 0 0 1.6 1h.2v4H21a1.7 1.7 0 0 0-1.6 1Z"/></svg>;
-    case "download": return <svg {...p}><path d="M12 3v12M7 10l5 5 5-5M5 21h14"/></svg>;
     case "switch": return <svg {...p}><path d="M7 7h11l-3-3M17 17H6l3 3"/><path d="m18 7-3 3M6 17l3-3"/></svg>;
     case "logout": return <svg {...p}><path d="M10 4H5v16h5M14 8l4 4-4 4M18 12H9"/></svg>;
     case "bell": return <svg {...p}><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/></svg>;
@@ -276,7 +275,6 @@ export default function Home(){
         <div className="shift-title"><span className="mobile-brand">VAREX CAFÉ</span><Badge tone="live"><i/> الوردية مفتوحة</Badge><div><small>وردية المساء</small><strong>04:22 PM</strong></div></div>
         <div className="crew"><span className="crew-label">فريق التحضير الآن</span><i>MH</i><i>RA</i><i>SK</i><b>3 في الفريق</b></div>
         <div className="shift-actions">
-          <a className="download-app-control" href="/cafe-download.html" title="تحميل تطبيق المقاهي"><Icon name="download"/><span>تحميل التطبيق</span></a>
           <button onClick={()=>confirm({title:"لغة النظام",message:"هل تريد فتح خيارات لغة النظام؟",confirmLabel:"فتح اللغات",onConfirm:()=>setView("settings")})}>{systemSettings.business.language} <span>{systemSettings.business.language==="العربية"?"AR":"EN"}</span></button>
           <div className="theme-control">
             <button aria-label="تغيير المظهر العام" onClick={()=>setThemeMenu(x=>!x)}><Icon name="palette"/></button>

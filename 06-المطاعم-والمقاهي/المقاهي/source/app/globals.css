@@ -153,7 +153,6 @@
 .shift-actions button>span{background:var(--ember);color:#fff}
 .shift-actions button svg{color:var(--ember);stroke:currentColor}
 .alerts>i{border-color:var(--ember-soft);background:var(--ember-dark)}
-.download-app-control{height:37px;min-width:37px;padding:0 10px;display:flex;align-items:center;justify-content:center;gap:6px;border:1px solid var(--ember);border-radius:10px;background:var(--ember);color:#fff;font-size:10px;font-weight:900;text-decoration:none}.download-app-control svg{width:16px;height:16px;stroke:currentColor}.download-app-control span{white-space:nowrap}
 
 @media(max-width:980px){
   .varex-brand{min-width:250px;padding-left:13px}.varex-brand>span,.varex-brand img{width:47px;height:47px}.varex-brand>b{min-width:176px;font-size:20px}.varex-brand small{font-size:8px}
@@ -241,7 +240,7 @@
 .cafe-os :is(h1,h2,h3,p,span,small,strong,b,label,button,input,em){font-weight:700!important}
 
 @media(max-width:980px){.rail-bottom{min-width:140px}.owner{min-width:140px;padding:7px 8px}.owner>b{min-width:79px}}
-@media(max-width:720px){.compose-cta{min-width:42px;width:42px;height:42px;padding:0;grid-template-columns:1fr}.theme-popover{width:min(300px,calc(100vw - 24px));max-height:68vh;top:38px}.shift-actions button,.download-app-control{height:32px;min-width:32px}.download-app-control{padding:0}.download-app-control span{display:none}.shift-actions>button:first-child{display:flex}.shift-actions .sound-control{min-width:32px;padding:0}.shift-actions .sound-control>span{display:none}.system-clock{min-width:73px;padding:0 6px}.system-clock>span{gap:0}.system-clock b{font-size:7px}.system-clock small,.system-clock>svg{display:none}}
+@media(max-width:720px){.compose-cta{min-width:42px;width:42px;height:42px;padding:0;grid-template-columns:1fr}.theme-popover{width:min(300px,calc(100vw - 24px));max-height:68vh;top:38px}.shift-actions button{height:32px;min-width:32px}.shift-actions>button:first-child{display:flex}.shift-actions .sound-control{min-width:32px;padding:0}.shift-actions .sound-control>span{display:none}.system-clock{min-width:73px;padding:0 6px}.system-clock>span{gap:0}.system-clock b{font-size:7px}.system-clock small,.system-clock>svg{display:none}}
 
 /* Requested proportional sizing for navigation and drink-stage lanes */
 @media(min-width:721px){
