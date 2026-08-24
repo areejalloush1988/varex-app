@@ -8,9 +8,9 @@ const defaults={
   operations:{printing:true,alerts:true,routing:true,receipts:false},
   theme:"orange",
   users:[
-    {name:"أريج علوش",role:"إدارة النظام",branch:"دبي",phone:"050 000 1201"},
-    {name:"سامي حداد",role:"إدارة الوردية",branch:"دبي",phone:"050 000 1202"},
-    {name:"رامي ناصر",role:"تشغيل الكاشير",branch:"دبي",phone:"050 000 1203"},
+    {id:"USR-1",name:"أريج علوش",role:"owner",title:"مالك",branch:"دبي",phone:"050 000 1201",email:"",permissions:["live","compose","floor","recipes","prep","batches","finance","tax","waste","guests","insights","settings","users"],active:true},
+    {id:"USR-2",name:"سامي حداد",role:"manager",title:"مدير المقهى",branch:"دبي",phone:"050 000 1202",email:"",permissions:["live","compose","floor","recipes","prep","batches","waste","guests","insights"],active:true},
+    {id:"USR-3",name:"رامي ناصر",role:"cashier",title:"كاشير",branch:"دبي",phone:"050 000 1203",email:"",permissions:["live","compose","floor","guests"],active:true},
   ],
 };
 
