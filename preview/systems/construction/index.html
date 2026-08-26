@@ -1,0 +1,260 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>VAREX | إدارة المقاولات</title>
+<style>:root{--grey:#d7d9d8;--grey2:#eef0ef;--line:#dfe2e1;--ink:#18201f;--muted:#78807e;--white:#fff;--accent:#79817f}
+*{box-sizing:border-box}
+body{margin:0;background:#f4f5f4;color:var(--ink);font-family:Tahoma,Arial,sans-serif}
+.app{min-height:100vh}
+.top{height:82px;background:#f1f2f1;border-bottom:1px solid #cfd2d1;display:flex;align-items:center;padding:0 24px;position:sticky;top:0;z-index:30}
+.logo{height:58px;display:flex;align-items:center;gap:10px;min-width:265px}
+.logo img{width:54px;height:54px;border-radius:13px;object-fit:cover;filter:grayscale(1)}
+.logo b,.logo small{display:block}
+.logo b{font:700 17px Arial;letter-spacing:3px}
+.logo small{font-size:8px;color:#777;margin-top:4px}
+.projectSwitch{height:50px;border-inline-start:1px solid #cfd2d1;padding-inline-start:22px;display:grid;grid-template-columns:1fr auto;align-content:center;min-width:260px}
+.projectSwitch span{font-size:8px;color:#8a8f8e}
+.projectSwitch b{font-size:12px;margin-top:4px}
+.projectSwitch i{grid-column:2;grid-row:1/3;font-style:normal;align-self:center}
+.topActions{margin-inline-start:auto;display:flex;align-items:center;gap:7px}
+.topActions>button,.language>button{height:38px;border:1px solid #cfd2d1;background:#fff;border-radius:9px;padding:0 11px;position:relative}
+.topActions em{position:absolute;top:-5px;inset-inline-end:-5px;width:17px;height:17px;background:#59615f;color:#fff;border-radius:50%;font-size:9px;display:grid;place-items:center;font-style:normal}
+.status{font-size:9px!important}
+.status i{display:inline-block;width:7px;height:7px;background:#4f9e79;border-radius:50%;margin-inline-end:6px}
+.profile{display:flex;align-items:center;gap:8px;margin-inline-start:8px;padding-inline-start:13px;border-inline-start:1px solid #ccd0ce}
+.profile>span{width:38px;height:38px;background:#d2d5d4;border-radius:10px;display:grid;place-items:center;font-size:11px}
+.profile b,.profile small{display:block;font-size:11px}
+.profile small{font-size:8px;color:#888;margin-top:4px}
+.language{position:relative}
+.langMenu{position:absolute;top:45px;inset-inline-end:0;background:#fff;border:1px solid var(--line);box-shadow:0 15px 50px #1d24231f;border-radius:12px;width:280px;max-height:360px;overflow:auto;padding:8px;display:grid;grid-template-columns:1fr 1fr;z-index:80}
+.langMenu button{height:38px;border:0;background:transparent;border-radius:7px;text-align:start;padding:0 9px;font-size:11px}
+.langMenu button:hover,.langMenu .on{background:#e7e9e8}
+.langMenu b{float:inline-end}
+.hamb{display:none}
+.body{display:flex;min-height:calc(100vh - 82px)}
+.dock{width:116px;background:#d5d8d7;border-inline-end:1px solid #c4c8c6;padding:17px 10px;position:sticky;top:82px;height:calc(100vh - 82px);display:flex;flex-direction:column;z-index:20}
+.dockLabel{font-size:8px;color:#767d7b;text-align:center;margin-bottom:10px}
+.dock>button,.dockBottom button{height:58px;border:0;background:transparent;border-radius:11px;display:grid;grid-template-columns:29px 1fr;align-items:center;text-align:start;padding:0 8px;color:#59605e;font-size:9px;cursor:pointer}
+.dock button i{width:28px;height:28px;border-radius:8px;background:#e9ebea;display:grid;place-items:center;font-style:normal;font-size:11px}
+.dock button.active{background:#fff;color:#141a19;box-shadow:0 5px 20px #727a771c}
+.dock button.active i{background:#5f6865;color:#fff}
+.dockBottom{margin-top:auto;border-top:1px solid #c3c7c5;padding-top:8px}
+.dockBottom .logout{color:#a85752}
+.canvas{flex:1;min-width:0;padding:28px;max-width:1540px;margin:auto}
+.hero{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:22px}
+.crumb,.sectionNo{font-size:8px;letter-spacing:1.5px;text-transform:uppercase;color:#838a88}
+.hero h1{font-size:34px;letter-spacing:-1.5px;margin:8px 0 4px}
+.hero p{margin:0;color:var(--muted);font-size:11px}
+.heroActions{display:flex;gap:8px}
+.heroActions button,.mainBtn{height:41px;border-radius:9px;padding:0 15px;font-weight:bold;font-size:10px;cursor:pointer}
+.ghost{border:1px solid #cfd2d1;background:#fff}
+.mainBtn{border:0;background:#5f6865;color:#fff}
+.metricStrip{background:#fff;border:1px solid var(--line);display:grid;grid-template-columns:repeat(4,1fr);margin-bottom:13px}
+.metric{min-height:95px;padding:18px 20px;display:grid;grid-template-columns:7px auto 1fr;align-items:center;gap:11px;border-inline-end:1px solid var(--line)}
+.metric:last-child{border:0}
+.metric>i{height:44px;border-radius:5px;background:#9da4a2}
+.metric strong{font-size:25px}
+.metric span,.metric small{display:block;font-size:10px}
+.metric small{font-size:8px;color:#929795;margin-top:7px}
+.metric.mint>i{background:#80bda5}
+.metric.blue>i{background:#7e9db7}
+.metric.violet>i{background:#9a91bb}
+.metric.orange>i{background:#c69a75}
+.commandGrid{display:grid;grid-template-columns:1.45fr .85fr;gap:13px;margin-bottom:13px}
+.siteCard,.timelineCard,.costCard,.riskCard,.portfolio,.module{background:#fff;border:1px solid var(--line);padding:21px}
+.siteCard,.timelineCard{min-height:384px}
+.cardTop{display:flex;justify-content:space-between;align-items:flex-start}
+.cardTop h2{font-size:16px;margin:5px 0 4px}
+.cardTop p{font-size:9px;color:#89908e;margin:0}
+.cardTop button{border:0;background:transparent;font-size:9px;color:#5e6764}
+.siteVisual{height:225px;margin:18px 0 8px;background:linear-gradient(135deg,#eff1f0,#d9dcdb);position:relative;overflow:hidden;padding:34px 12% 0}
+.siteVisual:before{content:"";position:absolute;inset:0;background:linear-gradient(90deg,#fff0 49%,#bfc4c255 50%,#fff0 51%),linear-gradient(#fff0 49%,#bfc4c244 50%,#fff0 51%);background-size:48px 48px}
+.floor{height:42px;background:#fff;border:1px solid #b9bfbd;margin:auto 0 5px;display:flex;align-items:center;justify-content:space-between;padding:0 15px;position:relative;z-index:1}
+.floor b{font-size:17px}
+.floor span{font-size:8px;color:#888}
+.f1{width:86%;border-inline-start:5px solid #616a67}
+.f2{width:72%;opacity:.8}
+.f3{width:58%;opacity:.65}
+.towerBase{height:12px;width:90%;background:#8a9290;position:relative;z-index:1}
+.siteStats{display:flex;justify-content:space-between;border-top:1px solid var(--line);padding-top:13px;font-size:8px;color:#888}
+.siteStats b{font-size:14px;color:#222;margin-inline-end:5px}
+.phases{margin-top:20px}
+.phases>div{display:grid;grid-template-columns:16px 1fr auto;column-gap:9px;position:relative;min-height:57px}
+.phases>div>i{width:10px;height:10px;border:2px solid #aab0ae;border-radius:50%;margin-top:2px;position:relative}
+.phases>div:not(:last-child)>i:after{content:"";position:absolute;width:1px;height:47px;background:#d7dad9;top:8px;inset-inline-start:3px}
+.phases .live>i{background:#616a67;border-color:#616a67}
+.phases section b,.phases section small{display:block;font-size:10px}
+.phases section small{font-size:8px;color:#999;margin-top:4px}
+.phases strong{font-size:11px}
+.phases div>span{grid-column:2/4;height:4px;background:#eceeed;margin-top:-16px}
+.phases em{height:100%;display:block;background:#89918f}
+.deadline{background:#eef0ef;padding:12px 14px;display:grid;grid-template-columns:1fr auto}
+.deadline span,.deadline small{font-size:8px;color:#888}
+.deadline b{font-size:11px}
+.deadline small{grid-column:1/3;color:#4e846d;margin-top:6px}
+.lowerGrid{display:grid;grid-template-columns:1.15fr .85fr;gap:13px;margin-bottom:13px}
+.costNumbers{display:flex;justify-content:space-between;margin:25px 0}
+.costNumbers small,.costNumbers b{display:block}
+.costNumbers small{font-size:8px;color:#888}
+.costNumbers b{font-size:19px;margin-top:7px}
+.costTrack{height:10px;background:#e7e9e8;position:relative}
+.costTrack i{display:block;height:100%;background:#707976}
+.costTrack em{position:absolute;top:-5px;width:2px;height:20px;background:#222}
+.costLegend{display:flex;justify-content:space-between;margin-top:12px;font-size:8px}
+.costLegend b{color:#3d8062}
+.decision{height:57px;border-top:1px solid var(--line);display:flex;align-items:center;gap:10px}
+.decision:first-of-type{margin-top:12px}
+.decision>i{width:7px;height:34px;border-radius:4px}
+.decision .red{background:#c57975}
+.decision .amber{background:#c39c63}
+.decision .green{background:#72a78d}
+.decision b,.decision small{display:block;font-size:9px;flex:1}
+.decision small{font-size:8px;color:#999;margin-top:4px}
+.decision button{border:1px solid #d6d9d8;background:#fff;border-radius:7px;padding:6px 9px;font-size:8px}
+.portfolio{margin-bottom:20px}
+.projectRows{margin-top:15px}
+.projectRows>div{min-height:55px;border-top:1px solid var(--line);display:grid;grid-template-columns:30px 1.4fr 1fr 40px 85px 25px;align-items:center;gap:12px}
+.projectRows .code{font-size:8px;color:#999}
+.projectRows b,.projectRows small{display:block;font-size:10px}
+.projectRows small{font-size:8px;color:#999;margin-top:4px}
+.pbar{height:5px;background:#e9ebea}
+.pbar i{display:block;height:100%;background:#737c79}
+.projectRows strong{font-size:10px}
+.projectRows mark{font-size:8px;color:#448167;background:#e1f0e9;border-radius:12px;padding:5px;text-align:center}
+.projectRows mark.late{color:#a65350;background:#f5e6e5}
+.projectRows button{border:0;background:none}
+.module{min-height:560px;display:grid;place-content:center;text-align:center}
+.module h1{font-size:34px;margin:10px}
+.module p{font-size:11px;color:#888}
+.moduleGrid{display:flex;gap:8px;justify-content:center;margin-top:20px}
+.moduleGrid button{height:42px;border:1px solid var(--line);background:#f4f5f4;border-radius:8px;padding:0 14px}
+.shade{display:none}
+.modal{position:fixed;inset:0;background:#303736aa;z-index:100;display:grid;place-items:center;padding:20px}
+.modal form{width:min(560px,100%);background:#fff;padding:28px;position:relative}
+.modal .x{position:absolute;top:12px;inset-inline-end:12px;border:0;background:#eee;width:30px;height:30px}
+.modal h2{margin:8px 0 22px}
+.modal label{font-size:9px;font-weight:bold;display:block;margin-bottom:14px}
+.modal input{display:block;width:100%;height:42px;margin-top:7px;border:1px solid var(--line);padding:0 10px}
+.modal form>div{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.modal footer{display:flex;justify-content:flex-end;gap:8px;margin-top:10px}
+.modal footer button{height:40px;border:0;padding:0 16px}
+
+@media(max-width:1100px){.top{padding:0 12px}
+.projectSwitch,.status,.profile b{display:none}
+.logo{min-width:0}
+.logo>div{display:none}
+.topActions{margin-inline-start:auto}
+.hamb{display:block;border:0;background:#59625f;color:#fff;width:38px;height:38px;border-radius:8px;margin-inline-end:8px}
+.dock{position:fixed;top:82px;inset-inline-start:0;transform:translateX(-110%);width:220px;transition:.25s}
+.dock.open{transform:none}
+.dock>button,.dockBottom button{grid-template-columns:38px 1fr;font-size:11px}
+.shade{display:block;position:fixed;inset:82px 0 0;background:#0005;z-index:15}
+.commandGrid,.lowerGrid{grid-template-columns:1fr}
+.canvas{padding:18px}
+}
+
+@media(max-width:650px){.top{height:70px}
+.body{min-height:calc(100vh - 70px)}
+.dock{top:70px;height:calc(100vh - 70px)}
+.logo img{width:46px;height:46px}
+.topActions>button:nth-of-type(1),.topActions>button:nth-of-type(2){display:none}
+.language>button{font-size:0}
+.language>button:first-letter{font-size:15px}
+.langMenu{position:fixed;top:73px;inset-inline:8px;width:auto}
+.hero{align-items:flex-start;gap:12px}
+.hero h1{font-size:26px}
+.hero p{line-height:1.7}
+.heroActions{flex-direction:column}
+.heroActions button{height:35px;padding:0 10px;font-size:8px}
+.metricStrip{grid-template-columns:1fr 1fr}
+.metric{border-bottom:1px solid var(--line);min-height:82px;padding:12px}
+.metric strong{font-size:20px}
+.siteCard,.timelineCard,.costCard,.riskCard,.portfolio{padding:14px}
+.costNumbers{gap:10px}
+.costNumbers b{font-size:14px}
+.projectRows{overflow:auto}
+.projectRows>div{min-width:650px}
+.modal form>div{grid-template-columns:1fr}
+}
+
+.dock{width:145px;background:#4f5755;border-inline-end-color:#414846;padding-inline:13px}
+.dockLabel{color:#cfd4d2;font-size:9px}
+.dock>button,.dockBottom button{grid-template-columns:34px 1fr;color:#e4e7e6;font-size:10px}
+.dock button i{width:31px;height:31px;background:#d9dddb;color:#4f5755}
+.dock button.active{background:#68716e;color:#fff;box-shadow:none}
+.dock button.active i{background:#eef0ef;color:#414946}
+.dockBottom{border-top-color:#6e7774}
+.dockBottom .logout{color:#ffc2be}
+.topActions>button,.language>button{background:#555e5b;border-color:#555e5b;color:#eef1f0}
+.status{background:#555e5b!important;color:#eef1f0!important}
+.status i{background:#8ed0af}
+.logo small{font-family:Arial,sans-serif;letter-spacing:1.2px;font-size:7px;color:#59615f}
+.langMenu button{color:#222;background:#fff}
+.langMenu button:hover,.langMenu .on{background:#e1e4e3}
+@media(max-width:1100px){.dock{width:240px}
+}
+@media(max-width:650px){.dock{width:230px}
+}
+.downloadPage{min-height:100vh;background:#f4f5f4;color:#202625;padding-bottom:40px}.downloadPage>header{height:82px;background:#fff;border-bottom:1px solid #d9dddb;display:flex;align-items:center;padding:0 clamp(18px,5vw,70px)}.downloadPage>header a{display:flex;align-items:center;gap:10px;text-decoration:none;color:#202625}.downloadPage>header img{width:52px;height:52px;border-radius:13px}.downloadPage>header span b,.downloadPage>header span small{display:block}.downloadPage>header span b{letter-spacing:3px}.downloadPage>header span small{font-size:7px;letter-spacing:1px;margin-top:4px}.downloadPage>header button{margin-inline-start:auto;border:0;background:#505957;color:#fff;height:39px;padding:0 15px;border-radius:8px}.downloadHero{text-align:center;padding:55px 15px 26px}.downloadHero>span{font-size:9px;letter-spacing:3px;color:#73807d}.downloadHero h1{font-size:clamp(36px,6vw,70px);line-height:1.05;letter-spacing:-2px;margin:13px 0}.downloadHero p{font-size:12px;color:#747d7a}.detected{display:inline-block;margin-top:17px;background:#e1e6e4;color:#4e5c58;padding:9px 15px;border-radius:20px;font-size:9px}.deviceGrid{width:min(920px,calc(100% - 30px));margin:15px auto;display:grid;grid-template-columns:repeat(4,1fr);gap:10px}.deviceGrid button{height:145px;border:1px solid #d7dbd9;background:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;border-radius:13px;color:#313836}.deviceGrid button.chosen{border:2px solid #8792A2;background:#f0f2f3;transform:translateY(-5px);box-shadow:0 15px 35px #6670781d}.deviceGrid i{font-style:normal;font-size:28px;color:#697471}.deviceGrid b{font-size:12px;margin:10px 0 5px}.deviceGrid small{font-size:8px;color:#939996}.deviceGrid em{position:absolute;top:8px;inset-inline-end:8px;background:#8792A2;color:#fff;border-radius:12px;padding:4px 8px;font-size:7px;font-style:normal}.installCard{width:min(680px,calc(100% - 30px));margin:25px auto;background:#fff;border:1px solid #d9dddb;padding:28px;text-align:center;border-radius:16px}.appPreview{display:flex;align-items:center;justify-content:center;gap:10px}.appPreview img{width:68px;height:68px;border-radius:17px}.appPreview span{text-align:start}.appPreview b,.appPreview small{display:block}.appPreview small{font-size:8px;color:#929895;margin-top:5px}.installCard h2{font-size:24px;margin:22px 0 8px}.installCard>p,.instructions p{font-size:10px;color:#727a77;line-height:1.9;max-width:500px;margin:0 auto 18px}.installNow{height:47px;border:0;background:#505957;color:#fff;border-radius:9px;padding:0 22px;font-weight:bold}.instructions>b{display:block;font-size:18px;margin:22px 0 7px}.downloadPage>footer{display:flex;justify-content:center;gap:25px;color:#78817e;font-size:9px;margin-top:25px}@media(max-width:650px){.deviceGrid{grid-template-columns:1fr 1fr}.deviceGrid button{height:120px}.downloadHero{padding-top:35px}.installCard{padding:20px 15px}.downloadPage>footer{flex-wrap:wrap}.downloadPage>header span{display:none}}
+
+[hidden]{display:none!important}.langMenu{max-height:360px;overflow:auto}.moduleScreen{min-height:calc(100vh - 130px)}
+</style>
+</head>
+<body>
+<main class="app" dir="rtl">
+<header class="top">
+<button class="hamb" id="hamb" type="button">☰</button>
+<div class="logo"><img src="./public/varex-construction-logo.png" alt="VAREX Business Management App"><div><b>VAREX</b><small>BUSINESS MANAGEMENT APP</small></div></div>
+<div class="projectSwitch"><span>المشروع الحالي</span><b>برج المارينا السكني</b><i>⌄</i></div>
+<div class="topActions"><button class="status" type="button"><i></i>النظام متصل</button><div class="language"><button id="langButton" type="button">🌐 العربية⌄</button><div class="langMenu" id="langMenu" hidden></div></div><button type="button">☼</button><button type="button">♢<em>3</em></button><div class="profile"><span>م ع</span><b>محمد العلي<small>مدير المشاريع</small></b></div></div>
+</header>
+<div class="body">
+<aside class="dock" id="dock"><div class="dockLabel">مساحات العمل</div>
+<button class="active" data-module="مركز القيادة" type="button"><i>⌂</i><span>مركز القيادة</span></button>
+<button data-module="المشاريع" type="button"><i>▰</i><span>المشاريع</span></button>
+<button data-module="الموقع اليومي" type="button"><i>⌁</i><span>الموقع اليومي</span></button>
+<button data-module="المخططات" type="button"><i>▤</i><span>المخططات</span></button>
+<button data-module="البرنامج الزمني" type="button"><i>◷</i><span>البرنامج الزمني</span></button>
+<button data-module="التكاليف" type="button"><i>د.إ</i><span>التكاليف</span></button>
+<button data-module="التغييرات" type="button"><i>⇄</i><span>التغييرات</span></button>
+<button data-module="الجودة والسلامة" type="button"><i>⚑</i><span>الجودة والسلامة</span></button>
+<button data-module="المعدات" type="button"><i>⚙</i><span>المعدات</span></button>
+<button data-module="التقارير" type="button"><i>◎</i><span>التقارير</span></button>
+<div class="dockBottom"><button type="button"><i>♙</i><span>تبديل المستخدم</span></button><button class="logout" type="button"><i>↪</i><span>تسجيل الخروج</span></button></div>
+</aside>
+<section class="canvas">
+<div id="dashboard">
+<div class="hero"><div><span class="crumb">مركز عمليات المقاولات / اليوم</span><h1>الموقع تحت السيطرة.</h1><p>متابعة مباشرة للتنفيذ، الموارد، التكلفة والمخاطر من شاشة واحدة.</p></div><div class="heroActions"><button class="ghost" type="button">تنزيل التقرير</button><button class="mainBtn" type="button">＋ إنشاء مشروع</button></div></div>
+<div class="metricStrip"><div class="metric mint"><i></i><strong>12</strong><span>مشروعاً نشطاً<small>3 قرب التسليم</small></span></div><div class="metric blue"><i></i><strong>64.8 م</strong><span>قيمة العقود<small>+8.2% هذا الشهر</small></span></div><div class="metric violet"><i></i><strong>68%</strong><span>الإنجاز العام<small>وفق البرنامج</small></span></div><div class="metric orange"><i></i><strong>7</strong><span>قرارات معلّقة<small>2 عاجلة اليوم</small></span></div></div>
+<div class="commandGrid">
+<article class="siteCard"><div class="cardTop"><div><span class="sectionNo">01</span><h2>نبض الموقع</h2><p>برج المارينا • آخر تحديث قبل 8 دقائق</p></div><button type="button">فتح يومية الموقع ←</button></div><div class="siteVisual"><div class="floor f1"><b>12</b><span>قيد الصب</span></div><div class="floor f2"><b>11</b><span>مكتمل</span></div><div class="floor f3"><b>10</b><span>مكتمل</span></div><div class="towerBase"></div></div><div class="siteStats"><span><b>184</b>عامل بالموقع</span><span><b>9</b>معدات تعمل</span><span><b>0</b>حادث اليوم</span></div></article>
+<article class="timelineCard"><div class="cardTop"><div><span class="sectionNo">02</span><h2>خط التنفيذ</h2><p>المراحل الحرجة للمشروع</p></div><button type="button">البرنامج الكامل ←</button></div><div class="phases"><div class="live"><i></i><section><b>أعمال الهيكل</b><small>اليوم</small></section><strong>82%</strong><span><em style="width:82%"></em></span></div><div><i></i><section><b>الأعمال الكهروميكانيكية</b><small>28 أغسطس</small></section><strong>61%</strong><span><em style="width:61%"></em></span></div><div><i></i><section><b>الواجهات الخارجية</b><small>12 سبتمبر</small></section><strong>35%</strong><span><em style="width:35%"></em></span></div><div><i></i><section><b>التشطيبات</b><small>3 أكتوبر</small></section><strong>12%</strong><span><em style="width:12%"></em></span></div></div><div class="deadline"><span>موعد التسليم المتوقع</span><b>18 ديسمبر 2026</b><small>متقدم 6 أيام عن الخطة</small></div></article>
+</div>
+<div class="lowerGrid">
+<article class="costCard"><div class="cardTop"><div><span class="sectionNo">03</span><h2>مؤشر التكلفة</h2><p>الميزانية مقابل المصروف الفعلي</p></div><button type="button">آخر 6 أشهر⌄</button></div><div class="costNumbers"><span><small>الميزانية المعتمدة</small><b>18.40 م</b></span><span><small>المصروف حتى اليوم</small><b>12.16 م</b></span><span><small>التوقع عند الإغلاق</small><b>17.62 م</b></span></div><div class="costTrack"><i style="width:66%"></i><em style="left:74%"></em></div><div class="costLegend"><span>66% مصروف</span><b>وفر متوقع 780,000 د.إ</b></div></article>
+<article class="riskCard"><div class="cardTop"><div><span class="sectionNo">04</span><h2>غرفة القرارات</h2><p>ما يحتاج موافقتك اليوم</p></div><button type="button">عرض الكل</button></div><div class="decision"><i class="red"></i><b>تأخر توريد حديد التسليح<small>تأثير محتمل: 4 أيام</small></b><button type="button">معالجة الآن</button></div><div class="decision"><i class="amber"></i><b>أمر تغيير الواجهة الشرقية<small>القيمة: 126,000 د.إ</small></b><button type="button">اعتماد</button></div><div class="decision"><i class="green"></i><b>فحص عزل الطابق التاسع<small>اجتاز فحص الجودة</small></b><button type="button">عرض</button></div></article>
+</div>
+<article class="portfolio"><div class="cardTop"><div><span class="sectionNo">05</span><h2>محفظة المشاريع</h2><p>مقارنة سريعة للمشاريع النشطة</p></div><button type="button">إدارة المشاريع ←</button></div><div class="projectRows"><div><span class="code">01</span><b>برج المارينا<small>دبي</small></b><span class="pbar"><i style="width:74%"></i></span><strong>74%</strong><mark>ضمن الخطة</mark><button type="button">←</button></div><div><span class="code">02</span><b>فلل الياسمين<small>الشارقة</small></b><span class="pbar"><i style="width:51%"></i></span><strong>51%</strong><mark>ضمن الخطة</mark><button type="button">←</button></div><div><span class="code">03</span><b>مستودعات جبل علي<small>دبي</small></b><span class="pbar"><i style="width:28%"></i></span><strong>28%</strong><mark class="late">متأخر 4 أيام</mark><button type="button">←</button></div></div></article>
+</div>
+<div class="module moduleScreen" id="moduleScreen" hidden><span class="sectionNo">VAREX CONSTRUCTION</span><h1 id="moduleTitle">المشاريع</h1><p id="moduleCopy">وحدة مستقلة لإدارة السجلات والعمليات الخاصة بالمشاريع.</p><div class="moduleGrid"><button type="button">＋ إضافة سجل جديد</button><button type="button">⌕ بحث وتصفية</button><button type="button">⇩ تصدير التقرير</button></div></div>
+</section>
+</div>
+<div class="shade" id="shade" hidden></div>
+</main>
+<script>
+(()=>{"use strict";
+const languages=[["ar","العربية","rtl"],["en","English","ltr"],["fr","Français","ltr"],["ur","اردو","rtl"],["it","Italiano","ltr"],["es","Español","ltr"],["fa","فارسی","rtl"],["ru","Русский","ltr"],["zh","中文","ltr"],["ku","Kurdî","rtl"],["de","Deutsch","ltr"],["pt","Português","ltr"],["tr","Türkçe","ltr"],["hi","हिन्दी","ltr"],["bn","বাংলা","ltr"],["ja","日本語","ltr"],["ko","한국어","ltr"],["id","Indonesia","ltr"],["ms","Melayu","ltr"],["he","עברית","rtl"]];
+const dock=document.getElementById("dock"),dashboard=document.getElementById("dashboard"),screen=document.getElementById("moduleScreen"),title=document.getElementById("moduleTitle"),copy=document.getElementById("moduleCopy"),menu=document.getElementById("langMenu"),langButton=document.getElementById("langButton"),shade=document.getElementById("shade");
+menu.innerHTML=languages.map(([code,label])=>'<button type="button" data-lang="'+code+'">'+label+'<b></b></button>').join("");
+document.getElementById("hamb").onclick=()=>{dock.classList.toggle("open");shade.hidden=!dock.classList.contains("open")};
+shade.onclick=()=>{dock.classList.remove("open");shade.hidden=true};
+dock.addEventListener("click",e=>{const b=e.target.closest("[data-module]");if(!b)return;dock.querySelectorAll("[data-module]").forEach(x=>x.classList.toggle("active",x===b));const name=b.dataset.module;dashboard.hidden=name!=="مركز القيادة";screen.hidden=name==="مركز القيادة";title.textContent=name;copy.textContent="وحدة مستقلة لإدارة السجلات والعمليات الخاصة بـ "+name+".";dock.classList.remove("open");shade.hidden=true});
+langButton.onclick=()=>menu.hidden=!menu.hidden;
+menu.onclick=e=>{const b=e.target.closest("[data-lang]");if(!b)return;const selected=languages.find(x=>x[0]===b.dataset.lang)||languages[0];document.documentElement.lang=selected[0];document.documentElement.dir=selected[2];document.querySelector(".app").dir=selected[2];langButton.textContent="🌐 "+selected[1]+"⌄";menu.hidden=true};
+})();
+</script>
+</body>
+</html>
