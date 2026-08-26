@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#4e4b9a">
+  <title>VAREX | نظام إدارة الصيدليات</title>
+  <link rel="manifest" href="../../../07-إدارة-الصيدليات/manifest.json">
+  <link rel="icon" href="../../../07-إدارة-الصيدليات/varex-pharmacy-logo.png?v=6" type="image/png">
+  <link rel="stylesheet" href="../../../07-إدارة-الصيدليات/styles.css?v=6">
+</head>
+<body>
+<svg class="icon-sprite" aria-hidden="true">
+  <symbol id="i-home" viewBox="0 0 24 24"><path d="M3 10.8 12 3l9 7.8v9.1a1.1 1.1 0 0 1-1.1 1.1H4.1A1.1 1.1 0 0 1 3 19.9z"/><path d="M9 21v-7h6v7"/></symbol>
+  <symbol id="i-sale" viewBox="0 0 24 24"><path d="M5 3h14v18l-2.5-1.6L14 21l-2-1.6L9.5 21 7 19.4 5 21z"/><path d="M8 7h8M8 11h8M8 15h5"/></symbol>
+  <symbol id="i-pill" viewBox="0 0 24 24"><path d="M8.1 4.1a5 5 0 0 1 7.1 0l4.7 4.7a5 5 0 0 1-7.1 7.1l-4.7-4.7a5 5 0 0 1 0-7.1Z"/><path d="m9.2 12.3 7.1-7.1"/></symbol>
+  <symbol id="i-batch" viewBox="0 0 24 24"><path d="M9 3h6M10 3v5l-5.2 9a2.7 2.7 0 0 0 2.3 4h9.8a2.7 2.7 0 0 0 2.3-4L14 8V3"/><path d="M7.5 15h9"/></symbol>
+  <symbol id="i-box" viewBox="0 0 24 24"><path d="m4 7 8-4 8 4-8 4z"/><path d="M4 7v10l8 4 8-4V7M12 11v10"/></symbol>
+  <symbol id="i-truck" viewBox="0 0 24 24"><path d="M3 6h11v11H3zM14 10h4l3 3v4h-7z"/><circle cx="7" cy="19" r="2"/><circle cx="18" cy="19" r="2"/></symbol>
+  <symbol id="i-users" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3"/><path d="M3.5 20v-2.2A4.8 4.8 0 0 1 8.3 13h1.4a4.8 4.8 0 0 1 4.8 4.8V20"/><circle cx="17" cy="9" r="2.4"/><path d="M15.5 14.2h1.8a3.8 3.8 0 0 1 3.8 3.8v2"/></symbol>
+  <symbol id="i-rx" viewBox="0 0 24 24"><path d="M6 3h9l3 3v15H6z"/><path d="M14 3v4h4M9 11h6M9 15h4"/></symbol>
+  <symbol id="i-card" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 10h18M7 15h3"/></symbol>
+  <symbol id="i-staff" viewBox="0 0 24 24"><circle cx="12" cy="7" r="4"/><path d="M4 21a8 8 0 0 1 16 0M12 3v8M8 7h8"/></symbol>
+  <symbol id="i-vat" viewBox="0 0 24 24"><path d="M5 3h14v18H5z"/><path d="M8 7h8M8 17h8"/><circle cx="9" cy="11" r="1.2"/><circle cx="15" cy="14" r="1.2"/><path d="m15.5 9.5-7 6"/></symbol>
+  <symbol id="i-chart" viewBox="0 0 24 24"><path d="M4 21V10M10 21V4M16 21v-7M22 21H2"/></symbol>
+  <symbol id="i-settings" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1-2.8 2.8-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.6v.2h-4V21a1.7 1.7 0 0 0-1-1.6 1.7 1.7 0 0 0-1.9.3l-.1.1L4.2 17l.1-.1a1.7 1.7 0 0 0 .3-1.9A1.7 1.7 0 0 0 3 14H2.8v-4H3a1.7 1.7 0 0 0 1.6-1 1.7 1.7 0 0 0-.3-1.9L4.2 7 7 4.2l.1.1a1.7 1.7 0 0 0 1.9.3A1.7 1.7 0 0 0 10 3V2.8h4V3a1.7 1.7 0 0 0 1 1.6 1.7 1.7 0 0 0 1.9-.3l.1-.1L19.8 7l-.1.1a1.7 1.7 0 0 0-.3 1.9 1.7 1.7 0 0 0 1.6 1h.2v4H21a1.7 1.7 0 0 0-1.6 1Z"/></symbol>
+  <symbol id="i-switch" viewBox="0 0 24 24"><circle cx="8" cy="8" r="3"/><path d="M2.5 19a5.5 5.5 0 0 1 11 0M16 7h5m0 0-2-2m2 2-2 2M21 14h-5m0 0 2-2m-2 2 2 2"/></symbol>
+  <symbol id="i-power" viewBox="0 0 24 24"><path d="M12 2v10"/><path d="M18.4 5.6a9 9 0 1 1-12.8 0"/></symbol>
+  <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
+  <symbol id="i-calendar" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M7 3v4M17 3v4M3 10h18"/></symbol>
+  <symbol id="i-printer" viewBox="0 0 24 24"><path d="M6 9V3h12v6M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><path d="M6 14h12v7H6zM18 12h.01"/></symbol>
+  <symbol id="i-barcode" viewBox="0 0 24 24"><path d="M3 5v14M6 5v14M10 5v14M12 5v14M16 5v14M19 5v14M21 5v14"/></symbol>
+  <symbol id="i-volume" viewBox="0 0 24 24"><path d="M4 10v4h4l5 4V6l-5 4zM17 9a4 4 0 0 1 0 6M19.5 6.5a8 8 0 0 1 0 11"/></symbol>
+  <symbol id="i-full" viewBox="0 0 24 24"><path d="M8 3H3v5M16 3h5v5M21 16v5h-5M3 16v5h5"/></symbol>
+  <symbol id="i-language" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3 4.2 6 4.2 9S15 18 12 21M12 3c-3 3-4.2 6-4.2 9S9 18 12 21"/></symbol>
+  <symbol id="i-theme" viewBox="0 0 24 24"><path d="M20.5 15.5A8.5 8.5 0 0 1 8.5 3.5 8.7 8.7 0 1 0 20.5 15.5Z"/><path d="M16.5 3.5v2M16.5 9v2M12 7.3h2M19 7.3h2"/></symbol>
+</svg>
+
+<div id="appScale">
+  <div class="app-shell">
+    <header class="topbar">
+      <div class="brand-station"><img class="app-logo" src="../../../07-إدارة-الصيدليات/varex-pharmacy-logo.png?v=6" alt="VAREX Business Management System"><div class="top-title"><span>PHARMACY CONTROL</span><h1 id="headerPharmacyName">صيدلية VAREX</h1><p>نظام إدارة الصيدليات الذكي</p></div></div>
+      <div class="shift-status"><span class="pulse-ring"><i></i></span><div><strong>النظام متصل وجاهز للعمل</strong><small>آخر مزامنة تمت الآن</small></div></div>
+      <div class="date-time-console" aria-label="التاريخ والوقت">
+        <button class="date-console" id="dateButton" type="button" title="التاريخ"><svg><use href="#i-calendar"/></svg><span id="liveDate">--/--/----</span></button>
+        <button class="clock-console" id="clockButton" type="button" title="الوقت"><svg><use href="#i-clock"/></svg><span id="liveClock">--:--</span></button>
+      </div>
+    </header>
+
+    <section class="control-dock" aria-label="شريط التحكم بالنظام">
+      <div class="dock-user"><span class="user-avatar">V</span><div><small data-ar="اسم المدير" data-en="Manager">اسم المدير</small><strong id="sidebarUserName">مالك الصيدلية</strong></div><i class="online-dot"></i></div>
+      <div class="zoom-control" aria-label="حجم واجهة النظام"><button class="tool-btn zoom-step" id="zoomOut" type="button" title="تصغير الشاشة">−</button><select class="zoom-select" id="zoomSelect" aria-label="حجم الشاشة"><option value="100">100%</option><option value="90">90%</option><option value="80">80%</option><option value="70">70%</option><option value="60">60%</option><option value="50">50%</option></select><button class="tool-btn zoom-step" id="zoomIn" type="button" title="تكبير الشاشة">＋</button></div>
+      <div class="dock-system">
+        <button class="tool-btn control-indigo" id="printerButton" type="button" title="الطباعة"><svg><use href="#i-printer"/></svg><span class="tool-label" data-ar="الطابعة" data-en="Printer">الطابعة</span></button>
+        <button class="tool-btn control-indigo" id="barcodeReaderButton" type="button" title="قارئ الباركود"><svg><use href="#i-barcode"/></svg><span class="tool-label" data-ar="قارئ الباركود" data-en="Barcode reader">قارئ الباركود</span></button>
+        <button class="tool-btn control-indigo" id="languageButton" type="button" title="تغيير اللغة"><svg><use href="#i-language"/></svg><span class="tool-label" id="languageLabel">العربية</span></button>
+        <button class="tool-btn control-indigo" id="themeButton" type="button" title="تغيير المظهر"><svg><use href="#i-theme"/></svg><span class="tool-label" id="themeLabel">المظهر الفاتح</span></button>
+        <button class="tool-btn control-indigo active" id="soundToggle" type="button" title="صوت النقر"><svg><use href="#i-volume"/></svg><span class="tool-label" id="soundLabel">الصوت</span><span id="soundIcon" hidden>🔊</span></button>
+        <button class="tool-btn control-indigo" id="fullscreenButton" type="button" title="ملء الشاشة"><svg><use href="#i-full"/></svg><span class="tool-label" data-ar="ملء الشاشة" data-en="Full screen">ملء الشاشة</span></button>
+        <button class="tool-btn control-indigo switch-user" id="switchUserButton" type="button"><svg><use href="#i-switch"/></svg><span class="tool-label" data-ar="تبديل المستخدم" data-en="Switch user">تبديل المستخدم</span></button>
+        <button class="tool-btn logout" id="logoutButton" type="button"><svg><use href="#i-power"/></svg><span class="tool-label" data-ar="خروج" data-en="Logout">خروج</span></button>
+      </div>
+    </section>
+
+    <div class="app-navigation" id="mainNav">
+      <nav class="module-ribbon" aria-label="الوحدات الرئيسية">
+        <button class="module-btn active" data-page="dashboard"><svg><use href="#i-home"/></svg><span data-ar="لوحة التحكم" data-en="Dashboard">لوحة التحكم</span></button>
+        <button class="module-btn hot" data-page="pos"><svg><use href="#i-sale"/></svg><span data-ar="نقطة البيع" data-en="Point of sale">نقطة البيع</span></button>
+        <button class="module-btn" data-page="medicines"><svg><use href="#i-pill"/></svg><span data-ar="الأدوية" data-en="Medicines">الأدوية</span></button>
+        <button class="module-btn" data-page="batches"><svg><use href="#i-batch"/></svg><span data-ar="الصلاحية" data-en="Expiry">الصلاحية</span></button>
+        <button class="module-btn" data-page="purchases"><svg><use href="#i-box"/></svg><span data-ar="المشتريات" data-en="Purchases">المشتريات</span></button>
+        <button class="module-btn" data-page="suppliers"><svg><use href="#i-truck"/></svg><span data-ar="الموردون" data-en="Suppliers">الموردون</span></button>
+        <button class="module-btn" data-page="customers"><svg><use href="#i-users"/></svg><span data-ar="العملاء" data-en="Customers">العملاء</span></button>
+        <button class="module-btn" data-page="prescriptions"><svg><use href="#i-rx"/></svg><span data-ar="الوصفات" data-en="Prescriptions">الوصفات</span></button>
+        <button class="module-btn" data-page="expenses"><svg><use href="#i-card"/></svg><span data-ar="المصروفات" data-en="Expenses">المصروفات</span></button>
+      </nav>
+
+      <div class="content-stage">
+        <aside class="utility-rail" aria-label="أدوات الإدارة">
+          <span class="rail-title" data-ar="الإدارة" data-en="Admin">الإدارة</span>
+          <button class="utility-btn" data-page="employees"><svg><use href="#i-staff"/></svg><span data-ar="الموظفون" data-en="Staff">الموظفون</span></button>
+          <button class="utility-btn" data-page="vat"><svg><use href="#i-vat"/></svg><span>VAT</span></button>
+          <button class="utility-btn" data-page="reports"><svg><use href="#i-chart"/></svg><span data-ar="التقارير" data-en="Reports">التقارير</span></button>
+          <button class="utility-btn" data-page="settings"><svg><use href="#i-settings"/></svg><span data-ar="الإعدادات" data-en="Settings">الإعدادات</span></button>
+          <div class="rail-pharmacy-mark">Rx</div>
+        </aside>
+        <main class="main-content" id="pageHost" aria-live="polite"></main>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div class="modal-layer" id="modalLayer" aria-hidden="true"><div class="modal-card" role="dialog" aria-modal="true"><div class="modal-head"><h3 id="modalTitle">إضافة</h3><button class="modal-close" id="modalClose" type="button">✕</button></div><div class="modal-body" id="modalBody"></div><div class="modal-actions" id="modalActions"></div></div></div>
+<div class="toast-stack" id="toastStack"></div>
+<script src="./app.js?v=static-preview-1"></script><script src="../../../07-إدارة-الصيدليات/ui-controls.js?v=6"></script><script src="../../../07-إدارة-الصيدليات/hardware-controls.js?v=6"></script>
+</body>
+</html>
