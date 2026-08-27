@@ -176,18 +176,69 @@ export function sessionPayload(session: ShippingSession) {
   };
 }
 
-export async function sendShippingOtp(email: string, purpose: "verify" | "reset") {
+const SHIPPING_THEME_COLORS: Record<string, string> = {
+  coffee: "#8A5A44",
+  navy: "#254D73",
+  emerald: "#23836B",
+  berry: "#9D4162",
+  royal: "#3F5FA8",
+  clay: "#B45F47",
+  orange: "#C46B2D",
+  indigo: "#554FA3",
+  graphite: "#555E68",
+  steel: "#4F7589",
+  plum: "#754667",
+  mauve: "#84658C",
+  bronze: "#94633D",
+  teal: "#247E82",
+  ocean: "#35718E",
+  ruby: "#A64748",
+  maroon: "#7C3D50",
+  olive: "#727A3D",
+  forest: "#3E6C4E",
+  violet: "#7056A6",
+  lavender: "#7E6DA8",
+  slate: "#5E6E7C",
+  charcoal: "#41474D",
+  gold: "#A57B31",
+  coral: "#BB5E58",
+  bluegray: "#607489",
+  rose: "#A95773",
+  mint: "#438876",
+  sky: "#477CAD",
+  amber: "#B77A29",
+};
+
+function mixThemeColor(source: string, target: string, amount: number) {
+  const read = (value: string) => [1, 3, 5].map((start) => Number.parseInt(value.slice(start, start + 2), 16));
+  const sourceChannels = read(source);
+  const targetChannels = read(target);
+  return `#${sourceChannels.map((value, index) => Math.round(value + (targetChannels[index] - value) * amount).toString(16).padStart(2, "0")).join("")}`;
+}
+
+export function normalizeShippingThemeId(themeId?: string) {
+  return themeId && SHIPPING_THEME_COLORS[themeId] ? themeId : "coffee";
+}
+
+function shippingTheme(themeId?: string) {
+  const id = normalizeShippingThemeId(themeId);
+  const color = SHIPPING_THEME_COLORS[id];
+  return { id, color, softColor: mixThemeColor(color, "#FFFFFF", 0.88) };
+}
+
+export async function sendShippingOtp(email: string, purpose: "verify" | "reset", themeId?: string) {
+  const theme = shippingTheme(themeId);
   const metadata = {
     varex_otp_relay: true,
     varex_system: "shipping",
-    varex_theme: "coffee",
+    varex_theme: theme.id,
     varex_purpose: purpose,
     varex_system_name: "VAREX Shipping",
     varex_card_title: "VAREX BUSINESS MANAGEMENT SYSTEM",
-    varex_color: "#8A5A44",
-    varex_soft_color: "#F1E9E5",
+    varex_color: theme.color,
+    varex_soft_color: theme.softColor,
     varex_text_color: "#FFFFFF",
-    varex_logo_color: "#8A5A44",
+    varex_logo_color: theme.color,
   };
   const response = await fetch(`${SUPABASE_URL}/auth/v1/otp`, {
     method: "POST",

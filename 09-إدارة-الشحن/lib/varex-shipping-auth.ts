@@ -24,6 +24,12 @@ export type PendingAuth = {
 
 const PENDING_KEY = "varex_shipping_pending_auth";
 const REMEMBERED_EMAIL_KEY = "varex_shipping_remembered_email";
+const THEME_KEY = "varex-shipping-theme";
+
+function currentThemeId() {
+  if (typeof window === "undefined") return "coffee";
+  return window.localStorage.getItem(THEME_KEY) || "coffee";
+}
 
 function messageFrom(error: unknown) {
   const direct = error instanceof Error ? error.message : "";
@@ -107,6 +113,7 @@ export async function registerBusiness(businessName: string, email: string, pass
     businessName: businessName.trim(),
     email: normalizedEmail,
     password,
+    themeId: currentThemeId(),
   });
   savePendingAuth({ email: normalizedEmail, businessName: businessName.trim(), purpose: "signup" });
   return null;
@@ -118,18 +125,19 @@ export async function verifySignup(email: string, token: string, _businessName?:
     action: "verify-signup",
     email: email.trim().toLowerCase(),
     otp: token,
+    themeId: currentThemeId(),
   });
   clearPendingAuth();
   return payload.session;
 }
 
 export async function resendSignupOtp(email: string) {
-  await request({ action: "resend", purpose: "signup", email: email.trim().toLowerCase() });
+  await request({ action: "resend", purpose: "signup", email: email.trim().toLowerCase(), themeId: currentThemeId() });
 }
 
 export async function requestPasswordOtp(email: string) {
   const normalizedEmail = email.trim().toLowerCase();
-  await request({ action: "request-reset", email: normalizedEmail });
+  await request({ action: "request-reset", email: normalizedEmail, themeId: currentThemeId() });
   savePendingAuth({ email: normalizedEmail, purpose: "reset" });
 }
 

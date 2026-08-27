@@ -5,6 +5,7 @@ import {
   database,
   hashPassword,
   normalizeEmail,
+  normalizeShippingThemeId,
   pendingAuth,
   readShippingSession,
   savePendingReset,
@@ -25,6 +26,7 @@ type AuthBody = {
   businessName?: string;
   otp?: string;
   purpose?: "signup" | "reset";
+  themeId?: string;
 };
 
 function json(body: unknown, status = 200, cookie?: string) {
@@ -71,7 +73,7 @@ export async function POST(request: Request) {
       }
       await savePendingSignup(email, businessName, password);
       try {
-        await sendShippingOtp(email, "verify");
+        await sendShippingOtp(email, "verify", body.themeId);
       } catch (error) {
         await database().prepare("DELETE FROM shipping_pending_auth WHERE email = ? AND purpose = 'signup'").bind(email).run();
         throw error;
@@ -94,7 +96,7 @@ export async function POST(request: Request) {
       await database().batch([
         database().prepare("INSERT INTO shipping_businesses (id, name, owner_email, created_at, updated_at) VALUES (?, ?, ?, ?, ?)").bind(businessId, pending.businessName, email, now, now),
         database().prepare("INSERT INTO shipping_users (id, business_id, email, password_hash, password_salt, role, email_verified, created_at, updated_at) VALUES (?, ?, ?, ?, ?, 'owner', 1, ?, ?)").bind(userId, businessId, email, pending.passwordHash, pending.passwordSalt, now, now),
-        database().prepare("INSERT INTO shipping_settings (business_id, settings_json, updated_at) VALUES (?, ?, ?)").bind(businessId, JSON.stringify({ themeId: "coffee", language: "ar", autoAssign: true, clientUpdates: true, proofRequired: true, capacityAlerts: true, soundOn: true }), now),
+        database().prepare("INSERT INTO shipping_settings (business_id, settings_json, updated_at) VALUES (?, ?, ?)").bind(businessId, JSON.stringify({ themeId: normalizeShippingThemeId(body.themeId), language: "ar", autoAssign: true, clientUpdates: true, proofRequired: true, capacityAlerts: true, soundOn: true }), now),
         database().prepare("DELETE FROM shipping_pending_auth WHERE email = ? AND purpose = 'signup'").bind(email),
       ]);
       const token = await createSession(userId, businessId);
@@ -133,7 +135,7 @@ export async function POST(request: Request) {
           return json({ error: "يجب الانتظار دقيقة واحدة قبل طلب رمز جديد." }, 429);
         }
         await savePendingReset(email);
-        await sendShippingOtp(email, "reset");
+        await sendShippingOtp(email, "reset", body.themeId);
       }
       return json({ sent: true });
     }
@@ -169,7 +171,7 @@ export async function POST(request: Request) {
       const pending = await pendingAuth(email, purpose);
       if (!pending || pending.expiresAt < Date.now()) return json({ error: "انتهت صلاحية الطلب. يجب بدء العملية من جديد." }, 400);
       if (Date.now() - pending.sentAt < 60_000) return json({ error: "يجب الانتظار دقيقة واحدة قبل طلب رمز جديد." }, 429);
-      await sendShippingOtp(email, purpose === "signup" ? "verify" : "reset");
+      await sendShippingOtp(email, purpose === "signup" ? "verify" : "reset", body.themeId);
       await database().prepare("UPDATE shipping_pending_auth SET sent_at = ?, expires_at = ? WHERE email = ? AND purpose = ?").bind(Date.now(), Date.now() + 60 * 60 * 1000, email, purpose).run();
       return json({ sent: true });
     }

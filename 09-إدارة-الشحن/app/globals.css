@@ -79,7 +79,7 @@ button:disabled { cursor: wait; }
 .auth-brand-pane::before { content: ""; position: absolute; width: 470px; height: 470px; border: 1px solid #ffffff16; border-radius: 50%; inset: 50% auto auto -210px; box-shadow: 0 0 0 68px #ffffff08, 0 0 0 142px #ffffff05; pointer-events: none; }
 .auth-brand-pane::after { content: ""; position: absolute; width: 160px; height: 4px; inset: 86px -35px auto auto; transform: rotate(-35deg); background: repeating-linear-gradient(90deg, #f4d2ba 0 18px, transparent 18px 30px); opacity: .45; }
 .auth-brand-lockup { display: flex; align-items: center; gap: 15px; position: relative; z-index: 1; }
-.auth-brand-lockup img { width: 66px; height: 66px; border-radius: 18px; border: 1px solid #ffffff2e; box-shadow: 0 12px 30px #10090680; }
+.auth-brand-lockup img { width: 66px; height: 66px; border-radius: 18px; border: 1px solid #ffffff2e; background: var(--coffee); box-shadow: 0 12px 30px #10090680; }
 .auth-brand-lockup div { display: flex; flex-direction: column; gap: 5px; }
 .auth-brand-lockup strong { font-size: 17px; letter-spacing: 2.7px; }
 .auth-brand-lockup span { color: #e6d5cb; font-size: 12px; font-weight: 800; }
@@ -97,6 +97,7 @@ button:disabled { cursor: wait; }
 .auth-trust-row svg { width: 15px; color: #7ee0ac; }
 .auth-form-pane { width: 50%; min-width: 0; min-height: 0; height: 100%; flex: 0 1 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 18px; padding: clamp(24px, 3.3vw, 58px); overflow-x: hidden; overflow-y: auto; direction: rtl; background: radial-gradient(circle at 100% 0%, color-mix(in srgb, var(--coffee) 7%, white) 0, transparent 25rem), #fffdfb; }
 .auth-mobile-brand { display: none; }
+.auth-mobile-brand img { background: var(--coffee); }
 .auth-card { width: min(100%, 480px); padding: 0; border: 0; border-radius: 0; background: transparent; box-shadow: none; }
 .auth-card header { margin-bottom: 27px; }
 .auth-kicker { color: var(--coffee); font-size: 9px; font-weight: 900; letter-spacing: 1.1px; }
@@ -133,7 +134,7 @@ button:disabled { cursor: wait; }
 .auth-footer-note { display: inline-flex; align-items: center; justify-content: center; gap: 6px; margin: 0; color: #82756e; font-size: 9px; text-align: center; }
 .auth-footer-note svg { width: 13px; color: var(--coffee); }
 .auth-loading-screen { min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 13px; color: var(--coffee-deep); background: #f7f2ee; }
-.auth-loading-screen img { width: 82px; height: 82px; border-radius: 22px; box-shadow: 0 16px 40px #4f301c25; }
+.auth-loading-screen img { width: 82px; height: 82px; border-radius: 22px; background: var(--coffee); box-shadow: 0 16px 40px #4f301c25; }
 .auth-loading-screen > svg { width: 23px; color: var(--coffee); }
 .auth-loading-screen strong { font-size: 11px; }
 
@@ -141,7 +142,7 @@ button:disabled { cursor: wait; }
 .command-header { min-height: 88px; display: grid; grid-template-columns: minmax(230px, .85fr) minmax(170px, .55fr) minmax(600px, 2fr); align-items: center; gap: 20px; padding: 12px clamp(18px, 3vw, 48px); color: white; background: linear-gradient(115deg, var(--coffee-dark) 0%, var(--coffee-deep) 48%, var(--coffee) 100%); position: relative; z-index: 30; box-shadow: 0 10px 35px color-mix(in srgb, var(--coffee-dark) 20%, transparent); }
 .command-header::after { content: ""; position: absolute; inset: auto 0 0; height: 3px; background: repeating-linear-gradient(90deg, #f4d2ba 0 16px, transparent 16px 28px); opacity: .38; }
 .brand-cluster { display: flex; align-items: center; gap: 13px; min-width: 0; }
-.brand-cluster img { width: 58px; height: 58px; border-radius: 14px; box-shadow: 0 5px 18px #130b0780; border: 1px solid #ffffff2b; }
+.brand-cluster img { width: 58px; height: 58px; border-radius: 14px; background: var(--coffee); box-shadow: 0 5px 18px #130b0780; border: 1px solid #ffffff2b; }
 .brand-cluster div { display: flex; flex-direction: column; align-items: center; gap: 3px; min-width: 0; text-align: center; }
 .brand-cluster strong { font-size: 15px; letter-spacing: 1.6px; white-space: nowrap; }
 .brand-cluster span { font-size: 12px; color: #e6d4ca; font-weight: 700; }
