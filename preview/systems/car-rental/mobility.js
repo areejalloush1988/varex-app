@@ -1,11 +1,12 @@
 (function(){
   "use strict";
 
+  const PREVIEW_MODE=sessionStorage.getItem("varex_static_preview")==="1"||new URLSearchParams(location.search).get("static_preview")==="1";
   const system=document.body.dataset.mobilitySystem==="taxi"?"taxi":"car-rental";
   const page=document.body.dataset.mobilityPage||"dashboard";
   const isTaxi=system==="taxi";
   const STORE_KEY=(isTaxi?"varex_taxi_system_v1":"varex_car_rental_system_v1")+"_static_preview";
-  let language=(localStorage.getItem("varex_language")||localStorage.getItem("varex_launcher_language"))==="en"?"en":"ar";
+  let language=(new URLSearchParams(location.search).get("lang")||(PREVIEW_MODE?"":localStorage.getItem("varex_language")||localStorage.getItem("varex_launcher_language")))==="en"?"en":"ar";
   let soundEnabled=localStorage.getItem("varex_mobility_sound")==="on";
   let hapticEnabled=localStorage.getItem("varex_mobility_haptic")==="on";
   let toastTimer=null,clockTimer=null,pendingConfirm=null,selectedPaymentMethod="cash",filters={search:"",status:"all"};
@@ -57,9 +58,9 @@
     if(isTaxi)return{...common,drivers:[{id:"DR-001",name:"سائق تجريبي 01",phone:"050 200 5101",vehicle:"VH-101",shift:"صباحي",rating:4.9,status:"online"},{id:"DR-002",name:"سائق تجريبي 02",phone:"050 200 5102",vehicle:"VH-102",shift:"مسائي",rating:4.7,status:"ontrip"},{id:"DR-003",name:"سائق تجريبي 03",phone:"050 200 5103",vehicle:"VH-103",shift:"صباحي",rating:4.8,status:"offline"}],trips:[{id:"TR-1001",passenger:"عميل تجريبي 01",driver:"سائق تجريبي 02",pickup:"دبي مول",dropoff:"مطار دبي — T3",fare:76,method:"card",time:"08:40",status:"ontrip"},{id:"TR-1002",passenger:"عميل تجريبي 02",driver:"سائق تجريبي 01",pickup:"المرسى",dropoff:"وسط دبي",fare:62,method:"card",time:"08:20",status:"completed"},{id:"TR-1003",passenger:"عميل تجريبي 03",driver:"—",pickup:"الخليج التجاري",dropoff:"جميرا",fare:38,method:"cash",time:"09:10",status:"queued"}],bookings:[{id:"BK-001",passenger:"عميل تجريبي 01",pickup:"البرشاء",dropoff:"مطار دبي",date:today(),time:"14:30",status:"confirmed"},{id:"BK-002",passenger:"عميل تجريبي 03",pickup:"القصيص",dropoff:"ديرة",date:"2026-08-22",time:"10:00",status:"pending"}]};
     return{...common,reservations:[{id:"RS-1001",customer:"عميل تجريبي 01",vehicle:"VH-102",start:today(),end:"2026-08-25",amount:1250,status:"active"},{id:"RS-1002",customer:"عميل تجريبي 02",vehicle:"VH-103",start:"2026-08-23",end:"2026-08-28",amount:1600,status:"confirmed"},{id:"RS-1003",customer:"عميل تجريبي 03",vehicle:"VH-101",start:"2026-08-24",end:"2026-08-26",amount:370,status:"pending"}],contracts:[{id:"CT-1001",reservation:"RS-1001",customer:"عميل تجريبي 01",vehicle:"VH-102",amount:1250,deposit:1000,status:"active"},{id:"CT-1002",reservation:"RS-1002",customer:"عميل تجريبي 02",vehicle:"VH-103",amount:1600,deposit:1500,status:"draft"}],inspections:[{id:"IN-001",vehicle:"VH-102",type:"تسليم",date:today(),fuel:"100%",mileage:36120,notes:"الحالة ممتازة",status:"completed"},{id:"IN-002",vehicle:"VH-103",type:"استلام",date:"2026-08-28",fuel:"—",mileage:0,notes:"فحص عند الإرجاع",status:"pending"}],fines:[{id:"FN-001",vehicle:"VH-102",number:"DXB-88420",amount:600,date:"2026-08-18",status:"pending"},{id:"FN-002",vehicle:"VH-101",number:"SHJ-22014",amount:400,date:"2026-08-12",status:"paid"}]};
   }
-  function load(){try{const parsed=JSON.parse(localStorage.getItem(STORE_KEY));if(parsed&&parsed.vehicles&&parsed.payments)return parsed}catch(error){}const fresh=seed();localStorage.setItem(STORE_KEY,JSON.stringify(fresh));return fresh}
+  function load(){if(PREVIEW_MODE)return seed();try{const parsed=JSON.parse(localStorage.getItem(STORE_KEY));if(parsed&&parsed.vehicles&&parsed.payments)return parsed}catch(error){}const fresh=seed();localStorage.setItem(STORE_KEY,JSON.stringify(fresh));return fresh}
   let data=load();
-  function save(){localStorage.setItem(STORE_KEY,JSON.stringify(data))}
+  function save(){if(!PREVIEW_MODE)localStorage.setItem(STORE_KEY,JSON.stringify(data))}
 
   const definitions={
     vehicles:{title:[isTaxi?"المركبات والأسطول":"السيارات والأسطول",isTaxi?"Vehicles & Fleet":"Fleet & Vehicles"],desc:["إدارة بيانات المركبات والتوفر والعداد والأسعار.","Manage vehicles, availability, mileage and rates."],fields:[["plate","رقم اللوحة","Plate Number","text",true],["make","الشركة المصنعة","Make","text",true],["model","الموديل","Model","text",true],["year","السنة","Year","number",true],["color","اللون","Color","text"],["rate",isTaxi?"التعرفة الأساسية":"السعر اليومي","Base Fare / Daily Rate","number",true],["mileage","عداد الكيلومترات","Mileage","number",true],["status","الحالة","Status","select",true,["available","rented","maintenance"]]],columns:[["plate","رقم اللوحة","Plate"],["make","الشركة","Make"],["model","الموديل","Model"],["year","السنة","Year"],["rate",isTaxi?"التعرفة":"السعر اليومي","Rate","money"],["mileage","العداد","Mileage"],["status","الحالة","Status","status"]]},
@@ -92,7 +93,7 @@
     document.getElementById("slLogout").addEventListener("click",()=>openConfirm(t("تسجيل الخروج من VAREX؟","Sign out of VAREX?"),t("سيتم إنهاء جلسة المنشأة على هذا الجهاز.","The business session will be closed on this device."),()=>window.VAREX?.logout?window.VAREX.logout(true):location.href="../login.html"));
     updateClock();clearInterval(clockTimer);clockTimer=setInterval(updateClock,30000);
   }
-  function setLanguage(value){language=value==="en"?"en":"ar";localStorage.setItem("varex_language",language);localStorage.setItem("varex_launcher_language",language);shell()}
+  function setLanguage(value){language=value==="en"?"en":"ar";if(!PREVIEW_MODE){localStorage.setItem("varex_language",language);localStorage.setItem("varex_launcher_language",language)}shell()}
   function updateClock(){const now=new Date(),clock=document.getElementById("slClock"),date=document.getElementById("slDate");if(clock)clock.textContent=now.toLocaleTimeString(language==="en"?"en-AE":"ar-AE",{hour:"2-digit",minute:"2-digit"});if(date)date.textContent=now.toLocaleDateString(language==="en"?"en-GB":"ar-AE",{day:"2-digit",month:"2-digit",year:"numeric"})}
   function clickTone(){try{const AudioContext=window.AudioContext||window.webkitAudioContext,ctx=new AudioContext(),osc=ctx.createOscillator(),gain=ctx.createGain();osc.frequency.value=520;gain.gain.setValueAtTime(.025,ctx.currentTime);gain.gain.exponentialRampToValueAtTime(.001,ctx.currentTime+.04);osc.connect(gain);gain.connect(ctx.destination);osc.start();osc.stop(ctx.currentTime+.04)}catch(error){}}
   function feedback(){if(soundEnabled)clickTone();if(hapticEnabled&&navigator.vibrate)navigator.vibrate(12)}

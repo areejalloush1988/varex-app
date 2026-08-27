@@ -2,15 +2,16 @@
   "use strict";
 
   const params=new URLSearchParams(location.search);
-  const requestedType=document.body.dataset.salonType||params.get("type")||localStorage.getItem("varex_salon_type")||"women";
+  const PREVIEW_MODE=sessionStorage.getItem("varex_static_preview")==="1"||params.get("static_preview")==="1";
+  const requestedType=document.body.dataset.salonType||params.get("type")||(PREVIEW_MODE?"":localStorage.getItem("varex_salon_type"))||"women";
   const salonType=requestedType==="men"?"men":"women";
   const page=document.body.dataset.salonPage||"dashboard";
   const STORE_KEY="varex_salon_"+salonType+"_v1_static_preview";
-  let language=(localStorage.getItem("varex_language")||localStorage.getItem("varex_launcher_language"))==="en"?"en":"ar";
+  let language=(params.get("lang")||(PREVIEW_MODE?"":localStorage.getItem("varex_language")||localStorage.getItem("varex_launcher_language")))==="en"?"en":"ar";
   let filters={search:"",status:"all"},toastTimer=null,clockTimer=null,pendingConfirm=null;
   let soundEnabled=localStorage.getItem("varex_salon_sound")!=="off";
   let hapticEnabled=localStorage.getItem("varex_salon_haptic")!=="off";
-  localStorage.setItem("varex_salon_type",salonType);
+  if(!PREVIEW_MODE)localStorage.setItem("varex_salon_type",salonType);
   document.documentElement.dataset.salonType=salonType;
 
   const t=(ar,en)=>language==="en"?en:ar;
@@ -128,9 +129,9 @@
     };
   }
 
-  function load(){try{const parsed=JSON.parse(localStorage.getItem(STORE_KEY));if(parsed&&parsed.services&&parsed.appointments)return parsed}catch(error){}const fresh=seed();localStorage.setItem(STORE_KEY,JSON.stringify(fresh));return fresh}
+  function load(){if(PREVIEW_MODE)return seed();try{const parsed=JSON.parse(localStorage.getItem(STORE_KEY));if(parsed&&parsed.services&&parsed.appointments)return parsed}catch(error){}const fresh=seed();localStorage.setItem(STORE_KEY,JSON.stringify(fresh));return fresh}
   let data=load();
-  function save(){localStorage.setItem(STORE_KEY,JSON.stringify(data))}
+  function save(){if(!PREVIEW_MODE)localStorage.setItem(STORE_KEY,JSON.stringify(data))}
 
   const nav=[
     ["dashboard",entryFile,"dashboard","لوحة التحكم","Dashboard"],
@@ -180,7 +181,7 @@
     document.getElementById("slLogout").addEventListener("click",()=>openConfirm(t("تسجيل الخروج من VAREX؟","Sign out of VAREX?"),t("سيتم إنهاء جلسة المنشأة على هذا الجهاز.","The business session will be closed on this device."),()=>window.VAREX?.logout?window.VAREX.logout(true):location.href="../login.html"));
     updateClock();clearInterval(clockTimer);clockTimer=setInterval(updateClock,30000);
   }
-  function setLanguage(value){language=value==="en"?"en":"ar";localStorage.setItem("varex_language",language);localStorage.setItem("varex_launcher_language",language);shell()}
+  function setLanguage(value){language=value==="en"?"en":"ar";if(!PREVIEW_MODE){localStorage.setItem("varex_language",language);localStorage.setItem("varex_launcher_language",language)}shell()}
   function closeLanguageMenu(){const menu=document.getElementById("slLanguageMenu"),button=document.getElementById("slLanguage");if(menu)menu.classList.remove("show");if(button)button.setAttribute("aria-expanded","false")}
   function updateClock(){const now=new Date(),clock=document.getElementById("slClock"),date=document.getElementById("slDate");if(clock)clock.textContent=now.toLocaleTimeString(language==="en"?"en-AE":"ar-AE",{hour:"2-digit",minute:"2-digit"});if(date)date.textContent=now.toLocaleDateString(language==="en"?"en-GB":"ar-AE",{day:"2-digit",month:"2-digit",year:"numeric"})}
   function clickTone(){if(!soundEnabled)return;try{const C=window.AudioContext||window.webkitAudioContext;if(!C)return;const ctx=new C(),osc=ctx.createOscillator(),gain=ctx.createGain();osc.frequency.value=620;gain.gain.setValueAtTime(.025,ctx.currentTime);gain.gain.exponentialRampToValueAtTime(.001,ctx.currentTime+.045);osc.connect(gain);gain.connect(ctx.destination);osc.start();osc.stop(ctx.currentTime+.05);setTimeout(()=>ctx.close(),100)}catch(error){}}

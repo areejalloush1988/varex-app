@@ -2,21 +2,22 @@
   "use strict";
 
   const params=new URLSearchParams(location.search);
-  const requestedType=document.body.dataset.diningType||params.get("type")||localStorage.getItem("varex_dining_type")||"restaurant";
+  const PREVIEW_MODE=sessionStorage.getItem("varex_static_preview")==="1"||params.get("static_preview")==="1";
+  const requestedType=document.body.dataset.diningType||params.get("type")||(PREVIEW_MODE?"":localStorage.getItem("varex_dining_type"))||"restaurant";
   const diningType=requestedType==="cafe"?"cafe":"restaurant";
   let page=document.body.dataset.diningPage||"dashboard";
   const STORE_KEY="varex_dining_"+diningType+"_v1_static_preview";
-  let language=(localStorage.getItem("varex_language")||localStorage.getItem("varex_launcher_language"))==="en"?"en":"ar";
+  let language=(params.get("lang")||(PREVIEW_MODE?"":localStorage.getItem("varex_language")||localStorage.getItem("varex_launcher_language")))==="en"?"en":"ar";
   let filters={search:"",status:"all",category:"all"},toastTimer=null,clockTimer=null,pendingConfirm=null;
   let soundEnabled=localStorage.getItem("varex_dining_sound")!=="off";
   const hapticKey="varex_dining_haptic";
   const noShakeMigrationKey="varex_dining_no_shake_v1";
-  if(localStorage.getItem(noShakeMigrationKey)!=="1"){
+  if(!PREVIEW_MODE&&localStorage.getItem(noShakeMigrationKey)!=="1"){
     localStorage.setItem(hapticKey,"off");
     localStorage.setItem(noShakeMigrationKey,"1");
   }
   let hapticEnabled=localStorage.getItem(hapticKey)==="on";
-  localStorage.setItem("varex_dining_type",diningType);
+  if(!PREVIEW_MODE)localStorage.setItem("varex_dining_type",diningType);
   document.documentElement.dataset.diningType=diningType;document.body.dataset.diningType=diningType;
 
   const t=(ar,en)=>language==="en"?en:ar;
@@ -76,9 +77,9 @@
     };
   }
 
-  function load(){try{const parsed=JSON.parse(localStorage.getItem(STORE_KEY));if(parsed&&parsed.menuItems&&parsed.orders)return parsed}catch(error){}const fresh=seed();localStorage.setItem(STORE_KEY,JSON.stringify(fresh));return fresh}
+  function load(){if(PREVIEW_MODE)return seed();try{const parsed=JSON.parse(localStorage.getItem(STORE_KEY));if(parsed&&parsed.menuItems&&parsed.orders)return parsed}catch(error){}const fresh=seed();localStorage.setItem(STORE_KEY,JSON.stringify(fresh));return fresh}
   let data=load();
-  function save(){localStorage.setItem(STORE_KEY,JSON.stringify(data))}
+  function save(){if(!PREVIEW_MODE)localStorage.setItem(STORE_KEY,JSON.stringify(data))}
 
   const nav=[
     ["dashboard",entryFile,"dashboard","لوحة التحكم","Dashboard"],["pos","dining-pos.html","dining-pos","الكاشير والطلبات","POS & Ordering"],["orders","dining-orders.html","dining-orders","إدارة الطلبات","Order Management"],["tables","dining-tables.html","dining-tables","الطاولات والحجوزات","Tables & Reservations"],["menu","dining-menu.html","dining-menu","المنيو والوصفات","Menu & Recipes"],["kitchen","dining-kitchen.html","dining-kitchen","شاشة المطبخ","Kitchen Display"],["clients","dining-clients.html","dining-clients","العملاء والولاء","Customers & Loyalty"],["staff","dining-staff.html","dining-staff","الموظفون والورديات","Staff & Shifts"],["inventory","dining-inventory.html","dining-inventory","المكونات والمخزون","Ingredients & Inventory"],["suppliers","dining-suppliers.html","dining-suppliers","الموردون والمشتريات","Suppliers & Purchases"],["reports","dining-reports.html","dining-reports","التقارير والتحليلات","Reports & Analytics"],["settings","dining-settings.html","dining-settings","إعدادات النشاط","Business Settings"]
@@ -109,7 +110,7 @@
   }
   function updateRouteChrome(){const meta=pageMeta[page]||pageMeta.dashboard;document.body.dataset.diningPage=page;document.title="VAREX DINING | "+t(meta[3],meta[4]);document.querySelectorAll(".sl-nav a[data-route-page]").forEach(link=>link.classList.toggle("active",link.dataset.routePage===page));const icon=document.querySelector(".sl-page-icon"),title=document.querySelector(".sl-page-title h2");if(icon)icon.innerHTML=svg(page);if(title)title.textContent=t(meta[3],meta[4])}
   function navigate(next,push=true){if(!pageMeta[next])return;page=next;filters={search:"",status:"all",category:"all"};updateRouteChrome();renderPage();window.scrollTo({top:0,behavior:"auto"});if(push)history.pushState({diningPage:page},"",href(pageMeta[page][1]))}
-  function setLanguage(value){language=value==="en"?"en":"ar";localStorage.setItem("varex_language",language);localStorage.setItem("varex_launcher_language",language);shell()}
+  function setLanguage(value){language=value==="en"?"en":"ar";if(!PREVIEW_MODE){localStorage.setItem("varex_language",language);localStorage.setItem("varex_launcher_language",language)}shell()}
   function closeLanguageMenu(){const menu=document.getElementById("slLanguageMenu"),button=document.getElementById("slLanguage");if(menu)menu.classList.remove("show");if(button)button.setAttribute("aria-expanded","false")}
   function updateClock(){const now=new Date(),clock=document.getElementById("slClock"),date=document.getElementById("slDate");if(clock)clock.textContent=now.toLocaleTimeString(language==="en"?"en-AE":"ar-AE",{hour:"2-digit",minute:"2-digit"});if(date)date.textContent=now.toLocaleDateString(language==="en"?"en-GB":"ar-AE",{day:"2-digit",month:"2-digit",year:"numeric"})}
   function clickTone(){if(!soundEnabled)return;try{const C=window.AudioContext||window.webkitAudioContext;if(!C)return;const ctx=new C(),osc=ctx.createOscillator(),gain=ctx.createGain();osc.frequency.value=620;gain.gain.setValueAtTime(.025,ctx.currentTime);gain.gain.exponentialRampToValueAtTime(.001,ctx.currentTime+.045);osc.connect(gain);gain.connect(ctx.destination);osc.start();osc.stop(ctx.currentTime+.05);setTimeout(()=>ctx.close(),100)}catch(error){}}

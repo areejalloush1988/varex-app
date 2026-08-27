@@ -1,6 +1,7 @@
 (() => {
   "use strict";
 
+  const PREVIEW_MODE=sessionStorage.getItem("varex_static_preview")==="1"||new URLSearchParams(location.search).get("static_preview")==="1";
   const DATA_KEY = "varex_pharmacy_data_v1_static_preview";
   const PROFILE_KEY = "varex_pharmacy_profile_static_preview";
   const ZOOM_KEY = "varex_pharmacy_zoom";
@@ -27,7 +28,7 @@
   const escapeHTML = value => String(value ?? "").replace(/[&<>'"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;","'":"&#39;",'"':"&quot;"}[c]));
   const daysTo = date => Math.ceil((new Date(`${date}T23:59:59`) - new Date()) / 86400000);
   const dateAR = date => date ? new Date(`${date}T00:00:00`).toLocaleDateString("ar-AE",{year:"numeric",month:"short",day:"numeric"}) : "—";
-  const profile = () => JSON.parse(localStorage.getItem(PROFILE_KEY) || "{}");
+  const profile = () => PREVIEW_MODE?{}:JSON.parse(localStorage.getItem(PROFILE_KEY) || "{}");
 
   function seedData() {
     return {
@@ -37,12 +38,13 @@
   }
 
   let data = (() => {
+    if (PREVIEW_MODE) return seedData();
     try { return JSON.parse(localStorage.getItem(DATA_KEY)) || seedData(); }
     catch (_) { return seedData(); }
   })();
 
-  function persist() { localStorage.setItem(DATA_KEY, JSON.stringify(data)); }
-  if (!localStorage.getItem(DATA_KEY)) persist();
+  function persist() { if(!PREVIEW_MODE)localStorage.setItem(DATA_KEY, JSON.stringify(data)); }
+  if (!PREVIEW_MODE&&!localStorage.getItem(DATA_KEY)) persist();
 
   function operatorChoices() {
     return [
@@ -70,7 +72,7 @@
     $("operatorCancel").onclick=closeModal;
     $("modalBody").querySelectorAll("[data-operator-id]").forEach(button=>button.onclick=()=>{
       const selected=operatorChoices().find(item=>item.id===button.dataset.operatorId);if(!selected)return;
-      localStorage.setItem(OPERATOR_KEY,JSON.stringify({id:selected.id,name:selected.name}));updateOperatorUI();closeModal();toast("success","تم تبديل المستخدم",selected.name);
+      if(!PREVIEW_MODE)localStorage.setItem(OPERATOR_KEY,JSON.stringify({id:selected.id,name:selected.name}));updateOperatorUI();closeModal();toast("success","تم تبديل المستخدم",selected.name);
     });
   }
 
@@ -475,7 +477,7 @@
     if(event.target.id!=="settingsForm")return;
     event.preventDefault();const fd=new FormData(event.target);
     Object.assign(data.settings,{pharmacyName:fd.get("pharmacyName").trim(),ownerName:fd.get("ownerName").trim(),branch:fd.get("branch").trim(),phone:fd.get("phone").trim(),email:fd.get("email").trim(),licenseNo:fd.get("licenseNo").trim(),trn:fd.get("trn").trim(),vat:num(fd.get("vat")),lowStock:num(fd.get("lowStock")),expiryAlert:num(fd.get("expiryAlert"))});
-    localStorage.setItem(PROFILE_KEY,JSON.stringify({...profile(),pharmacyName:data.settings.pharmacyName,ownerName:data.settings.ownerName,email:data.settings.email,phone:data.settings.phone,licenseNo:data.settings.licenseNo}));
+    if(!PREVIEW_MODE)localStorage.setItem(PROFILE_KEY,JSON.stringify({...profile(),pharmacyName:data.settings.pharmacyName,ownerName:data.settings.ownerName,email:data.settings.email,phone:data.settings.phone,licenseNo:data.settings.licenseNo}));
     persist();$("headerPharmacyName").textContent=data.settings.pharmacyName;updateOperatorUI();toast("success","تم حفظ إعدادات الصيدلية");renderPage("settings");
   });
 
@@ -489,7 +491,7 @@
 
   function applyZoom(value) {
     const allowed=[50,60,70,80,90,100],zoom=allowed.includes(num(value))?num(value):100;
-    document.documentElement.style.setProperty("--ui-scale",String(zoom/100));$("zoomSelect").value=String(zoom);localStorage.setItem(ZOOM_KEY,String(zoom));
+    document.documentElement.style.setProperty("--ui-scale",String(zoom/100));$("zoomSelect").value=String(zoom);if(!PREVIEW_MODE)localStorage.setItem(ZOOM_KEY,String(zoom));
   }
 
   function stepZoom(direction) {
@@ -501,7 +503,7 @@
   }
 
   function toggleSound(fromSettings=false) {
-    ui.sound=!ui.sound;localStorage.setItem(SOUND_KEY,ui.sound?"on":"off");updateSoundButton();if(fromSettings)renderPage("settings");toast("info",ui.sound?"تم تشغيل صوت النقر":"تم إيقاف صوت النقر");
+    ui.sound=!ui.sound;if(!PREVIEW_MODE)localStorage.setItem(SOUND_KEY,ui.sound?"on":"off");updateSoundButton();if(fromSettings)renderPage("settings");toast("info",ui.sound?"تم تشغيل صوت النقر":"تم إيقاف صوت النقر");
   }
 
   async function logout() {

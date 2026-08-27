@@ -1,10 +1,11 @@
 (function(){
   "use strict";
 
+  const PREVIEW_MODE=sessionStorage.getItem("varex_static_preview")==="1"||new URLSearchParams(location.search).get("static_preview")==="1";
   const STORE_KEY="varex_real_estate_v1_static_preview";
   const THEME_KEY="varex_re_theme";
   const page=document.body.dataset.rePage||"dashboard";
-  let language=(localStorage.getItem("varex_language")||localStorage.getItem("varex_launcher_language"))==="en"?"en":"ar";
+  let language=(new URLSearchParams(location.search).get("lang")||(PREVIEW_MODE?"":localStorage.getItem("varex_language")||localStorage.getItem("varex_launcher_language")))==="en"?"en":"ar";
   let theme=localStorage.getItem(THEME_KEY)==="dark"?"dark":"light";
   let toastTimer=null,clockTimer=null,filters={search:"",status:"all"},pendingConfirm=null;
   let soundEnabled=localStorage.getItem("varex_re_sound")!=="off";
@@ -106,9 +107,9 @@
     settings:{businessName:"VAREX Real Estate",phone:"04 000 0000",email:"realestate@varexapp.com",address:"دبي، الإمارات العربية المتحدة",commission:5,vat:5,currency:"AED",notifyContracts:true,notifyPayments:true,notifyMaintenance:true}
   }}
 
-  function load(){try{const parsed=JSON.parse(localStorage.getItem(STORE_KEY));if(parsed&&parsed.properties)return parsed}catch(e){}const fresh=seed();localStorage.setItem(STORE_KEY,JSON.stringify(fresh));return fresh}
+  function load(){if(PREVIEW_MODE)return seed();try{const parsed=JSON.parse(localStorage.getItem(STORE_KEY));if(parsed&&parsed.properties)return parsed}catch(e){}const fresh=seed();localStorage.setItem(STORE_KEY,JSON.stringify(fresh));return fresh}
   let data=load();
-  function save(){localStorage.setItem(STORE_KEY,JSON.stringify(data))}
+  function save(){if(!PREVIEW_MODE)localStorage.setItem(STORE_KEY,JSON.stringify(data))}
 
   const nav=[
     ["dashboard","novarex.html","مركز العمليات","Operations Center"],
@@ -164,8 +165,8 @@
     updateClock();clearInterval(clockTimer);clockTimer=setInterval(updateClock,30000);
   }
 
-  function setLanguage(next){language=next==="en"?"en":"ar";localStorage.setItem("varex_language",language);localStorage.setItem("varex_launcher_language",language);shell()}
-  function applyTheme(savePreference=true){document.documentElement.dataset.reTheme=theme;document.body.classList.toggle("re-dark",theme==="dark");if(savePreference)localStorage.setItem(THEME_KEY,theme);const meta=document.querySelector('meta[name="theme-color"]');if(meta)meta.content=theme==="dark"?"#166B45":"#ffffff"}
+  function setLanguage(next){language=next==="en"?"en":"ar";if(!PREVIEW_MODE){localStorage.setItem("varex_language",language);localStorage.setItem("varex_launcher_language",language)}shell()}
+  function applyTheme(savePreference=true){document.documentElement.dataset.reTheme=theme;document.body.classList.toggle("re-dark",theme==="dark");if(savePreference&&!PREVIEW_MODE)localStorage.setItem(THEME_KEY,theme);const meta=document.querySelector('meta[name="theme-color"]');if(meta)meta.content=theme==="dark"?"#166B45":"#ffffff"}
   function toggleTheme(){theme=theme==="dark"?"light":"dark";applyTheme();shell();toast(theme==="dark"?t("تم تشغيل الوضع الليلي","Dark mode enabled"):t("تم تشغيل الوضع النهاري","Light mode enabled"))}
   function closeLanguageMenu(){const menu=document.getElementById("reLanguageMenu"),button=document.getElementById("reLanguage");if(menu)menu.classList.remove("show");if(button)button.setAttribute("aria-expanded","false")}
   function updateClock(){const now=new Date(),clock=document.getElementById("reClock"),date=document.getElementById("reDate");if(clock)clock.textContent=new Intl.DateTimeFormat(language==="en"?"en-AE":"ar-AE",{hour:"2-digit",minute:"2-digit"}).format(now);if(date)date.textContent=new Intl.DateTimeFormat(language==="en"?"en-GB":"ar-AE",{day:"2-digit",month:"2-digit",year:"numeric"}).format(now)}
