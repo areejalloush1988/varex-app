@@ -4,7 +4,7 @@ const SUPABASE_URL = "https://eibadfdqzpeigccfdipt.supabase.co";
 const SUPABASE_KEY = "sb_publishable__xRe4q10zwB2coiWu7wVrQ_9CimA336";
 const SESSION_COOKIE = "__Host-varex_shipping_session";
 const SESSION_AGE_SECONDS = 60 * 60 * 24 * 30;
-const PASSWORD_ITERATIONS = 210_000;
+const PASSWORD_ITERATIONS = 100_000;
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 type ShippingRuntimeEnv = {
