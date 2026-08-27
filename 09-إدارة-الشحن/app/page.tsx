@@ -670,25 +670,26 @@ function AuthPortal({ onAuthenticated }: { onAuthenticated: (session: VarexAuthS
     <main className="auth-shell">
       <div id="google_translate_element" aria-hidden="true" />
       <Toaster richColors position="top-center" dir="rtl" />
-      <aside className="auth-brand-pane">
-        <div className="auth-brand-lockup">
-          <img src="/varex-shipping-logo.svg" alt="شعار VAREX Shipping" />
-          <div><strong>VAREX SHIPPING</strong><span>نظام إدارة الشحن</span></div>
-        </div>
-        <div className="auth-route-visual" aria-hidden="true">
-          <span><Warehouse /></span><i /><span><Truck /></span><i /><span><MapPin /></span><i /><span><PackageCheck /></span>
-        </div>
-        <div className="auth-brand-copy">
-          <span>مركز قيادة لوجستي واحد</span>
-          <h1>من الاستلام إلى التسليم<br />كل حركة تحت السيطرة.</h1>
-          <p>حساب آمن مرتبط بمنشأتك، مع تتبّع حي وإدارة الشحنات والأسطول والمستودعات.</p>
-        </div>
-        <div className="auth-trust-row"><span><ShieldCheck />اتصال آمن</span><span><BadgeCheck />حساب منشأة محمي</span></div>
-      </aside>
+      <div className="auth-frame">
+        <aside className="auth-brand-pane">
+          <div className="auth-brand-lockup">
+            <img src="/varex-shipping-logo.svg" alt="شعار VAREX Shipping" />
+            <div><strong>VAREX SHIPPING</strong><span>نظام إدارة الشحن</span></div>
+          </div>
+          <div className="auth-route-visual" aria-hidden="true">
+            <span><Warehouse /></span><i /><span><Truck /></span><i /><span><MapPin /></span><i /><span><PackageCheck /></span>
+          </div>
+          <div className="auth-brand-copy">
+            <span>مركز قيادة لوجستي واحد</span>
+            <h1>من الاستلام إلى التسليم<br />كل حركة تحت السيطرة.</h1>
+            <p>حساب آمن مرتبط بمنشأتك، مع تتبّع حي وإدارة الشحنات والأسطول والمستودعات.</p>
+          </div>
+          <div className="auth-trust-row"><span><ShieldCheck />اتصال آمن</span><span><BadgeCheck />حساب منشأة محمي</span></div>
+        </aside>
 
-      <section className="auth-form-pane">
-        <div className="auth-mobile-brand"><img src="/varex-shipping-logo.svg" alt="" /><strong>VAREX SHIPPING</strong></div>
-        <form className="auth-card" onSubmit={submit}>
+        <section className="auth-form-pane">
+          <div className="auth-mobile-brand"><img src="/varex-shipping-logo.svg" alt="" /><strong>VAREX SHIPPING</strong></div>
+          <form className="auth-card" onSubmit={submit}>
           <header>
             <span className="auth-kicker">VAREX BUSINESS MANAGEMENT SYSTEM</span>
             <h2>{title}</h2>
@@ -747,9 +748,10 @@ function AuthPortal({ onAuthenticated }: { onAuthenticated: (session: VarexAuthS
 
           {(view === "verify" || view === "reset") && <button className="auth-text-button" type="button" onClick={resend} disabled={resendBusy}>{resendBusy ? "جاري إعادة الإرسال..." : "إعادة إرسال الرمز"}</button>}
           {view === "login" ? <div className="auth-switch">ليس لديك حساب؟ <button type="button" onClick={() => changeView("register", true)}>تسجيل منشأة جديدة</button></div> : <button className="auth-back" type="button" onClick={() => changeView("login", true)}>العودة إلى تسجيل الدخول</button>}
-        </form>
-        <p className="auth-footer-note"><ShieldCheck />تتم إدارة الحسابات ورموز التحقق عبر البنية الآمنة المعتمدة في VAREX.</p>
-      </section>
+          </form>
+          <p className="auth-footer-note"><ShieldCheck />تتم إدارة الحسابات ورموز التحقق عبر البنية الآمنة المعتمدة في VAREX.</p>
+        </section>
+      </div>
     </main>
   );
 }
