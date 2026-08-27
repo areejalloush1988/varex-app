@@ -247,100 +247,6 @@ type Shipment = {
   weight: string;
 };
 
-// Public-repository safety: every record below is fictional demonstration data.
-const initialShipments: Shipment[] = [
-  {
-    id: "DEMO-SHP-001",
-    customer: "عميل تجريبي 01",
-    phone: "رقم تجريبي 01",
-    origin: "دبي",
-    destination: "أبوظبي",
-    service: "سريع",
-    status: "في الطريق",
-    eta: "اليوم، 3:45 م",
-    driver: "سائق تجريبي 01",
-    vehicle: "DEMO-VEH-001",
-    progress: 72,
-    amount: 185,
-    weight: "14.2 كغ",
-  },
-  {
-    id: "DEMO-SHP-002",
-    customer: "عميل تجريبي 02",
-    phone: "رقم تجريبي 02",
-    origin: "الشارقة",
-    destination: "العين",
-    service: "عادي",
-    status: "في المستودع",
-    eta: "غدًا، 11:30 ص",
-    driver: "—",
-    vehicle: "—",
-    progress: 38,
-    amount: 120,
-    weight: "8.6 كغ",
-  },
-  {
-    id: "DEMO-SHP-003",
-    customer: "عميل تجريبي 03",
-    phone: "رقم تجريبي 03",
-    origin: "دبي",
-    destination: "رأس الخيمة",
-    service: "سريع",
-    status: "متأخرة",
-    eta: "تأخير 55 دقيقة",
-    driver: "سائق تجريبي 02",
-    vehicle: "DEMO-VEH-002",
-    progress: 61,
-    amount: 240,
-    weight: "22.0 كغ",
-  },
-  {
-    id: "DEMO-SHP-004",
-    customer: "عميل تجريبي 04",
-    phone: "رقم تجريبي 04",
-    origin: "أبوظبي",
-    destination: "دبي",
-    service: "عادي",
-    status: "تم التسليم",
-    eta: "تم 10:18 ص",
-    driver: "سائق تجريبي 03",
-    vehicle: "DEMO-VEH-003",
-    progress: 100,
-    amount: 95,
-    weight: "4.3 كغ",
-  },
-  {
-    id: "DEMO-SHP-005",
-    customer: "عميل تجريبي 05",
-    phone: "رقم تجريبي 05",
-    origin: "دبي",
-    destination: "عجمان",
-    service: "سريع",
-    status: "في الطريق",
-    eta: "اليوم، 5:10 م",
-    driver: "سائق تجريبي 04",
-    vehicle: "DEMO-VEH-004",
-    progress: 79,
-    amount: 165,
-    weight: "11.8 كغ",
-  },
-  {
-    id: "DEMO-SHP-006",
-    customer: "عميل تجريبي 06",
-    phone: "رقم تجريبي 06",
-    origin: "جبل علي",
-    destination: "الرياض",
-    service: "دولي",
-    status: "في الطريق",
-    eta: "29 أغسطس، 6:00 م",
-    driver: "سائق تجريبي 05",
-    vehicle: "DEMO-VEH-005",
-    progress: 54,
-    amount: 780,
-    weight: "92.4 كغ",
-  },
-];
-
 const statusClasses: Record<ShipmentStatus, string> = {
   جديدة: "status-new",
   "في المستودع": "status-hub",
@@ -463,7 +369,7 @@ function ShipmentTable({
         <div className="empty-state">
           <PackageOpen />
           <strong>لا توجد شحنات مطابقة</strong>
-          <span>غيّري البحث أو الفلاتر لعرض نتائج أخرى.</span>
+          <span>يمكن تغيير البحث أو الفلاتر لعرض نتائج أخرى.</span>
         </div>
       )}
     </div>
@@ -564,6 +470,18 @@ function TrackingPanel({ shipment }: { shipment: Shipment }) {
 
 type AuthView = "login" | "register" | "verify" | "forgot" | "reset";
 
+async function shippingApi<T>(path: string, init: RequestInit = {}) {
+  const headers = new Headers(init.headers);
+  if (init.body && !headers.has("content-type")) headers.set("content-type", "application/json");
+  const response = await fetch(path, { ...init, headers, credentials: "include", cache: "no-store" });
+  let payload: Record<string, unknown> = {};
+  try {
+    payload = await response.json() as Record<string, unknown>;
+  } catch {}
+  if (!response.ok) throw new Error(String(payload.error || "تعذّر إكمال العملية."));
+  return payload as T;
+}
+
 function AuthPortal({ onAuthenticated }: { onAuthenticated: (session: VarexAuthSession) => void }) {
   const [initialAuth] = useState(() => {
     if (typeof window === "undefined") return { view: "login" as AuthView, email: "", businessName: "" };
@@ -600,11 +518,11 @@ function AuthPortal({ onAuthenticated }: { onAuthenticated: (session: VarexAuthS
   const submit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setMessage(null);
-    if (!validEmail) return setMessage({ type: "error", text: "أدخلي بريدًا إلكترونيًا صحيحًا." });
-    if (view === "register" && businessName.trim().length < 2) return setMessage({ type: "error", text: "أدخلي اسم المنشأة." });
+    if (!validEmail) return setMessage({ type: "error", text: "يجب إدخال بريد إلكتروني صحيح." });
+    if (view === "register" && businessName.trim().length < 2) return setMessage({ type: "error", text: "يجب إدخال اسم المنشأة." });
     if ((view === "login" || view === "register" || view === "reset") && password.length < 8) return setMessage({ type: "error", text: "كلمة المرور يجب أن تتكوّن من 8 أحرف على الأقل." });
     if ((view === "register" || view === "reset") && password !== confirmPassword) return setMessage({ type: "error", text: "كلمتا المرور غير متطابقتين." });
-    if ((view === "verify" || view === "reset") && !/^\d{6}$/.test(otp)) return setMessage({ type: "error", text: "أدخلي رمز التحقق الكامل المكوّن من 6 أرقام." });
+    if ((view === "verify" || view === "reset") && !/^\d{6}$/.test(otp)) return setMessage({ type: "error", text: "يجب إدخال رمز التحقق الكامل المكوّن من 6 أرقام." });
 
     setBusy(true);
     try {
@@ -663,7 +581,7 @@ function AuthPortal({ onAuthenticated }: { onAuthenticated: (session: VarexAuthS
   };
 
   const title = view === "login" ? "تسجيل الدخول" : view === "register" ? "تسجيل منشأة جديدة" : view === "verify" ? "تأكيد البريد الإلكتروني" : view === "forgot" ? "نسيت كلمة المرور" : "تعيين كلمة مرور جديدة";
-  const subtitle = view === "login" ? "ادخلي إلى مركز إدارة الشحن والتتبّع" : view === "register" ? "أربعة حقول فقط لبدء حساب منشأتك" : view === "verify" ? `أدخلي الرمز المرسل إلى ${email}` : view === "forgot" ? "سنرسل رمز تحقق آمنًا إلى بريدك" : `أدخلي الرمز المرسل إلى ${email}`;
+  const subtitle = view === "login" ? "الدخول إلى مركز إدارة الشحن والتتبّع" : view === "register" ? "أربعة حقول فقط لبدء حساب المنشأة" : view === "verify" ? `يجب إدخال الرمز المرسل إلى ${email}` : view === "forgot" ? "سيتم إرسال رمز تحقق آمن إلى البريد الإلكتروني" : `يجب إدخال الرمز المرسل إلى ${email}`;
   const busyLabel = view === "login" ? "جاري تسجيل الدخول..." : view === "register" ? "جاري إنشاء المنشأة..." : view === "verify" ? "جاري تأكيد الحساب..." : view === "forgot" ? "جاري إرسال الرمز..." : "جاري تحديث كلمة المرور...";
 
   return (
@@ -729,7 +647,7 @@ function AuthPortal({ onAuthenticated }: { onAuthenticated: (session: VarexAuthS
           {(view === "register" || view === "reset") && (
             <div className="auth-field">
               <Label htmlFor="confirmPassword">تأكيد كلمة المرور</Label>
-              <div><ShieldCheck /><Input id="confirmPassword" type={showPassword ? "text" : "password"} dir="ltr" value={confirmPassword} onChange={(event) => setConfirmPassword(event.target.value)} placeholder="أعيدي كتابة كلمة المرور" autoComplete="new-password" disabled={busy} /></div>
+              <div><ShieldCheck /><Input id="confirmPassword" type={showPassword ? "text" : "password"} dir="ltr" value={confirmPassword} onChange={(event) => setConfirmPassword(event.target.value)} placeholder="إعادة كتابة كلمة المرور" autoComplete="new-password" disabled={busy} /></div>
             </div>
           )}
 
@@ -762,7 +680,7 @@ export default function Home() {
   const [logoutBusy, setLogoutBusy] = useState(false);
   const [settingsSaving, setSettingsSaving] = useState(false);
   const [shipmentSaving, setShipmentSaving] = useState(false);
-  const [shipments, setShipments] = useState(initialShipments);
+  const [shipments, setShipments] = useState<Shipment[]>([]);
   const [activeTab, setActiveTab] = useState("control");
   const [clock, setClock] = useState("");
   const [date, setDate] = useState("");
@@ -781,8 +699,8 @@ export default function Home() {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("الكل");
   const [serviceFilter, setServiceFilter] = useState("الكل");
-  const [trackingQuery, setTrackingQuery] = useState("DEMO-SHP-001");
-  const [trackedShipment, setTrackedShipment] = useState<Shipment>(shipments[0]);
+  const [trackingQuery, setTrackingQuery] = useState("");
+  const [trackedShipment, setTrackedShipment] = useState<Shipment | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [autoAssign, setAutoAssign] = useState(true);
   const [clientUpdates, setClientUpdates] = useState(true);
@@ -813,6 +731,38 @@ export default function Home() {
       active = false;
     };
   }, []);
+
+  useEffect(() => {
+    if (!authSession) return;
+    let active = true;
+    Promise.all([
+      shippingApi<{ shipments: Shipment[] }>("/api/shipments"),
+      shippingApi<{ settings: Record<string, unknown> }>("/api/settings"),
+    ])
+      .then(([shipmentPayload, settingsPayload]) => {
+        if (!active) return;
+        const businessShipments = Array.isArray(shipmentPayload.shipments) ? shipmentPayload.shipments : [];
+        setShipments(businessShipments);
+        setTrackedShipment((current) => businessShipments.find((shipment) => shipment.id === current?.id) || businessShipments[0] || null);
+        setTrackingQuery((current) => current || businessShipments[0]?.id || "");
+        const settings = settingsPayload.settings || {};
+        const savedTheme = String(settings.themeId || "");
+        const savedLanguage = String(settings.language || "");
+        if (themeOptions.some((option) => option.id === savedTheme)) setThemeId(savedTheme);
+        if (languageOptions.some((option) => option.code === savedLanguage)) setLanguage(savedLanguage);
+        if (typeof settings.autoAssign === "boolean") setAutoAssign(settings.autoAssign);
+        if (typeof settings.clientUpdates === "boolean") setClientUpdates(settings.clientUpdates);
+        if (typeof settings.proofRequired === "boolean") setProofRequired(settings.proofRequired);
+        if (typeof settings.capacityAlerts === "boolean") setCapacityAlerts(settings.capacityAlerts);
+        if (typeof settings.soundOn === "boolean") setSoundOn(settings.soundOn);
+      })
+      .catch((error) => {
+        if (active) toast.error(getAuthErrorMessage(error));
+      });
+    return () => {
+      active = false;
+    };
+  }, [authSession]);
 
   useEffect(() => {
     const updateTime = () => {
@@ -909,7 +859,7 @@ export default function Home() {
       attempts += 1;
       if (applyGoogleLanguage(option.google) || attempts >= 30) {
         window.clearInterval(translate);
-        if (attempts >= 30) toast.error("تعذّر تحميل الترجمة، تحققي من الاتصال بالإنترنت");
+        if (attempts >= 30) toast.error("تعذّر تحميل الترجمة. يجب التحقق من الاتصال بالإنترنت.");
       }
     }, 200);
     toast.success(`تم تغيير اللغة إلى ${option.name}`);
@@ -921,7 +871,7 @@ export default function Home() {
       (item) => item.id.toLowerCase() === trackingQuery.trim().toLowerCase(),
     );
     if (!shipment) {
-      toast.error("رقم التتبع غير موجود", { description: "جرّبي DEMO-SHP-001" });
+      toast.error("رقم التتبع غير موجود", { description: "يجب التحقق من الرقم وإعادة المحاولة." });
       return;
     }
     setTrackedShipment(shipment);
@@ -935,51 +885,58 @@ export default function Home() {
       return;
     }
     setShipmentSaving(true);
-    await withMinimumDelay(Promise.resolve(), 2000);
-    const sequence = 48300 + shipments.length;
-    const shipment: Shipment = {
-      id: `VX-${sequence}`,
-      customer: newShipment.customer,
-      phone: newShipment.phone,
-      origin: newShipment.origin,
-      destination: newShipment.destination,
-      service: newShipment.service,
-      status: "جديدة",
-      eta: "يتم احتساب الموعد",
-      driver: "غير معيّن",
-      vehicle: "غير معيّنة",
-      progress: 8,
-      amount: Number(newShipment.amount || 0),
-      weight: `${newShipment.weight} كغ`,
-    };
-    setShipments((current) => [shipment, ...current]);
-    setTrackedShipment(shipment);
-    setTrackingQuery(shipment.id);
-    setNewShipment({ customer: "", phone: "", origin: "دبي", destination: "أبوظبي", service: "سريع", weight: "", amount: "" });
-    setDialogOpen(false);
-    setShipmentSaving(false);
-    toast.success(`تم إنشاء الشحنة ${shipment.id}`);
+    try {
+      const payload = await withMinimumDelay(shippingApi<{ shipment: Shipment }>("/api/shipments", {
+        method: "POST",
+        body: JSON.stringify(newShipment),
+      }), 900);
+      const shipment = payload.shipment;
+      setShipments((current) => [shipment, ...current]);
+      setTrackedShipment(shipment);
+      setTrackingQuery(shipment.id);
+      setNewShipment({ customer: "", phone: "", origin: "دبي", destination: "أبوظبي", service: "سريع", weight: "", amount: "" });
+      setDialogOpen(false);
+      toast.success(`تم إنشاء الشحنة ${shipment.id}`);
+    } catch (error) {
+      toast.error(getAuthErrorMessage(error));
+    } finally {
+      setShipmentSaving(false);
+    }
   };
 
   const handleSaveSettings = async () => {
     if (settingsSaving) return;
     setSettingsSaving(true);
-    await withMinimumDelay(Promise.resolve(), 2200);
-    setSettingsSaving(false);
-    toast.success("تم حفظ الإعدادات");
+    try {
+      await withMinimumDelay(shippingApi("/api/settings", {
+        method: "PUT",
+        body: JSON.stringify({ themeId, language, autoAssign, clientUpdates, proofRequired, capacityAlerts, soundOn }),
+      }), 900);
+      toast.success("تم حفظ الإعدادات");
+    } catch (error) {
+      toast.error(getAuthErrorMessage(error));
+    } finally {
+      setSettingsSaving(false);
+    }
   };
 
   const handleLogout = async () => {
     if (logoutBusy) return;
     setLogoutBusy(true);
-    await withMinimumDelay(signOut(authSession), 2200);
-    setAuthSession(null);
-    setLogoutBusy(false);
-    toast.success("تم تسجيل الخروج بأمان");
+    try {
+      await withMinimumDelay(signOut(authSession), 700);
+      setAuthSession(null);
+      setShipments([]);
+      setTrackedShipment(null);
+      toast.success("تم تسجيل الخروج بأمان");
+    } finally {
+      setLogoutBusy(false);
+    }
   };
 
   const accountName = authSession?.user.user_metadata?.business_name || authSession?.user.user_metadata?.name || authSession?.user.email?.split("@")[0] || "منشأة الشحن";
   const accountInitials = accountName.replace(/[^\p{L}\p{N} ]/gu, "").split(/\s+/).filter(Boolean).slice(0, 2).map((part) => part[0]).join("").toUpperCase() || "VS";
+  const delayedShipment = shipments.find((shipment) => shipment.status === "متأخرة");
 
   if (!authReady) {
     return (
@@ -1018,7 +975,7 @@ export default function Home() {
               <button className="header-icon wide" aria-label="اختيار اللغة"><Languages /><span>{selectedLanguage.name}</span></button>
             </PopoverTrigger>
             <PopoverContent align="end" className="language-popover" dir={selectedLanguage.dir}>
-              <div className="popover-title-row"><div><strong>لغة النظام</strong><small>اختاري من 20 لغة للترجمة الفورية</small></div><Languages /></div>
+              <div className="popover-title-row"><div><strong>لغة النظام</strong><small>20 لغة متاحة للترجمة الفورية</small></div><Languages /></div>
               <div className="language-grid">
                 {languageOptions.map((option) => (
                   <button
@@ -1108,7 +1065,7 @@ export default function Home() {
 
         <TabsContent value="control" className="workspace-page">
           <section className="page-intro">
-            <div><span className="eyebrow">برج المراقبة اللوجستي</span><h1>صباح الخير، كل المسارات تحت السيطرة</h1><p>تابعي الشحنات والمركبات والمحطات من لوحة تشغيل واحدة.</p></div>
+            <div><span className="eyebrow">برج المراقبة اللوجستي</span><h1>صباح الخير، كل المسارات تحت السيطرة</h1><p>متابعة الشحنات والمركبات والمحطات من لوحة تشغيل واحدة.</p></div>
             <button className="day-score"><span>أداء اليوم</span><strong>94%</strong><Progress value={94} /></button>
           </section>
 
@@ -1145,7 +1102,7 @@ export default function Home() {
 
             <aside className="attention-board">
               <div className="section-heading compact"><div><span className="eyebrow">تحتاج تدخلك</span><h2>تنبيهات التشغيل</h2></div><span className="alert-count">3</span></div>
-              <article className="attention-item high"><span><AlertTriangle /></span><div><strong>شحنة تجريبية متأخرة</strong><p>DEMO-SHP-003 · رأس الخيمة</p></div><button onClick={() => openTracking(shipments[2])}><ChevronLeft /></button></article>
+              <article className="attention-item high"><span><AlertTriangle /></span><div><strong>{delayedShipment ? "شحنة متأخرة" : "لا توجد شحنات متأخرة"}</strong><p>{delayedShipment ? `${delayedShipment.id} · ${delayedShipment.destination}` : "حالة التشغيل مستقرة"}</p></div><button disabled={!delayedShipment} onClick={() => delayedShipment && openTracking(delayedShipment)}><ChevronLeft /></button></article>
               <article className="attention-item medium"><span><Truck /></span><div><strong>مركبة تجريبية تحتاج صيانة</strong><p>DEMO-VEH-006 · بعد 240 كم</p></div><button onClick={() => setActiveTab("fleet")}><ChevronLeft /></button></article>
               <article className="attention-item low"><span><Banknote /></span><div><strong>تحصيل غير مسوّى</strong><p>4 شحنات · 2,180 د.إ</p></div><button onClick={() => toast.info("سيظهر في وحدة المالية")}><ChevronLeft /></button></article>
               <button className="view-all-alerts">عرض كل التنبيهات</button>
@@ -1167,7 +1124,7 @@ export default function Home() {
             <div className="page-quick-actions"><Button variant="outline" onClick={() => toast.success("تم تجهيز ملف الشحنات للتصدير")}><FileDown />تصدير</Button><Button variant="outline" onClick={() => window.print()}><Printer />طباعة</Button></div>
           </section>
           <section className="filter-deck">
-            <div className="search-field"><Search /><Input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="ابحثي برقم الشحنة أو العميل أو الوجهة" /></div>
+            <div className="search-field"><Search /><Input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="البحث برقم الشحنة أو العميل أو الوجهة" /></div>
             <Select value={statusFilter} onValueChange={setStatusFilter}><SelectTrigger><SlidersHorizontal /><SelectValue placeholder="الحالة" /></SelectTrigger><SelectContent dir="rtl"><SelectItem value="الكل">كل الحالات</SelectItem><SelectItem value="جديدة">جديدة</SelectItem><SelectItem value="في المستودع">في المستودع</SelectItem><SelectItem value="في الطريق">في الطريق</SelectItem><SelectItem value="تم التسليم">تم التسليم</SelectItem><SelectItem value="متأخرة">متأخرة</SelectItem></SelectContent></Select>
             <Select value={serviceFilter} onValueChange={setServiceFilter}><SelectTrigger><SelectValue placeholder="الخدمة" /></SelectTrigger><SelectContent dir="rtl"><SelectItem value="الكل">كل الخدمات</SelectItem><SelectItem value="عادي">عادي</SelectItem><SelectItem value="سريع">سريع</SelectItem><SelectItem value="دولي">دولي</SelectItem></SelectContent></Select>
             <span className="result-count">{filteredShipments.length} نتيجة</span>
@@ -1177,12 +1134,18 @@ export default function Home() {
 
         <TabsContent value="tracking" className="workspace-page">
           <section className="page-intro tracking-intro">
-            <div><span className="eyebrow">تتبّع لحظي</span><h1>أين وصلت الشحنة؟</h1><p>أدخلي رقم التتبع لمشاهدة مسارها، آخر محطة وموعد الوصول.</p></div>
+            <div><span className="eyebrow">تتبّع لحظي</span><h1>أين وصلت الشحنة؟</h1><p>يجب إدخال رقم التتبع لمشاهدة المسار وآخر محطة وموعد الوصول.</p></div>
             <form className="tracking-search" onSubmit={handleTrack}>
               <MapPin /><Input value={trackingQuery} onChange={(event) => setTrackingQuery(event.target.value.toUpperCase())} placeholder="DEMO-SHP-001" dir="ltr" /><Button type="submit">تتبّع الآن</Button>
             </form>
           </section>
-          <TrackingPanel shipment={trackedShipment} />
+          {trackedShipment ? <TrackingPanel shipment={trackedShipment} /> : (
+            <section className="tracking-result empty-state">
+              <PackageOpen />
+              <strong>لا توجد شحنة محددة</strong>
+              <span>يمكن إنشاء شحنة جديدة أو إدخال رقم تتبع موجود.</span>
+            </section>
+          )}
         </TabsContent>
 
         <TabsContent value="fleet" className="workspace-page">
@@ -1273,7 +1236,7 @@ export default function Home() {
                 <DialogContent className="shipment-dialog" dir="rtl">
                   <DialogHeader>
                     <DialogTitle>إنشاء شحنة جديدة</DialogTitle>
-                    <DialogDescription>أدخلي بيانات المرسل إليه وخط الشحنة، وسيتم إنشاء رقم تتبع تلقائيًا.</DialogDescription>
+                    <DialogDescription>يجب إدخال بيانات المرسل إليه وخط الشحنة، وسيتم إنشاء رقم تتبع تلقائيًا.</DialogDescription>
                   </DialogHeader>
                   <form id="new-shipment-form" className="shipment-form" onSubmit={handleCreateShipment}>
                     <div className="form-field"><Label htmlFor="customer">اسم العميل *</Label><Input id="customer" value={newShipment.customer} onChange={(e) => setNewShipment({ ...newShipment, customer: e.target.value })} placeholder="اسم العميل أو المنشأة" /></div>
@@ -1361,7 +1324,7 @@ export default function Home() {
             <article><CircleDollarSign /><div><small>ذمم مستحقة</small><strong>42,850 د.إ</strong></div><span>ضمن المدة 89%</span></article>
           </section>
           <section className="module-panel">
-            <div className="module-toolbar"><div className="search-field"><Search /><Input placeholder="ابحثي باسم العميل أو رقم الهاتف" /></div><Button variant="outline" onClick={() => toast.success("تم تصدير قائمة العملاء")}><FileDown />تصدير</Button></div>
+            <div className="module-toolbar"><div className="search-field"><Search /><Input placeholder="البحث باسم العميل أو رقم الهاتف" /></div><Button variant="outline" onClick={() => toast.success("تم تصدير قائمة العملاء")}><FileDown />تصدير</Button></div>
             <Table dir="rtl">
               <TableHeader><TableRow><TableHead>العميل</TableHead><TableHead>نوع الحساب</TableHead><TableHead>الشحنات</TableHead><TableHead>آخر شحنة</TableHead><TableHead>الذمة</TableHead><TableHead>الحالة</TableHead><TableHead>التواصل</TableHead></TableRow></TableHeader>
               <TableBody>
@@ -1604,7 +1567,7 @@ export default function Home() {
           <section className="settings-grid">
             <article className="settings-card company-settings">
               <header><span><Building2 /></span><div><strong>بيانات المنشأة</strong><small>تظهر على البوليصات والفواتير</small></div></header>
-              <div className="settings-form"><div className="form-field"><Label>اسم المنشأة</Label><Input defaultValue="منشأة شحن تجريبية" /></div><div className="form-field"><Label>الرقم الضريبي</Label><Input defaultValue="DEMO-TRN-000" dir="ltr" /></div><div className="form-field"><Label>البريد</Label><Input defaultValue="demo.shipping@example.invalid" dir="ltr" /></div><div className="form-field"><Label>الهاتف</Label><Input defaultValue="رقم تجريبي" dir="rtl" /></div></div>
+              <div className="settings-form"><div className="form-field"><Label>اسم المنشأة</Label><Input defaultValue={accountName} /></div><div className="form-field"><Label>الرقم الضريبي</Label><Input placeholder="الرقم الضريبي" dir="ltr" /></div><div className="form-field"><Label>البريد</Label><Input defaultValue={authSession.user.email || ""} dir="ltr" /></div><div className="form-field"><Label>الهاتف</Label><Input placeholder="رقم الهاتف" dir="rtl" /></div></div>
             </article>
             <article className="settings-card automation-settings">
               <header><span><Database /></span><div><strong>أتمتة العمليات</strong><small>قواعد التشغيل اليومية</small></div></header>
