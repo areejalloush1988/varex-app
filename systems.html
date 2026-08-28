@@ -84,6 +84,6 @@
     routeSavedSystem();
     const toast=document.getElementById("toast"),toastTitle=document.getElementById("toastTitle"),toastMessage=document.getElementById("toastMessage");let toastTimer;document.querySelectorAll("[data-soon-ar]").forEach(card=>card.addEventListener("click",event=>{event.preventDefault();toastTitle.textContent=card.dataset[language==="ar"?"soonAr":"soonEn"];toastMessage.textContent=language==="ar"?"تم تثبيت الأيقونة، وسيبدأ تطوير هذا النظام في المرحلة القادمة.":"The system is ready on the home screen and development will begin in the next phase.";toast.classList.add("show");clearTimeout(toastTimer);toastTimer=setTimeout(()=>toast.classList.remove("show"),2800)}));if("serviceWorker" in navigator)addEventListener("load",()=>navigator.serviceWorker.register("./sw.js",{scope:"./"}).catch(()=>{}));
   </script>
-  <script src="./varex-i18n.js?v=20260828-auth-language1"></script>
+  <script src="./varex-i18n.js?v=20260828-native-auth2"></script>
 </body>
 </html>

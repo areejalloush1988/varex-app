@@ -69,6 +69,6 @@
     function init(){if(!window.VAREX?.isLoggedIn?.()&&!window.VAREX?.isDeviceAuthorized?.()){location.replace(setupUrl("./login.html"));return}if(profile?.completed&&!editing&&sessionStorage.getItem("varex_system_was_chosen")!=="true"){window.VAREX.setActiveSystem(profile.selectedSystem);location.replace(setupUrl(window.VAREX.getSystemStartPage(profile.selectedSystem)));return}window.VAREX.setPendingSystem(system);applySystemTheme();$("businessName").value=profile?.businessName&&profile.businessName!=="VAREX"?profile.businessName:"";$("ownerName").value=profile?.ownerName||window.VAREX.getCurrentUser?.()?.name||"مالك المنشأة";applyLanguage()}
     $("langAr").addEventListener("click",()=>{language="ar";applyLanguage()});$("langEn").addEventListener("click",()=>{language="en";applyLanguage()});$("suggestedButton").addEventListener("click",chooseSuggested);$("allButton").addEventListener("click",chooseAll);$("saveButton").addEventListener("click",save);$("backButton").addEventListener("click",()=>{sessionStorage.removeItem("varex_system_was_chosen");location.href=setupUrl(editing?(window.VAREX?.getSystemStartPage?.(profile?.selectedSystem)||"./01-الكاشير-والحسابات/index.html"):"./systems.html?onboarding=1")});init();
   </script>
-  <script src="./varex-i18n.js?v=20260828-auth-language1"></script>
+  <script src="./varex-i18n.js?v=20260828-native-auth2"></script>
 </body>
 </html>

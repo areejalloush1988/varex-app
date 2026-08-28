@@ -96,7 +96,8 @@ test("the storefront-to-login chain preserves the selected language", () => {
     assert.match(read(page), /requestedLanguage/);
     assert.match(read(page), /varex-i18n\.js/);
   }
-  assert.match(read("sw.js"), /varex-cache-v44-auth-language/);
+  assert.match(read("varex-locale.js"), /20260828-native-auth2/);
+  assert.match(read("sw.js"), /varex-cache-v45-native-auth-locales/);
 });
 
 test("every cashier screen loads the native i18n layer in both published paths", () => {

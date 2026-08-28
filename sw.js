@@ -1,4 +1,4 @@
-const CACHE_NAME="varex-cache-v44-auth-language";
+const CACHE_NAME="varex-cache-v45-native-auth-locales";
 const IS_NATIVE_APP=self.location.hostname==="localhost";
 
 const FILES_TO_CACHE=[

@@ -19,6 +19,7 @@
   const byCode=new Map(languages.map(item=>[item.code,item]));
   const cache=new Map();
   const defaultLanguage="en";
+  const localeVersion="20260828-native-auth2";
   const scriptSource=document.currentScript&&document.currentScript.src?document.currentScript.src:new URL("./varex-locale.js",location.href).href;
   const localeBase=new URL("./locales/",scriptSource);
 
@@ -67,7 +68,8 @@
     if(cache.has(code))return cache.get(code);
     const promise=(async()=>{
       try{
-        const response=await fetch(new URL(`${code}.json`,localeBase),{cache:"force-cache",credentials:"same-origin"});
+        const localeUrl=new URL(`${code}.json`,localeBase);localeUrl.searchParams.set("v",localeVersion);
+        const response=await fetch(localeUrl,{cache:"no-store",credentials:"same-origin"});
         if(!response.ok)throw new Error(`Locale ${code} unavailable`);
         return packFrom(code,await response.json());
       }catch(error){
