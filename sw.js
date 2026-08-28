@@ -1,4 +1,4 @@
-const CACHE_NAME="varex-cache-v42-login-stability";
+const CACHE_NAME="varex-cache-v43-native-locales";
 const IS_NATIVE_APP=self.location.hostname==="localhost";
 
 const FILES_TO_CACHE=[
@@ -6,6 +6,24 @@ const FILES_TO_CACHE=[
 "./index.html",
 "./systems.html",
 "./business-setup.html",
+"./plans/index.html",
+"./preview/index.html",
+"./preview/systems/catalog-demo/index.html",
+"./download/index.html",
+"./catalog/varex-catalog.js",
+"./varex-locale.js",
+"./locales/en.json",
+"./locales/ar.json",
+"./locales/fa.json",
+"./locales/ur.json",
+"./locales/zh.json",
+"./locales/ko.json",
+"./locales/it.json",
+"./locales/es.json",
+"./locales/he.json",
+"./locales/fr.json",
+"./locales/ru.json",
+"./locales/tr.json",
 "./02-إدارة-العقارات/novarex.html",
 "./02-إدارة-العقارات/real-estate-properties.html",
 "./02-إدارة-العقارات/real-estate-owners.html",

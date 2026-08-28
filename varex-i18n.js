@@ -1,6 +1,8 @@
-/* VAREX bilingual interface — Arabic / English */
+/* VAREX native multilingual interface — 12 bundled locale files. */
 (function(){
   "use strict";
+
+  const i18nScriptUrl=document.currentScript&&document.currentScript.src?document.currentScript.src:new URL("./varex-i18n.js",location.href).href;
 
   const pairs=[
     ["النظام متصل وجاهز للعمل","System connected and ready"],["المستخدم:","User:"],["المستخدم الحالي","Current user"],["الحساب:","Account:"],["التاريخ:","Date:"],["الوقت:","Time:"],
@@ -155,15 +157,26 @@
   );
 
   const dictionary=new Map(pairs);
-  const textOriginals=new WeakMap(),attributeOriginals=new WeakMap();
-  let applying=false,currentLanguage="ar";
+  const textOriginals=new WeakMap(),textRendered=new WeakMap(),attributeOriginals=new WeakMap(),attributeRendered=new WeakMap();
+  let applying=false,currentLanguage="en",activePack=null,applySequence=0;
+  let resolveReady;
+  const ready=new Promise(resolve=>{resolveReady=resolve});
 
-  function savedLanguage(){
-    const selected=localStorage.getItem("varex_language")||localStorage.getItem("varex_launcher_language")||"ar";
-    return selected==="en"?"en":"ar";
+  function ensureLocaleRuntime(){
+    if(window.VAREXLocale)return Promise.resolve(window.VAREXLocale);
+    return new Promise((resolve,reject)=>{
+      const existing=document.querySelector('script[data-varex-locale-runtime]');
+      if(existing){existing.addEventListener("load",()=>resolve(window.VAREXLocale),{once:true});existing.addEventListener("error",reject,{once:true});return}
+      const script=document.createElement("script");script.src=new URL("./varex-locale.js",i18nScriptUrl).href;script.async=false;script.dataset.varexLocaleRuntime="true";script.onload=()=>resolve(window.VAREXLocale);script.onerror=reject;document.head.appendChild(script);
+    });
   }
 
-  function coreTranslation(value){
+  function savedLanguage(){
+    if(window.VAREXLocale)return window.VAREXLocale.readLanguage();
+    try{return localStorage.getItem("varex_language")||localStorage.getItem("varex_launcher_language")||"en"}catch(_){return"en"}
+  }
+
+  function englishTranslation(value){
     const normalized=String(value??"").replace(/\s+/g," ").trim();
     if(!normalized)return normalized;
     if(normalized==="الصلاحية"&&/notifications\.html$/i.test(location.pathname))return "Expiry";
@@ -216,8 +229,16 @@
     const periodMatch=translated.match(/^(إقرار ربع سنوي|ملخص نصف سنوي|ملخص سنوي|فترة مخصصة)\s+—\s+(.+)\s+إلى\s+(.+)$/);
     if(periodMatch)translated=`${dictionary.get(periodMatch[1])||periodMatch[1]} — ${periodMatch[2]} to ${periodMatch[3]}`;
     const lockMatch=translated.match(/^سيتم قفل VAREX بعد\s+(.+)\s+من عدم استخدام النظام\.$/);
-    if(lockMatch)translated=`VAREX will lock after ${coreTranslation(lockMatch[1])} of system inactivity.`;
+    if(lockMatch)translated=`VAREX will lock after ${englishTranslation(lockMatch[1])} of system inactivity.`;
     return englishDigits(translated);
+  }
+
+  function localizedTranslation(value,language=currentLanguage){
+    const original=String(value??"");
+    if(language==="ar")return original;
+    const english=englishTranslation(original);
+    if(language==="en"||!activePack)return english;
+    return window.VAREXLocale.translate(english,activePack);
   }
 
   function englishDigits(value){
@@ -225,8 +246,9 @@
   }
 
   function localizeNativeInputs(language){
+    const locale=activePack?.locale||window.VAREXLocale?.locale(language)||(language==="ar"?"ar-AE":"en-GB");
     document.querySelectorAll('input[type="date"],input[type="datetime-local"],input[type="time"]').forEach(input=>{
-      input.lang=language==="en"?"en-GB":"ar-AE";
+      input.lang=locale;
       input.setAttribute("data-varex-calendar-language",language);
     });
   }
@@ -238,43 +260,46 @@
     };
     Object.entries(defaults).forEach(([id,values])=>{
       const field=document.getElementById(id);if(!field)return;
-      if(values.includes(field.value))field.value=language==="en"?values[1]:values[0];
+      const translated=activePack?.t(values[1]);
+      if(values.includes(field.value)||field.value===translated)field.value=language==="ar"?values[0]:localizedTranslation(values[1],language);
     });
   }
 
-  function translatedTextValue(original,node){
+  function translatedTextValue(original,node,language=currentLanguage){
     if(!String(original??"").trim())return original;
     const leading=(original.match(/^\s*/)||[""])[0],trailing=(original.match(/\s*$/)||[""])[0];
-    let translated=coreTranslation(original);
+    let translated=localizedTranslation(original,language);
     if(node.parentElement&&["currentDate","currentTime"].includes(node.parentElement.id))translated=englishDigits(translated);
     return leading+translated+trailing;
   }
 
   function translateTextNode(node,language){
-    if(!textOriginals.has(node))textOriginals.set(node,node.nodeValue);
+    if(!textOriginals.has(node)){textOriginals.set(node,node.nodeValue);textRendered.set(node,node.nodeValue)}
     let original=textOriginals.get(node);
-    const current=node.nodeValue,previousEnglish=translatedTextValue(original,node);
-    if(current!==original&&current!==previousEnglish){textOriginals.set(node,current);original=current}
-    if(language==="ar"){if(node.nodeValue!==original)node.nodeValue=original;return}
-    const next=translatedTextValue(original,node);
-    if(node.nodeValue!==next)node.nodeValue=next;
+    const current=node.nodeValue,rendered=textRendered.get(node);
+    if(current!==rendered){textOriginals.set(node,current);original=current}
+    const next=language==="ar"?original:translatedTextValue(original,node,language);
+    if(node.nodeValue!==next)node.nodeValue=next;textRendered.set(node,next);
   }
 
   function translateAttributes(element,language){
     const names=["placeholder","title","aria-label"];
     let originals=attributeOriginals.get(element);
+    let rendered=attributeRendered.get(element);
     if(!originals){originals={};attributeOriginals.set(element,originals)}
+    if(!rendered){rendered={};attributeRendered.set(element,rendered)}
     for(const name of names){
-      if(element.hasAttribute(name)&&originals[name]===undefined)originals[name]=element.getAttribute(name);
-      else if(element.hasAttribute(name)&&originals[name]!==undefined){const current=element.getAttribute(name),previousEnglish=coreTranslation(originals[name]);if(current!==originals[name]&&current!==previousEnglish)originals[name]=current}
-      if(originals[name]!==undefined)element.setAttribute(name,language==="ar"?originals[name]:coreTranslation(originals[name]));
+      if(element.hasAttribute(name)&&originals[name]===undefined){originals[name]=element.getAttribute(name);rendered[name]=element.getAttribute(name)}
+      else if(element.hasAttribute(name)&&originals[name]!==undefined){const current=element.getAttribute(name);if(current!==rendered[name])originals[name]=current}
+      if(originals[name]!==undefined){const next=language==="ar"?originals[name]:localizedTranslation(originals[name],language);element.setAttribute(name,next);rendered[name]=next}
     }
     if(element instanceof HTMLInputElement&&["button","submit","reset"].includes(element.type)){
-      if(originals.value===undefined)originals.value=element.value;
-      element.value=language==="ar"?originals.value:coreTranslation(originals.value);
+      if(originals.value===undefined){originals.value=element.value;rendered.value=element.value}
+      else if(element.value!==rendered.value)originals.value=element.value;
+      const next=language==="ar"?originals.value:localizedTranslation(originals.value,language);element.value=next;rendered.value=next;
     }
     if(element instanceof HTMLInputElement&&["date","datetime-local","time"].includes(element.type)){
-      element.lang=language==="en"?"en-GB":"ar-AE";
+      element.lang=activePack?.locale||window.VAREXLocale?.locale(language)||"en-GB";
       element.setAttribute("data-varex-calendar-language",language);
     }
   }
@@ -304,55 +329,69 @@
       html[dir="ltr"] input,html[dir="ltr"] textarea,html[dir="ltr"] select{text-align:left}
       html[dir="ltr"] .language-menu{right:0!important;left:auto!important}
       html[dir="ltr"] .modal,html[dir="ltr"] .modal-box,html[dir="ltr"] .card,html[dir="ltr"] table{text-align:left}
-      .varex-i18n-switch{height:42px;min-width:76px;padding:0 12px;border:1px solid #172554;border-radius:9px;background:#172554;color:#fff;font:800 11px Tahoma,Arial,sans-serif;cursor:pointer;box-shadow:0 4px 0 #0f1d43,0 7px 13px rgba(23,37,84,.14)}
-      .varex-i18n-auth-switch{position:fixed;z-index:9999;top:max(14px,env(safe-area-inset-top));right:14px}
-      html[dir="ltr"] .varex-i18n-auth-switch{right:auto;left:14px}
-      @media(max-width:650px){.varex-i18n-switch{height:38px;min-width:62px;padding-inline:9px;font-size:10px}}
+      .varex-i18n-picker{height:42px;min-width:128px;display:flex;align-items:center;gap:7px;padding:0 8px 0 11px;border:1px solid #172554;border-radius:9px;background:#172554;color:#fff;box-shadow:0 4px 0 #0f1d43,0 7px 13px rgba(23,37,84,.14)}
+      .varex-i18n-picker select{width:100%;min-width:92px;height:38px;min-height:38px;padding:0 4px;border:0!important;box-shadow:none!important;background:#172554!important;color:#fff!important;font:800 11px Tahoma,Arial,sans-serif;cursor:pointer;outline:none}
+      .varex-i18n-picker option{background:#fff;color:#172554}
+      .varex-i18n-auth-picker{position:fixed;z-index:9999;top:max(14px,env(safe-area-inset-top));right:14px}
+      html[dir="ltr"] .varex-i18n-auth-picker{right:auto;left:14px}
+      @media(max-width:650px){.varex-i18n-picker{height:38px;min-width:108px}.varex-i18n-picker select{height:34px;min-height:34px;min-width:78px;font-size:10px}}
     `;document.head.appendChild(style);
   }
 
-  function updateSwitches(){document.querySelectorAll(".varex-i18n-switch").forEach(button=>{button.textContent=currentLanguage==="ar"?"English":"العربية";button.setAttribute("aria-label",currentLanguage==="ar"?"Switch to English":"التبديل إلى العربية")})}
+  function updateSwitches(){
+    const languages=window.VAREXLocale.languages,meta=languages.find(item=>item.code===currentLanguage)||languages[0];
+    document.querySelectorAll(".varex-i18n-select").forEach(select=>{if(select.value!==currentLanguage)select.value=currentLanguage;select.setAttribute("aria-label",activePack?.t("Language")||"Language")});
+    const current=document.getElementById("currentLanguage");if(current)current.textContent=meta.name;
+    document.querySelectorAll(".language-option[data-language]").forEach(option=>option.classList.toggle("active",option.dataset.language===currentLanguage));
+  }
 
   function installSwitcher(){
-    document.querySelectorAll('.language-option[data-language]').forEach(option=>{if(!["ar","en"].includes(option.dataset.language))option.style.display="none"});
-    if(document.querySelector(".language-selector,.varex-i18n-switch"))return;
-    const button=document.createElement("button");button.type="button";button.className="varex-i18n-switch";button.dataset.varexNoTranslate="true";button.addEventListener("click",()=>setLanguage(currentLanguage==="ar"?"en":"ar"));
+    const existing=document.querySelector(".language-selector"),languages=window.VAREXLocale.languages;
+    if(existing){
+      const menu=existing.querySelector(".language-menu");
+      if(menu&&!menu.dataset.varexNativeLocales){menu.dataset.varexNativeLocales="true";menu.textContent="";languages.forEach(item=>{const button=document.createElement("button");button.type="button";button.className="language-option";button.dataset.language=item.code;button.dataset.varexNoTranslate="true";const label=document.createElement("span");label.textContent=item.name;const code=document.createElement("span");code.className="language-code";code.textContent=item.code.toUpperCase();button.append(label,code);button.addEventListener("click",()=>setLanguage(item.code));menu.appendChild(button)})}
+      updateSwitches();return;
+    }
+    if(document.querySelector(".varex-i18n-picker"))return;
+    const label=document.createElement("label");label.className="varex-i18n-picker";label.dataset.varexNoTranslate="true";label.append(document.createTextNode("🌐"));const select=document.createElement("select");select.className="varex-i18n-select";window.VAREXLocale.fillSelect(select,currentLanguage);select.addEventListener("change",()=>setLanguage(select.value));label.appendChild(select);
     const topInfo=document.querySelector(".top-info");
-    if(topInfo)topInfo.prepend(button);else{button.classList.add("varex-i18n-auth-switch");document.body.appendChild(button)}
+    if(topInfo)topInfo.prepend(label);else{label.classList.add("varex-i18n-auth-picker");document.body.appendChild(label)}
     updateSwitches();
   }
 
-  function apply(language){
-    currentLanguage=language==="en"?"en":"ar";applying=true;
-    document.documentElement.lang=currentLanguage;document.documentElement.dir=currentLanguage==="en"?"ltr":"rtl";
+  async function apply(language){
+    const sequence=++applySequence,next=window.VAREXLocale.normalize(language),pack=await window.VAREXLocale.load(next);if(sequence!==applySequence)return;
+    currentLanguage=next;activePack=pack;applying=true;window.VAREXLocale.applyDocument(pack);
     translateTree(document.body,currentLanguage);
     const originalTitle=document.documentElement.dataset.varexArabicTitle||(document.documentElement.dataset.varexArabicTitle=document.title);
-    document.title=currentLanguage==="en"?coreTranslation(originalTitle):originalTitle;
-    document.body.classList.toggle("varex-english",currentLanguage==="en");
+    document.title=currentLanguage==="ar"?originalTitle:localizedTranslation(originalTitle,currentLanguage);
+    document.body.classList.toggle("varex-english",pack.dir==="ltr");
     localizeNativeInputs(currentLanguage);translateSystemFormValues(currentLanguage);
     installSwitcher();updateSwitches();applying=false;
   }
 
-  function setLanguage(language){
-    const next=language==="en"?"en":"ar";localStorage.setItem("varex_language",next);localStorage.setItem("varex_launcher_language",next);apply(next);
+  async function setLanguage(language){
+    const next=window.VAREXLocale.persist(language);await apply(next);
     window.dispatchEvent(new CustomEvent("varex-language-changed",{detail:{language:next}}));
+    return next;
   }
 
   function wrapDialogs(){
     if(window.__varexDialogsTranslated)return;window.__varexDialogsTranslated=true;
     const nativeAlert=window.alert.bind(window),nativeConfirm=window.confirm.bind(window),nativePrompt=window.prompt.bind(window);
-    window.alert=message=>nativeAlert(currentLanguage==="en"?coreTranslation(message):message);
-    window.confirm=message=>nativeConfirm(currentLanguage==="en"?coreTranslation(message):message);
-    window.prompt=(message,value)=>nativePrompt(currentLanguage==="en"?coreTranslation(message):message,value);
+    window.alert=message=>nativeAlert(currentLanguage==="ar"?message:localizedTranslation(message,currentLanguage));
+    window.confirm=message=>nativeConfirm(currentLanguage==="ar"?message:localizedTranslation(message,currentLanguage));
+    window.prompt=(message,value)=>nativePrompt(currentLanguage==="ar"?message:localizedTranslation(message,currentLanguage),value);
   }
 
-  function init(){
-    installDirectionStyles();currentLanguage=savedLanguage();apply(currentLanguage);wrapDialogs();
-    const observer=new MutationObserver(records=>{if(applying)return;applying=true;for(const record of records){if(record.type==="characterData")translateTree(record.target,currentLanguage);else for(const node of record.addedNodes)translateTree(node,currentLanguage)}applying=false});observer.observe(document.body,{subtree:true,childList:true,characterData:true});
-    let last=savedLanguage();setInterval(()=>{const next=savedLanguage();if(next!==last){last=next;apply(next)}else{localizeNativeInputs(currentLanguage);translateSystemFormValues(currentLanguage)}},350);
-    document.documentElement.dataset.varexI18nReady="true";
+  async function init(){
+    await ensureLocaleRuntime();installDirectionStyles();await apply(savedLanguage());wrapDialogs();
+    const observer=new MutationObserver(records=>{if(applying)return;applying=true;for(const record of records){if(record.type==="characterData")translateTree(record.target,currentLanguage);else for(const node of record.addedNodes)translateTree(node,currentLanguage)}installSwitcher();updateSwitches();applying=false});observer.observe(document.body,{subtree:true,childList:true,characterData:true});
+    setInterval(()=>{const next=window.VAREXLocale.readLanguage();if(next!==currentLanguage&&!applying)apply(next);else{localizeNativeInputs(currentLanguage);translateSystemFormValues(currentLanguage)}},500);
+    document.documentElement.dataset.varexI18nReady="true";resolveReady(currentLanguage);
   }
 
-  window.VAREXI18N={setLanguage,getLanguage:()=>currentLanguage,translate:value=>currentLanguage==="en"?coreTranslation(value):value};
-  if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",init,{once:true});else init();
+  window.VAREXI18N={setLanguage,getLanguage:()=>currentLanguage,translate:value=>currentLanguage==="ar"?value:localizedTranslation(value,currentLanguage),ready};
+  const start=()=>init().catch(error=>{console.error("VAREX i18n initialization failed:",error);document.documentElement.dataset.varexI18nReady="error";resolveReady("en")});
+  if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",start,{once:true});else start();
 })();

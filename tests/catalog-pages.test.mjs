@@ -42,8 +42,8 @@ test("catalog contains every published Shopify application and three exact plans
   assert.equal(variants.size, 36);
 });
 
-test("overview and demo scripts compile", () => {
-  for (const relative of ["plans/index.html", "preview/index.html", "preview/systems/catalog-demo/index.html"]) {
+test("overview, preview, demo and download scripts compile", () => {
+  for (const relative of ["plans/index.html", "preview/index.html", "preview/systems/catalog-demo/index.html", "download/index.html"]) {
     const scripts = inlineScripts(read(relative));
     assert.ok(scripts.length > 0, relative);
     scripts.forEach((script, index) => assert.doesNotThrow(() => new vm.Script(script, { filename: `${relative}#${index}` })));

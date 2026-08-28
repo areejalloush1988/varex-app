@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ar" dir="rtl">
+<html lang="en" dir="ltr">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -33,36 +33,37 @@
       </main>
     </section>
   </div>
+  <script src="../../../varex-locale.js"></script>
   <script src="../../../catalog/varex-catalog.js"></script>
   <script>
-    (() => {
+    (async() => {
       "use strict";
       const catalog = window.VAREX_CATALOG;
       const query = new URLSearchParams(location.search);
       const slug = catalog.normalizeSlug(query.get("app"));
       const app = catalog.apps[slug];
-      const lang = query.get("lang") === "en" ? "en" : "ar";
+      const lang = VAREXLocale.persist(VAREXLocale.readLanguage(query));
+      const pack = await VAREXLocale.load(lang);
+      const t = value => pack.t(value);
       const rawColor = catalog.colorValue(query.get("color")) || catalog.colorValue(query.get("theme")) || catalog.themes[app.theme] || catalog.themes.navy;
       const theme = { primary: rawColor, deep: catalog.mixHex(rawColor, "#000000", .46), dark: catalog.mixHex(rawColor, "#000000", .68), soft: catalog.mixHex(rawColor, "#FFFFFF", .9), pale: catalog.mixHex(rawColor, "#FFFFFF", .96), line: catalog.mixHex(rawColor, "#FFFFFF", .76) };
-      const copy = {
-        ar: { demo: "نسخة تجريبية للمعاينة", nav: "وحدات النظام", readonly: "للقراءة فقط — الحفظ والدفع غير متاح", hero: "بيانات تجريبية توضح وحدات النظام وطريقة عرض المعلومات. لا يجري حفظ أي تعديل داخل المعاينة.", noAdd: "الإضافة غير متاحة في المعاينة", records: "سجلات تجريبية", dataOnly: "البيانات للعرض فقط", search: "البحث داخل المعاينة…", record: "السجل", module: "الوحدة", branch: "الفرع", value: "القيمة", status: "الحالة", empty: "لا توجد نتائج مطابقة.", activities: "آخر النشاطات", activityNote: "نشاط تجريبي غير محفوظ", chart: "مؤشر التشغيل", chartSmall: "قراءة توضيحية", chartNote: "لا تمثل الأرقام بيانات حقيقية.", active: "نشط", review: "قيد المراجعة", main: "الفرع الرئيسي", second: "الفرع الثاني", today: "اليوم", demoRecord: "سجل تجريبي", updated: "تم تحديث العرض", opened: "تم فتح الوحدة", previewOnly: "المعاينة مستمرة دون حفظ" },
-        en: { demo: "Preview demo", nav: "System modules", readonly: "Read only — saving and payment disabled", hero: "Demo data illustrates system modules and information layout. No changes are saved in preview.", noAdd: "Adding is unavailable in preview", records: "Demo records", dataOnly: "Display data only", search: "Search the preview…", record: "Record", module: "Module", branch: "Branch", value: "Value", status: "Status", empty: "No matching results.", activities: "Recent activity", activityNote: "Unsaved demo activity", chart: "Operating indicator", chartSmall: "Illustrative reading", chartNote: "Figures do not represent real data.", active: "Active", review: "Under review", main: "Main branch", second: "Second branch", today: "Today", demoRecord: "Demo record", updated: "View updated", opened: "Module opened", previewOnly: "Preview continues without saving" }
-      }[lang];
+      const source={demo:"Preview demo",nav:"System modules",readonly:"Read only — saving and payment disabled",hero:"Demo data illustrates system modules and information layout. No changes are saved in preview.",noAdd:"Adding is unavailable in preview",records:"Demo records",dataOnly:"Display data only",search:"Search the preview…",record:"Record",module:"Module",branch:"Branch",value:"Value",status:"Status",empty:"No matching results.",activities:"Recent activity",activityNote:"Unsaved demo activity",chart:"Operating indicator",chartSmall:"Illustrative reading",chartNote:"Figures do not represent real data.",active:"Active",review:"Under review",main:"Main branch",second:"Second branch",today:"Today",demoRecord:"Demo record",updated:"View updated",opened:"Module opened",previewOnly:"Preview continues without saving"};
+      const copy=Object.fromEntries(Object.entries(source).map(([key,value])=>[key,t(value)]));
       const $ = id => document.getElementById(id);
       const css = document.documentElement.style;
       css.setProperty("--accent", theme.primary);css.setProperty("--deep", theme.deep);css.setProperty("--dark", theme.dark);css.setProperty("--soft", theme.soft);css.setProperty("--pale", theme.pale);css.setProperty("--line", theme.line);$("themeColor").content = theme.primary;
-      document.documentElement.lang = lang;document.documentElement.dir = lang === "ar" ? "rtl" : "ltr";document.title = `VAREX | ${app.name[lang]}`;
-      $("appIcon").textContent = app.icon;$("pageIcon").textContent = app.icon;$("brandSystem").textContent = app.name[lang];$("pageSystem").textContent = app.name[lang];$("demoState").textContent = copy.demo;$("navTitle").textContent = copy.nav;$("readonly").textContent = copy.readonly;$("heroText").textContent = copy.hero;$("newButton").textContent = copy.noAdd;$("tableTitle").textContent = copy.records;$("tableNote").textContent = copy.dataOnly;$("search").placeholder = copy.search;$("thRecord").textContent = copy.record;$("thModule").textContent = copy.module;$("thBranch").textContent = copy.branch;$("thValue").textContent = copy.value;$("thStatus").textContent = copy.status;$("empty").textContent = copy.empty;$("activityTitle").textContent = copy.activities;$("activityNote").textContent = copy.activityNote;$("chartTitle").textContent = copy.chart;$("chartSmall").textContent = copy.chartSmall;$("chartNote").textContent = copy.chartNote;
-      const modules = app.modules[lang];let activeModule = modules[0];let rows = [];
+      VAREXLocale.applyDocument(pack);const appName=lang==="ar"?app.name.ar:t(app.name.en);document.title = `VAREX | ${appName}`;
+      $("appIcon").textContent = app.icon;$("pageIcon").textContent = app.icon;$("brandSystem").textContent = appName;$("pageSystem").textContent = appName;$("demoState").textContent = copy.demo;$("navTitle").textContent = copy.nav;$("readonly").textContent = copy.readonly;$("heroText").textContent = copy.hero;$("newButton").textContent = copy.noAdd;$("tableTitle").textContent = copy.records;$("tableNote").textContent = copy.dataOnly;$("search").placeholder = copy.search;$("thRecord").textContent = copy.record;$("thModule").textContent = copy.module;$("thBranch").textContent = copy.branch;$("thValue").textContent = copy.value;$("thStatus").textContent = copy.status;$("empty").textContent = copy.empty;$("activityTitle").textContent = copy.activities;$("activityNote").textContent = copy.activityNote;$("chartTitle").textContent = copy.chart;$("chartSmall").textContent = copy.chartSmall;$("chartNote").textContent = copy.chartNote;
+      const modules=(lang==="ar"?app.modules.ar:app.modules.en).map(item=>lang==="ar"?item:t(item));let activeModule = modules[0];let rows = [];
       const escapeHtml = value => String(value == null ? "" : value).replace(/[&<>'"]/g, char => ({"&":"&amp;","<":"&lt;",">":"&gt;","'":"&#39;",'"':"&quot;"}[char]));
       function buildRows(moduleName) { return Array.from({ length: 7 }, (_, index) => ({ id: `${slug.slice(0, 3).toUpperCase()}-${String(index + 101).padStart(3, "0")}`, module: index % 2 ? moduleName : modules[(index + 1) % modules.length], branch: index % 3 ? copy.main : copy.second, value: new Intl.NumberFormat("en-US").format((index + 2) * 735), status: index % 3 ? copy.active : copy.review, pending: index % 3 === 0 })); }
       function renderRows() { const q = $("search").value.trim().toLowerCase(), filtered = rows.filter(row => Object.values(row).join(" ").toLowerCase().includes(q)); $("rows").innerHTML = filtered.map(row => `<tr><td><strong>${escapeHtml(row.id)}</strong></td><td>${escapeHtml(row.module)}</td><td>${escapeHtml(row.branch)}</td><td>${escapeHtml(row.value)}</td><td><span class="status ${row.pending ? "pending" : ""}">${escapeHtml(row.status)}</span></td></tr>`).join(""); $("empty").style.display = filtered.length ? "none" : "block"; }
-      function renderActivities(moduleName) { $("activities").innerHTML = [["01", copy.opened, moduleName], ["02", copy.updated, copy.today], ["03", copy.previewOnly, app.name[lang]]].map(([icon, title, detail]) => `<div class="activity"><i>${escapeHtml(icon)}</i><div><strong>${escapeHtml(title)}</strong><small>${escapeHtml(detail)}</small></div></div>`).join(""); }
+      function renderActivities(moduleName) { $("activities").innerHTML = [["01", copy.opened, moduleName], ["02", copy.updated, copy.today], ["03", copy.previewOnly, appName]].map(([icon, title, detail]) => `<div class="activity"><i>${escapeHtml(icon)}</i><div><strong>${escapeHtml(title)}</strong><small>${escapeHtml(detail)}</small></div></div>`).join(""); }
       function activate(index) { activeModule = modules[index];document.querySelectorAll("#nav button").forEach((button, buttonIndex) => button.classList.toggle("active", buttonIndex === index));$("pageTitle").textContent = activeModule;$("heroTitle").textContent = activeModule;$("tableTitle").textContent = `${copy.records} — ${activeModule}`;rows = buildRows(activeModule);$("search").value = "";renderRows();renderActivities(activeModule); }
       $("nav").insertAdjacentHTML("beforeend", modules.map((module, index) => `<button type="button" data-index="${index}" class="${index === 0 ? "active" : ""}">${escapeHtml(module)}</button>`).join(""));
       $("nav").addEventListener("click", event => { const button = event.target.closest("button[data-index]");if (button) activate(Number(button.dataset.index)); });$("search").addEventListener("input", renderRows);
-      $("stats").innerHTML = app.metrics[lang].map(([value, label], index) => `<article class="stat"><small>${escapeHtml(label)}</small><strong>${escapeHtml(value)}</strong><span>${escapeHtml(index % 2 ? copy.updated : copy.today)}</span></article>`).join("");
-      function clock() { $("clock").textContent = new Date().toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" }); }clock();setInterval(clock, 30000);activate(0);
+      $("stats").innerHTML = (lang==="ar"?app.metrics.ar:app.metrics.en).map(([value, label], index) => `<article class="stat"><small>${escapeHtml(lang==="ar"?label:t(label))}</small><strong>${escapeHtml(value)}</strong><span>${escapeHtml(index % 2 ? copy.updated : copy.today)}</span></article>`).join("");
+      function clock() { $("clock").textContent = new Date().toLocaleTimeString(pack.locale, { hour: "2-digit", minute: "2-digit" }); }clock();setInterval(clock, 30000);activate(0);
     })();
   </script>
 </body>

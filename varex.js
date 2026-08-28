@@ -30,7 +30,7 @@ getHeldSales(){return this.getData(this.keys.heldSales)},saveHeldSales(x){return
 _add(k,p,x={}){const a=this.getData(k),o={...x,id:x.id||this.generateId(p),createdAt:x.createdAt||this.now(),updatedAt:this.now()};a.push(o);this.saveData(k,a);return o},
 _update(k,id,c={}){const a=this.getData(k),i=a.findIndex(x=>String(x.id)===String(id));if(i<0)return false;a[i]={...a[i],...c,id:a[i].id,updatedAt:this.now()};this.saveData(k,a);return a[i]},
 _delete(k,id){const a=this.getData(k),b=a.filter(x=>String(x.id)!==String(id));this.saveData(k,b);return b.length!==a.length},
-getSettings(){const d={businessName:"VAREX",currency:"AED",currencySymbol:"د.إ",taxEnabled:true,taxRate:5,taxIncluded:true,showTRN:true,invoiceMessage:"شكراً لتسوقكم معنا",returnPolicy:"الاسترجاع والاستبدال حسب سياسة المتجر وبإبراز الفاتورة الأصلية.",printerTransport:"browser",printerAddress:"",printerPort:9100,paperWidth:"80",autoPrint:true,openDrawerOnCash:true,barcodeScannerEnabled:true,lowStockLimit:5,language:"ar"},p=this.getObject(this.keys.settings,{});return{...d,...p}},
+getSettings(){const d={businessName:"VAREX",currency:"AED",currencySymbol:"د.إ",taxEnabled:true,taxRate:5,taxIncluded:true,showTRN:true,invoiceMessage:"شكراً لتسوقكم معنا",returnPolicy:"الاسترجاع والاستبدال حسب سياسة المتجر وبإبراز الفاتورة الأصلية.",printerTransport:"browser",printerAddress:"",printerPort:9100,paperWidth:"80",autoPrint:true,openDrawerOnCash:true,barcodeScannerEnabled:true,lowStockLimit:5,language:"en"},p=this.getObject(this.keys.settings,{});return{...d,...p}},
 saveSettings(s={}){const d={...this.getSettings(),...s,updatedAt:this.now()};this.saveObject(this.keys.settings,d);return true},
 money(v){const s=this.getSettings(),sym=this.cleanText(s.currencySymbol)||(s.currency==="AED"?"د.إ":s.currency);return`${this.formatNumber(v,2)} ${sym}`},
 calculateTax(v){const s=this.getSettings();return s.taxEnabled===false?0:this.positiveNumber(v)*this.toNumber(s.taxRate,5)/100},
@@ -459,6 +459,7 @@ current.resolve(value);
 
 async function showDialog(kind,message,options={}){
 await waitForBody();
+if(window.VAREXI18N?.ready)await window.VAREXI18N.ready;
 return new Promise(resolve=>{
 const overlay=createDialog();
 const title=overlay.querySelector("#varexDialogTitle");
@@ -468,15 +469,15 @@ const input=overlay.querySelector("#varexDialogInput");
 const confirmButton=overlay.querySelector("#varexDialogConfirm");
 const cancelButton=overlay.querySelector("#varexDialogCancel");
 const defaults=kind==="confirm"?{title:"تأكيد الإجراء",icon:"?",confirmText:"تأكيد"}:kind==="prompt"?{title:"تأكيد الهوية",icon:"🔒",confirmText:"متابعة"}:{title:"تنبيه VAREX",icon:"!",confirmText:"حسنًا"};
-const language=(localStorage.getItem("varex_language")||localStorage.getItem("varex_launcher_language")||document.documentElement.lang||"ar").toLowerCase().startsWith("en")?"en":"ar";
+const language=window.VAREXLocale?.normalize?.(localStorage.getItem("varex_language")||localStorage.getItem("varex_launcher_language")||document.documentElement.lang||"en")||(document.documentElement.lang||"en");
 const translate=value=>{
 const original=String(value??"");
-if(language!=="en")return original;
+if(language==="ar")return original;
 try{return window.VAREXI18N?.translate?.(original)||original}catch(e){return original}
 };
 overlay.dataset.kind=kind;
 overlay.lang=language;
-overlay.dir=language==="en"?"ltr":"rtl";
+overlay.dir=window.VAREXLocale?.direction?.(language)||(["ar","fa","ur","he"].includes(language)?"rtl":"ltr");
 title.textContent=translate(options.title||defaults.title);
 text.textContent=translate(message);
 icon.textContent=String(options.icon||defaults.icon);

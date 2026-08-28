@@ -9,8 +9,8 @@
 "orientation": "any",
 "background_color": "#172554",
 "theme_color": "#172554",
-"lang": "ar",
-"dir": "rtl",
+"lang": "en",
+"dir": "ltr",
 "icons": [
 {
 "src": "./varex-icon-192.png",

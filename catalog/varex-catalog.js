@@ -49,15 +49,15 @@
     cashier: {
       icon: "▣",
       theme: "navy",
-      name: { ar: "نظام الكاشير والحسابات", en: "Cashier & Accounting System" },
+      name: { ar: "نظام الكاشير والحسابات", en: "Cashier & Accounting Management System" },
       eyebrow: { ar: "المبيعات والمخزون والحسابات في مساحة واحدة", en: "Sales, inventory and accounting in one place" },
       overview: { ar: "منظومة متكاملة لنقاط البيع والفواتير والمشتريات والمخزون والعملاء والموردين وضريبة القيمة المضافة والتقارير المالية.", en: "An integrated system for point of sale, invoicing, purchases, inventory, customers, suppliers, VAT and financial reporting." },
       features: {
         ar: ["نقطة بيع وفواتير سريعة", "مخزون مستقل لكل فرع", "مشتريات وموردون ومصروفات", "حسابات وضريبة وتقارير", "إدارة العملاء والموظفين", "صلاحيات وتشغيل متعدد الفروع"],
         en: ["Fast POS and invoicing", "Branch-level inventory", "Purchases, suppliers and expenses", "Accounting, VAT and reports", "Customers and staff", "Roles and multi-branch operation"]
       },
-      modules: { ar: ["لوحة التحكم", "نقطة البيع", "المنتجات والمخزون", "المشتريات", "العملاء", "الموردون", "الحسابات", "التقارير"], en: ["Dashboard", "Point of sale", "Products & inventory", "Purchases", "Customers", "Suppliers", "Accounting", "Reports"] },
-      metrics: { ar: [["12,840", "مبيعات اليوم"], ["326", "منتجًا"], ["94", "فاتورة"], ["4", "فروع"]], en: [["12,840", "Today's sales"], ["326", "Products"], ["94", "Invoices"], ["4", "Branches"]] },
+      modules: { ar: ["لوحة التحكم", "نقطة البيع", "المنتجات والمخزون", "المشتريات", "العملاء", "الموردون", "الحسابات", "التقارير"], en: ["Dashboard", "Point of Sale", "Products & Inventory", "Purchases", "Customers", "Suppliers", "Accounts", "Reports"] },
+      metrics: { ar: [["12,840", "مبيعات اليوم"], ["326", "منتجًا"], ["94", "فاتورة"], ["4", "فروع"]], en: [["12,840", "Today's Sales"], ["326", "Products"], ["94", "Invoices"], ["4", "Branches"]] },
       handle: "varex-cashier",
       plans: plans(48897760067833, 48897760100601, 48897760133369)
     },

@@ -4,14 +4,15 @@ import { fileURLToPath } from "node:url";
 
 const root = fileURLToPath(new URL("../", import.meta.url));
 const output = join(root, "www");
-const allowedExtensions = new Set([".html", ".css", ".js", ".png", ".svg"]);
+const allowedExtensions = new Set([".html", ".css", ".js", ".json", ".png", ".svg"]);
 const systemFolders = [
   "01-الكاشير-والحسابات",
   "02-إدارة-العقارات",
   "03-إدارة-تأجير-السيارات",
   "04-كار-ليفت",
   "05-الصالونات-والسبا",
-  "06-المطاعم-والمقاهي"
+  "06-المطاعم-والمقاهي",
+  "locales"
 ];
 
 await rm(output, { recursive: true, force: true });
