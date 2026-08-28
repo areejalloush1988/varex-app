@@ -44,7 +44,10 @@ test("all locale files are valid, local and contain native cashier journey copy"
     "Download the app now",
     "Exit & Choose a Plan",
     "One system on every device",
-    "Welcome to VAREX"
+    "Welcome to VAREX",
+    "Your business management starts here",
+    "Sign In to VAREX",
+    "Recover Password"
   ];
   let translatedKeys;
   for (const code of codes) {
