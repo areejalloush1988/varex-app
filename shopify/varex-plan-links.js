@@ -2,6 +2,7 @@
   "use strict";
 
   const planHost = "https://app.varexapp.com/plans/";
+  const supportedLanguages = new Set(["en", "ar", "fa", "ur", "zh", "ko", "it", "es", "he", "fr", "ru", "tr"]);
   const products = {
     "varex-cashier": { app: "cashier", theme: "navy" },
     "varex-real-estate": { app: "real-estate", theme: "teal" },
@@ -17,8 +18,24 @@
     "varex-cafeteria": { app: "cafeteria", theme: "orange" }
   };
 
+  function normalizeLanguage(value) {
+    const raw = String(value || "").trim().toLowerCase().replace("_", "-");
+    const base = raw === "iw" ? "he" : raw.startsWith("zh") ? "zh" : raw.split("-")[0];
+    return supportedLanguages.has(base) ? base : "";
+  }
+
   function language() {
-    return String(document.documentElement.lang || "ar").toLowerCase().startsWith("en") ? "en" : "ar";
+    let saved = "";
+    try {
+      saved = localStorage.getItem("varexLanguage") || localStorage.getItem("varex_language") || localStorage.getItem("varex_launcher_language") || "";
+    } catch (_) {}
+    const query = new URLSearchParams(location.search);
+    const candidates = [query.get("lang"), saved, window.Shopify && window.Shopify.locale, document.documentElement.lang];
+    for (const candidate of candidates) {
+      const normalized = normalizeLanguage(candidate);
+      if (normalized) return normalized;
+    }
+    return "en";
   }
 
   function productHandle(value) {

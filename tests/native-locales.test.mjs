@@ -79,6 +79,23 @@ test("Google translation is absent and language is carried through plans, previe
   assert.match(read("download/index.html"), /withLanguage/);
 });
 
+test("the storefront-to-login chain preserves the selected language", () => {
+  const bridge = read("shopify/varex-plan-links.js");
+  const login = read("login.html");
+  const core = read("varex.js");
+  assert.match(bridge, /app\.varexapp\.com\/plans\//);
+  assert.match(bridge, /varexLanguage/);
+  for (const code of codes) assert.match(bridge, new RegExp(`\\b${code}\\b`), `storefront bridge: ${code}`);
+  assert.match(login, /function languageUrl/);
+  assert.match(login, /varex-i18n\.js/);
+  assert.match(core, /languagePath\("login\.html"\)/);
+  for (const page of ["systems.html", "business-setup.html"]) {
+    assert.match(read(page), /requestedLanguage/);
+    assert.match(read(page), /varex-i18n\.js/);
+  }
+  assert.match(read("sw.js"), /varex-cache-v44-auth-language/);
+});
+
 test("every cashier screen loads the native i18n layer in both published paths", () => {
   for (const folder of ["01-الكاشير-والحسابات", "cashier"]) {
     const htmlFiles = fs.readdirSync(path.join(root, folder)).filter(name => name.endsWith(".html"));

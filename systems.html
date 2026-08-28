@@ -57,8 +57,9 @@
   <div class="toast" id="toast" role="status"><img src="./varex-brand-icon.svg" alt=""><p><strong id="toastTitle"></strong><span id="toastMessage">تم تثبيت الأيقونة، وسيبدأ تطوير هذا النظام في المرحلة القادمة.</span></p></div>
   <script src="./varex.js?v=20260821-onboarding1"></script>
   <script>
-    const app=document.getElementById("app"),langAr=document.getElementById("langAr"),langEn=document.getElementById("langEn"),themeToggle=document.getElementById("themeToggle"),themeIcon=document.getElementById("themeIcon"),themeText=document.getElementById("themeText");let language=localStorage.getItem("varex_launcher_language")==="en"?"en":"ar",theme=localStorage.getItem("varex_launcher_theme")==="light"?"light":"dark";
-    function applyLanguage(){const ar=language==="ar";document.documentElement.lang=language;document.documentElement.dir=ar?"rtl":"ltr";app.dir=ar?"rtl":"ltr";document.querySelectorAll("[data-ar][data-en]").forEach(el=>el.textContent=el.dataset[language]);langAr.classList.toggle("active",ar);langEn.classList.toggle("active",!ar);langAr.setAttribute("aria-pressed",String(ar));langEn.setAttribute("aria-pressed",String(!ar));themeText.textContent=theme==="dark"?(ar?"ليلي":"Dark"):(ar?"نهاري":"Light");localStorage.setItem("varex_launcher_language",language);localStorage.setItem("varex_language",language)}
+    const app=document.getElementById("app"),langAr=document.getElementById("langAr"),langEn=document.getElementById("langEn"),themeToggle=document.getElementById("themeToggle"),themeIcon=document.getElementById("themeIcon"),themeText=document.getElementById("themeText"),supportedLanguages=new Set(["en","ar","fa","ur","zh","ko","it","es","he","fr","ru","tr"]),requestedLanguage=new URLSearchParams(location.search).get("lang")||localStorage.getItem("varex_launcher_language")||localStorage.getItem("varex_language")||"en";let language=supportedLanguages.has(String(requestedLanguage).toLowerCase())?String(requestedLanguage).toLowerCase():"en",theme=localStorage.getItem("varex_launcher_theme")==="light"?"light":"dark";
+    const launcherUrl=value=>{const url=new URL(value,location.href);url.searchParams.set("lang",language);return url.href};
+    function applyLanguage(){const ar=language==="ar",base=ar?"ar":"en",rtl=["ar","fa","ur","he"].includes(language);document.documentElement.lang=language;document.documentElement.dir=rtl?"rtl":"ltr";app.dir=rtl?"rtl":"ltr";document.querySelectorAll("[data-ar][data-en]").forEach(el=>el.textContent=el.dataset[base]);langAr.classList.toggle("active",ar);langEn.classList.toggle("active",!ar);langAr.setAttribute("aria-pressed",String(ar));langEn.setAttribute("aria-pressed",String(!ar));themeText.textContent=theme==="dark"?(ar?"ليلي":"Dark"):(ar?"نهاري":"Light");localStorage.setItem("varex_launcher_language",language);localStorage.setItem("varex_language",language)}
     function applyTheme(){app.classList.toggle("theme-light",theme==="light");app.classList.toggle("theme-dark",theme==="dark");themeIcon.textContent=theme==="dark"?"☾":"☀";themeText.textContent=theme==="dark"?(language==="ar"?"ليلي":"Dark"):(language==="ar"?"نهاري":"Light");localStorage.setItem("varex_launcher_theme",theme)}
     langAr.addEventListener("click",()=>{language="ar";applyLanguage()});langEn.addEventListener("click",()=>{language="en";applyLanguage()});themeToggle.addEventListener("click",()=>{theme=theme==="dark"?"light":"dark";applyTheme()});applyLanguage();applyTheme();
     const launcherParams=new URLSearchParams(location.search),launcherManage=launcherParams.get("manage")==="1",launcherOnboarding=launcherParams.get("onboarding")==="1";
@@ -66,21 +67,23 @@
     async function routeSavedSystem(){
       if(!launcherAuthorized()||launcherManage||launcherOnboarding)return;
       const localRoute=window.VAREX?.getSavedLaunchRoute?.();
-      if(localRoute){location.replace(localRoute);return}
+      if(localRoute){location.replace(launcherUrl(localRoute));return}
       if(window.VAREX?.isLoggedIn?.()){
         const route=await window.VAREX.resolvePostLoginRoute?.();
-        if(route&&route!=="./systems.html?onboarding=1")location.replace(route);
+        if(route&&route!=="./systems.html?onboarding=1")location.replace(launcherUrl(route));
       }
     }
     document.querySelectorAll("[data-system]").forEach(card=>card.addEventListener("click",event=>{
       event.preventDefault();const system=card.dataset.system||"cashier";
       window.VAREX?.setPendingSystem?.(system);sessionStorage.setItem("varex_system_was_chosen","true");
-      if(system==="construction"){location.href="https://varex-construction.areejalloush1988.chatgpt.site/download";return}\n      if(system==="salons"){location.href="./05-الصالونات-والسبا/salons.html?onboarding=1";return}
-      if(system==="dining"){location.href="./06-المطاعم-والمقاهي/dining.html?onboarding=1";return}
-      location.href=launcherAuthorized()?"./business-setup.html?system="+encodeURIComponent(system):"./login.html";
+      if(system==="construction"){location.href="https://varex-construction.areejalloush1988.chatgpt.site/download";return}
+      if(system==="salons"){location.href=launcherUrl("./05-الصالونات-والسبا/salons.html?onboarding=1");return}
+      if(system==="dining"){location.href=launcherUrl("./06-المطاعم-والمقاهي/dining.html?onboarding=1");return}
+      location.href=launcherUrl(launcherAuthorized()?"./business-setup.html?system="+encodeURIComponent(system):"./login.html");
     }));
     routeSavedSystem();
     const toast=document.getElementById("toast"),toastTitle=document.getElementById("toastTitle"),toastMessage=document.getElementById("toastMessage");let toastTimer;document.querySelectorAll("[data-soon-ar]").forEach(card=>card.addEventListener("click",event=>{event.preventDefault();toastTitle.textContent=card.dataset[language==="ar"?"soonAr":"soonEn"];toastMessage.textContent=language==="ar"?"تم تثبيت الأيقونة، وسيبدأ تطوير هذا النظام في المرحلة القادمة.":"The system is ready on the home screen and development will begin in the next phase.";toast.classList.add("show");clearTimeout(toastTimer);toastTimer=setTimeout(()=>toast.classList.remove("show"),2800)}));if("serviceWorker" in navigator)addEventListener("load",()=>navigator.serviceWorker.register("./sw.js",{scope:"./"}).catch(()=>{}));
   </script>
+  <script src="./varex-i18n.js?v=20260828-auth-language1"></script>
 </body>
 </html>

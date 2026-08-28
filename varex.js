@@ -139,6 +139,42 @@ return true;
 
 Object.assign(VAREX,{
   _dataChannel:null,
+  currentLanguage(){
+    const allowed=new Set(["en","ar","fa","ur","zh","ko","it","es","he","fr","ru","tr"]);
+    let query="",saved="";
+    try{query=new URLSearchParams(location.search).get("lang")||""}catch(e){}
+    try{saved=localStorage.getItem("varex_language")||localStorage.getItem("varex_launcher_language")||""}catch(e){}
+    const raw=String(query||saved||document.documentElement.lang||"en").toLowerCase().replace("_","-");
+    const value=raw==="iw"?"he":raw.startsWith("zh")?"zh":raw.split("-")[0];
+    return allowed.has(value)?value:"en";
+  },
+  languagePath(path=""){
+    const resolved=this.rootPath(path),url=new URL(resolved,location.origin);
+    url.searchParams.set("lang",this.currentLanguage());
+    return url.pathname+url.search+url.hash;
+  },
+  async logout(redirect=true){
+    const s=this.getSession();
+    try{if(s?.access_token)await this.authFetch("/auth/v1/logout",{method:"POST"})}catch(e){}
+    this.removeDeviceAuthorization();sessionStorage.removeItem(this.keys.session);localStorage.removeItem(this.keys.session);localStorage.removeItem(this.keys.cachedUser);this.clearBusinessIdCache();sessionStorage.removeItem("varex_authenticated");localStorage.removeItem("varex_authenticated");
+    if(redirect)location.replace(this.languagePath("login.html"));return true;
+  },
+  requireLogin(){
+    if(this.isLoginPage()||this.isRegisterPage()||this.isVerifyEmailPage()||this.isResetPasswordPage())return true;
+    if(this.isDeviceAuthorized()){if(this.isLoggedIn())this.refreshSession();return true}
+    if(this.isLoggedIn()){const u=this.getSession()?.user;if(u)this.authorizeDevice(u);return true}
+    location.replace(this.languagePath("login.html"));return false;
+  },
+  redirectLoggedUser(){
+    if((this.isLoginPage()||this.isRegisterPage())&&(this.isLoggedIn()||this.isDeviceAuthorized())){location.replace(this.languagePath("01-الكاشير-والحسابات/index.html"));return true}
+    return false;
+  },
+  requireSubscription(){
+    if(!this.isSubscriptionGateEnabled())return true;
+    if(this.isLoginPage()||this.isRegisterPage()||this.isVerifyEmailPage()||this.isResetPasswordPage()||this.isSubscriptionPage()||this.isSubscriptionSuccessPage())return true;
+    if(!this.isSubscriptionActive()){location.replace(this.languagePath("01-الكاشير-والحسابات/subscription.html"));return false}
+    return true;
+  },
   rootPath(path=""){
     let clean=String(path||"").replace(/^(?:\.\/|\/)+/,"");
     const systemFolders=new Set([
