@@ -72,3 +72,8 @@ verify_jwt = false
 # Browser requests are verified against Supabase Auth inside the function, while
 # PayPal webhook requests are verified with PayPal's signed-webhook endpoint.
 verify_jwt = false
+
+[functions.varex-sales-agent]
+# Public storefront visitors do not have VAREX accounts. The function validates
+# the exact storefront origin, input, consent, request size, and hourly rate limit.
+verify_jwt = false
