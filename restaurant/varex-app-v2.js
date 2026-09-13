@@ -23,7 +23,7 @@
   const money=value=>new Intl.NumberFormat(language==="en"?"en-AE":"ar-AE",{minimumFractionDigits:0,maximumFractionDigits:2}).format(Number(value)||0)+" "+t("د.إ","AED");
   const textValue=value=>typeof value==="object"&&value?value[language]||value.ar||value.en||"":value;
   const find=(type,id)=>data[type]?.find(item=>String(item.id)===String(id));
-  const entryFile=diningType==="restaurant"?"restaurant.html":"cafe.html";
+  const entryFile=diningType==="restaurant"?"open-v7.html":"cafe.html";
   const href=file=>{const next=new URLSearchParams({type:diningType});if(previewActive){next.set("preview","1");next.set("lang",language);if(params.get("return"))next.set("return",params.get("return"))}return"./"+file+"?"+next.toString()};
   const typeName=()=>diningType==="restaurant"?t("نظام المطاعم","Restaurant System"):t("نظام المقاهي","Café System");
   const typeTag=()=>diningType==="restaurant"?"RESTAURANT":"CAFÉ & COFFEE";
