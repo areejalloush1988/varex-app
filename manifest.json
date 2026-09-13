@@ -1,34 +1,15 @@
 {
-"id": "./",
-"name": "VAREX Business Management System",
-"short_name": "VAREX",
-"description": "VAREX Business Management System - Sales, Inventory, Customers, Suppliers, Accounts and Reports",
-"start_url": "./systems.html",
-"scope": "./",
-"display": "standalone",
-"orientation": "any",
-"background_color": "#172554",
-"theme_color": "#172554",
-"lang": "en",
-"dir": "ltr",
-"icons": [
-{
-"src": "./varex-icon-192.png",
-"sizes": "192x192",
-"type": "image/png",
-"purpose": "any"
-},
-{
-"src": "./varex-icon-512.png",
-"sizes": "512x512",
-"type": "image/png",
-"purpose": "any"
-},
-{
-"src": "./varex-icon-512.png",
-"sizes": "512x512",
-"type": "image/png",
-"purpose": "maskable"
-}
-]
+  "name": "VAREX - نظام إدارة الصيدليات",
+  "short_name": "VAREX Pharmacy",
+  "description": "نظام متكامل لإدارة الصيدليات والمخزون والتشغيلات والصلاحية والمبيعات",
+  "lang": "ar",
+  "dir": "rtl",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f1f0fa",
+  "theme_color": "#4e4b9a",
+  "icons": [
+    {"src":"./varex-pharmacy-logo.png?v=6","sizes":"512x512","type":"image/png","purpose":"any maskable"}
+  ]
 }
