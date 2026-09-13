@@ -1,0 +1,4 @@
+{
+  "id":"/restaurant/","name":"VAREX Restaurant Management System","short_name":"VAREX Restaurant","description":"Restaurant POS, orders, tables, menu, kitchen, inventory and reports","start_url":"./open-v7.html?preview=1&type=restaurant&lang=ar","scope":"./","display":"standalone","display_override":["standalone","minimal-ui"],"orientation":"any","background_color":"#FFFFFF","theme_color":"#B6533E","lang":"ar","dir":"rtl",
+  "icons":[{"src":"./varex-restaurant-icon-192-v2.png","sizes":"192x192","type":"image/png","purpose":"any"},{"src":"./varex-restaurant-icon-512-v2.png","sizes":"512x512","type":"image/png","purpose":"any"},{"src":"./varex-restaurant-icon-512-v2.png","sizes":"512x512","type":"image/png","purpose":"maskable"}]
+}
