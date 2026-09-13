@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="ar" dir="rtl" data-varex-system="restaurant">
+<head><script src="https://app.varexapp.com/varex-system-theme.js?v=20260825-1" data-system="restaurant" data-vars="--auth-primary,--auth-deep,--auth-soft,--auth-line"></script>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate">
+  <meta name="theme-color" content="#B6533E">
+  <title>VAREX | تأكيد البريد الإلكتروني</title>
+  <link rel="icon" href="./varex-restaurant-icon-192-v2.png">
+  <link rel="stylesheet" href="./restaurant-auth.css?v=1">
+</head>
+<body class="auth-body">
+  <main class="auth-shell">
+    <section class="auth-brand">
+      <div class="auth-brand-head">
+        <img src="./varex-restaurant-brand.svg" alt="VAREX">
+        <div class="auth-brand-name"><strong>VAREX</strong><small>BUSINESS MANAGEMENT SYSTEM</small></div>
+      </div>
+      <div class="auth-brand-copy">
+        <span>EMAIL VERIFICATION</span>
+        <h1>خطوة واحدة لتأكيد حسابك</h1>
+        <p>أرسلنا رمز OTP من ستة أرقام إلى بريدك. أدخليه هنا لتفعيل الحساب بأمان.</p>
+        <div class="auth-brand-points">
+          <div><i>1</i> افحصي البريد الوارد</div>
+          <div><i>2</i> أدخلي الرمز المكوّن من 6 أرقام</div>
+          <div><i>3</i> سجّلي الدخول إلى نظام المطعم</div>
+        </div>
+      </div>
+      <div class="auth-brand-foot">VAREX RESTAURANT · SECURE OTP</div>
+    </section>
+    <section class="auth-panel">
+      <div class="auth-top">
+        <a class="auth-back" href="./register.html">← تعديل معلومات الحساب</a>
+        <span class="auth-security">تحقق مشفّر</span>
+      </div>
+      <header class="auth-header">
+        <h2>تأكيد البريد الإلكتروني</h2>
+        <p>أدخلي رمز OTP الذي وصلك. الرمز صالح لمرة واحدة فقط.</p>
+      </header>
+      <form class="auth-form" id="otpForm" novalidate>
+        <div class="otp-box">تم إرسال الرمز إلى<strong id="emailDisplay">—</strong></div>
+        <div class="auth-field">
+          <label for="otp">رمز التحقق</label>
+          <input class="otp-input" id="otp" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6" pattern="[0-9]{6}" placeholder="••••••" required>
+          <small class="auth-hint">اكتبي الأرقام الستة بدون مسافات.</small>
+        </div>
+        <button class="auth-submit" id="verifyButton" type="submit">
+          <span class="auth-spinner" aria-hidden="true"></span>
+          <span id="verifyButtonText">تأكيد البريد الإلكتروني</span>
+        </button>
+        <div class="auth-message" id="message" role="status" aria-live="polite"></div>
+        <div class="resend-row">
+          <span>لم يصلك الرمز؟</span>
+          <button class="auth-text-button" id="resendButton" type="button">إعادة إرسال OTP</button>
+        </div>
+      </form>
+      <div class="auth-footer">لديك حساب مفعّل؟ <a href="./login.html">تسجيل الدخول</a></div>
+    </section>
+  </main>
+  <script src="./restaurant-auth.js?v=3"></script>
+  <script>
+    (function(){
+      var pending=RestaurantAuth.getPending();
+      var params=new URLSearchParams(location.search);
+      var userEmail=(pending&&pending.email)||String(params.get("email")||"").trim().toLowerCase();
+      var form=document.getElementById("otpForm");
+      var otp=document.getElementById("otp");
+      var verifyButton=document.getElementById("verifyButton");
+      var verifyText=document.getElementById("verifyButtonText");
+      var resendButton=document.getElementById("resendButton");
+      var message=document.getElementById("message");
+      var timer=null;
+      document.getElementById("emailDisplay").textContent=userEmail||"البريد غير محدد";
+      function show(type,text){message.className="auth-message show "+type;message.textContent=text}
+      function busy(value,text){verifyButton.disabled=value;verifyButton.classList.toggle("loading",value);verifyText.textContent=text}
+      function cooldown(seconds){
+        clearInterval(timer);
+        var left=seconds;
+        resendButton.disabled=true;
+        resendButton.textContent="إعادة الإرسال بعد "+left+" ثانية";
+        timer=setInterval(function(){
+          left-=1;
+          if(left<=0){clearInterval(timer);resendButton.disabled=false;resendButton.textContent="إعادة إرسال OTP";return}
+          resendButton.textContent="إعادة الإرسال بعد "+left+" ثانية";
+        },1000);
+      }
+      otp.addEventListener("input",function(){otp.value=otp.value.replace(/\D/g,"").slice(0,6)});
+      if(!userEmail){
+        show("error","لم يتم العثور على البريد الإلكتروني. ارجعي إلى إنشاء الحساب أولاً.");
+        verifyButton.disabled=true;
+        resendButton.disabled=true;
+      }else{cooldown(60)}
+      form.addEventListener("submit",async function(event){
+        event.preventDefault();
+        if(!/^\d{6}$/.test(otp.value)){show("error","يرجى إدخال رمز OTP المكوّن من 6 أرقام.");return}
+        busy(true,"جاري التحقق من رمز OTP...");
+        message.className="auth-message";
+        try{
+          await RestaurantAuth.withMinimumDelay(RestaurantAuth.verifySignupOtp(userEmail,otp.value),1500);
+          show("success","تم تأكيد البريد الإلكتروني بنجاح. يمكنك الآن تسجيل الدخول.");
+          setTimeout(function(){location.replace(RestaurantAuth.route("login.html",{verified:"1",return_to:RestaurantAuth.route("purchase.html")}))},700);
+        }catch(error){show("error",RestaurantAuth.mapError(error));busy(false,"تأكيد البريد الإلكتروني")}
+      });
+      resendButton.addEventListener("click",async function(){
+        if(!userEmail||resendButton.disabled)return;
+        resendButton.disabled=true;
+        resendButton.textContent="جاري إرسال الرمز...";
+        try{
+          await RestaurantAuth.resendSignupOtp(userEmail);
+          show("success","تم إرسال رمز OTP جديد إلى بريدك الإلكتروني.");
+          cooldown(60);
+        }catch(error){show("error",RestaurantAuth.mapError(error));resendButton.disabled=false;resendButton.textContent="إعادة إرسال OTP"}
+      });
+    })();
+  </script>
+</body>
+</html>

@@ -9,10 +9,10 @@
     deviceOwner:"varex_restaurant_device_owner",
     staffSession:"varex_restaurant_staff_session"
   };
+  var PREFIX=location.pathname==="/restaurant"||location.pathname.indexOf("/restaurant/")===0?"/restaurant":"";
 
   function clean(value){return String(value==null?"":value).trim()}
   function email(value){return clean(value).toLowerCase()}
-  function isPublicPreview(){return new URLSearchParams(location.search).get("preview")==="1"||(location.hostname==="app.varexapp.com"&&location.pathname.startsWith("/restaurant/"))}
   function sleep(ms){return new Promise(function(resolve){setTimeout(resolve,ms)})}
   async function withMinimumDelay(task,ms){
     var started=Date.now(),value,error;
@@ -41,9 +41,22 @@
     if(text.indexOf("failed to fetch")!==-1||text.indexOf("network")!==-1)return"تعذر الاتصال بخدمة الحسابات. تحققي من الإنترنت ثم أعيدي المحاولة.";
     return clean(error&&error.message)||"حدث خطأ في خدمة حسابات المطاعم.";
   }
+  function route(path,query){
+    var cleanPath=String(path||"").replace(/^\/+/,"");
+    var url=new URL((PREFIX?PREFIX+"/":"/")+cleanPath,location.origin);
+    Object.keys(query||{}).forEach(function(key){
+      var value=query[key];
+      if(value!==undefined&&value!==null&&value!=="")url.searchParams.set(key,String(value));
+    });
+    return url.pathname+url.search+url.hash;
+  }
+  function apiPath(path){
+    var value=String(path||"");
+    return PREFIX&&value.indexOf(PREFIX+"/")!==0?PREFIX+value:value;
+  }
   async function api(path,options){
     options=options||{};
-    var response=await fetch(path,{
+    var response=await fetch(apiPath(path),{
       method:options.method||"GET",
       credentials:"include",
       headers:{"Content-Type":"application/json","X-Client-Info":"varex-restaurant-auth/2.0"},
@@ -91,13 +104,17 @@
   }
   function safeReturnTo(value){
     var target=clean(value);
-    if(!target||target.charAt(0)!=="/"||target.indexOf("//")===0)return"/open-v7.html";
-    if(target.indexOf("/login.html")===0||target.indexOf("/register.html")===0)return"/open-v7.html";
-    return target;
+    if(!target||target.charAt(0)!=="/"||target.indexOf("//")===0)return route("purchase.html");
+    try{
+      var parsed=new URL(target,location.origin);
+      if(parsed.origin!==location.origin)return route("purchase.html");
+      if(/\/(?:login|register)(?:\.html)?$/.test(parsed.pathname))return route("purchase.html");
+      return parsed.pathname+parsed.search+parsed.hash;
+    }catch(ignore){return route("purchase.html")}
   }
   function requireSession(){
-    if(isPublicPreview())return true;
-    hasSession().then(function(valid){if(!valid){var target=location.pathname+location.search;location.replace("/login.html?session_expired=1&return_to="+encodeURIComponent(safeReturnTo(target)))}});
+    if(new URLSearchParams(location.search).get("preview")==="1")return true;
+    hasSession().then(function(valid){if(!valid){var target=location.pathname+location.search;location.replace(route("login.html",{session_expired:"1",return_to:safeReturnTo(target)}))}});
     return true;
   }
   async function signIn(credentials){
@@ -144,9 +161,9 @@
     clearSession();return true;
   }
 
-  if(!isPublicPreview())clearLegacyState();
+  if(new URLSearchParams(location.search).get("preview")!=="1")clearLegacyState();
   window.RestaurantAuth={
-    keys:KEYS,sleep:sleep,withMinimumDelay:withMinimumDelay,strongPassword:strongPassword,passwordChecks:passwordChecks,mapError:mapError,
+    keys:KEYS,prefix:PREFIX,route:route,sleep:sleep,withMinimumDelay:withMinimumDelay,strongPassword:strongPassword,passwordChecks:passwordChecks,mapError:mapError,
     getSession:cachedUser,hasSession:hasSession,setPending:setPending,getPending:getPending,clearPending:clearPending,signIn:signIn,signUp:signUp,
     verifySignupOtp:verifySignupOtp,resendSignupOtp:resendSignupOtp,requestPasswordReset:requestPasswordReset,updateRecoveredPassword:updateRecoveredPassword,
     requireSession:requireSession,safeReturnTo:safeReturnTo,logout:logout,clearSession:clearSession,rememberedEmail:function(){return localStorage.getItem(KEYS.remembered)||""}

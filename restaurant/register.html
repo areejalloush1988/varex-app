@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="ar" dir="rtl" data-varex-system="restaurant">
+<head><script src="https://app.varexapp.com/varex-system-theme.js?v=20260825-1" data-system="restaurant" data-vars="--auth-primary,--auth-deep,--auth-soft,--auth-line"></script>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate">
+  <meta name="theme-color" content="#B6533E">
+  <title>VAREX | إنشاء اشتراك جديد</title>
+  <link rel="icon" href="./varex-restaurant-icon-192-v2.png">
+  <link rel="apple-touch-icon" href="./varex-restaurant-icon-192-v2.png">
+  <link rel="stylesheet" href="./restaurant-auth.css?v=1">
+</head>
+<body class="auth-body">
+  <main class="auth-shell">
+    <section class="auth-brand">
+      <div class="auth-brand-head">
+        <img src="./varex-restaurant-brand.svg" alt="VAREX">
+        <div class="auth-brand-name"><strong>VAREX</strong><small>BUSINESS MANAGEMENT SYSTEM</small></div>
+      </div>
+      <div class="auth-brand-copy">
+        <span>NEW RESTAURANT ACCOUNT</span>
+        <h1>ابدئي إدارة مطعمك بخطوات آمنة</h1>
+        <p>أنشئي حساب المالك، ثم أكّدي البريد الإلكتروني برمز OTP قبل الدخول إلى النظام.</p>
+        <div class="auth-brand-points">
+          <div><i>1</i> إنشاء حساب المالك</div>
+          <div><i>2</i> استلام رمز OTP بالبريد</div>
+          <div><i>3</i> تأكيد الحساب وتسجيل الدخول</div>
+        </div>
+      </div>
+      <div class="auth-brand-foot">VAREX RESTAURANT · ACCOUNT SETUP</div>
+    </section>
+    <section class="auth-panel compact">
+      <div class="auth-top">
+        <a class="auth-back" href="./login.html">← العودة لتسجيل الدخول</a>
+        <span class="auth-security">اتصال آمن</span>
+      </div>
+      <header class="auth-header">
+        <h2>إنشاء اشتراك جديد</h2>
+        <p>اكتبي معلومات المالك، ثم سنرسل رمز التأكيد إلى البريد الإلكتروني.</p>
+      </header>
+      <form class="auth-form" id="registerForm" novalidate>
+        <div class="auth-field">
+          <label for="name">اسم المالك الكامل</label>
+          <div class="auth-input-wrap">
+            <span class="auth-input-icon">●</span>
+            <input class="auth-input" id="name" type="text" autocomplete="name" minlength="2" placeholder="الاسم الكامل" required>
+          </div>
+        </div>
+        <div class="auth-field">
+          <label for="email">البريد الإلكتروني</label>
+          <div class="auth-input-wrap">
+            <span class="auth-input-icon">✉</span>
+            <input class="auth-input" id="email" type="email" autocomplete="email" inputmode="email" dir="ltr" placeholder="name@example.com" required>
+          </div>
+        </div>
+        <div class="auth-field">
+          <label for="password">كلمة المرور</label>
+          <div class="auth-input-wrap">
+            <span class="auth-input-icon">●</span>
+            <input class="auth-input" id="password" type="password" autocomplete="new-password" minlength="8" placeholder="كلمة مرور قوية" required>
+            <button class="auth-eye" data-toggle-password="password" type="button" aria-label="إظهار كلمة المرور">👁</button>
+          </div>
+        </div>
+        <div class="password-rules" aria-label="شروط كلمة المرور">
+          <div class="password-rule" data-rule="length">8 أحرف على الأقل</div>
+          <div class="password-rule" data-rule="upper">حرف إنجليزي كبير</div>
+          <div class="password-rule" data-rule="lower">حرف إنجليزي صغير</div>
+          <div class="password-rule" data-rule="number">رقم واحد على الأقل</div>
+          <div class="password-rule" data-rule="symbol">رمز خاص مثل ! @ #</div>
+        </div>
+        <div class="auth-field">
+          <label for="confirmPassword">تأكيد كلمة المرور</label>
+          <div class="auth-input-wrap">
+            <span class="auth-input-icon">●</span>
+            <input class="auth-input" id="confirmPassword" type="password" autocomplete="new-password" minlength="8" placeholder="أعيدي كتابة كلمة المرور" required>
+            <button class="auth-eye" data-toggle-password="confirmPassword" type="button" aria-label="إظهار كلمة المرور">👁</button>
+          </div>
+        </div>
+        <label class="auth-check">
+          <input id="terms" type="checkbox" required>
+          <span>أوافق على <a class="auth-text-button" href="./terms.html" target="_blank" rel="noopener">شروط الخدمة</a> و<a class="auth-text-button" href="./privacy.html" target="_blank" rel="noopener">سياسة الخصوصية</a>.</span>
+        </label>
+        <button class="auth-submit" id="registerButton" type="submit">
+          <span class="auth-spinner" aria-hidden="true"></span>
+          <span id="registerButtonText">إنشاء الحساب وإرسال OTP</span>
+        </button>
+        <div class="auth-message" id="message" role="status" aria-live="polite"></div>
+      </form>
+      <div class="auth-footer">لديك حساب بالفعل؟ <a href="./login.html">تسجيل الدخول</a></div>
+    </section>
+  </main>
+  <script src="./restaurant-auth.js?v=3"></script>
+  <script>
+    (function(){
+      var form=document.getElementById("registerForm");
+      var password=document.getElementById("password");
+      var confirmPassword=document.getElementById("confirmPassword");
+      var button=document.getElementById("registerButton");
+      var buttonText=document.getElementById("registerButtonText");
+      var message=document.getElementById("message");
+      function show(type,text){message.className="auth-message show "+type;message.textContent=text}
+      function busy(value,text){button.disabled=value;button.classList.toggle("loading",value);buttonText.textContent=text}
+      function refreshRules(){
+        var checks=RestaurantAuth.passwordChecks(password.value);
+        document.querySelectorAll("[data-rule]").forEach(function(rule){
+          rule.classList.toggle("valid",Boolean(checks[rule.dataset.rule]));
+        });
+      }
+      password.addEventListener("input",refreshRules);
+      document.querySelectorAll("[data-toggle-password]").forEach(function(toggle){
+        toggle.addEventListener("click",function(){
+          var input=document.getElementById(toggle.dataset.togglePassword);
+          input.type=input.type==="password"?"text":"password";
+        });
+      });
+      RestaurantAuth.hasSession().then(function(valid){if(valid)location.replace(RestaurantAuth.route("purchase.html"))});
+      form.addEventListener("submit",async function(event){
+        event.preventDefault();
+        var name=document.getElementById("name").value.trim();
+        var userEmail=document.getElementById("email").value.trim().toLowerCase();
+        var value=password.value;
+        if(name.length<2){show("error","يرجى إدخال اسم المالك الكامل.");return}
+        if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(userEmail)){show("error","يرجى إدخال بريد إلكتروني صحيح.");return}
+        if(!RestaurantAuth.strongPassword(value)){show("error","كلمة المرور يجب أن تحتوي على 8 أحرف على الأقل، وحرف كبير وصغير، ورقم، ورمز خاص.");return}
+        if(value!==confirmPassword.value){show("error","كلمتا المرور غير متطابقتين.");return}
+        if(!document.getElementById("terms").checked){show("error","يجب الموافقة على شروط الخدمة وسياسة الخصوصية.");return}
+        busy(true,"جاري إنشاء الحساب وإرسال OTP...");
+        message.className="auth-message";
+        try{
+          var result=await RestaurantAuth.withMinimumDelay(RestaurantAuth.signUp({
+            name:name,
+            email:userEmail,
+            password:value
+          }),1800);
+          if(result.needsConfirmation){
+            show("success","تم إنشاء الحساب وإرسال رمز OTP إلى بريدك الإلكتروني.");
+            setTimeout(function(){location.replace(RestaurantAuth.route("verify-email.html"))},650);
+          }else{
+            show("success","تم إنشاء الحساب بنجاح. جاري فتح النظام...");
+            setTimeout(function(){location.replace(RestaurantAuth.route("purchase.html"))},650);
+          }
+        }catch(error){
+          show("error",RestaurantAuth.mapError(error));
+          busy(false,"إنشاء الحساب وإرسال OTP");
+        }
+      });
+    })();
+  </script>
+</body>
+</html>

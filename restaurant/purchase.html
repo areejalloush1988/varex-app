@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="ar" dir="rtl" data-varex-system="restaurant">
+<head>
+  <script src="https://app.varexapp.com/varex-system-theme.js?v=20260825-1" data-system="restaurant" data-vars="--pay-primary,--pay-deep,--pay-soft,--pay-line"></script>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate">
+  <meta name="theme-color" content="#B6533E">
+  <meta name="description" content="فعّل حساب VAREX للمطاعم مع عرض الإطلاق المحدود بسعر 399 دولاراً بدلاً من 799 دولاراً.">
+  <title>شراء نظام VAREX للمطاعم</title>
+  <link rel="icon" type="image/png" sizes="192x192" href="./varex-restaurant-icon-192-v2.png">
+  <link rel="apple-touch-icon" href="./varex-restaurant-icon-192-v2.png">
+  <link rel="stylesheet" href="./restaurant-purchase.css?v=1">
+</head>
+<body data-auth-page="purchase">
+  <header class="purchase-header">
+    <a class="purchase-brand" href="./purchase.html" aria-label="صفحة شراء VAREX للمطاعم">
+      <img src="./varex-restaurant-brand.svg" alt="">
+      <span><strong>VAREX</strong><small>RESTAURANT MANAGEMENT</small></span>
+    </a>
+    <a class="preview-link" href="./open-v7.html?preview=1&amp;lang=ar">معاينة النظام</a>
+  </header>
+
+  <main class="purchase-shell">
+    <section class="product-copy" aria-labelledby="purchaseTitle">
+      <span class="eyebrow">نظام إدارة المطاعم المتكامل</span>
+      <h1 id="purchaseTitle">شغّل مطعمك بالكامل من نظام واحد واضح.</h1>
+      <p class="lead">أدر الكاشير والطلبات والطاولات والحجوزات والمنيو والمطبخ والمخزون والموردين والعملاء والورديات والتقارير من مساحة عمل احترافية واحدة.</p>
+
+      <div class="product-proof" aria-label="مزايا المنتج">
+        <article><strong>حساب آمن</strong><span>استخدم VAREX على أجهزتك من خلال حساب موثّق.</span></article>
+        <article><strong>دفعة واحدة</strong><span>لا يوجد اشتراك شهري أو سنوي متكرر.</span></article>
+        <article><strong>وصول كامل</strong><span>ترخيص مدى الحياة مرتبط بحساب مطعمك.</span></article>
+      </div>
+
+      <div class="flow" aria-label="خطوات التفعيل">
+        <div><i>1</i><span><strong>أنشئ حسابك</strong><small>اختر بريدك وكلمة المرور ثم أكّد بريدك الإلكتروني.</small></span></div>
+        <div><i>2</i><span><strong>سجّل الدخول إلى VAREX</strong><small>بعد الدخول سيظهر لك عرض التفعيل مباشرة.</small></span></div>
+        <div><i>3</i><span><strong>فعّل الوصول الكامل</strong><small>ادفع مرة واحدة وافتح جميع صفحات النظام.</small></span></div>
+      </div>
+    </section>
+
+    <aside class="checkout-card" aria-labelledby="checkoutTitle">
+      <span class="license-pill">وصول مدى الحياة</span>
+      <h2 id="checkoutTitle">VAREX Restaurant</h2>
+      <p>وصول كامل لحساب مطعم واحد.</p>
+      <div class="offer-line"><span class="discount-pill">خصم 50%</span><span class="original-price">بدلاً من <del>$799</del></span></div>
+      <div class="price"><sup>$</sup><strong id="priceValue">399</strong><span>USD<br>دفعة واحدة</span></div>
+      <ul>
+        <li>نظام إدارة مطاعم متكامل</li>
+        <li>وصول مرتبط بالحساب وتسجيل دخول آمن</li>
+        <li>قابل للتثبيت على الكمبيوتر والهاتف</li>
+        <li>من دون رسوم اشتراك متكررة</li>
+      </ul>
+
+      <div class="checkout-dynamic" id="checkoutDynamic" aria-busy="true">
+        <div class="account-state" id="accountState" aria-live="polite">
+          <span class="state-dot"></span>
+          <div><small>حالة التفعيل</small><strong id="accountLabel">جارٍ التحقق من حسابك…</strong></div>
+        </div>
+
+        <div class="checkout-message" id="checkoutMessage" role="status" aria-live="polite" hidden></div>
+
+        <div class="checkout-actions" id="guestActions" hidden>
+          <a class="primary-action" id="createAccountLink" href="./register.html?lang=ar">إنشاء حساب جديد</a>
+          <a class="secondary-action" id="signInLink" href="./login.html?lang=ar">لدي حساب VAREX بالفعل</a>
+        </div>
+
+        <div class="checkout-actions" id="paymentActions" hidden>
+          <button class="primary-action paypal-action" id="payButton" type="button"><span>ادفع 399$ بأمان عبر</span><strong>PayPal</strong></button>
+          <a class="secondary-action" id="existingAccountLink" href="./login.html?lang=ar">اشتريت مسبقاً؟ سجّل الدخول</a>
+          <button class="text-action" id="signOutButton" type="button">استخدام حساب آخر</button>
+        </div>
+
+        <div class="checkout-actions" id="licensedActions" hidden>
+          <a class="primary-action install-action" id="installLink" href="./open-v7.html?lang=ar">فتح نظام VAREX</a>
+          <a class="secondary-action" id="openAppLink" href="./open-v7.html?lang=ar">الدخول إلى لوحة التحكم</a>
+        </div>
+
+        <p class="secure-note"><span aria-hidden="true">✓</span> يؤكد PayPal عملية الدفع بأمان، ولا يستلم VAREX كلمة مرور PayPal الخاصة بك.</p>
+      </div>
+    </aside>
+  </main>
+
+  <footer class="purchase-footer">
+    <span>© 2026 VAREX</span>
+    <nav><a href="./terms.html">الشروط</a><a href="./privacy.html">الخصوصية</a></nav>
+  </footer>
+
+  <script src="./restaurant-purchase.js?v=1"></script>
+</body>
+</html>

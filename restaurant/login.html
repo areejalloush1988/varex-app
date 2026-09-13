@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="ar" dir="rtl" data-varex-system="restaurant">
+<head><script src="https://app.varexapp.com/varex-system-theme.js?v=20260825-1" data-system="restaurant" data-vars="--auth-primary,--auth-deep,--auth-soft,--auth-line"></script>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate">
+  <meta name="theme-color" content="#B6533E">
+  <meta name="application-name" content="VAREX RESTAURANT">
+  <title>VAREX | تسجيل الدخول</title>
+  <link rel="icon" href="./varex-restaurant-icon-192-v2.png">
+  <link rel="apple-touch-icon" href="./varex-restaurant-icon-192-v2.png">
+  <link rel="stylesheet" href="./restaurant-auth.css?v=1">
+</head>
+<body class="auth-body">
+  <main class="auth-shell">
+    <section class="auth-brand">
+      <div class="auth-brand-head">
+        <img src="./varex-restaurant-brand.svg" alt="VAREX">
+        <div class="auth-brand-name"><strong>VAREX</strong><small>BUSINESS MANAGEMENT SYSTEM</small></div>
+      </div>
+      <div class="auth-brand-copy">
+        <span>RESTAURANT MANAGEMENT</span>
+        <h1>أهلاً بعودتك إلى نظام المطاعم</h1>
+        <p>سجّلي الدخول لإدارة الصالة والمطبخ والطلبات والطاولات والتقارير من مكان واحد.</p>
+        <div class="auth-brand-points">
+          <div><i>✓</i> جلسة دخول آمنة ومشفّرة</div>
+          <div><i>✓</i> تأكيد البريد الإلكتروني برمز OTP</div>
+          <div><i>✓</i> استعادة آمنة لكلمة المرور</div>
+        </div>
+      </div>
+      <div class="auth-brand-foot">VAREX RESTAURANT · SECURE ACCESS</div>
+    </section>
+    <section class="auth-panel">
+      <div class="auth-top">
+        <span class="auth-security">اتصال آمن</span>
+        <a class="auth-back auth-download-link" href="./install.html">تحميل التطبيق</a>
+      </div>
+      <header class="auth-header">
+        <h2>تسجيل الدخول</h2>
+        <p>أدخلي البريد الإلكتروني وكلمة المرور للمتابعة.</p>
+      </header>
+      <form class="auth-form" id="loginForm" novalidate>
+        <div class="auth-field">
+          <label for="email">البريد الإلكتروني</label>
+          <div class="auth-input-wrap">
+            <span class="auth-input-icon">✉</span>
+            <input class="auth-input" id="email" type="email" autocomplete="email" inputmode="email" dir="ltr" placeholder="name@example.com" required>
+          </div>
+        </div>
+        <div class="auth-field">
+          <label for="password">كلمة المرور</label>
+          <div class="auth-input-wrap">
+            <span class="auth-input-icon">●</span>
+            <input class="auth-input" id="password" type="password" autocomplete="current-password" minlength="8" placeholder="8 أحرف على الأقل" required>
+            <button class="auth-eye" id="togglePassword" type="button" aria-label="إظهار كلمة المرور">👁</button>
+          </div>
+          <small class="auth-hint">يجب أن تحتوي كلمة المرور على 8 أحرف على الأقل.</small>
+        </div>
+        <div class="auth-options">
+          <label class="auth-check"><input id="remember" type="checkbox"> تذكّر تسجيل الدخول</label>
+          <a class="auth-text-button" href="./forgot-password.html">نسيت كلمة المرور؟</a>
+        </div>
+        <button class="auth-submit" id="loginButton" type="submit">
+          <span class="auth-spinner" aria-hidden="true"></span>
+          <span id="loginButtonText">تسجيل الدخول</span>
+        </button>
+        <div class="auth-preview-divider"><span>أو</span></div>
+        <button class="auth-preview" id="authPreview" type="button">الدخول للمعاينة فقط</button>
+        <div class="auth-message" id="message" role="status" aria-live="polite"></div>
+      </form>
+      <div class="auth-footer">ليس لديك حساب؟ <a href="./register.html">إنشاء حساب جديد</a></div>
+    </section>
+  </main>
+  <script src="./restaurant-auth.js?v=3"></script>
+  <script>
+    (function(){
+      var form=document.getElementById("loginForm");
+      var emailInput=document.getElementById("email");
+      var passwordInput=document.getElementById("password");
+      var remember=document.getElementById("remember");
+      var button=document.getElementById("loginButton");
+      var buttonText=document.getElementById("loginButtonText");
+      var previewButton=document.getElementById("authPreview");
+      var message=document.getElementById("message");
+      var query=new URLSearchParams(location.search);
+      var returnTo=query.get("return_to")?RestaurantAuth.safeReturnTo(query.get("return_to")):RestaurantAuth.route("purchase.html");
+      var english=query.get("lang")==="en";
+
+      if(english){
+        document.documentElement.lang="en";document.documentElement.dir="ltr";
+        document.title="VAREX | Restaurant Sign In";
+        document.querySelector(".auth-brand-copy > span").textContent="RESTAURANT MANAGEMENT";
+        document.querySelector(".auth-brand-copy h1").textContent="Welcome back to your restaurant system";
+        document.querySelector(".auth-brand-copy > p").textContent="Sign in to manage the dining room, kitchen, orders, tables and reports in one place.";
+        var points=document.querySelectorAll(".auth-brand-points div");
+        ["Secure, encrypted sign-in","Email verification with an OTP code","Secure password recovery"].forEach(function(value,index){if(points[index])points[index].lastChild.textContent=" "+value});
+        document.querySelector(".auth-security").textContent="Secure connection";
+        document.querySelector(".auth-back").textContent="Download the app";
+        document.querySelector(".auth-header h2").textContent="Sign in";
+        document.querySelector(".auth-header p").textContent="Enter your email and password to continue.";
+        var labels=document.querySelectorAll(".auth-field > label");labels[0].textContent="Email address";labels[1].textContent="Password";
+        passwordInput.placeholder="At least 8 characters";
+        document.getElementById("togglePassword").setAttribute("aria-label","Show password");
+        document.querySelector(".auth-hint").textContent="Password must contain at least 8 characters.";
+        document.querySelector(".auth-check").lastChild.textContent=" Remember me";
+        document.querySelector(".auth-text-button").textContent="Forgot password?";
+        buttonText.textContent="Sign in";
+        document.querySelector(".auth-preview-divider span").textContent="or";
+        previewButton.textContent="Enter preview only";
+        document.querySelector(".auth-footer").firstChild.textContent="No account? ";
+        document.querySelector(".auth-footer a").textContent="Create a new account";
+      }
+
+      previewButton.addEventListener("click",function(){
+        var preview=new URL("./open-v7.html",location.href);
+        preview.searchParams.set("preview","1");
+        preview.searchParams.set("type","restaurant");
+        preview.searchParams.set("lang",query.get("lang")==="en"?"en":"ar");
+        var returnUrl=query.get("return")||query.get("return_to");
+        if(returnUrl)preview.searchParams.set("return",returnUrl);
+        location.href=preview.pathname+preview.search;
+      });
+
+      function show(type,text){
+        message.className="auth-message show "+type;
+        message.textContent=text;
+      }
+      function busy(value,text){
+        button.disabled=value;
+        button.classList.toggle("loading",value);
+        buttonText.textContent=text;
+      }
+      document.getElementById("togglePassword").addEventListener("click",function(){
+        passwordInput.type=passwordInput.type==="password"?"text":"password";
+      });
+      emailInput.value=RestaurantAuth.rememberedEmail();
+      remember.checked=Boolean(emailInput.value);
+      if(query.get("verified")==="1")show("success","تم تأكيد البريد الإلكتروني. يمكنك الآن تسجيل الدخول.");
+      if(query.get("logged_out")==="1")show("success","تم تسجيل الخروج بأمان.");
+      if(query.get("password_reset")==="1")show("success","تم تحديث كلمة المرور. سجّلي الدخول بكلمة المرور الجديدة.");
+      if(query.get("session_expired")==="1")show("info","انتهت صلاحية الجلسة. سجّلي الدخول من جديد للمتابعة.");
+      if(!query.get("logged_out")&&query.get("preview")!=="1")RestaurantAuth.hasSession().then(function(valid){if(valid)location.replace(returnTo)});
+
+      form.addEventListener("submit",async function(event){
+        event.preventDefault();
+        var userEmail=emailInput.value.trim().toLowerCase();
+        var password=passwordInput.value;
+        if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(userEmail)){show("error","يرجى إدخال بريد إلكتروني صحيح.");return}
+        if(password.length<8){show("error","كلمة المرور يجب أن تحتوي على 8 أحرف على الأقل.");return}
+        busy(true,"جاري تسجيل الدخول...");
+        message.className="auth-message";
+        try{
+          await RestaurantAuth.withMinimumDelay(RestaurantAuth.signIn({
+            email:userEmail,
+            password:password,
+            remember:remember.checked
+          }),2300);
+          show("success","تم تسجيل الدخول بنجاح. جاري فتح صفحة التفعيل...");
+          setTimeout(function(){location.replace(returnTo)},350);
+        }catch(error){
+          var text=RestaurantAuth.mapError(error);
+          show("error",text);
+          if(text.indexOf("تأكيد البريد")!==-1){
+            RestaurantAuth.setPending({email:userEmail});
+            setTimeout(function(){location.href=RestaurantAuth.route("verify-email.html")},900);
+          }
+          busy(false,"تسجيل الدخول");
+        }
+      });
+    })();
+  </script>
+</body>
+</html>
