@@ -14,7 +14,8 @@
     "varex-pharmacy": { app: "pharmacy", theme: "emerald" },
     "varex-shipping": { app: "shipping", theme: "coffee" },
     "varex-construction": { app: "construction", theme: "gold" },
-    "varex-perfumes-cosmetics": { app: "perfumes-cosmetics", theme: "berry" },
+    "varex-classifieds-marketplace": { app: "classifieds", theme: "ruby" },
+    "varex-perfumes-cosmetics": { app: "classifieds", theme: "ruby" },
     "varex-cafeteria": { app: "cafeteria", theme: "orange" }
   };
 

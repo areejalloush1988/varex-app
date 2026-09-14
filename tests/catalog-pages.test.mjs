@@ -24,7 +24,7 @@ function inlineScripts(html) {
 
 test("catalog contains every published Shopify application and three exact plans", () => {
   const catalog = loadCatalog();
-  const expected = ["cashier", "real-estate", "car-rental", "restaurant", "cafe", "women-salon", "men-salon", "pharmacy", "shipping", "construction", "perfumes-cosmetics", "cafeteria"];
+  const expected = ["cashier", "real-estate", "car-rental", "restaurant", "cafe", "women-salon", "men-salon", "pharmacy", "shipping", "construction", "classifieds", "cafeteria"];
   assert.deepEqual(Object.keys(catalog.apps).sort(), expected.sort());
   const variants = new Set();
   for (const app of Object.values(catalog.apps)) {
@@ -43,7 +43,7 @@ test("catalog contains every published Shopify application and three exact plans
 });
 
 test("overview, preview, demo and download scripts compile", () => {
-  for (const relative of ["plans/index.html", "preview/index.html", "preview/systems/catalog-demo/index.html", "download/index.html"]) {
+  for (const relative of ["plans/index.html", "preview/index.html", "preview/systems/catalog-demo/index.html", "preview/systems/classifieds/index.html", "download/index.html"]) {
     const scripts = inlineScripts(read(relative));
     assert.ok(scripts.length > 0, relative);
     scripts.forEach((script, index) => assert.doesNotThrow(() => new vm.Script(script, { filename: `${relative}#${index}` })));
@@ -52,13 +52,15 @@ test("overview, preview, demo and download scripts compile", () => {
 
 test("every preview route is present and the previously missing systems use the safe demo", () => {
   const preview = read("preview/index.html");
-  for (const slug of ["cashier", "real-estate", "car-rental", "restaurant", "cafe", "cafeteria", "women-salon", "men-salon", "pharmacy", "shipping", "construction", "perfumes-cosmetics"]) {
+  for (const slug of ["cashier", "real-estate", "car-rental", "restaurant", "cafe", "cafeteria", "women-salon", "men-salon", "pharmacy", "shipping", "construction", "classifieds"]) {
     assert.ok(preview.includes(`${slug}`), slug);
   }
-  for (const slug of ["cashier", "pharmacy", "shipping", "perfumes-cosmetics"]) {
+  for (const slug of ["cashier", "pharmacy", "shipping"]) {
     assert.match(preview, new RegExp(`catalog-demo/index\\.html\\?app=${slug.replace("-", "\\-")}`));
   }
   assert.ok(fs.existsSync(path.join(root, "preview/systems/catalog-demo/index.html")));
+  assert.ok(fs.existsSync(path.join(root, "preview/systems/classifieds/index.html")));
+  assert.match(preview, /systems\/classifieds\/index\.html/);
 });
 
 test("preview copy remains neutral and demo data cannot persist", () => {

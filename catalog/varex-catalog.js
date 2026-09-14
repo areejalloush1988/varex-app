@@ -169,16 +169,16 @@
       handle: "varex-construction",
       plans: plans(48897761181945, 48897761214713, 48897761247481)
     },
-    "perfumes-cosmetics": {
-      icon: "✧",
-      theme: "berry",
-      name: { ar: "نظام العطور ومواد التجميل", en: "Perfumes & Cosmetics Management" },
-      eyebrow: { ar: "المنتجات والدفعات والمبيعات بواجهة متخصصة", en: "Specialized control for products, batches and sales" },
-      overview: { ar: "نظام متخصص لنقطة البيع والمنتجات والدفعات والمخزون والمشتريات والموردين والعملاء والتقارير.", en: "A specialized system for point of sale, products, batches, inventory, purchases, suppliers, customers and reports." },
-      features: { ar: ["نقطة بيع متخصصة", "المنتجات والتصنيفات", "الدفعات والصلاحية", "المخزون والمشتريات", "العملاء والموردون", "تقارير المبيعات"], en: ["Specialized point of sale", "Products and categories", "Batches and expiry", "Inventory and purchases", "Customers and suppliers", "Sales reports"] },
-      modules: { ar: ["لوحة التحكم", "نقطة البيع", "المنتجات", "الدفعات", "المخزون", "المشتريات", "العملاء", "التقارير"], en: ["Dashboard", "Point of sale", "Products", "Batches", "Inventory", "Purchases", "Customers", "Reports"] },
-      metrics: { ar: [["684", "منتجًا"], ["19", "تنبيه مخزون"], ["58", "فاتورة"], ["7,840", "مبيعات اليوم"]], en: [["684", "Products"], ["19", "Stock alerts"], ["58", "Invoices"], ["7,840", "Today's sales"]] },
-      handle: "varex-perfumes-cosmetics",
+    classifieds: {
+      icon: "⌕",
+      theme: "ruby",
+      name: { ar: "منصة السوق والإعلانات المبوبة", en: "Classified Marketplace Platform" },
+      eyebrow: { ar: "منصة بيع وشراء متعددة الأقسام للأفراد والشركات", en: "A multi-category marketplace for individuals and businesses" },
+      overview: { ar: "منصة إعلانات مبوبة متكاملة للعقارات والسيارات والوظائف والإلكترونيات والأثاث والخدمات، مع البحث المتقدم والمفضلة والمحادثات وإدارة الإعلانات.", en: "A complete classified marketplace for property, cars, jobs, electronics, furniture and services with advanced search, favourites, messaging and listing management." },
+      features: { ar: ["إعلانات متعددة الأقسام", "بحث وفلاتر متقدمة", "حسابات أفراد وشركات", "المفضلة والبحث المحفوظ", "المحادثات والإشعارات", "إدارة ومراجعة الإعلانات"], en: ["Multi-category listings", "Advanced search and filters", "Personal and business accounts", "Favourites and saved searches", "Messages and notifications", "Listing review and management"] },
+      modules: { ar: ["الرئيسية", "تصفح الإعلانات", "نشر إعلان", "إعلاناتي", "الرسائل", "المفضلة", "الحسابات التجارية", "لوحة الإدارة"], en: ["Home", "Browse listings", "Post an ad", "My listings", "Messages", "Favourites", "Business accounts", "Admin dashboard"] },
+      metrics: { ar: [["24,860", "إعلانًا نشطًا"], ["8", "أقسام رئيسية"], ["5,420", "مستخدمًا"], ["1,284", "إعلانًا جديدًا"]], en: [["24,860", "Active listings"], ["8", "Main categories"], ["5,420", "Users"], ["1,284", "New listings"]] },
+      handle: "varex-classifieds-marketplace",
       plans: plans(48897761509625, 48897761542393, 48897761575161)
     },
     cafeteria: {
@@ -203,8 +203,11 @@
     car_rental: "car-rental",
     women_salon: "women-salon",
     men_salon: "men-salon",
-    perfumes: "perfumes-cosmetics",
-    cosmetics: "perfumes-cosmetics"
+    "perfumes-cosmetics": "classifieds",
+    perfumes: "classifieds",
+    cosmetics: "classifieds",
+    marketplace: "classifieds",
+    dubizzle: "classifieds"
   };
 
   function normalizeSlug(value) {
