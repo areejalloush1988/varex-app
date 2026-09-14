@@ -65,7 +65,7 @@
       pharmacy:"./systems/catalog-demo/index.html?app=pharmacy",
       shipping:"./systems/catalog-demo/index.html?app=shipping",
       construction:"./systems/construction/index.html",
-      "perfumes-cosmetics":"./systems/catalog-demo/index.html?app=perfumes-cosmetics"
+      classifieds:"./systems/classifieds/index.html"
     },app={...catalog.apps[slug],path:previewPaths[slug]};
     const primary=catalog.colorValue(qs.get("color"))||catalog.colorValue(qs.get("theme"))||catalog.themes[app.theme]||catalog.themes.navy,theme={primary,deep:catalog.mixHex(primary,"#000000",.46),dark:catalog.mixHex(primary,"#000000",.68),soft:catalog.mixHex(primary,"#FFFFFF",.9),pale:catalog.mixHex(primary,"#FFFFFF",.96),line:catalog.mixHex(primary,"#FFFFFF",.76)};
     const rootStyle=document.documentElement.style;rootStyle.setProperty("--accent",theme.primary);rootStyle.setProperty("--accent-deep",theme.deep);rootStyle.setProperty("--accent-dark",theme.dark);rootStyle.setProperty("--accent-soft",theme.soft);rootStyle.setProperty("--accent-pale",theme.pale);rootStyle.setProperty("--accent-line",theme.line);document.getElementById("themeColor").content=theme.primary;document.getElementById("entryIcon").textContent=app.icon;
