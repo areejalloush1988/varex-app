@@ -8,9 +8,18 @@ const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const read = file => readFileSync(join(root, file), "utf8");
 
 test("official application path entries exist", () => {
-  for (const route of ["restaurant", "cashier", "real-estate", "pharmacy"]) {
+  for (const route of ["restaurant", "cashier", "real-estate", "pharmacy", "library"]) {
     assert.ok(existsSync(join(root, route, "index.html")), `missing /${route}/ entry`);
   }
+});
+
+test("library route is anonymous and linked from the VAREX launcher", () => {
+  const library = read("library/index.html");
+  const launcher = read("systems.html");
+  assert.doesNotMatch(library, /أريج|Areej/i);
+  assert.match(library, /VAREX LIBRARY/);
+  assert.match(launcher, /data-system="library"/);
+  assert.match(launcher, /launcherUrl\("\.\/library\/"\)/);
 });
 
 test("restaurant path ships a complete install shell", () => {

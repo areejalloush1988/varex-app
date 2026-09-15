@@ -1,4 +1,4 @@
-const CACHE_NAME="varex-cache-v45-native-auth-locales";
+const CACHE_NAME="varex-cache-v46-library";
 const IS_NATIVE_APP=self.location.hostname==="localhost";
 
 const FILES_TO_CACHE=[
@@ -10,6 +10,7 @@ const FILES_TO_CACHE=[
 "./preview/index.html",
 "./preview/systems/catalog-demo/index.html",
 "./download/index.html",
+"./library/index.html",
 "./catalog/varex-catalog.js",
 "./varex-locale.js",
 "./locales/en.json",
