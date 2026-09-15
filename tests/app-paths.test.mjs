@@ -14,10 +14,15 @@ test("official application path entries exist", () => {
 });
 
 test("library route is anonymous and linked from the VAREX launcher", () => {
-  const library = read("library/index.html");
+  const route = read("library/index.html");
+  const library = read("10-مكتبة-فاريكس/index.html");
   const launcher = read("systems.html");
   assert.doesNotMatch(library, /أريج|Areej/i);
   assert.match(library, /VAREX LIBRARY/);
+  assert.match(route, /\.\.\/10-مكتبة-فاريكس\//);
+  assert.ok(existsSync(join(root, "10-مكتبة-فاريكس", "manifest.json")));
+  assert.ok(existsSync(join(root, "10-مكتبة-فاريكس", "icon.svg")));
+  assert.ok(existsSync(join(root, "10-مكتبة-فاريكس", "sw.js")));
   assert.match(launcher, /data-system="library"/);
   assert.match(launcher, /launcherUrl\("\.\/library\/"\)/);
 });

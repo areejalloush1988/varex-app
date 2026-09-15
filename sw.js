@@ -1,4 +1,4 @@
-const CACHE_NAME="varex-cache-v46-library";
+const CACHE_NAME="varex-cache-v47-varex-library-folder";
 const IS_NATIVE_APP=self.location.hostname==="localhost";
 
 const FILES_TO_CACHE=[
@@ -11,6 +11,10 @@ const FILES_TO_CACHE=[
 "./preview/systems/catalog-demo/index.html",
 "./download/index.html",
 "./library/index.html",
+"./10-مكتبة-فاريكس/index.html",
+"./10-مكتبة-فاريكس/manifest.json",
+"./10-مكتبة-فاريكس/icon.svg",
+"./10-مكتبة-فاريكس/sw.js",
 "./catalog/varex-catalog.js",
 "./varex-locale.js",
 "./locales/en.json",

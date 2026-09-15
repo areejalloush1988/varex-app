@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title description">
+  <title id="title">VAREX Library</title>
+  <desc id="description">شعار مكتبة فاريكس</desc>
+  <rect width="512" height="512" rx="112" fill="#132238"/>
+  <path d="M104 142c64-17 115-2 152 41 37-43 88-58 152-41v239c-64-17-115-2-152 41-37-43-88-58-152-41V142Z" fill="none" stroke="#F1B45B" stroke-width="30" stroke-linejoin="round"/>
+  <path d="M256 183v239" fill="none" stroke="#F1B45B" stroke-width="30" stroke-linecap="round"/>
+</svg>

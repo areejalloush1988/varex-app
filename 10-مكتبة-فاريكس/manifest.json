@@ -1,0 +1,20 @@
+{
+  "name": "VAREX Library | مكتبة فاريكس",
+  "short_name": "VAREX Library",
+  "description": "مكتبة فاريكس الإلكترونية لاكتشاف الكتب وقراءتها والاستماع إليها.",
+  "lang": "ar",
+  "dir": "rtl",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f6f2ea",
+  "theme_color": "#132238",
+  "icons": [
+    {
+      "src": "./icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
