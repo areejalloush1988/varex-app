@@ -1,0 +1,12 @@
+create index if not exists ai_organizations_owner_idx on public.ai_organizations(owner_id);
+create index if not exists ai_agents_created_by_idx on public.ai_agents(created_by);
+create index if not exists ai_tasks_agent_idx on public.ai_tasks(agent_id);
+create index if not exists ai_tasks_created_by_idx on public.ai_tasks(created_by);
+create index if not exists ai_approvals_task_idx on public.ai_approvals(task_id);
+create index if not exists ai_approvals_requested_by_idx on public.ai_approvals(requested_by);
+create index if not exists ai_approvals_reviewed_by_idx on public.ai_approvals(reviewed_by);
+create index if not exists ai_messages_created_by_idx on public.ai_messages(created_by);
+create index if not exists ai_knowledge_created_by_idx on public.ai_knowledge_items(created_by);
+create index if not exists ai_usage_agent_idx on public.ai_usage_events(agent_id);
+create index if not exists ai_usage_task_idx on public.ai_usage_events(task_id);
+create index if not exists ai_audit_user_idx on public.ai_audit_logs(user_id);

@@ -1,0 +1,1 @@
+ALTER TABLE `ai_members` ADD `updated_at` text NOT NULL;

@@ -1,0 +1,48 @@
+{
+  "version": "7",
+  "dialect": "sqlite",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "6",
+      "when": 1788930499481,
+      "tag": "0000_yielding_impossible_man",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1788930613843,
+      "tag": "0001_sloppy_wither",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1788931582688,
+      "tag": "0002_rare_madelyne_pryor",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "6",
+      "when": 1788933199718,
+      "tag": "0003_tidy_wallop",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "6",
+      "when": 1788972253151,
+      "tag": "0004_handy_puck",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "6",
+      "when": 1789079992503,
+      "tag": "0005_ambiguous_wrecking_crew",
+      "breakpoints": true
+    }
+  ]
+}

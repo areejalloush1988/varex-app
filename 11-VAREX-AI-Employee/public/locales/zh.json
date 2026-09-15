@@ -1,0 +1,25 @@
+{
+  "code": "zh", "dir": "ltr", "name": "中文",
+  "strings": {
+    "app.banner": "VAREX 的每项操作都会显示真实结果：已执行、需要连接，或未执行。",
+    "common.save": "保存", "common.cancel": "取消", "common.close": "关闭", "common.back": "返回", "common.download": "下载", "common.loading": "正在加载…",
+    "nav.manage": "工作管理", "nav.dashboard": "仪表板", "nav.agents": "AI 员工", "nav.tasks": "任务与执行", "nav.inbox": "收件箱", "nav.leads": "潜在客户", "nav.approvals": "审批", "nav.develop": "员工培养", "nav.knowledge": "知识库", "nav.reports": "报告与分析", "nav.billing": "订阅与账单", "nav.integrations": "社交账号连接", "nav.settings": "设置",
+    "top.search": "搜索", "top.notifications": "通知", "top.appearance": "外观", "top.language": "语言",
+    "dashboard.title": "指令中心", "dashboard.subtitle": "在一处查看工作区的真实数据。", "dashboard.commandTitle": "立即执行指令", "dashboard.commandSubtitle": "VAREX 会立即执行支持的指令，并明确拒绝不支持的指令。",
+    "command.placeholder": "示例：添加员工：Lina | 销售员工", "command.execute": "立即执行", "command.paste": "粘贴", "command.ready": "已准备好执行真实指令。", "command.exampleAgent": "添加员工", "command.examplePrint": "打印页面", "command.exampleCopy": "复制文字", "command.exampleIntegrations": "检查网关", "command.success": "指令已成功执行。", "command.unsupported": "不支持此指令；未执行任何操作。", "command.missingAgent": "请在指令后输入员工姓名，并在 | 后输入职位。", "command.missingLead": "请用 | 分隔客户姓名和服务。", "command.missingCopy": "请在“复制”后输入要复制的文字。", "command.pasted": "文字已真正粘贴到指令框。", "command.copied": "文字已真正复制。", "command.printed": "已打开打印对话框。", "command.gatewayChecked": "网关状态已刷新。",
+    "agents.title": "AI 员工", "agents.subtitle": "创建员工并设置职责、权限和渠道。", "agents.create": "创建 AI 员工", "agents.emptyTitle": "暂无员工", "agents.emptyText": "添加第一位 AI 员工即可开始。",
+    "tasks.title": "任务与执行", "tasks.subtitle": "只有出现明确结果，任务才会被视为已执行。", "tasks.new": "新任务", "tasks.empty": "暂无任务。", "tasks.review": "提交审批", "tasks.approvedOnly": "任务仅获批准，尚未对外发送。",
+    "inbox.title": "统一收件箱", "inbox.subtitle": "仅显示已保存的真实消息。", "inbox.search": "搜索对话…", "inbox.empty": "暂无真实消息。", "inbox.write": "输入消息…", "inbox.send": "发送", "inbox.draftSaved": "消息已保存为草稿，并未发送。", "inbox.sent": "消息已通过 WhatsApp Business 发送。",
+    "leads.title": "潜在客户", "leads.subtitle": "跟进数据库中保存的商机。", "leads.add": "添加客户", "leads.empty": "暂无潜在客户。",
+    "approvals.title": "审批中心", "approvals.subtitle": "未经您批准，不会发送任何敏感决定。", "approvals.empty": "暂无审批。", "approvals.approve": "批准", "approvals.reject": "拒绝",
+    "knowledge.title": "公司知识库", "knowledge.subtitle": "真实文件安全存储在公司工作区。", "knowledge.upload": "添加文件", "knowledge.empty": "暂无已存储文件。", "knowledge.stored": "文件已上传，内容已保存。",
+    "reports.title": "报告与分析", "reports.subtitle": "根据工作区数据计算的指标。",
+    "billing.title": "订阅与账单", "billing.subtitle": "选择套餐和付款方式；开发者账户确认付款后即可使用。", "billing.help": "支付状态",
+    "integrations.title": "连接社交账号", "integrations.subtitle": "每个网关都会显示真实的连接和权限状态。", "integrations.help": "连接指南",
+    "settings.title": "系统设置", "settings.subtitle": "管理公司、安全、语言和外观。", "settings.company": "公司信息", "settings.companyName": "公司名称", "settings.industry": "行业", "settings.timezone": "时区", "settings.language": "界面语言", "settings.appearance": "界面外观", "settings.security": "安全规则", "settings.priceApproval": "价格审批", "settings.audit": "完整活动记录", "settings.autoPublish": "自动发布", "settings.billing": "订阅账单设置", "settings.vat": "应用增值税", "settings.legalName": "公司法定名称", "settings.trn": "税务登记号", "settings.billingEmail": "账单邮箱", "settings.saved": "公司设置已保存。",
+    "auth.login": "登录", "auth.signup": "创建账号", "auth.name": "您的姓名", "auth.email": "电子邮箱", "auth.password": "密码", "auth.confirm": "确认密码", "auth.forgot": "忘记密码？", "auth.loginButton": "进入系统", "auth.signupButton": "创建账号并选择套餐", "auth.trial": "创建账号免费 • 付费订阅激活后即可使用", "auth.verifyTitle": "验证邮箱", "auth.verifyText": "我们已发送 6 位验证码，有效期为 10 分钟。", "auth.code": "验证码", "auth.verifyButton": "验证并打开账号", "auth.resetRequestTitle": "重置密码", "auth.resetRequestText": "输入您的 VAREX AI 账号邮箱，我们会发送安全验证码。", "auth.sendReset": "发送重置码", "auth.backLogin": "返回登录", "auth.resetTitle": "创建新密码", "auth.newPassword": "新密码", "auth.changePassword": "更改密码", "auth.onboardingTitle": "设置公司工作区", "auth.onboardingText": "创建工作区，然后选择订阅套餐。", "auth.businessName": "公司或企业名称", "auth.sector": "业务行业", "auth.start": "创建工作区并选择套餐",
+    "theme.title": "外观目录", "theme.subtitle": "选择一种 VAREX 配色；应用和 OTP 邮件页眉会同步变化。", "theme.saved": "外观已应用并保存。",
+    "search.title": "全局搜索", "search.placeholder": "搜索员工、任务、客户和消息…", "search.empty": "没有匹配结果。", "notifications.title": "通知", "notifications.empty": "暂无需要处理的通知。",
+    "status.draft": "草稿", "status.queued": "排队中", "status.running": "执行中", "status.awaitingApproval": "等待审批", "status.completed": "已完成", "status.failed": "失败", "status.cancelled": "已取消", "status.active": "活跃", "status.paused": "已暂停", "status.pending": "等待审批", "status.approved": "已批准", "status.rejected": "已拒绝", "status.stored": "已存储"
+  }
+}
