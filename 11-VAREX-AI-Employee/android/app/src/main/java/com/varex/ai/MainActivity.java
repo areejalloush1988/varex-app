@@ -97,7 +97,7 @@ public final class MainActivity extends Activity {
         findViewById(R.id.notificationsPermissionButton).setOnClickListener(view -> requestNotificationPermission());
         findViewById(R.id.connectButton).setOnClickListener(view -> connectDevice(true));
         findViewById(R.id.disconnectButton).setOnClickListener(view -> disconnectDevice(false));
-        findViewById(R.id.openDashboardButton).setOnClickListener(view -> startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(BuildConfig.DASHBOARD_URL))));
+        findViewById(R.id.openDashboardButton).setOnClickListener(view -> startActivity(new Intent(this, DashboardActivity.class)));
         findViewById(R.id.logoutButton).setOnClickListener(view -> disconnectDevice(true));
         orgSpinner.setOnItemSelectedListener(new android.widget.AdapterView.OnItemSelectedListener() {
             @Override public void onItemSelected(android.widget.AdapterView<?> parent, View view, int position, long id) {
@@ -297,6 +297,10 @@ public final class MainActivity extends Activity {
 
     @Override protected void onResume() {
         super.onResume();
+        if (store != null && !store.hasSession()) {
+            showLogin();
+            return;
+        }
         if (appPanel != null && appPanel.getVisibility() == View.VISIBLE) { refreshPermissionStates(); updateConnectionState(); lastActionText.setText(store.lastAction()); }
     }
 
