@@ -61,6 +61,7 @@ public final class MainActivity extends Activity {
     private TextView lastActionText;
     private BroadcastReceiver bridgeReceiver;
     private boolean selectingOrganizations;
+    private boolean chatOpened;
 
     @Override protected void onCreate(Bundle state) {
         super.onCreate(state);
@@ -97,7 +98,7 @@ public final class MainActivity extends Activity {
         findViewById(R.id.notificationsPermissionButton).setOnClickListener(view -> requestNotificationPermission());
         findViewById(R.id.connectButton).setOnClickListener(view -> connectDevice(true));
         findViewById(R.id.disconnectButton).setOnClickListener(view -> disconnectDevice(false));
-        findViewById(R.id.openDashboardButton).setOnClickListener(view -> startActivity(new Intent(this, DashboardActivity.class)));
+        findViewById(R.id.openChatButton).setOnClickListener(view -> openChat());
         findViewById(R.id.logoutButton).setOnClickListener(view -> disconnectDevice(true));
         orgSpinner.setOnItemSelectedListener(new android.widget.AdapterView.OnItemSelectedListener() {
             @Override public void onItemSelected(android.widget.AdapterView<?> parent, View view, int position, long id) {
@@ -180,6 +181,7 @@ public final class MainActivity extends Activity {
         store.setOrganization(selected.id, selected.name);
         selectingOrganizations = false;
         updateConnectionState();
+        if (store.isConnected() && !getIntent().getBooleanExtra("show_settings", false)) openChat();
     }
 
     private void connectDevice(boolean promptForNotifications) {
@@ -200,7 +202,7 @@ public final class MainActivity extends Activity {
                 api.post("/devices/android/register", body);
                 store.setConnected(true);
                 store.setLastAction("تم ربط الهاتف؛ بانتظار أول مهمة من الموظف الذكي.");
-                runOnUiThread(() -> { startBridge(); updateConnectionState(); lastActionText.setText(store.lastAction()); toast("تم ربط هاتف Android بنجاح"); });
+                runOnUiThread(() -> { startBridge(); updateConnectionState(); lastActionText.setText(store.lastAction()); toast("تم ربط هاتف Android بنجاح"); openChat(); });
             } catch (Exception exception) {
                 runOnUiThread(() -> toast(message(exception)));
             } finally {
@@ -271,6 +273,14 @@ public final class MainActivity extends Activity {
 
     private void stopBridge() { stopService(new Intent(this, BridgeService.class)); }
 
+    private void openChat() {
+        if (store.organizationId().isEmpty()) { toast("اختر مساحة العمل أولاً"); return; }
+        if (!store.isConnected()) { toast("اربط الهاتف أولاً حتى يقدر الموظف ينفّذ الأوامر"); return; }
+        if (chatOpened) return;
+        chatOpened = true;
+        startActivity(new Intent(this, ChatActivity.class));
+    }
+
     private void openAlarms() {
         try { startActivity(new Intent(AlarmClock.ACTION_SHOW_ALARMS)); }
         catch (Exception ignored) { toast("لم يتم العثور على تطبيق الساعة"); }
@@ -297,6 +307,7 @@ public final class MainActivity extends Activity {
 
     @Override protected void onResume() {
         super.onResume();
+        chatOpened = false;
         if (store != null && !store.hasSession()) {
             showLogin();
             return;

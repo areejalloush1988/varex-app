@@ -50,7 +50,7 @@ public final class BridgeService extends Service {
         }
         if (scheduler == null || scheduler.isShutdown()) {
             scheduler = Executors.newSingleThreadScheduledExecutor();
-            scheduler.scheduleWithFixedDelay(this::poll, 0, 15, TimeUnit.SECONDS);
+            scheduler.scheduleWithFixedDelay(this::poll, 0, 3, TimeUnit.SECONDS);
         }
         return START_STICKY;
     }

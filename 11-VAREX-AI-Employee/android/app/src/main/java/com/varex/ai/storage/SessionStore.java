@@ -103,7 +103,7 @@ public final class SessionStore {
     }
 
     public void clearSession() {
-        preferences.edit().remove(SESSION_DATA).remove(SESSION_IV).remove(PENDING_RESULT_DATA).remove(PENDING_RESULT_IV).remove("organization_id").remove("organization_name").putBoolean("connected", false).apply();
+        preferences.edit().remove(SESSION_DATA).remove(SESSION_IV).remove(PENDING_RESULT_DATA).remove(PENDING_RESULT_IV).remove("organization_id").remove("organization_name").remove("selected_agent_id").remove("selected_agent_name").putBoolean("connected", false).apply();
     }
 
     public synchronized void setPendingResult(JSONObject value) throws Exception { saveEncrypted(PENDING_RESULT_DATA, PENDING_RESULT_IV, value); }
@@ -116,6 +116,11 @@ public final class SessionStore {
 
     public String organizationId() { return preferences.getString("organization_id", ""); }
     public String organizationName() { return preferences.getString("organization_name", ""); }
+    public void setSelectedAgent(String id, String name) { preferences.edit().putString("selected_agent_id", id).putString("selected_agent_name", name).apply(); }
+    public String selectedAgentId() { return preferences.getString("selected_agent_id", ""); }
+    public String selectedAgentName() { return preferences.getString("selected_agent_name", ""); }
+    public void setVoiceRepliesEnabled(boolean enabled) { preferences.edit().putBoolean("voice_replies_enabled", enabled).apply(); }
+    public boolean voiceRepliesEnabled() { return preferences.getBoolean("voice_replies_enabled", true); }
     public void setConnected(boolean connected) { preferences.edit().putBoolean("connected", connected).apply(); }
     public boolean isConnected() { return preferences.getBoolean("connected", false); }
     public void setLastAction(String value) { preferences.edit().putString("last_action", value).apply(); }
