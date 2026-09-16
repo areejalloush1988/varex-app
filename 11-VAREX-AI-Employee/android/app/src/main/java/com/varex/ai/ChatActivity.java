@@ -499,7 +499,7 @@ public final class ChatActivity extends Activity implements TextToSpeech.OnInitL
         button.setText(label);
         button.setTextSize(11);
         button.setTextColor(getColor(R.color.blue));
-        button.setTextAllCaps(false);
+        button.setAllCaps(false);
         button.setBackgroundColor(android.graphics.Color.TRANSPARENT);
         button.setMinWidth(0);
         button.setMinHeight(0);
@@ -510,7 +510,7 @@ public final class ChatActivity extends Activity implements TextToSpeech.OnInitL
     private Button actionButton(String label, boolean danger) {
         Button button = new Button(this);
         button.setText(label);
-        button.setTextAllCaps(false);
+        button.setAllCaps(false);
         button.setTextSize(12);
         button.setTypeface(Typeface.DEFAULT, Typeface.BOLD);
         button.setTextColor(getColor(danger ? R.color.red : R.color.blue));
