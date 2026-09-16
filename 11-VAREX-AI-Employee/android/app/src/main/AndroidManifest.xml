@@ -36,9 +36,6 @@
         <intent>
             <action android:name="android.speech.RecognitionService" />
         </intent>
-        <intent>
-            <action android:name="android.intent.action.TTS_SERVICE" />
-        </intent>
     </queries>
 
     <application
@@ -58,13 +55,9 @@
             android:exported="false" />
 
         <activity
-            android:name=".ChatActivity"
-            android:exported="false"
-            android:windowSoftInputMode="adjustResize" />
-
-        <activity
             android:name=".MainActivity"
-            android:exported="true">
+            android:exported="true"
+            android:windowSoftInputMode="adjustResize">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />

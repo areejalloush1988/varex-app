@@ -9,6 +9,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.graphics.Typeface;
+import android.media.MediaPlayer;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -16,7 +17,6 @@ import android.os.Looper;
 import android.speech.RecognitionListener;
 import android.speech.RecognizerIntent;
 import android.speech.SpeechRecognizer;
-import android.speech.tts.TextToSpeech;
 import android.view.Gravity;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
@@ -37,15 +37,16 @@ import com.varex.ai.storage.SessionStore;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-public final class ChatActivity extends Activity implements TextToSpeech.OnInitListener {
+public class ChatActivity extends Activity {
     private static final int AUDIO_PERMISSION_REQUEST = 2001;
     private static final long REFRESH_INTERVAL_MS = 4000L;
 
@@ -54,14 +55,17 @@ public final class ChatActivity extends Activity implements TextToSpeech.OnInitL
     private final List<Agent> agents = new ArrayList<>();
     private final Runnable refreshMessages = new Runnable() {
         @Override public void run() {
+            if (!chatVisible) return;
             loadMessages(false);
-            handler.postDelayed(this, REFRESH_INTERVAL_MS);
+            if (chatVisible) handler.postDelayed(this, REFRESH_INTERVAL_MS);
         }
     };
 
     private SessionStore store;
     private ApiClient api;
     private Spinner agentSpinner;
+    private Spinner providerSpinner;
+    private Spinner voiceSpinner;
     private LinearLayout messagesContainer;
     private ScrollView scrollView;
     private EditText input;
@@ -70,10 +74,10 @@ public final class ChatActivity extends Activity implements TextToSpeech.OnInitL
     private Button voiceButton;
     private TextView workingText;
     private TextView connectionState;
-    private TextToSpeech textToSpeech;
+    private MediaPlayer voicePlayer;
     private SpeechRecognizer speechRecognizer;
     private BroadcastReceiver bridgeReceiver;
-    private boolean textToSpeechReady;
+    private boolean chatVisible;
     private boolean loadingMessages;
     private boolean selectingAgents;
     private boolean listening;
@@ -81,27 +85,41 @@ public final class ChatActivity extends Activity implements TextToSpeech.OnInitL
 
     @Override protected void onCreate(Bundle state) {
         super.onCreate(state);
+    }
+
+    protected final void showChatHome() {
         getWindow().setStatusBarColor(getColor(R.color.navy_dark));
         setContentView(R.layout.activity_chat);
         store = new SessionStore(this);
         if (!store.hasSession() || store.organizationId().isEmpty()) {
-            startActivity(new Intent(this, MainActivity.class).putExtra("show_settings", true));
-            finish();
+            openSettingsHome();
             return;
         }
         api = new ApiClient(store);
+        chatVisible = true;
         bindViews();
         bindActions();
-        textToSpeech = new TextToSpeech(this, this);
         updateVoiceButton();
         updateConnectionState();
         if (store.isConnected()) startBridge();
-        showLocalWelcome("أهلاً! اختر الموظف واحكي له شو بدك يعمل. فيك تكتب أو تضغط زر المايك.");
+        showLocalWelcome("أهلاً! اسألني أي سؤال أو اطلب مني مهمة. فيك تكتب أو تضغط زر المايك، وأنا برجعلك بجواب أو بنتيجة تنفيذ حقيقية.");
         loadAgents();
+        startChatPolling();
+    }
+
+    protected void openSettingsHome() { finish(); }
+
+    protected final void leaveChatHome() {
+        chatVisible = false;
+        handler.removeCallbacks(refreshMessages);
+        if (speechRecognizer != null && listening) speechRecognizer.stopListening();
+        if (bridgeReceiver != null) { unregisterReceiver(bridgeReceiver); bridgeReceiver = null; }
     }
 
     private void bindViews() {
         agentSpinner = findViewById(R.id.agentSpinner);
+        providerSpinner = findViewById(R.id.chatProviderSpinner);
+        voiceSpinner = findViewById(R.id.chatVoiceSpinner);
         messagesContainer = findViewById(R.id.chatMessagesContainer);
         scrollView = findViewById(R.id.chatScrollView);
         input = findViewById(R.id.chatInput);
@@ -113,15 +131,30 @@ public final class ChatActivity extends Activity implements TextToSpeech.OnInitL
     }
 
     private void bindActions() {
-        findViewById(R.id.chatSettingsButton).setOnClickListener(view -> finish());
+        findViewById(R.id.chatSettingsButton).setOnClickListener(view -> { leaveChatHome(); openSettingsHome(); });
         sendButton.setOnClickListener(view -> sendCurrentText("text"));
         micButton.setOnClickListener(view -> toggleListening());
         voiceButton.setOnClickListener(view -> {
             boolean enabled = !store.voiceRepliesEnabled();
             store.setVoiceRepliesEnabled(enabled);
-            if (!enabled && textToSpeech != null) textToSpeech.stop();
+            if (!enabled) stopVoicePlayer();
             updateVoiceButton();
             toast(enabled ? "تم تشغيل صوت الموظف" : "تم كتم صوت الموظف");
+        });
+        ArrayAdapter<String> providers = new ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item, new String[]{"تلقائي", "ChatGPT", "Gemini"});
+        providerSpinner.setAdapter(providers);
+        providerSpinner.setSelection("openai".equals(store.aiProvider()) ? 1 : "gemini".equals(store.aiProvider()) ? 2 : 0);
+        providerSpinner.setOnItemSelectedListener(new android.widget.AdapterView.OnItemSelectedListener() {
+            @Override public void onItemSelected(android.widget.AdapterView<?> parent, View view, int position, long id) { store.setAiProvider(position == 1 ? "openai" : position == 2 ? "gemini" : "auto"); }
+            @Override public void onNothingSelected(android.widget.AdapterView<?> parent) { }
+        });
+        ArrayAdapter<String> voices = new ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item, new String[]{"صوت دافئ", "صوت ودود", "صوت هادئ", "صوت واضح"});
+        voiceSpinner.setAdapter(voices);
+        String currentVoice = store.geminiVoice();
+        voiceSpinner.setSelection("Achird".equals(currentVoice) ? 1 : "Achernar".equals(currentVoice) ? 2 : "Kore".equals(currentVoice) ? 3 : 0);
+        voiceSpinner.setOnItemSelectedListener(new android.widget.AdapterView.OnItemSelectedListener() {
+            @Override public void onItemSelected(android.widget.AdapterView<?> parent, View view, int position, long id) { store.setGeminiVoice(position == 1 ? "Achird" : position == 2 ? "Achernar" : position == 3 ? "Kore" : "Sulafat"); }
+            @Override public void onNothingSelected(android.widget.AdapterView<?> parent) { }
         });
         input.setOnEditorActionListener((view, actionId, event) -> {
             if (actionId == EditorInfo.IME_ACTION_SEND) {
@@ -317,7 +350,11 @@ public final class ChatActivity extends Activity implements TextToSpeech.OnInitL
                 default: break;
             }
         }
-        return "voice".equals(message.optString("kind")) ? "أمر صوتي" : shortTime(message.optString("created_at"));
+        JSONObject metadata = message.optJSONObject("metadata");
+        String provider = metadata == null ? "" : metadata.optString("provider");
+        String providerLabel = "openai".equals(provider) ? "ChatGPT" : "gemini".equals(provider) ? "Gemini" : "";
+        String time = "voice".equals(message.optString("kind")) ? "أمر صوتي" : shortTime(message.optString("created_at"));
+        return providerLabel.isEmpty() ? time : providerLabel + (time.isEmpty() ? "" : " • " + time);
     }
 
     private void showLocalWelcome(String value) {
@@ -349,6 +386,7 @@ public final class ChatActivity extends Activity implements TextToSpeech.OnInitL
                         .put("agent_id", store.selectedAgentId())
                         .put("body", value)
                         .put("input_mode", mode)
+                        .put("model_provider", store.aiProvider())
                         .put("client_message_id", UUID.randomUUID().toString());
                 api.post("/chat/messages", body);
                 runOnUiThread(() -> loadMessages(true));
@@ -465,18 +503,8 @@ public final class ChatActivity extends Activity implements TextToSpeech.OnInitL
         }
     }
 
-    @Override public void onInit(int status) {
-        if (status != TextToSpeech.SUCCESS || textToSpeech == null) return;
-        int result = textToSpeech.setLanguage(Locale.forLanguageTag("ar-AE"));
-        if (result == TextToSpeech.LANG_MISSING_DATA || result == TextToSpeech.LANG_NOT_SUPPORTED) result = textToSpeech.setLanguage(new Locale("ar"));
-        textToSpeech.setSpeechRate(.95f);
-        textToSpeech.setPitch(1.02f);
-        textToSpeechReady = result != TextToSpeech.LANG_MISSING_DATA && result != TextToSpeech.LANG_NOT_SUPPORTED;
-        if (!textToSpeechReady) voiceButton.setContentDescription("الصوت العربي غير مثبت على الهاتف");
-    }
-
     private void speakAssistant(JSONObject message) {
-        if (!store.voiceRepliesEnabled() || !textToSpeechReady) return;
+        if (!store.voiceRepliesEnabled()) return;
         JSONObject execution = message.optJSONObject("execution");
         String status = execution == null ? "" : execution.optString("status");
         String key = message.optString("id", "local") + ":" + status;
@@ -486,12 +514,44 @@ public final class ChatActivity extends Activity implements TextToSpeech.OnInitL
     }
 
     private void speak(String text, boolean manual) {
-        if (!textToSpeechReady || textToSpeech == null) {
-            if (manual) toast("الصوت العربي غير جاهز على الهاتف");
-            return;
-        }
         String speech = text.replace("•", "").replaceAll("https?://\\S+", "رابط").trim();
-        if (!speech.isEmpty()) textToSpeech.speak(speech, TextToSpeech.QUEUE_FLUSH, null, "varex-" + System.currentTimeMillis());
+        if (speech.isEmpty()) return;
+        executor.execute(() -> {
+            try {
+                byte[] wave = api.postBytes("/chat/speech", new JSONObject()
+                        .put("organization_id", store.organizationId())
+                        .put("agent_id", store.selectedAgentId())
+                        .put("text", speech)
+                        .put("voice", store.geminiVoice()));
+                File audio = new File(getCacheDir(), "varex-gemini-voice.wav");
+                try (FileOutputStream output = new FileOutputStream(audio, false)) { output.write(wave); }
+                runOnUiThread(() -> playVoiceFile(audio, manual));
+            } catch (Exception exception) {
+                if (manual) runOnUiThread(() -> toast(message(exception)));
+            }
+        });
+    }
+
+    private void playVoiceFile(File audio, boolean manual) {
+        try {
+            stopVoicePlayer();
+            voicePlayer = new MediaPlayer();
+            voicePlayer.setDataSource(audio.getAbsolutePath());
+            voicePlayer.setOnCompletionListener(player -> stopVoicePlayer());
+            voicePlayer.setOnErrorListener((player, what, extra) -> { stopVoicePlayer(); if (manual) toast("تعذر تشغيل صوت Gemini"); return true; });
+            voicePlayer.prepare();
+            voicePlayer.start();
+        } catch (Exception exception) {
+            stopVoicePlayer();
+            if (manual) toast("تعذر تشغيل صوت Gemini");
+        }
+    }
+
+    private void stopVoicePlayer() {
+        if (voicePlayer == null) return;
+        try { if (voicePlayer.isPlaying()) voicePlayer.stop(); } catch (Exception ignored) { }
+        voicePlayer.release();
+        voicePlayer = null;
     }
 
     private Button miniButton(String label) {
@@ -547,6 +607,11 @@ public final class ChatActivity extends Activity implements TextToSpeech.OnInitL
         if (Build.VERSION.SDK_INT >= 26) startForegroundService(service); else startService(service);
     }
 
+    private void startChatPolling() {
+        handler.removeCallbacks(refreshMessages);
+        if (chatVisible) handler.postDelayed(refreshMessages, REFRESH_INTERVAL_MS);
+    }
+
     private void scrollToBottom() { scrollView.post(() -> scrollView.fullScroll(View.FOCUS_DOWN)); }
     private void hideKeyboard() { View focus = getCurrentFocus(); if (focus != null) ((InputMethodManager) getSystemService(INPUT_METHOD_SERVICE)).hideSoftInputFromWindow(focus.getWindowToken(), 0); }
     private void toast(String value) { Toast.makeText(this, value, Toast.LENGTH_LONG).show(); }
@@ -566,8 +631,8 @@ public final class ChatActivity extends Activity implements TextToSpeech.OnInitL
     @SuppressLint("UnspecifiedRegisterReceiverFlag")
     @Override protected void onStart() {
         super.onStart();
-        handler.removeCallbacks(refreshMessages);
-        handler.postDelayed(refreshMessages, REFRESH_INTERVAL_MS);
+        if (!chatVisible) return;
+        startChatPolling();
         bridgeReceiver = new BroadcastReceiver() {
             @Override public void onReceive(Context context, Intent intent) { loadMessages(false); }
         };
@@ -578,7 +643,7 @@ public final class ChatActivity extends Activity implements TextToSpeech.OnInitL
 
     @Override protected void onResume() {
         super.onResume();
-        if (store != null) updateConnectionState();
+        if (chatVisible && store != null) updateConnectionState();
     }
 
     @Override protected void onStop() {
@@ -591,7 +656,7 @@ public final class ChatActivity extends Activity implements TextToSpeech.OnInitL
         handler.removeCallbacksAndMessages(null);
         executor.shutdownNow();
         if (speechRecognizer != null) { speechRecognizer.cancel(); speechRecognizer.destroy(); }
-        if (textToSpeech != null) { textToSpeech.stop(); textToSpeech.shutdown(); }
+        stopVoicePlayer();
         super.onDestroy();
     }
 

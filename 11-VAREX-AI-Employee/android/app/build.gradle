@@ -10,8 +10,8 @@ android {
         applicationId "com.varex.ai"
         minSdk 26
         targetSdk 36
-        versionCode 3
-        versionName "1.1.0"
+        versionCode 4
+        versionName "1.2.0"
         buildConfigField "String", "API_BASE_URL", '"https://varex-ai-employee.areejalloush1988.chatgpt.site/api"'
         buildConfigField "String", "DASHBOARD_URL", '"https://varex-ai-employee.areejalloush1988.chatgpt.site"'
     }

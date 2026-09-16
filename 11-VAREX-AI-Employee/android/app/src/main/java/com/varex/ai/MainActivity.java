@@ -3,7 +3,6 @@ package com.varex.ai;
 import android.annotation.SuppressLint;
 
 import android.Manifest;
-import android.app.Activity;
 import android.app.AlarmManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -39,7 +38,7 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-public final class MainActivity extends Activity {
+public final class MainActivity extends ChatActivity {
     private static final int CONTACTS_REQUEST = 1001;
     private static final int CALENDAR_REQUEST = 1002;
     private static final int PHONE_REQUEST = 1003;
@@ -61,17 +60,30 @@ public final class MainActivity extends Activity {
     private TextView lastActionText;
     private BroadcastReceiver bridgeReceiver;
     private boolean selectingOrganizations;
-    private boolean chatOpened;
+    private boolean settingsLayoutVisible;
+    private boolean settingsRequested;
 
     @Override protected void onCreate(Bundle state) {
         super.onCreate(state);
         getWindow().setStatusBarColor(getColor(R.color.navy_dark));
+        settingsRequested = getIntent().getBooleanExtra("show_settings", false);
+        showSettingsLayout();
+    }
+
+    private void showSettingsLayout() {
+        leaveChatHome();
+        settingsLayoutVisible = true;
         setContentView(R.layout.activity_main);
         store = new SessionStore(this);
         api = new ApiClient(store);
         bindViews();
         bindActions();
         if (store.hasSession()) showApplication(); else showLogin();
+    }
+
+    @Override protected void openSettingsHome() {
+        settingsRequested = true;
+        showSettingsLayout();
     }
 
     private void bindViews() {
@@ -100,6 +112,8 @@ public final class MainActivity extends Activity {
         findViewById(R.id.disconnectButton).setOnClickListener(view -> disconnectDevice(false));
         findViewById(R.id.openChatButton).setOnClickListener(view -> openChat());
         findViewById(R.id.logoutButton).setOnClickListener(view -> disconnectDevice(true));
+        findViewById(R.id.saveOpenAiButton).setOnClickListener(view -> saveAiProvider("openai", R.id.openAiKeyInput, R.id.saveOpenAiButton));
+        findViewById(R.id.saveGeminiButton).setOnClickListener(view -> saveAiProvider("gemini", R.id.geminiKeyInput, R.id.saveGeminiButton));
         orgSpinner.setOnItemSelectedListener(new android.widget.AdapterView.OnItemSelectedListener() {
             @Override public void onItemSelected(android.widget.AdapterView<?> parent, View view, int position, long id) {
                 if (selectingOrganizations || position < 0 || position >= organizations.size()) return;
@@ -181,7 +195,64 @@ public final class MainActivity extends Activity {
         store.setOrganization(selected.id, selected.name);
         selectingOrganizations = false;
         updateConnectionState();
-        if (store.isConnected() && !getIntent().getBooleanExtra("show_settings", false)) openChat();
+        loadAiProviderStatuses();
+        if (!settingsRequested) openChat();
+    }
+
+    private void loadAiProviderStatuses() {
+        if (store.organizationId().isEmpty() || !settingsLayoutVisible) return;
+        executor.execute(() -> {
+            try {
+                JSONObject result = api.getObject("/ai/providers?organization_id=" + android.net.Uri.encode(store.organizationId()));
+                JSONArray providers = result.optJSONArray("providers");
+                boolean openAi = false, gemini = false;
+                if (providers != null) for (int index = 0; index < providers.length(); index++) {
+                    JSONObject provider = providers.optJSONObject(index);
+                    if (provider == null || !provider.optBoolean("configured")) continue;
+                    if ("openai".equals(provider.optString("provider"))) openAi = true;
+                    if ("gemini".equals(provider.optString("provider"))) gemini = true;
+                }
+                boolean finalOpenAi = openAi, finalGemini = gemini;
+                runOnUiThread(() -> {
+                    if (!settingsLayoutVisible) return;
+                    TextView openAiStatus = findViewById(R.id.openAiStatus), geminiStatus = findViewById(R.id.geminiStatus);
+                    openAiStatus.setText(finalOpenAi ? "✓ ChatGPT متصل وجاهز" : "غير مربوط بعد");
+                    geminiStatus.setText(finalGemini ? "✓ Gemini والصوت الطبيعي جاهزان" : "غير مربوط بعد");
+                    openAiStatus.setTextColor(getColor(finalOpenAi ? R.color.green : R.color.muted));
+                    geminiStatus.setTextColor(getColor(finalGemini ? R.color.green : R.color.muted));
+                });
+            } catch (Exception exception) {
+                runOnUiThread(() -> { if (settingsLayoutVisible) toast(message(exception)); });
+            }
+        });
+    }
+
+    private void saveAiProvider(String provider, int inputId, int buttonId) {
+        EditText input = findViewById(inputId);
+        Button button = findViewById(buttonId);
+        String key = input.getText().toString().trim();
+        if (key.isEmpty()) { toast("الصق مفتاح المزود من صفحته الرسمية أولاً"); return; }
+        button.setEnabled(false);
+        button.setText("جاري الربط…");
+        executor.execute(() -> {
+            try {
+                api.post("/ai/providers", new JSONObject().put("organization_id", store.organizationId()).put("provider", provider).put("api_key", key));
+                runOnUiThread(() -> {
+                    if (!settingsLayoutVisible) return;
+                    input.setText("");
+                    toast(("openai".equals(provider) ? "ChatGPT" : "Gemini") + " صار مربوطاً بالموظف الذكي");
+                    loadAiProviderStatuses();
+                });
+            } catch (Exception exception) {
+                runOnUiThread(() -> toast(message(exception)));
+            } finally {
+                runOnUiThread(() -> {
+                    if (!settingsLayoutVisible) return;
+                    button.setEnabled(true);
+                    button.setText("openai".equals(provider) ? "ربط ChatGPT" : "ربط Gemini والصوت");
+                });
+            }
+        });
     }
 
     private void connectDevice(boolean promptForNotifications) {
@@ -275,10 +346,9 @@ public final class MainActivity extends Activity {
 
     private void openChat() {
         if (store.organizationId().isEmpty()) { toast("اختر مساحة العمل أولاً"); return; }
-        if (!store.isConnected()) { toast("اربط الهاتف أولاً حتى يقدر الموظف ينفّذ الأوامر"); return; }
-        if (chatOpened) return;
-        chatOpened = true;
-        startActivity(new Intent(this, ChatActivity.class));
+        settingsRequested = false;
+        settingsLayoutVisible = false;
+        showChatHome();
     }
 
     private void openAlarms() {
@@ -301,13 +371,14 @@ public final class MainActivity extends Activity {
 
     @Override public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] results) {
         super.onRequestPermissionsResult(requestCode, permissions, results);
+        if (!settingsLayoutVisible) return;
         refreshPermissionStates();
         if (store.isConnected()) connectDevice(false);
     }
 
     @Override protected void onResume() {
         super.onResume();
-        chatOpened = false;
+        if (!settingsLayoutVisible) return;
         if (store != null && !store.hasSession()) {
             showLogin();
             return;
@@ -318,6 +389,7 @@ public final class MainActivity extends Activity {
     @SuppressLint("UnspecifiedRegisterReceiverFlag")
     @Override protected void onStart() {
         super.onStart();
+        if (!settingsLayoutVisible) return;
         bridgeReceiver = new BroadcastReceiver() {
             @Override public void onReceive(Context context, Intent intent) { lastActionText.setText(store.lastAction()); }
         };

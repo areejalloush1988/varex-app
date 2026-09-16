@@ -9,6 +9,7 @@ import org.json.JSONObject;
 import org.json.JSONTokener;
 
 import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
@@ -45,6 +46,10 @@ public final class ApiClient {
         Object result = request("POST", path, body, true, true);
         if (!(result instanceof JSONObject)) throw new ApiException(500, "INVALID_RESPONSE", "استجابة الخادم غير صالحة");
         return (JSONObject) result;
+    }
+
+    public byte[] postBytes(String path, JSONObject body) throws Exception {
+        return requestBytes(path, body, true);
     }
 
     public void logout() {
@@ -99,6 +104,44 @@ public final class ApiClient {
                 store.clearSession();
                 return false;
             }
+        }
+    }
+
+    private byte[] requestBytes(String path, JSONObject body, boolean retry) throws Exception {
+        HttpURLConnection connection = (HttpURLConnection) new URL(BuildConfig.API_BASE_URL + path).openConnection();
+        connection.setRequestMethod("POST");
+        connection.setConnectTimeout(15000);
+        connection.setReadTimeout(60000);
+        connection.setRequestProperty("Accept", "audio/wav, application/json");
+        connection.setRequestProperty("Accept-Language", "ar");
+        connection.setRequestProperty("Authorization", "Bearer " + store.accessToken());
+        connection.setRequestProperty("Content-Type", "application/json; charset=utf-8");
+        connection.setRequestProperty("User-Agent", "VAREX-AI-Android/" + BuildConfig.VERSION_NAME);
+        connection.setDoOutput(true);
+        try (OutputStream output = connection.getOutputStream()) {
+            output.write(body.toString().getBytes(StandardCharsets.UTF_8));
+        }
+        int status = connection.getResponseCode();
+        InputStream stream = status >= 400 ? connection.getErrorStream() : connection.getInputStream();
+        byte[] payload = readBytes(stream);
+        connection.disconnect();
+        if (status == 401 && retry && refreshSession()) return requestBytes(path, body, false);
+        if (status < 200 || status >= 300) {
+            JSONObject problem;
+            try { problem = new JSONObject(new String(payload, StandardCharsets.UTF_8)); }
+            catch (Exception ignored) { problem = new JSONObject(); }
+            throw new ApiException(status, problem.optString("code", "REQUEST_FAILED"), problem.optString("message", "تعذر تشغيل صوت الموظف"));
+        }
+        return payload;
+    }
+
+    private static byte[] readBytes(InputStream stream) throws Exception {
+        if (stream == null) return new byte[0];
+        try (InputStream input = stream; ByteArrayOutputStream output = new ByteArrayOutputStream()) {
+            byte[] buffer = new byte[8192];
+            int count;
+            while ((count = input.read(buffer)) >= 0) output.write(buffer, 0, count);
+            return output.toByteArray();
         }
     }
 
