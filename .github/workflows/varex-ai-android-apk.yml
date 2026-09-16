@@ -30,10 +30,14 @@ jobs:
         with:
           gradle-version: "8.13"
       - name: Verify and build
-        run: gradle -p 11-VAREX-AI-Employee/android lintDebug assembleDebug --no-daemon
+        run: |
+          gradle -p 11-VAREX-AI-Employee/android lintDebug assembleDebug --no-daemon
+          cp "$ANDROID_HOME/build-tools/36.0.0/lib/apksigner.jar" 11-VAREX-AI-Employee/android/app/build/outputs/apk/debug/apksigner.jar
       - uses: actions/upload-artifact@v4
         with:
           name: VAREX-AI-Android
-          path: 11-VAREX-AI-Employee/android/app/build/outputs/apk/debug/app-debug.apk
+          path: |
+            11-VAREX-AI-Employee/android/app/build/outputs/apk/debug/app-debug.apk
+            11-VAREX-AI-Employee/android/app/build/outputs/apk/debug/apksigner.jar
           if-no-files-found: error
           retention-days: 30
