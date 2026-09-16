@@ -5,6 +5,7 @@ import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -16,6 +17,8 @@ import android.webkit.WebResourceRequest;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.window.OnBackInvokedCallback;
+import android.window.OnBackInvokedDispatcher;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
@@ -36,6 +39,7 @@ public final class DashboardActivity extends Activity {
     private SessionStore store;
     private String dashboardHost;
     private boolean dashboardLoaded;
+    private OnBackInvokedCallback backCallback;
 
     private final Runnable sessionSync = new Runnable() {
         @Override public void run() {
@@ -62,6 +66,10 @@ public final class DashboardActivity extends Activity {
         progress = findViewById(R.id.dashboardProgress);
         findViewById(R.id.dashboardBackButton).setOnClickListener(view -> closeDashboard());
         findViewById(R.id.dashboardRefreshButton).setOnClickListener(view -> webView.reload());
+        if (Build.VERSION.SDK_INT >= 33) {
+            backCallback = this::handleBack;
+            getOnBackInvokedDispatcher().registerOnBackInvokedCallback(OnBackInvokedDispatcher.PRIORITY_DEFAULT, backCallback);
+        }
 
         WebSettings settings = webView.getSettings();
         settings.setJavaScriptEnabled(true);
@@ -183,14 +191,23 @@ public final class DashboardActivity extends Activity {
         super.onPause();
     }
 
-    @SuppressWarnings("deprecation")
-    @Override public void onBackPressed() {
+    private void handleBack() {
         if (webView != null && webView.canGoBack()) webView.goBack();
         else closeDashboard();
     }
 
+    @SuppressLint("GestureBackNavigation")
+    @SuppressWarnings("deprecation")
+    @Override public void onBackPressed() {
+        handleBack();
+    }
+
     @Override protected void onDestroy() {
         handler.removeCallbacks(sessionSync);
+        if (Build.VERSION.SDK_INT >= 33 && backCallback != null) {
+            getOnBackInvokedDispatcher().unregisterOnBackInvokedCallback(backCallback);
+            backCallback = null;
+        }
         if (webView != null) {
             webView.stopLoading();
             webView.setWebChromeClient(null);
