@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" style="@style/PermissionRow">
+    <TextView style="@style/PermissionIcon" android:text="🔔" />
+    <LinearLayout style="@style/PermissionTextColumn"><TextView style="@style/PermissionTitle" android:text="الإشعارات" /><TextView android:id="@+id/notificationsState" style="@style/PermissionState" /></LinearLayout>
+    <Button android:id="@+id/notificationsPermissionButton" style="@style/PermissionButton" android:text="سماح" />
+</LinearLayout>

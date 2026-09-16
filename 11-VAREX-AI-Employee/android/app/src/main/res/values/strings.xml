@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">VAREX AI</string>
+    <string name="bridge_channel">اتصال الموظف الذكي</string>
+    <string name="bridge_channel_description">يبقي الهاتف متصلاً لتنفيذ المهام المسموح بها</string>
+    <string name="bridge_running">هاتفك متصل بالموظف الذكي</string>
+</resources>

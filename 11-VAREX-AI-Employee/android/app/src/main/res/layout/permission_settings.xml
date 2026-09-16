@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" style="@style/PermissionRow">
+    <TextView style="@style/PermissionIcon" android:text="⚙️" />
+    <LinearLayout style="@style/PermissionTextColumn"><TextView style="@style/PermissionTitle" android:text="إعدادات الهاتف" /><TextView android:id="@+id/settingsState" style="@style/PermissionState" /></LinearLayout>
+    <Button android:id="@+id/settingsPermissionButton" style="@style/PermissionButton" android:text="سماح" />
+</LinearLayout>
