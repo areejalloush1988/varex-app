@@ -1,5 +1,7 @@
 package com.varex.ai;
 
+import android.annotation.SuppressLint;
+
 import android.Manifest;
 import android.app.Activity;
 import android.app.AlarmManager;
@@ -298,6 +300,7 @@ public final class MainActivity extends Activity {
         if (appPanel != null && appPanel.getVisibility() == View.VISIBLE) { refreshPermissionStates(); updateConnectionState(); lastActionText.setText(store.lastAction()); }
     }
 
+    @SuppressLint("UnspecifiedRegisterReceiverFlag")
     @Override protected void onStart() {
         super.onStart();
         bridgeReceiver = new BroadcastReceiver() {
