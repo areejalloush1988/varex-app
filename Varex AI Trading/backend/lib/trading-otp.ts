@@ -33,8 +33,10 @@ async function localUser(email: string) {
 }
 async function localTradingAccess(userId: string, email: string) {
   if (isTradingDeveloperEmail(email)) return true;
-  const profile = await (await runtime()).DB.prepare("SELECT user_id FROM trading_profile WHERE user_id = ? LIMIT 1").bind(userId).first();
-  return Boolean(profile || await canRegisterTradingEmail(email));
+  const profile = await (await runtime()).DB.prepare("SELECT status FROM trading_profile WHERE user_id = ? LIMIT 1")
+    .bind(userId).first<{ status: string }>();
+  if (profile) return profile.status === "active";
+  return canRegisterTradingEmail(email);
 }
 async function hmacHex(message: string, secret: string) {
   const encoder = new TextEncoder();
@@ -158,7 +160,7 @@ export async function sendTradingOtp(request: Request) {
   if (!EMAIL_PATTERN.test(email)) return json({ error: "يرجى إدخال بريد إلكتروني صحيح." }, 400);
   const user = await localUser(email);
   if (!user) return purpose === "reset" ? json({ sent: true }) : json({ error: "أنشئ الحساب أولاً ثم اطلب رمز التحقق." }, 404);
-  if (!await localTradingAccess(user.id, email)) return purpose === "reset" ? json({ sent: true }) : json({ error: "هذا البريد غير مضاف إلى مستخدمي التطبيق. أضفه من حساب المطور أولاً." }, 403);
+  if (!await localTradingAccess(user.id, email)) return purpose === "reset" ? json({ sent: true }) : json({ error: "هذا الحساب موقوف من إدارة النظام." }, 403);
   if (purpose === "verify" && Boolean(user.emailVerified)) return json({ error: "هذا البريد مؤكد مسبقاً. استخدم تسجيل الدخول." }, 409);
   const now = Date.now(), current = await guard(email, purpose);
   if (current && now - current.lastSentAt < 60_000) return json({ error: "انتظر دقيقة واحدة قبل طلب رمز جديد.", retryAfter: Math.ceil((60_000 - (now - current.lastSentAt)) / 1000) }, 429);
@@ -182,7 +184,7 @@ export async function verifyTradingEmail(request: Request) {
   if (!EMAIL_PATTERN.test(email) || !/^\d{6}$/.test(otp)) return json({ error: "أدخل البريد ورمز OTP المكوّن من 6 أرقام." }, 400);
   const user = await localUser(email);
   if (!user) return json({ error: "الحساب غير موجود." }, 404);
-  if (!await localTradingAccess(user.id, email)) return json({ error: "هذا البريد غير مضاف إلى مستخدمي التطبيق." }, 403);
+  if (!await localTradingAccess(user.id, email)) return json({ error: "هذا الحساب موقوف من إدارة النظام." }, 403);
   const guardError = await verifyGuard(email, "verify"); if (guardError) return guardError;
   let relay: Record<string, unknown>;
   try { relay = await relayVerify(email, otp, "verify"); }

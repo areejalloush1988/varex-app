@@ -244,8 +244,18 @@
       if (password !== confirmPassword) return showAuthMessage("كلمتا المرور غير متطابقتين. يجب أن تكونا متطابقتين.");
       try {
         await runForm(form, async () => {
-          await authRequest("/api/auth/sign-up/email", { name: displayName, email, password, rememberMe: false });
-          await authRequest("/api/trading-auth/send-otp", { email, password, purpose: "verify" });
+          let signUpError = null;
+          try {
+            await authRequest("/api/auth/sign-up/email", { name: displayName, email, password, rememberMe: false });
+          } catch (error) {
+            signUpError = error;
+          }
+          try {
+            await authRequest("/api/trading-auth/send-otp", { email, password, purpose: "verify" });
+          } catch (error) {
+            if (error.status === 404 && signUpError) throw signUpError;
+            throw error;
+          }
           pendingAuth = { purpose: "signup", email, password, displayName, otp: "" };
           $("#otpEmail").textContent = email;
           showAuthPane("otpPane");
@@ -617,7 +627,7 @@
       const developer = user.role === "developer", status = user.pending ? "pending" : user.status;
       return `<div class="user-card" data-user-row="${escapeHtml(user.email)}"><p><b>${escapeHtml(user.displayName)}</b><small dir="ltr">${escapeHtml(user.email)}</small></p><aside><span class="badge ${status}">${status === "pending" ? "بانتظار التسجيل" : status === "active" ? "نشط" : "متوقف"}</span>${developer ? '<span class="badge active">إدارة</span>' : `<select class="small-button user-role"><option value="trader" ${user.role === "trader" ? "selected" : ""}>صلاحية تداول</option><option value="viewer" ${user.role === "viewer" ? "selected" : ""}>عرض فقط</option></select><button class="small-button" data-user-save="${escapeHtml(user.email)}" data-status="${status === "inactive" || status === "revoked" ? "active" : "inactive"}">${status === "inactive" || status === "revoked" ? "تفعيل" : "إيقاف"}</button>`}</aside></div>`;
     }).join("");
-    return `<section class="content-grid"><form class="panel" id="inviteForm"><header class="panel-head"><div><h2>إضافة حساب</h2><p>يُنشأ الحساب من الرابط نفسه باستخدام البريد المضاف.</p></div></header><div class="form-grid"><label class="control">اسم المستخدم<input name="displayName" required maxlength="80" placeholder="مثال: إدارة الاستثمار"></label><label class="control">البريد الإلكتروني<input name="email" type="email" required placeholder="user@example.com"></label><label class="control">الصلاحية<select name="role"><option value="trader">صلاحية تداول — فتح وإغلاق صفقات ورقية</option><option value="viewer">عرض فقط — قراءة فقط</option></select></label></div><button class="primary-button" type="submit">إضافة الحساب</button></form><article class="panel"><header class="panel-head"><div><h2>طريقة الدخول</h2><p>خطوات تفعيل الحساب المضاف.</p></div></header><div class="notice">يتم إرسال رابط التطبيق إلى البريد المضاف، ثم إنشاء الحساب بالبريد نفسه وتأكيد رمز OTP لتظهر الصلاحيات تلقائياً.</div></article></section><section class="panel"><header class="panel-head"><div><h2>قائمة الحسابات</h2><p>${app.users.length} حساباً أو دعوة.</p></div><button class="small-button" data-action="reload-users">تحديث</button></header>${cards || '<div class="empty"><p>لا توجد حسابات بعد.</p></div>'}</section>`;
+    return `<section class="content-grid"><form class="panel" id="inviteForm"><header class="panel-head"><div><h2>تحديد صلاحية مسبقاً — اختياري</h2><p>التسجيل مفتوح للجميع. تستخدم هذه الخانة فقط لتحديد صلاحية خاصة قبل التسجيل.</p></div></header><div class="form-grid"><label class="control">اسم المستخدم<input name="displayName" required maxlength="80" placeholder="مثال: إدارة الاستثمار"></label><label class="control">البريد الإلكتروني<input name="email" type="email" required placeholder="user@example.com"></label><label class="control">الصلاحية<select name="role"><option value="trader">صلاحية تداول — فتح وإغلاق صفقات وربط حساب تداول مستقل</option><option value="viewer">عرض فقط — قراءة فقط</option></select></label></div><button class="primary-button" type="submit">حفظ الصلاحية المسبقة</button></form><article class="panel"><header class="panel-head"><div><h2>التسجيل المباشر</h2><p>لا حاجة إلى إضافة البريد من حساب المطور.</p></div></header><div class="notice">يُنشأ الحساب مباشرة من صفحة التسجيل، ثم يصل رمز OTP إلى البريد. لكل حساب ملف ورصيد ورقي وصفقات وربط تداول منفصل تماماً عن بقية الحسابات.</div></article></section><section class="panel"><header class="panel-head"><div><h2>قائمة الحسابات</h2><p>${app.users.length} حساباً أو إعداد صلاحية.</p></div><button class="small-button" data-action="reload-users">تحديث</button></header>${cards || '<div class="empty"><p>لا توجد حسابات بعد.</p></div>'}</section>`;
   }
 
   function renderSettings() {

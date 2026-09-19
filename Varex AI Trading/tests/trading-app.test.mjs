@@ -5,6 +5,7 @@ import test from "node:test";
 const html = fs.readFileSync(new URL("../index.html", import.meta.url), "utf8");
 const client = fs.readFileSync(new URL("../app.js", import.meta.url), "utf8");
 const access = fs.readFileSync(new URL("../backend/lib/trading-access.ts", import.meta.url), "utf8");
+const otp = fs.readFileSync(new URL("../backend/lib/trading-otp.ts", import.meta.url), "utf8");
 const broker = fs.readFileSync(new URL("../backend/lib/trading-broker.ts", import.meta.url), "utf8");
 const market = fs.readFileSync(new URL("../backend/lib/trading-market.ts", import.meta.url), "utf8");
 const migration = fs.readFileSync(new URL("../backend/drizzle/0005_trading_schema.sql", import.meta.url), "utf8");
@@ -94,4 +95,26 @@ test("persists profiles, invites and trading state in D1", () => {
   assert.match(brokerMigration, /CREATE TABLE `trading_broker_connection`/);
   assert.match(brokerMigration, /CREATE TABLE `trading_live_order`/);
   assert.match(brokerMigration, /UNIQUE INDEX `trading_live_order_client_uidx`/);
+});
+
+test("allows public OTP registration without developer pre-approval", () => {
+  assert.match(html, /التسجيل مفتوح مباشرة/);
+  assert.match(access, /return !invite \|\| invite\.status !== "revoked"/);
+  assert.match(access, /const role: "trader" \| "viewer" = invite\?\.role === "viewer" \? "viewer" : "trader"/);
+  assert.doesNotMatch(otp, /هذا البريد غير مضاف إلى مستخدمي التطبيق/);
+  assert.doesNotMatch(access, /تجب إضافته من إدارة الحسابات أولاً/);
+  assert.match(client, /let signUpError = null/);
+  assert.match(client, /await authRequest\("\/api\/trading-auth\/send-otp"/);
+});
+
+test("isolates each user's portfolio, balance, broker, and live orders", () => {
+  assert.match(access, /FROM trading_state WHERE user_id = \?/);
+  assert.match(access, /UPDATE trading_state SET state_json = \?, version = version \+ 1, updated_at = \? WHERE user_id = \?/);
+  assert.match(access, /FROM trading_broker_connection WHERE user_id = \?/);
+  assert.match(access, /FROM trading_live_order WHERE user_id = \?/);
+  assert.match(access, /return requireAccess\(request, \["developer", "trader"\]\)/);
+  assert.match(access, /canConnectBroker: profile\.role !== "viewer"/);
+  assert.match(migration, /`user_id` text PRIMARY KEY NOT NULL/);
+  assert.match(brokerMigration, /`user_id` text PRIMARY KEY NOT NULL/);
+  assert.match(brokerMigration, /`user_id` text NOT NULL/);
 });

@@ -161,7 +161,7 @@ export async function canRegisterTradingEmail(emailValue: unknown) {
   if (!EMAIL_PATTERN.test(email)) return false;
   if (isTradingDeveloperEmail(email)) return true;
   const invite = await inviteForEmail(email);
-  return Boolean(invite && invite.status !== "revoked");
+  return !invite || invite.status !== "revoked";
 }
 
 export async function provisionVerifiedTradingUser(user: AccountUser, requestedName?: unknown) {
@@ -177,17 +177,21 @@ export async function provisionVerifiedTradingUser(user: AccountUser, requestedN
     return profileFor(user.id);
   }
   const invite = await inviteForEmail(email);
-  if (!invite || invite.status === "revoked") throw new TradingAccessError(403, "هذا البريد غير مضاف إلى حسابات VAREX AI Trading. تجب إضافته من إدارة الحسابات أولاً.");
-  if (invite.status === "accepted" && invite.acceptedByUserId && invite.acceptedByUserId !== user.id) throw new TradingAccessError(409, "تم ربط الدعوة بحساب آخر.");
-  const displayName = cleanName(requestedName ?? invite.displayName ?? user.name);
-  await environment.DB.batch([
+  if (invite?.status === "revoked") throw new TradingAccessError(403, "هذا الحساب موقوف من إدارة النظام.");
+  if (invite?.status === "accepted" && invite.acceptedByUserId && invite.acceptedByUserId !== user.id) throw new TradingAccessError(409, "تم ربط الدعوة بحساب آخر.");
+  const displayName = cleanName(requestedName ?? invite?.displayName ?? user.name);
+  const role: "trader" | "viewer" = invite?.role === "viewer" ? "viewer" : "trader";
+  const statements = [
     environment.DB.prepare(`INSERT INTO trading_profile (user_id, display_name, role, status, paper_balance_cents, created_at, updated_at)
       VALUES (?, ?, ?, 'active', 2500000, ?, ?)
       ON CONFLICT(user_id) DO UPDATE SET display_name = excluded.display_name, role = excluded.role, status = 'active', updated_at = excluded.updated_at`)
-      .bind(user.id, displayName, invite.role, now, now),
-    environment.DB.prepare(`UPDATE trading_invite SET status = 'accepted', accepted_by_user_id = ?, accepted_at = ?, updated_at = ? WHERE id = ?`)
-      .bind(user.id, now, now, invite.id),
-  ]);
+      .bind(user.id, displayName, role, now, now),
+  ];
+  if (invite) {
+    statements.push(environment.DB.prepare(`UPDATE trading_invite SET status = 'accepted', accepted_by_user_id = ?, accepted_at = ?, updated_at = ? WHERE id = ?`)
+      .bind(user.id, now, now, invite.id));
+  }
+  await environment.DB.batch(statements);
   return profileFor(user.id);
 }
 
@@ -210,9 +214,7 @@ async function requireAccess(request: Request, roles?: TradingRole[]) {
 }
 
 async function requireBrokerAccess(request: Request) {
-  const access = await requireAccess(request, ["developer"]);
-  if (!isTradingDeveloperEmail(access.user.email)) throw new TradingAccessError(403, "ربط التداول الحقيقي متاح لحساب الإدارة الأساسي فقط.");
-  return access;
+  return requireAccess(request, ["developer", "trader"]);
 }
 
 function credentialKey(environment: CashierAuthEnv) {
@@ -293,7 +295,7 @@ function brokerPayload(connection: BrokerConnectionRow | null, orders: LiveOrder
 }
 
 async function brokerState(environment: CashierAuthEnv, profile: ProfileRow) {
-  if (profile.role !== "developer") return {
+  if (profile.role === "viewer") return {
     available: false,
     connected: false,
     mode: "paper",
@@ -375,7 +377,7 @@ function profileJson(user: AccountUser, profile: ProfileRow) {
     status: profile.status,
     canManageUsers: profile.role === "developer",
     canTrade: profile.role !== "viewer",
-    canConnectBroker: profile.role === "developer" && isTradingDeveloperEmail(user.email),
+    canConnectBroker: profile.role !== "viewer",
   };
 }
 
