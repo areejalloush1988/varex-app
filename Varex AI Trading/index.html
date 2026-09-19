@@ -7,40 +7,40 @@
   <meta name="description" content="VAREX AI Trading — منصة تداول ورقي ذكية ببيانات سوق حية وإدارة مخاطر.">
   <meta name="robots" content="noindex">
   <link rel="icon" type="image/svg+xml" href="./favicon.svg">
-  <link rel="stylesheet" href="./styles.css?v=4">
+  <link rel="stylesheet" href="./styles.css?v=5">
   <title>VAREX AI Trading</title>
 </head>
 <body>
   <section class="auth-screen" id="authScreen">
     <div class="auth-visual">
       <div class="visual-brand"><span class="brand-mark">↗</span><span><b>VAREX</b><small>AI TRADING</small></span></div>
-      <div class="visual-copy"><span class="eyebrow">منصة تداول ورقي ذكية</span><h1>راقب السوق، اختبر قراراتك، واضبط المخاطر.</h1><p>بيانات سوق حية، تحليل احتمالي، وصفقات ورقية محفوظة. التنفيذ بأموال حقيقية غير مفعّل حتى ربط وسيط معتمد.</p></div>
-      <div class="visual-points"><span>✓ حسابات موثقة</span><span>✓ بيانات محفوظة</span><span>✓ صلاحيات مستخدمين</span></div>
+      <div class="visual-copy"><span class="eyebrow">منصة تداول ورقي ذكية</span><h1>مراقبة السوق، اختبار القرارات، وضبط المخاطر.</h1><p>بيانات سوق حية، تحليل احتمالي، وصفقات ورقية محفوظة. التنفيذ بأموال حقيقية غير مفعّل حتى ربط وسيط معتمد.</p></div>
+      <div class="visual-points"><span>✓ حسابات موثقة</span><span>✓ بيانات محفوظة</span><span>✓ صلاحيات حسابات</span></div>
     </div>
     <div class="auth-card">
       <div class="mobile-auth-brand"><span class="brand-mark">↗</span><b>VAREX AI TRADING</b></div>
       <div class="auth-message" id="authMessage" role="alert"></div>
 
       <form class="auth-pane" id="loginForm">
-        <header><span class="eyebrow">مرحباً بعودتك</span><h2>تسجيل الدخول</h2><p>ادخل إلى مساحة التداول الخاصة بك.</p></header>
+        <header><span class="eyebrow">مرحباً من جديد</span><h2>تسجيل الدخول</h2><p>الدخول إلى مساحة التداول الخاصة بالحساب.</p></header>
         <label>البريد الإلكتروني<input name="email" type="email" autocomplete="email" required placeholder="name@example.com"></label>
         <label>كلمة المرور<span class="password-field"><input name="password" type="password" autocomplete="current-password" required minlength="8" placeholder="••••••••"><button class="password-toggle" type="button" data-password-toggle aria-label="إظهار كلمة المرور" aria-pressed="false">إظهار</button></span></label>
-        <div class="form-row"><label class="check"><input name="remember" type="checkbox" checked><span>تذكرني</span></label><button class="text-button" type="button" data-auth-pane="recoverPane">نسيت كلمة المرور؟</button></div>
+        <div class="form-row"><label class="check"><input name="remember" type="checkbox" checked><span>حفظ بيانات الدخول</span></label><button class="text-button" type="button" data-auth-pane="recoverPane">استعادة كلمة المرور</button></div>
         <button class="main-button" type="submit">دخول آمن</button>
-        <p class="auth-switch">ليس لديك حساب؟ <button type="button" data-auth-pane="registerPane">إنشاء حساب</button></p>
+        <p class="auth-switch">حساب جديد؟ <button type="button" data-auth-pane="registerPane">إنشاء حساب</button></p>
       </form>
 
       <form class="auth-pane hidden" id="registerPane">
-        <header><span class="eyebrow">حساب جديد</span><h2>إنشاء حساب مستخدم</h2><p>يحتاج المستخدم إلى دعوة من المطوّر. حساب المطوّر الأساسي لا يحتاج دعوة.</p></header>
-        <label>اسم المستخدم<input name="displayName" maxlength="80" required placeholder="مثال: مدير التداول"></label>
+        <header><span class="eyebrow">حساب جديد</span><h2>إنشاء حساب جديد</h2><p>إنشاء الحساب متاح بدعوة من الإدارة. حساب الإدارة الأساسي لا يحتاج دعوة.</p></header>
+        <label>اسم المستخدم<input name="displayName" maxlength="80" required placeholder="مثال: إدارة التداول"></label>
         <label>البريد الإلكتروني<input name="email" type="email" autocomplete="email" required placeholder="name@example.com"></label>
         <label>كلمة المرور<span class="password-field"><input name="password" type="password" autocomplete="new-password" required minlength="8" placeholder="8 أحرف على الأقل"><button class="password-toggle" type="button" data-password-toggle aria-label="إظهار كلمة المرور" aria-pressed="false">إظهار</button></span></label>
         <ul class="password-rules" id="registerPasswordRules" aria-live="polite">
           <li data-password-rule="length">8 أحرف على الأقل</li><li data-password-rule="upper">حرف كبير A–Z</li><li data-password-rule="lower">حرف صغير a–z</li><li data-password-rule="number">رقم 0–9</li><li data-password-rule="symbol">رمز خاص مثل @ أو $ أو !</li>
         </ul>
-        <label>تأكيد كلمة المرور<span class="password-field"><input name="confirmPassword" type="password" autocomplete="new-password" required minlength="8" placeholder="أعد كتابة كلمة المرور"><button class="password-toggle" type="button" data-password-toggle aria-label="إظهار تأكيد كلمة المرور" aria-pressed="false">إظهار</button></span></label>
+        <label>تأكيد كلمة المرور<span class="password-field"><input name="confirmPassword" type="password" autocomplete="new-password" required minlength="8" placeholder="إعادة كتابة كلمة المرور"><button class="password-toggle" type="button" data-password-toggle aria-label="إظهار تأكيد كلمة المرور" aria-pressed="false">إظهار</button></span></label>
         <button class="main-button" type="submit">إنشاء وإرسال رمز التحقق</button>
-        <p class="auth-switch">لديك حساب؟ <button type="button" data-auth-pane="loginForm">تسجيل الدخول</button></p>
+        <p class="auth-switch">حساب موجود؟ <button type="button" data-auth-pane="loginForm">تسجيل الدخول</button></p>
       </form>
 
       <form class="auth-pane hidden" id="recoverPane">
@@ -51,14 +51,14 @@
       </form>
 
       <form class="auth-pane hidden" id="otpPane">
-        <header><span class="eyebrow">تأكيد البريد</span><h2>أدخل رمز التحقق</h2><p>تم إرسال الرمز إلى <b id="otpEmail"></b></p></header>
+        <header><span class="eyebrow">تأكيد البريد</span><h2>إدخال رمز التحقق</h2><p>تم إرسال الرمز إلى <b id="otpEmail"></b></p></header>
         <label>رمز OTP<input name="otp" class="otp-input" inputmode="numeric" autocomplete="one-time-code" maxlength="6" pattern="[0-9]{6}" required placeholder="000000"></label>
         <button class="main-button" type="submit">تأكيد الرمز</button>
         <p class="auth-switch"><button type="button" id="resendOtp">إرسال رمز جديد</button></p>
       </form>
 
       <form class="auth-pane hidden" id="resetPane">
-        <header><span class="eyebrow">كلمة مرور جديدة</span><h2>تحديث كلمة المرور</h2><p>اختر كلمة قوية لا تستخدمها في حساب آخر.</p></header>
+        <header><span class="eyebrow">كلمة مرور جديدة</span><h2>تحديث كلمة المرور</h2><p>يجب اختيار كلمة قوية وغير مستخدمة في حساب آخر.</p></header>
         <label>كلمة المرور الجديدة<span class="password-field"><input name="password" type="password" autocomplete="new-password" required minlength="8" placeholder="••••••••"><button class="password-toggle" type="button" data-password-toggle aria-label="إظهار كلمة المرور الجديدة" aria-pressed="false">إظهار</button></span></label>
         <button class="main-button" type="submit">حفظ كلمة المرور</button>
       </form>
@@ -69,7 +69,7 @@
     <header class="topbar">
       <div class="brand"><button class="icon-button mobile-menu" id="menuButton" aria-label="فتح القائمة">☰</button><span class="brand-mark">↗</span><span class="brand-copy"><b>VAREX</b><small>AI TRADING</small></span></div>
       <div class="top-status"><span class="status-chip live" id="marketStatus"><i></i> بيانات سوق حية</span><span class="status-chip paper">PAPER TRADING</span></div>
-      <button class="user-menu" id="userMenuButton"><span class="avatar" id="avatar">U</span><span><b id="topUserName">اسم المستخدم</b><small id="topUserRole">مستخدم</small></span></button>
+      <button class="user-menu" id="userMenuButton"><span class="avatar" id="avatar">U</span><span><b id="topUserName">اسم المستخدم</b><small id="topUserRole">حساب</small></span></button>
     </header>
 
     <button class="drawer-backdrop" id="drawerBackdrop" aria-label="إغلاق القائمة"></button>
@@ -83,7 +83,7 @@
         <button class="nav-item" data-view="risk"><span>◇</span> مركز المخاطر</button>
         <button class="nav-item" data-view="watchlist"><span>◉</span> قائمة المراقبة</button>
         <button class="nav-item" data-view="reports"><span>▤</span> التقارير</button>
-        <button class="nav-item hidden" data-view="users" id="usersNav"><span>♙</span> المستخدمون</button>
+        <button class="nav-item hidden" data-view="users" id="usersNav"><span>♙</span> الحسابات</button>
       </nav>
       <div class="sidebar-bottom">
         <button class="nav-item" data-view="settings"><span>⚙</span> الإعدادات</button>
@@ -94,7 +94,7 @@
 
     <main class="workspace">
       <section class="page-header"><div><small id="dateLabel"></small><h1 id="pageTitle">صباح الخير، اسم المستخدم</h1><p id="pageSubtitle">بيانات حسابك الفعلية محفوظة وآمنة.</p></div><div id="pageActions"></div></section>
-      <section class="paper-banner"><span>◇</span><p><b>التجربة الحالية ورقية وآمنة للتعلّم</b><small>لا تحتاجين ربط وسيط أو إيداع مال. الأسعار حية، لكن كل الصفقات تجريبية فقط.</small></p><strong id="brokerLabel">التجربة جاهزة — لا تحتاج وسيط</strong></section>
+      <section class="paper-banner"><span>◇</span><p><b>التجربة الحالية ورقية وآمنة للتعلّم</b><small>لا حاجة إلى ربط وسيط أو إيداع مال. الأسعار حية، لكن كل الصفقات تجريبية فقط.</small></p><strong id="brokerLabel">التجربة جاهزة — لا تحتاج وسيط</strong></section>
       <div id="viewRoot" aria-live="polite"></div>
       <footer class="app-footer"><span>VAREX AI Trading</span><span>التحليل احتمالي وليس ضماناً للربح أو توصية استثمارية.</span></footer>
     </main>
@@ -103,6 +103,6 @@
   <div class="loading-screen" id="loadingScreen"><span class="loader"></span><b>جاري تجهيز مساحة التداول…</b></div>
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
   <div class="modal hidden" id="confirmModal" role="dialog" aria-modal="true"><div><h3 id="confirmTitle">تأكيد الإجراء</h3><p id="confirmText"></p><footer><button class="secondary-button" id="confirmCancel">إلغاء</button><button class="danger-button" id="confirmAccept">تأكيد</button></footer></div></div>
-  <script src="./app.js?v=4"></script>
+  <script src="./app.js?v=5"></script>
 </body>
 </html>
