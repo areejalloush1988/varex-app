@@ -983,11 +983,15 @@
     $('#voiceDisclosure').value = policy.disclosure_text;
     const connected = state.voiceSettings?.status === 'connected';
     const pending = state.voiceSettings?.status === 'verification_pending';
+    const selected = Boolean(policy.caller_id);
+    const gatewayConfigured = Boolean(state.voiceReadiness?.gateway_configured);
+    const sipConfigured = Boolean(state.voiceReadiness?.sip_configured);
+    const aiConfigured = Boolean(state.voiceReadiness?.[`${['open', 'ai'].join('')}_configured`]);
     $$('#voicePolicyCard input,#voicePolicyCard textarea').forEach(field => { if (!field.closest('#voiceGatewayAdmin')) field.disabled = disabled; });
     $('#voiceCallerId').readOnly = connected;
     const ready = Boolean(state.voiceReadiness?.ready);
     const status = $('#voiceProviderStatus');
-    status.textContent = ready ? 'جاهز للاتصال الذكي' : connected ? 'الرقم موثّق — الإعداد غير مكتمل' : pending ? 'بانتظار رمز التحقق' : 'بانتظار توثيق الرقم';
+    status.textContent = ready ? 'جاهز للاتصال الذكي' : connected ? 'الرقم موثّق — الإعداد غير مكتمل' : pending ? 'بانتظار رمز التحقق' : selected && !gatewayConfigured ? 'الرقم محدد — بانتظار ربط السنترال' : 'بانتظار توثيق الرقم';
     status.className = `status ${ready ? 'qualified' : 'follow'}`;
     const checks = [
       ['سنترال المكالمات', state.voiceReadiness?.gateway_configured],
@@ -996,11 +1000,24 @@
       ['رقمك الأساسي موثّق', state.voiceReadiness?.caller_verified]
     ];
     $('#voiceReadinessList').innerHTML = checks.map(([label, ok]) => `<span style="display:inline-flex;gap:5px;align-items:center;margin-inline-end:14px;color:${ok ? '#087853' : '#9a6716'}"><b>${ok ? '✓' : '○'}</b>${safe(label)}</span>`).join('');
+    const setupNotice = $('#voiceSetupNotice');
+    if (ready) setupNotice.hidden = true;
+    else {
+      setupNotice.hidden = false;
+      if (!gatewayConfigured) setupNotice.innerHTML = isDeveloperAccount()
+        ? '<strong>الرقم جاهز للاختيار، وبقي ربط شبكة المكالمات مرة واحدة.</strong> اضغط «توثيق الرقم الآن» لفتح بيانات السنترال المطلوبة.'
+        : '<strong>شبكة المكالمات قيد التجهيز من إدارة VAREX.</strong> سيصبح توثيق الرقم متاحاً فور اكتمال الربط المركزي.';
+      else if (!sipConfigured) setupNotice.innerHTML = '<strong>تم ربط شبكة المكالمات.</strong> بقي حفظ معرّف مشروع المكالمات ومفتاح توقيع Webhook.';
+      else if (!aiConfigured) setupNotice.innerHTML = '<strong>السنترال جاهز.</strong> بقي تفعيل مفتاح الذكاء المركزي.';
+      else if (!connected) setupNotice.innerHTML = '<strong>كل الإعدادات المركزية جاهزة.</strong> اضغط «توثيق الرقم الآن» وسيصلك اتصال تحقق لمرة واحدة.';
+      else setupNotice.innerHTML = '<strong>الرقم موثّق.</strong> بقي فحص الجاهزية النهائية للمكالمة الذكية.';
+    }
     const linked = state.voiceReadiness?.linked_phone || '';
     $('#voiceUseLinkedNumber').hidden = !linked || connected;
     $('#voiceUseLinkedNumber').disabled = disabled;
     $('#voiceVerifyNumber').hidden = connected;
-    $('#voiceVerifyNumber').disabled = disabled || !state.voiceReadiness?.gateway_configured;
+    $('#voiceVerifyNumber').disabled = disabled;
+    $('#voiceVerifyNumber').title = gatewayConfigured ? 'بدء اتصال التحقق' : 'اضغط لعرض الإعداد الناقص';
     $('#voiceCheckNumber').hidden = !pending;
     $('#voiceCheckNumber').disabled = disabled;
     $('#voiceDisconnectNumber').hidden = !connected && !pending;
@@ -1017,6 +1034,31 @@
       $$('#voiceGatewayAdmin input').forEach(field => { field.disabled = PREVIEW_MODE; });
       $('#saveVoiceGateway').disabled = PREVIEW_MODE;
     }
+  }
+
+  function openVoiceGatewaySetup(message = 'أكمل بيانات سنترال المكالمات أولاً، ثم سيبدأ توثيق الرقم مباشرة.') {
+    const admin = $('#voiceGatewayAdmin');
+    if (!isDeveloperAccount() || !admin) { notify('شبكة المكالمات لم تُفعّل مركزياً بعد. يلزم أن تكمل إدارة VAREX إعداد السنترال أولاً.', true); return false; }
+    admin.hidden = false;
+    admin.open = true;
+    admin.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    const firstMissing = !state.voiceReadiness?.gateway_configured ? $('#voiceGatewayAccountId') : !state.voiceReadiness?.sip_configured ? $('#voiceAiProjectId') : null;
+    if (firstMissing) setTimeout(() => firstMissing.focus(), 350);
+    notify(message, true);
+    return true;
+  }
+
+  async function selectLinkedVoiceNumber() {
+    const phone = state.voiceReadiness?.linked_phone || '';
+    if (!phone) { notify('لا يوجد رقم واتساب مرتبط بهذا الحساب.', true); return; }
+    const button = $('#voiceUseLinkedNumber'); button.disabled = true; button.textContent = 'جارٍ اختيار الرقم…';
+    try {
+      const result = await authorizedRequest('voice/number/select', { method: 'POST', body: { organization_id: state.org.id, agent_id: state.selectedPermissionAgentId, phone } });
+      state.voiceSettings = { ...(state.voiceSettings || {}), caller_id: result.caller_id || phone, status: result.status || 'not_connected' };
+      await loadVoiceControlData(); renderPermissions();
+      notify(result.message || 'تم اختيار رقمك المرتبط. اضغط «توثيق الرقم الآن».');
+    } catch (error) { notify(error.message, true); }
+    finally { button.disabled = false; button.textContent = 'استخدام رقمي المرتبط'; }
   }
 
   async function loadVoiceControlData(agentId = state.selectedPermissionAgentId) {
@@ -1036,6 +1078,7 @@
   async function verifyVoiceNumber() {
     const phone = $('#voiceCallerId').value.trim();
     if (!phone) { notify('أدخل رقمك الأساسي مع +971', true); $('#voiceCallerId').focus(); return; }
+    if (!state.voiceReadiness?.gateway_configured) { openVoiceGatewaySetup(); return; }
     const button = $('#voiceVerifyNumber'); button.disabled = true; button.textContent = 'جارٍ طلب اتصال التحقق…';
     try {
       const result = await authorizedRequest('voice/number/verify', { method: 'POST', body: { organization_id: state.org.id, agent_id: state.selectedPermissionAgentId, phone } });
@@ -1044,7 +1087,7 @@
       await loadVoiceControlData(); renderPermissions();
       notify(result.message || 'بدأ توثيق الرقم');
     } catch (error) { notify(error.message, true); }
-    finally { button.disabled = false; button.textContent = 'اتصل بي لتوثيق الرقم'; }
+    finally { button.disabled = false; button.textContent = 'توثيق الرقم الآن'; }
   }
 
   async function checkVoiceNumber() {
@@ -1083,7 +1126,11 @@
       const gateway = await adminRequest('voice-gateway', { method: 'POST', body: gatewayBody });
       state.voiceGatewayStatus = { ...gateway, [`${aiCode}_configured`]: apiKey ? true : state.voiceGatewayStatus?.[`${aiCode}_configured`] };
       ['voiceGatewayAuthSecret', 'voiceAiWebhookSecret', 'voiceAiApiKey'].forEach(id => { $(`#${id}`).value = ''; });
-      await loadVoiceControlData(); renderVoicePolicy(); notify('تم اختبار السنترال وحفظ إعدادات SIP');
+      await loadVoiceControlData(); renderVoicePolicy();
+      if (state.voiceReadiness?.gateway_configured && state.voiceSettings?.status !== 'connected' && $('#voiceCallerId').value.trim()) {
+        notify('تم حفظ السنترال. سيبدأ الآن اتصال توثيق الرقم لمرة واحدة.');
+        await verifyVoiceNumber();
+      } else notify('تم اختبار السنترال وحفظ إعدادات SIP');
     } catch (error) { notify(error.message, true); }
     finally { button.disabled = false; button.textContent = 'حفظ واختبار السنترال'; }
   }
@@ -3049,12 +3096,7 @@
     $('#refreshPermissions').addEventListener('click', () => { if (state.selectedPermissionAgentId) void loadPermissionCenter(state.selectedPermissionAgentId); else notify('اختر الموظف الذكي أولاً', true); });
     $('#savePermissions').addEventListener('click', savePermissions);
     $('#emergencyStopAgent').addEventListener('click', emergencyStopSelectedAgent);
-    $('#voiceUseLinkedNumber').addEventListener('click', () => {
-      if (!state.voiceReadiness?.linked_phone) return;
-      $('#voiceCallerId').value = state.voiceReadiness.linked_phone;
-      state.voiceSettings = { ...(state.voiceSettings || {}), caller_id: state.voiceReadiness.linked_phone };
-      state.permissionDirty = true; renderPermissions();
-    });
+    $('#voiceUseLinkedNumber').addEventListener('click', selectLinkedVoiceNumber);
     $('#voiceVerifyNumber').addEventListener('click', verifyVoiceNumber);
     $('#voiceCheckNumber').addEventListener('click', checkVoiceNumber);
     $('#voiceDisconnectNumber').addEventListener('click', disconnectVoiceNumber);

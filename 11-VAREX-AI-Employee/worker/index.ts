@@ -496,7 +496,7 @@ async function verifiedOutgoingCaller(config: VoiceGatewayConfig, phone: string)
   return callers.find(item => phoneE164(item.phone_number) === phone) || null;
 }
 
-async function voiceNumberVerification(request: Request, env: Env, action: "start" | "status" | "disconnect") {
+async function voiceNumberVerification(request: Request, env: Env, action: "select" | "start" | "status" | "disconnect") {
   if (request.method !== "POST") return error("الطريقة غير مدعومة", 405);
   const user = await currentUser(request, env); if (!user) return error("يلزم تسجيل الدخول", 401);
   const body = await request.json<Row>().catch(() => ({}));
@@ -511,6 +511,10 @@ async function voiceNumberVerification(request: Request, env: Env, action: "star
   }
   const phone = phoneE164(body.phone || existing?.caller_id || "");
   if (!phone) return error("أدخل الرقم الأساسي بصيغة دولية مثل +971...", 400);
+  if (action === "select") {
+    await upsertVoiceCallerStatus(env, user, organizationId, agentId, phone, "not_connected", { selected_at: now() });
+    return api({ ok: true, status: "not_connected", caller_id: phone, message: "تم اختيار رقمك المرتبط وحفظه. بقي توثيقه باتصال واحد." });
+  }
   const config = await voiceGatewayConfig(env);
   if (!config.accountId || !config.authSecret) return error("سنترال المكالمات غير مربوط بعد. يلزم أن تضيف إدارة VAREX بيانات السنترال أولاً.", 409);
   const alreadyVerified = await verifiedOutgoingCaller(config, phone);
@@ -3449,6 +3453,7 @@ const worker = { async fetch(request: Request, env: Env, ctx: ExecutionContext):
     if (url.pathname === "/api/permissions") return permissionCenter(request, env);
     if (url.pathname === "/api/permissions/emergency-stop") return emergencyStopAgent(request, env);
     if (url.pathname === "/api/voice/readiness") return voiceReadiness(request, env);
+    if (url.pathname === "/api/voice/number/select") return voiceNumberVerification(request, env, "select");
     if (url.pathname === "/api/voice/number/verify") return voiceNumberVerification(request, env, "start");
     if (url.pathname === "/api/voice/number/status") return voiceNumberVerification(request, env, "status");
     if (url.pathname === "/api/voice/number/disconnect") return voiceNumberVerification(request, env, "disconnect");

@@ -19,10 +19,19 @@ test('voice central verifies and uses the owner primary number', () => {
   assert.match(html, /id="voiceVerifyNumber"/);
   assert.match(html, /id="voiceValidationCode"/);
   assert.match(client, /voice\/number\/verify/);
+  assert.match(client, /voice\/number\/select/);
   assert.match(client, /voice\/number\/status/);
   assert.match(worker, /OutgoingCallerIds\.json/);
   assert.match(worker, /validation_code/);
   assert.match(worker, /From: fromNumber/);
+});
+
+test('voice setup explains missing central settings instead of leaving a dead verification button', () => {
+  assert.match(html, /id="voiceSetupNotice"/);
+  assert.match(client, /openVoiceGatewaySetup/);
+  assert.match(client, /voiceGatewayAdmin/);
+  assert.doesNotMatch(client, /voiceVerifyNumber'\)\.disabled = disabled \|\| !state\.voiceReadiness\?\.gateway_configured/);
+  assert.match(worker, /action: "select" \| "start" \| "status" \| "disconnect"/);
 });
 
 test('spoken phone command becomes a guarded AI voice action', () => {
