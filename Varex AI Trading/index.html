@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#07111f">
+  <meta name="description" content="VAREX AI Trading — لوحة تداول تجريبية مدعومة بالذكاء الاصطناعي وإدارة المخاطر.">
+  <meta name="robots" content="noindex">
+  <link rel="icon" type="image/svg+xml" href="./favicon.svg">
+  <link rel="stylesheet" href="./styles.css?v=1">
+  <title>VAREX AI Trading | التداول التجريبي الذكي</title>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <button class="icon-button mobile-menu-button" id="menuButton" aria-label="فتح القائمة">☰</button>
+      <span class="brand-mark" aria-hidden="true">↗</span>
+      <span class="brand-copy"><strong>VAREX</strong><small>AI TRADING</small></span>
+    </div>
+    <div class="header-status">
+      <span class="status-pill"><i></i> الأسواق تعمل الآن</span>
+      <span class="status-pill demo">✓ حساب تجريبي</span>
+    </div>
+    <div class="profile">
+      <button class="icon-button" aria-label="الإشعارات">♢<b></b></button>
+      <span class="avatar">AR</span>
+      <span><strong>مدير الحساب</strong><small>Demo workspace</small></span>
+    </div>
+  </header>
+
+  <button class="drawer-backdrop" id="drawerBackdrop" aria-label="إغلاق القائمة"></button>
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-mobile-head">
+      <span class="brand"><span class="brand-mark">↗</span><strong>VAREX</strong></span>
+      <button class="icon-button" id="closeMenu" aria-label="إغلاق القائمة">×</button>
+    </div>
+    <p class="nav-title">مساحة التداول</p>
+    <nav aria-label="القائمة الرئيسية">
+      <button class="nav-item active"><span>▦</span> لوحة التحكم</button>
+      <button class="nav-item"><span>✦</span> فرص الذكاء <b>3</b></button>
+      <button class="nav-item"><span>▣</span> الصفقات التجريبية</button>
+      <button class="nav-item"><span>◇</span> مركز المخاطر</button>
+      <button class="nav-item"><span>◉</span> قائمة المراقبة</button>
+      <button class="nav-item"><span>▤</span> التقارير</button>
+    </nav>
+    <div class="sidebar-bottom">
+      <button class="nav-item"><span>⚙</span> الإعدادات</button>
+      <div class="agent-card"><span class="agent-icon">AI</span><span><strong>وكيل VAREX</strong><small><i></i> يراقب السوق</small></span></div>
+    </div>
+  </aside>
+
+  <main class="workspace">
+    <section class="page-heading">
+      <div><small id="todayLabel">اليوم</small><h1>صباح الخير، أريج</h1><p>الوكيل الذكي يراقب السوق ويعرض الفرص ضمن حدود المخاطر المحددة.</p></div>
+      <button class="primary-button" id="analyzeButton"><span>↻</span> تحليل السوق الآن</button>
+    </section>
+
+    <section class="safety-banner" aria-label="تنبيه الوضع التجريبي">
+      <span class="shield">✓</span>
+      <p><strong>وضع تجريبي آمن</strong><span>لا يتم تنفيذ أوامر حقيقية أو استخدام أموال فعلية في هذه النسخة.</span></p>
+      <b>PAPER TRADING</b>
+    </section>
+
+    <section class="stats-grid" aria-label="ملخص الحساب">
+      <article class="stat-card"><span class="stat-icon amber">▣</span><p><span>الرصيد التجريبي</span><small>USD</small></p><strong>$25,000.00</strong><small class="positive">↗ جاهز للاختبار</small></article>
+      <article class="stat-card"><span class="stat-icon green">$</span><p><span>أرباح اليوم</span><small>اليوم</small></p><strong class="positive">+$43.14</strong><small class="positive">↗ +0.17% من الرصيد</small></article>
+      <article class="stat-card"><span class="stat-icon blue">⌁</span><p><span>صفقات مفتوحة</span><small>الحد 3</small></p><strong id="openTradesCount">2</strong><small id="remainingTrades">متبقي 1 ضمن الخطة</small></article>
+      <article class="stat-card"><span class="stat-icon violet">◔</span><p><span>استخدام المخاطر</span><small>من 5%</small></p><strong>2.4%</strong><span class="meter"><i></i></span><small>مستوى محافظ</small></article>
+    </section>
+
+    <section class="main-grid">
+      <article class="panel market-panel">
+        <header class="panel-head">
+          <div class="asset-heading"><span class="coin" id="coinIcon">₿</span><span><h2 id="assetSymbol">BTC/USDT</h2><small><b id="assetName">Bitcoin</b> · سعر محاكاة</small></span></div>
+          <div class="current-price"><strong id="assetPrice">$67,284.40</strong><small id="assetChange" class="positive">+2.84%</small></div>
+        </header>
+        <div class="asset-tabs" role="tablist" aria-label="اختيار السوق">
+          <button role="tab" aria-selected="true" data-symbol="BTC/USDT">BTC/USDT</button>
+          <button role="tab" aria-selected="false" data-symbol="ETH/USDT">ETH/USDT</button>
+          <button role="tab" aria-selected="false" data-symbol="XAU/USD">XAU/USD</button>
+          <button role="tab" aria-selected="false" data-symbol="EUR/USD">EUR/USD</button>
+        </div>
+        <div class="chart" aria-label="مخطط سعر السوق المحاكى">
+          <svg id="priceChart" viewBox="0 0 760 260" role="img" aria-label="حركة السعر خلال اليوم">
+            <defs><linearGradient id="chartFill" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f5b82e" stop-opacity=".32"/><stop offset="1" stop-color="#f5b82e" stop-opacity="0"/></linearGradient></defs>
+            <g class="grid-lines"><line x1="16" y1="35" x2="744" y2="35"/><line x1="16" y1="90" x2="744" y2="90"/><line x1="16" y1="145" x2="744" y2="145"/><line x1="16" y1="200" x2="744" y2="200"/></g>
+            <path id="chartArea" fill="url(#chartFill)" stroke="none"></path>
+            <path id="chartLine" fill="none" stroke="#f5b82e" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"></path>
+            <g class="chart-labels"><text x="16" y="246">09:00</text><text x="198" y="246">11:00</text><text x="380" y="246">13:00</text><text x="562" y="246">15:00</text><text x="716" y="246">16:00</text></g>
+          </svg>
+        </div>
+        <footer class="chart-footer"><span><small>أعلى سعر</small><strong id="highPrice">$67,284</strong></span><span><small>أدنى سعر</small><strong id="lowPrice">$64,120</strong></span><span><small>حجم التداول</small><strong>$1.42B</strong></span><span><small>الإطار الزمني</small><strong>30 دقيقة</strong></span></footer>
+      </article>
+
+      <article class="panel ai-panel">
+        <header class="panel-head"><div class="ai-title"><span>AI</span><p><h2>تحليل VAREX AI</h2><small>آخر تحديث منذ دقيقة</small></p></div><em><i></i> مباشر</em></header>
+        <section class="signal-card"><p><small>الإشارة الحالية</small><strong>↗ فرصة شراء</strong></p><div class="confidence" id="confidenceRing"><span><strong id="confidenceValue">87%</strong><small>ثقة</small></span></div></section>
+        <section class="analysis-points"><h3>✦ لماذا هذه الفرصة؟</h3><p>✓ الاتجاه قصير المدى صاعد بثبات</p><p>✓ حجم الشراء أعلى من متوسط 20 فترة</p><p>✓ السعر فوق منطقة الدعم الرئيسية</p></section>
+        <section class="levels"><span><small>نقطة الدخول</small><strong>$67,180</strong></span><span><small>الهدف المقترح</small><strong class="positive">$69,450</strong></span><span><small>وقف الخسارة</small><strong class="negative">$65,920</strong></span></section>
+        <section class="risk-note"><span>◇</span><p><strong>ملاحظة مخاطر</strong><small>الإشارة احتمال وليست ضماناً للربح. القرار النهائي يخضع لحدودك.</small></p></section>
+      </article>
+    </section>
+
+    <section class="secondary-grid">
+      <article class="panel opportunities-panel">
+        <header class="panel-head"><p><h2>أفضل فرص الذكاء الاصطناعي</h2><small>مرتبة حسب الثقة وجودة إدارة المخاطر</small></p><span class="link-button">عرض الكل ‹</span></header>
+        <div class="opportunity-table">
+          <div class="opportunity-row heading"><span>السوق</span><span>الإشارة</span><span>الثقة</span><span>الدخول / الهدف</span><span>الإجراء</span></div>
+          <div class="opportunity-row"><span class="market-name"><i>B</i><b>BTC/USDT<small>Bitcoin</small></b></span><span class="chip buy">شراء</span><span class="score"><i><b style="width:87%"></b></i><strong>87%</strong></span><span class="target"><b>$67,180</b><small>← $69,450</small></span><button data-pick="BTC/USDT" data-side="buy">اختيار</button></div>
+          <div class="opportunity-row"><span class="market-name"><i>X</i><b>XAU/USD<small>Gold</small></b></span><span class="chip buy">شراء</span><span class="score"><i><b style="width:79%"></b></i><strong>79%</strong></span><span class="target"><b>$2,368</b><small>← $2,402</small></span><button data-pick="XAU/USD" data-side="buy">اختيار</button></div>
+          <div class="opportunity-row"><span class="market-name"><i>E</i><b>ETH/USDT<small>Ethereum</small></b></span><span class="chip wait">انتظار</span><span class="score"><i><b style="width:68%"></b></i><strong>68%</strong></span><span class="target"><b>$3,565</b><small>← $3,690</small></span><button data-pick="ETH/USDT">اختيار</button></div>
+        </div>
+      </article>
+
+      <article class="panel trade-panel" id="tradeTicket">
+        <header class="panel-head"><p><h2>تنفيذ صفقة تجريبية</h2><small><b id="ticketSymbol">BTC/USDT</b> · بدون أموال حقيقية</small></p><span class="bolt">ϟ</span></header>
+        <div class="side-selector"><button class="active buy" data-trade-side="buy">↗ شراء</button><button class="sell" data-trade-side="sell">↘ بيع</button></div>
+        <label for="tradeAmount">حجم الصفقة بالدولار</label>
+        <div class="amount-field"><span>$</span><input id="tradeAmount" type="number" value="500" min="25" max="1250" step="25"><button id="maxAmount">MAX</button></div>
+        <div class="quick-amounts"><button data-amount="250">$250</button><button class="active" data-amount="500">$500</button><button data-amount="1000">$1000</button><button data-amount="1250">$1250</button></div>
+        <div class="risk-head"><label for="riskRange">المخاطرة في الصفقة</label><strong id="riskValue">1.0%</strong></div>
+        <input id="riskRange" class="range" type="range" min="0.5" max="2" step="0.5" value="1">
+        <div class="range-labels"><small>محافظ 0.5%</small><small>الحد 2%</small></div>
+        <div class="order-summary"><p><span>السعر الحالي</span><strong id="ticketPrice">$67,284.40</strong></p><p><span>حد الخسارة التقديري</span><strong class="negative" id="estimatedLoss">-$5.00</strong></p></div>
+        <button class="execute-button" id="executeTrade">فتح صفقة شراء تجريبية</button>
+      </article>
+    </section>
+
+    <section class="bottom-grid">
+      <article class="panel trades-panel">
+        <header class="panel-head"><p><h2>الصفقات الأخيرة</h2><small>نشاط الحساب التجريبي</small></p><span>◷</span></header>
+        <div id="tradesList" class="trades-list"></div>
+      </article>
+      <article class="panel protection-panel">
+        <header class="panel-head"><p><h2>حماية الحساب</h2><small>قواعد لا يتجاوزها الوكيل</small></p><span class="positive">◇</span></header>
+        <div class="daily-risk"><span class="risk-donut"><b>2.4%</b></span><p><strong>من حد خسارة يومي 5%</strong><small>الوضع آمن · متبقي 2.6%</small></p></div>
+        <div class="risk-rules">
+          <div><p><strong>إيقاف عند الحد اليومي</strong><small>5% من الرصيد</small></p><button class="toggle on" role="switch" aria-checked="true"><i></i></button></div>
+          <div><p><strong>وقف خسارة تلقائي</strong><small>على كل صفقة</small></p><button class="toggle on" role="switch" aria-checked="true"><i></i></button></div>
+          <div><p><strong>توقف وقت الأخبار</strong><small>أحداث عالية التأثير</small></p><button class="toggle on" role="switch" aria-checked="true"><i></i></button></div>
+        </div>
+      </article>
+    </section>
+
+    <footer class="app-footer"><span>VAREX AI Trading · نسخة تجريبية v0.1</span><span>جميع الأسعار والصفقات المعروضة محاكاة وليست توصية استثمارية.</span></footer>
+  </main>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"><span>✓</span><p id="toastText"></p></div>
+  <script src="./app.js?v=1"></script>
+</body>
+</html>
