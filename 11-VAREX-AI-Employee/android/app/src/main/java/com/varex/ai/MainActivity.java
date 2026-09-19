@@ -66,7 +66,9 @@ public final class MainActivity extends ChatActivity {
     @Override protected void onCreate(Bundle state) {
         super.onCreate(state);
         getWindow().setStatusBarColor(getColor(R.color.navy_dark));
-        settingsRequested = getIntent().getBooleanExtra("show_settings", false);
+        Uri launchUri = getIntent().getData();
+        settingsRequested = getIntent().getBooleanExtra("show_settings", false)
+                || (launchUri != null && "varexai".equalsIgnoreCase(launchUri.getScheme()) && "settings".equalsIgnoreCase(launchUri.getHost()));
         showSettingsLayout();
     }
 
@@ -112,8 +114,6 @@ public final class MainActivity extends ChatActivity {
         findViewById(R.id.disconnectButton).setOnClickListener(view -> disconnectDevice(false));
         findViewById(R.id.openChatButton).setOnClickListener(view -> openChat());
         findViewById(R.id.logoutButton).setOnClickListener(view -> disconnectDevice(true));
-        findViewById(R.id.saveOpenAiButton).setOnClickListener(view -> saveAiProvider("openai", R.id.openAiKeyInput, R.id.saveOpenAiButton));
-        findViewById(R.id.saveGeminiButton).setOnClickListener(view -> saveAiProvider("gemini", R.id.geminiKeyInput, R.id.saveGeminiButton));
         orgSpinner.setOnItemSelectedListener(new android.widget.AdapterView.OnItemSelectedListener() {
             @Override public void onItemSelected(android.widget.AdapterView<?> parent, View view, int position, long id) {
                 if (selectingOrganizations || position < 0 || position >= organizations.size()) return;
@@ -195,64 +195,7 @@ public final class MainActivity extends ChatActivity {
         store.setOrganization(selected.id, selected.name);
         selectingOrganizations = false;
         updateConnectionState();
-        loadAiProviderStatuses();
         if (!settingsRequested) openChat();
-    }
-
-    private void loadAiProviderStatuses() {
-        if (store.organizationId().isEmpty() || !settingsLayoutVisible) return;
-        executor.execute(() -> {
-            try {
-                JSONObject result = api.getObject("/ai/providers?organization_id=" + android.net.Uri.encode(store.organizationId()));
-                JSONArray providers = result.optJSONArray("providers");
-                boolean openAi = false, gemini = false;
-                if (providers != null) for (int index = 0; index < providers.length(); index++) {
-                    JSONObject provider = providers.optJSONObject(index);
-                    if (provider == null || !provider.optBoolean("configured")) continue;
-                    if ("openai".equals(provider.optString("provider"))) openAi = true;
-                    if ("gemini".equals(provider.optString("provider"))) gemini = true;
-                }
-                boolean finalOpenAi = openAi, finalGemini = gemini;
-                runOnUiThread(() -> {
-                    if (!settingsLayoutVisible) return;
-                    TextView openAiStatus = findViewById(R.id.openAiStatus), geminiStatus = findViewById(R.id.geminiStatus);
-                    openAiStatus.setText(finalOpenAi ? "✓ ChatGPT متصل وجاهز" : "غير مربوط بعد");
-                    geminiStatus.setText(finalGemini ? "✓ Gemini والصوت الطبيعي جاهزان" : "غير مربوط بعد");
-                    openAiStatus.setTextColor(getColor(finalOpenAi ? R.color.green : R.color.muted));
-                    geminiStatus.setTextColor(getColor(finalGemini ? R.color.green : R.color.muted));
-                });
-            } catch (Exception exception) {
-                runOnUiThread(() -> { if (settingsLayoutVisible) toast(message(exception)); });
-            }
-        });
-    }
-
-    private void saveAiProvider(String provider, int inputId, int buttonId) {
-        EditText input = findViewById(inputId);
-        Button button = findViewById(buttonId);
-        String key = input.getText().toString().trim();
-        if (key.isEmpty()) { toast("الصق مفتاح المزود من صفحته الرسمية أولاً"); return; }
-        button.setEnabled(false);
-        button.setText("جاري الربط…");
-        executor.execute(() -> {
-            try {
-                api.post("/ai/providers", new JSONObject().put("organization_id", store.organizationId()).put("provider", provider).put("api_key", key));
-                runOnUiThread(() -> {
-                    if (!settingsLayoutVisible) return;
-                    input.setText("");
-                    toast(("openai".equals(provider) ? "ChatGPT" : "Gemini") + " صار مربوطاً بالموظف الذكي");
-                    loadAiProviderStatuses();
-                });
-            } catch (Exception exception) {
-                runOnUiThread(() -> toast(message(exception)));
-            } finally {
-                runOnUiThread(() -> {
-                    if (!settingsLayoutVisible) return;
-                    button.setEnabled(true);
-                    button.setText("openai".equals(provider) ? "ربط ChatGPT" : "ربط Gemini والصوت");
-                });
-            }
-        });
     }
 
     private void connectDevice(boolean promptForNotifications) {
@@ -268,12 +211,13 @@ public final class MainActivity extends ChatActivity {
                         .put("organization_id", store.organizationId())
                         .put("device_id", store.deviceId())
                         .put("device_name", deviceName())
+                        .put("platform", "android")
                         .put("app_version", BuildConfig.VERSION_NAME)
                         .put("capabilities", capabilities);
-                api.post("/devices/android/register", body);
+                api.post("/devices/register", body);
                 store.setConnected(true);
                 store.setLastAction("تم ربط الهاتف؛ بانتظار أول مهمة من الموظف الذكي.");
-                runOnUiThread(() -> { startBridge(); updateConnectionState(); lastActionText.setText(store.lastAction()); toast("تم ربط هاتف Android بنجاح"); openChat(); });
+                runOnUiThread(() -> { startBridge(); updateConnectionState(); lastActionText.setText(store.lastAction()); toast("تم ربط الجهاز بنجاح"); openChat(); });
             } catch (Exception exception) {
                 runOnUiThread(() -> toast(message(exception)));
             } finally {
@@ -287,7 +231,7 @@ public final class MainActivity extends ChatActivity {
         button.setEnabled(false);
         executor.execute(() -> {
             try {
-                if (store.isConnected() && !store.organizationId().isEmpty()) api.post("/devices/android/disconnect", new JSONObject().put("organization_id", store.organizationId()).put("device_id", store.deviceId()));
+                if (store.isConnected() && !store.organizationId().isEmpty()) api.post("/devices/disconnect", new JSONObject().put("organization_id", store.organizationId()).put("device_id", store.deviceId()));
                 if (logout) api.logout();
             } catch (Exception ignored) {
             } finally {

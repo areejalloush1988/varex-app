@@ -64,7 +64,7 @@ public final class BridgeService extends Service {
                 return;
             }
             String query = "?organization_id=" + encode(store.organizationId()) + "&device_id=" + encode(store.deviceId());
-            JSONObject response = api.getObject("/devices/android/commands" + query);
+            JSONObject response = api.getObject("/devices/commands" + query);
             JSONObject command = response.optJSONObject("command");
             if (command == null) return;
             String executionId = command.optString("id", "");
@@ -99,7 +99,7 @@ public final class BridgeService extends Service {
             throw new IllegalStateException("نتيجة محلية غير صالحة؛ تم حذفها بأمان");
         }
         try {
-            api.post("/devices/android/commands/" + encode(executionId) + "/result", body);
+            api.post("/devices/commands/" + encode(executionId) + "/result", body);
         } catch (ApiException exception) {
             if (exception.statusCode() != 409) throw exception;
             store.clearPendingResult();
