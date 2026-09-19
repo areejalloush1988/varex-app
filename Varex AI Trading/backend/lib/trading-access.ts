@@ -58,7 +58,7 @@ async function bodyOf(request: Request) {
 
 export function normalizeTradingEmail(value: unknown) { return String(value ?? "").trim().toLowerCase(); }
 export function isTradingDeveloperEmail(value: unknown) { return normalizeTradingEmail(value) === TRADING_DEVELOPER_EMAIL; }
-function cleanName(value: unknown, fallback = "مستخدم VAREX") {
+function cleanName(value: unknown, fallback = "حساب VAREX") {
   const name = String(value ?? "").replace(/[<>]/g, "").replace(/\s+/g, " ").trim().slice(0, 80);
   return name.length >= 2 ? name : fallback;
 }
@@ -129,7 +129,7 @@ export async function provisionVerifiedTradingUser(user: AccountUser, requestedN
   if (!user.id || !EMAIL_PATTERN.test(email)) throw new TradingAccessError(400, "بيانات الحساب غير صالحة.");
   const existing = await profileFor(user.id);
   if (isTradingDeveloperEmail(email)) {
-    const displayName = cleanName(requestedName ?? existing?.displayName ?? user.name, "المطور");
+    const displayName = cleanName(requestedName ?? existing?.displayName ?? user.name, "إدارة النظام");
     await environment.DB.prepare(`INSERT INTO trading_profile (user_id, display_name, role, status, paper_balance_cents, created_at, updated_at)
       VALUES (?, ?, 'developer', 'active', 2500000, ?, ?)
       ON CONFLICT(user_id) DO UPDATE SET display_name = excluded.display_name, role = 'developer', status = 'active', updated_at = excluded.updated_at`)
@@ -137,7 +137,7 @@ export async function provisionVerifiedTradingUser(user: AccountUser, requestedN
     return profileFor(user.id);
   }
   const invite = await inviteForEmail(email);
-  if (!invite || invite.status === "revoked") throw new TradingAccessError(403, "هذا البريد غير مضاف إلى مستخدمي VAREX AI Trading. اطلب من المطور إضافته أولاً.");
+  if (!invite || invite.status === "revoked") throw new TradingAccessError(403, "هذا البريد غير مضاف إلى حسابات VAREX AI Trading. تجب إضافته من إدارة الحسابات أولاً.");
   if (invite.status === "accepted" && invite.acceptedByUserId && invite.acceptedByUserId !== user.id) throw new TradingAccessError(409, "تم ربط الدعوة بحساب آخر.");
   const displayName = cleanName(requestedName ?? invite.displayName ?? user.name);
   await environment.DB.batch([
@@ -154,8 +154,8 @@ export async function provisionVerifiedTradingUser(user: AccountUser, requestedN
 async function sessionUser(request: Request) {
   const session = await (await getCashierAuth()).api.getSession({ headers: request.headers });
   const user = session?.user as AccountUser | undefined;
-  if (!user?.id || !user.email) throw new TradingAccessError(401, "انتهت جلسة الحساب. سجّل الدخول من جديد.");
-  if (!user.emailVerified) throw new TradingAccessError(403, "أكد بريدك الإلكتروني أولاً.");
+  if (!user?.id || !user.email) throw new TradingAccessError(401, "انتهت جلسة الحساب. يلزم تسجيل الدخول من جديد.");
+  if (!user.emailVerified) throw new TradingAccessError(403, "يلزم تأكيد البريد الإلكتروني أولاً.");
   return user;
 }
 
@@ -164,8 +164,8 @@ async function requireAccess(request: Request, roles?: TradingRole[]) {
   let profile = await profileFor(user.id);
   if (!profile && (isTradingDeveloperEmail(user.email) || await canRegisterTradingEmail(user.email))) profile = await provisionVerifiedTradingUser(user);
   if (!profile) throw new TradingAccessError(403, "هذا الحساب غير مضاف إلى VAREX AI Trading.");
-  if (profile.status !== "active") throw new TradingAccessError(403, "تم إيقاف هذا المستخدم. راجع المطور.");
-  if (roles && !roles.includes(profile.role)) throw new TradingAccessError(403, "ليس لديك صلاحية لتنفيذ هذا الإجراء.");
+  if (profile.status !== "active") throw new TradingAccessError(403, "تم إيقاف هذا الحساب. يرجى التواصل مع إدارة النظام.");
+  if (roles && !roles.includes(profile.role)) throw new TradingAccessError(403, "الصلاحية غير متاحة لهذا الحساب.");
   return { user, profile, environment: await runtime() };
 }
 
@@ -197,7 +197,7 @@ async function mutateState(profile: ProfileRow, change: (state: TradingStateData
       return { state: next, version: current.version + 1 };
     }
   }
-  throw new TradingAccessError(409, "تغيرت البيانات أثناء الحفظ. أعد المحاولة.");
+  throw new TradingAccessError(409, "تغيرت البيانات أثناء الحفظ. يرجى المحاولة من جديد.");
 }
 
 function profileJson(user: AccountUser, profile: ProfileRow) {
@@ -288,8 +288,8 @@ async function handlePost(request: Request, body: Record<string, unknown>) {
   }
   if (action === "invite_user") {
     const { user, environment } = await requireAccess(request, ["developer"]), email = normalizeTradingEmail(body.email);
-    if (!EMAIL_PATTERN.test(email)) throw new TradingAccessError(400, "أدخل بريداً إلكترونياً صحيحاً.");
-    if (isTradingDeveloperEmail(email)) throw new TradingAccessError(409, "هذا هو حساب المطور الأساسي بالفعل.");
+    if (!EMAIL_PATTERN.test(email)) throw new TradingAccessError(400, "يلزم إدخال بريد إلكتروني صحيح.");
+    if (isTradingDeveloperEmail(email)) throw new TradingAccessError(409, "هذا هو حساب الإدارة الأساسي بالفعل.");
     const role = body.role === "viewer" ? "viewer" : "trader", displayName = cleanName(body.displayName, email.split("@")[0]), now = Date.now();
     await environment.DB.prepare(`INSERT INTO trading_invite (id, email, display_name, role, status, created_by_user_id, created_at, updated_at)
       VALUES (?, ?, ?, ?, 'pending', ?, ?, ?)
@@ -303,7 +303,7 @@ async function handlePost(request: Request, body: Record<string, unknown>) {
   }
   if (action === "update_user") {
     const { environment } = await requireAccess(request, ["developer"]), email = normalizeTradingEmail(body.email);
-    if (!EMAIL_PATTERN.test(email) || isTradingDeveloperEmail(email)) throw new TradingAccessError(400, "لا يمكن تعديل حساب المطور الأساسي.");
+    if (!EMAIL_PATTERN.test(email) || isTradingDeveloperEmail(email)) throw new TradingAccessError(400, "لا يمكن تعديل حساب الإدارة الأساسي.");
     const role = body.role === "viewer" ? "viewer" : "trader", status = body.status === "inactive" ? "inactive" : "active", displayName = cleanName(body.displayName, email.split("@")[0]), now = Date.now();
     const linked = await environment.DB.prepare('SELECT id FROM "user" WHERE lower(email) = ? LIMIT 1').bind(email).first<{ id: string }>();
     if (linked) await environment.DB.prepare("UPDATE trading_profile SET display_name = ?, role = ?, status = ?, updated_at = ? WHERE user_id = ?")
