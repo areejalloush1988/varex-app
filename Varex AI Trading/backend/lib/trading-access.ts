@@ -332,7 +332,7 @@ export async function tradingRequest(request: Request) {
       }
       if (action === "users") return json({ users: await listUsers(request) });
       const { user, profile } = await requireAccess(request), state = await stateFor(profile);
-      return json({ profile: profileJson(user, profile), ...state, broker: { connected: false, mode: "paper", label: "غير مربوط بوسيط" }, supportedMarkets: Object.values(TRADING_MARKETS) });
+      return json({ profile: profileJson(user, profile), ...state, broker: { connected: false, mode: "paper", label: "التجربة جاهزة — لا تحتاج وسيط" }, supportedMarkets: Object.values(TRADING_MARKETS) });
     }
     return handlePost(request, await bodyOf(request));
   } catch (error) {
