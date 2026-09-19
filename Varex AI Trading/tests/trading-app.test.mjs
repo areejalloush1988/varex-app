@@ -49,13 +49,20 @@ test("uses resilient live market endpoints and never inserts sample trades", () 
 });
 
 test("guides a user from currency selection to AI analysis and a paper trade", () => {
-  assert.match(client, /ابدئي أول تجربة تداول الآن/);
+  assert.match(client, /بدء أول تجربة تداول/);
   assert.match(client, /data-action="guided-analysis"/);
   assert.match(client, /data-use-analysis/);
   assert.match(client, /await runAnalysis\(marketButton\.dataset\.market\)/);
   assert.match(client, /لم يُخصم أي مال حقيقي/);
   assert.match(access, /التجربة جاهزة — لا تحتاج وسيط/);
-  assert.match(html, /لا تحتاجين ربط وسيط أو إيداع مال/);
+  assert.match(html, /لا حاجة إلى ربط وسيط أو إيداع مال/);
+});
+
+test("keeps user-facing Arabic instructions gender neutral", () => {
+  const visibleCopy = [html, client, access].join("\n");
+  assert.doesNotMatch(visibleCopy, /ابدئي|اختاري|شغّلي|افتحي|حلّلي|دعي|جرّبي|تحتاجين|تؤكدين|استخدمي|راجعي/);
+  assert.doesNotMatch(visibleCopy, /(?:^|[\s،.!؟>"'])(?:ادخل|أدخل|اختر|سجّل|أكد|اطلب|أعد|ابدأ|افتح|احفظ|راجع|أضف|حدّد|استخدم)(?=[\s،.!؟<"'])/);
+  assert.match(client, /اختيار عملة، تشغيل تحليل VAREX، ثم تجربة صفقة ورقية/);
 });
 
 test("persists profiles, invites and trading state in D1", () => {
