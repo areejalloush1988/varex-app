@@ -105,6 +105,26 @@
     const password = String(value || "");
     return password.length >= 8 && /[A-Z]/.test(password) && /[a-z]/.test(password) && /[0-9]/.test(password) && /[^A-Za-z0-9]/.test(password);
   }
+  function updatePasswordRules(value) {
+    const password = String(value || ""), checks = {
+      length: password.length >= 8,
+      upper: /[A-Z]/.test(password),
+      lower: /[a-z]/.test(password),
+      number: /[0-9]/.test(password),
+      symbol: /[^A-Za-z0-9]/.test(password),
+    };
+    $$('[data-password-rule]').forEach((rule) => rule.classList.toggle("valid", Boolean(checks[rule.dataset.passwordRule])));
+  }
+  function togglePassword(button) {
+    const input = button.closest(".password-field")?.querySelector("input");
+    if (!input) return;
+    const reveal = input.type === "password";
+    input.type = reveal ? "text" : "password";
+    button.textContent = reveal ? "إخفاء" : "إظهار";
+    button.setAttribute("aria-pressed", String(reveal));
+    button.setAttribute("aria-label", reveal ? "إخفاء كلمة المرور" : "إظهار كلمة المرور");
+    input.focus({ preventScroll: true });
+  }
   function showAuthPane(id) {
     $$(".auth-pane").forEach((pane) => pane.classList.toggle("hidden", pane.id !== id));
     showAuthMessage();
@@ -176,9 +196,14 @@
 
   function bindAuth() {
     document.addEventListener("click", (event) => {
+      const passwordToggle = event.target.closest("[data-password-toggle]");
+      if (passwordToggle) return togglePassword(passwordToggle);
       const switcher = event.target.closest("[data-auth-pane]");
       if (switcher) showAuthPane(switcher.dataset.authPane);
     });
+    const registerPassword = $('#registerPane [name="password"]');
+    registerPassword.addEventListener("input", () => updatePasswordRules(registerPassword.value));
+    updatePasswordRules(registerPassword.value);
     $("#loginForm").addEventListener("submit", async (event) => {
       event.preventDefault();
       const form = event.currentTarget, data = new FormData(form);
@@ -192,9 +217,10 @@
     $("#registerPane").addEventListener("submit", async (event) => {
       event.preventDefault();
       const form = event.currentTarget, data = new FormData(form);
-      const displayName = String(data.get("displayName") || "").trim(), email = String(data.get("email") || "").trim().toLowerCase(), password = String(data.get("password") || "");
+      const displayName = String(data.get("displayName") || "").trim(), email = String(data.get("email") || "").trim().toLowerCase(), password = String(data.get("password") || ""), confirmPassword = String(data.get("confirmPassword") || "");
       if (displayName.length < 2) return showAuthMessage("أدخل اسم مستخدم واضحاً.");
       if (!passwordStrong(password)) return showAuthMessage("كلمة المرور يجب أن تحتوي على حرف كبير وصغير ورقم ورمز خاص، و8 أحرف على الأقل.");
+      if (password !== confirmPassword) return showAuthMessage("كلمتا المرور غير متطابقتين. أعد كتابتهما بشكل متطابق.");
       try {
         await runForm(form, async () => {
           await authRequest("/api/auth/sign-up/email", { name: displayName, email, password, rememberMe: false });
@@ -271,6 +297,8 @@
       if (button) goTo(button.dataset.view);
     });
     $(".sidebar-bottom").addEventListener("click", (event) => {
+      const action = event.target.closest("[data-action]")?.dataset.action;
+      if (action === "logout") return logout();
       const button = event.target.closest("[data-view]");
       if (button) goTo(button.dataset.view);
     });
@@ -514,7 +542,6 @@
     const settings = app.state.settings;
     return `<section class="settings-stack"><form class="panel" id="profileForm"><header class="panel-head"><div><h2>بيانات الحساب</h2><p>يظهر اسم المستخدم في التحية والقائمة.</p></div></header><div class="form-grid"><label class="control">اسم المستخدم<input name="displayName" value="${escapeHtml(app.profile.displayName)}" maxlength="80" required></label><label class="control">البريد الإلكتروني<input value="${escapeHtml(app.profile.email)}" disabled dir="ltr"></label></div><button class="primary-button" type="submit">حفظ اسم المستخدم</button></form>
       <form class="panel" id="settingsForm"><header class="panel-head"><div><h2>تفضيلات الواجهة</h2><p>محفوظة في حسابك على قاعدة البيانات.</p></div></header><div class="form-grid"><label class="control">المنطقة الزمنية<select name="timezone"><option value="Asia/Dubai" ${settings.timezone === "Asia/Dubai" ? "selected" : ""}>الإمارات — دبي</option><option value="Asia/Riyadh" ${settings.timezone === "Asia/Riyadh" ? "selected" : ""}>السعودية — الرياض</option><option value="UTC" ${settings.timezone === "UTC" ? "selected" : ""}>UTC</option></select></label></div><div class="toggle-row"><p><b>إشعارات داخل التطبيق</b><small>إظهار تنبيهات نجاح العمليات وأخطاء السوق</small></p><button type="button" class="switch ${settings.notifications ? "on" : ""}" data-toggle-setting="notifications"><i></i></button></div><div class="toggle-row"><p><b>الوضع المضغوط</b><small>جاهز للاستخدام في تحديث واجهة لاحق</small></p><button type="button" class="switch ${settings.compactMode ? "on" : ""}" data-toggle-setting="compactMode"><i></i></button></div><button class="primary-button" type="submit">حفظ التفضيلات</button></form>
-      <article class="panel"><header class="panel-head"><div><h2>الجلسة</h2><p>الدور الحالي: ${roleLabel(app.profile.role)}</p></div></header><button class="secondary-button" data-action="logout">تسجيل الخروج</button></article>
       ${app.profile.canTrade ? '<article class="panel danger-zone"><header class="panel-head"><div><h2>إعادة ضبط التداول الورقي</h2><p>يحذف الصفقات والتحليلات ويعيد الرصيد إلى 25,000 دولار. لا يحذف الحساب أو المستخدمين.</p></div></header><button class="danger-button" data-action="reset-paper">إعادة الضبط</button></article>' : ""}
     </section>`;
   }
