@@ -16,6 +16,17 @@ test("includes all VAREX AI Trading workspaces", () => {
   assert.match(client, /profile\.displayName/);
 });
 
+test("includes password visibility, confirmation, strength rules and sidebar logout", () => {
+  assert.match(html, /name="confirmPassword"/);
+  assert.ok((html.match(/data-password-toggle/g) || []).length >= 4);
+  for (const rule of ["length", "upper", "lower", "number", "symbol"]) {
+    assert.match(html, new RegExp(`data-password-rule="${rule}"`));
+  }
+  assert.match(client, /password !== confirmPassword/);
+  assert.match(client, /input\.type = reveal \? "text" : "password"/);
+  assert.match(html, /class="nav-item logout-item"[^>]*data-action="logout"/);
+});
+
 test("persists paper trading and uses live primary market data", () => {
   assert.match(access, /mode: "paper"/);
   assert.match(access, /UPDATE trading_state SET state_json/);
