@@ -4,18 +4,18 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="theme-color" content="#07111f">
-  <meta name="description" content="VAREX AI Trading — منصة تداول ورقي ذكية ببيانات سوق حية وإدارة مخاطر.">
+  <meta name="description" content="VAREX AI Trading — تحليل سوق وتداول ورقي وربط آمن بحساب Binance Spot.">
   <meta name="robots" content="noindex">
   <link rel="icon" type="image/svg+xml" href="./favicon.svg">
-  <link rel="stylesheet" href="./styles.css?v=5">
+  <link rel="stylesheet" href="./styles.css?v=6">
   <title>VAREX AI Trading</title>
 </head>
 <body>
   <section class="auth-screen" id="authScreen">
     <div class="auth-visual">
       <div class="visual-brand"><span class="brand-mark">↗</span><span><b>VAREX</b><small>AI TRADING</small></span></div>
-      <div class="visual-copy"><span class="eyebrow">منصة تداول ورقي ذكية</span><h1>مراقبة السوق، اختبار القرارات، وضبط المخاطر.</h1><p>بيانات سوق حية، تحليل احتمالي، وصفقات ورقية محفوظة. التنفيذ بأموال حقيقية غير مفعّل حتى ربط وسيط معتمد.</p></div>
-      <div class="visual-points"><span>✓ حسابات موثقة</span><span>✓ بيانات محفوظة</span><span>✓ صلاحيات حسابات</span></div>
+      <div class="visual-copy"><span class="eyebrow">منصة تداول ذكية</span><h1>مراقبة السوق، اختبار القرارات، وربط حساب Spot.</h1><p>بيانات سوق حية، تحليل احتمالي، تداول ورقي، وربط مشفر بحساب Binance. الأموال تبقى دائماً داخل منصة التداول.</p></div>
+      <div class="visual-points"><span>✓ مفاتيح مشفرة</span><span>✓ السحب غير مسموح</span><span>✓ تأكيد يدوي لكل أمر حقيقي</span></div>
     </div>
     <div class="auth-card">
       <div class="mobile-auth-brand"><span class="brand-mark">↗</span><b>VAREX AI TRADING</b></div>
@@ -68,7 +68,7 @@
   <div class="app-shell hidden" id="appShell">
     <header class="topbar">
       <div class="brand"><button class="icon-button mobile-menu" id="menuButton" aria-label="فتح القائمة">☰</button><span class="brand-mark">↗</span><span class="brand-copy"><b>VAREX</b><small>AI TRADING</small></span></div>
-      <div class="top-status"><span class="status-chip live" id="marketStatus"><i></i> بيانات سوق حية</span><span class="status-chip paper">PAPER TRADING</span></div>
+      <div class="top-status"><span class="status-chip live" id="marketStatus"><i></i> بيانات سوق حية</span><span class="status-chip paper" id="executionStatus">PAPER TRADING</span></div>
       <button class="user-menu" id="userMenuButton"><span class="avatar" id="avatar">U</span><span><b id="topUserName">اسم المستخدم</b><small id="topUserRole">حساب</small></span></button>
     </header>
 
@@ -81,6 +81,7 @@
         <button class="nav-item" data-view="intelligence"><span>✦</span> فرص الذكاء</button>
         <button class="nav-item" data-view="trades"><span>▣</span> الصفقات</button>
         <button class="nav-item" data-view="risk"><span>◇</span> مركز المخاطر</button>
+        <button class="nav-item hidden" data-view="broker" id="brokerNav"><span>⇄</span> حساب التداول</button>
         <button class="nav-item" data-view="watchlist"><span>◉</span> قائمة المراقبة</button>
         <button class="nav-item" data-view="reports"><span>▤</span> التقارير</button>
         <button class="nav-item hidden" data-view="users" id="usersNav"><span>♙</span> الحسابات</button>
@@ -94,7 +95,7 @@
 
     <main class="workspace">
       <section class="page-header"><div><small id="dateLabel"></small><h1 id="pageTitle">صباح الخير، اسم المستخدم</h1><p id="pageSubtitle">بيانات حسابك الفعلية محفوظة وآمنة.</p></div><div id="pageActions"></div></section>
-      <section class="paper-banner"><span>◇</span><p><b>التجربة الحالية ورقية وآمنة للتعلّم</b><small>لا حاجة إلى ربط وسيط أو إيداع مال. الأسعار حية، لكن كل الصفقات تجريبية فقط.</small></p><strong id="brokerLabel">التجربة جاهزة — لا تحتاج وسيط</strong></section>
+      <section class="paper-banner" id="executionBanner"><span>◇</span><p><b id="executionBannerTitle">التجربة الحالية ورقية وآمنة للتعلّم</b><small id="executionBannerText">لا حاجة إلى ربط حساب تداول أو إيداع مال. الأسعار حية، لكن كل الصفقات تجريبية فقط.</small></p><strong id="brokerLabel">حساب التداول غير مربوط</strong></section>
       <div id="viewRoot" aria-live="polite"></div>
       <footer class="app-footer"><span>VAREX AI Trading</span><span>التحليل احتمالي وليس ضماناً للربح أو توصية استثمارية.</span></footer>
     </main>
@@ -103,6 +104,6 @@
   <div class="loading-screen" id="loadingScreen"><span class="loader"></span><b>جاري تجهيز مساحة التداول…</b></div>
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
   <div class="modal hidden" id="confirmModal" role="dialog" aria-modal="true"><div><h3 id="confirmTitle">تأكيد الإجراء</h3><p id="confirmText"></p><footer><button class="secondary-button" id="confirmCancel">إلغاء</button><button class="danger-button" id="confirmAccept">تأكيد</button></footer></div></div>
-  <script src="./app.js?v=5"></script>
+  <script src="./app.js?v=6"></script>
 </body>
 </html>

@@ -1,4 +1,13 @@
 import { getCashierAuth, type CashierAuthEnv } from "@/lib/auth";
+import {
+  decryptTradingSecret,
+  encryptTradingSecret,
+  placeBinanceMarketOrder,
+  TradingBrokerError,
+  validateBinanceConnection,
+  type BinanceAccountSummary,
+  type BinanceCredentials,
+} from "@/lib/trading-broker";
 import { analyzeSnapshot, getMarketBoard, getMarketSnapshot, normalizeTradingSymbol, TRADING_MARKETS, TradingMarketError } from "@/lib/trading-market";
 
 type AccountUser = { id: string; name: string; email: string; emailVerified?: boolean };
@@ -33,6 +42,37 @@ type TradingStateData = {
   trades: PaperTrade[];
   analyses: Array<Record<string, unknown>>;
   settings: { notifications: boolean; timezone: string; compactMode: boolean };
+};
+type BrokerConnectionRow = {
+  userId: string;
+  provider: "binance";
+  accountLabel: string;
+  apiKeyCiphertext: string;
+  apiKeyIv: string;
+  apiSecretCiphertext: string;
+  apiSecretIv: string;
+  keyFingerprint: string;
+  status: "connected" | "error";
+  liveTradingEnabled: number | boolean;
+  maxLiveOrderCents: number;
+  permissionSnapshot: string;
+  lastError: string | null;
+  lastCheckedAt: number | null;
+  createdAt: number;
+  updatedAt: number;
+};
+type LiveOrderRow = {
+  id: string;
+  clientOrderId: string;
+  providerOrderId: string | null;
+  symbol: string;
+  side: "buy" | "sell";
+  quoteAmountCents: number;
+  executedQuoteAmount: string | null;
+  executedQuantity: string | null;
+  status: "pending" | "submitted" | "filled" | "rejected" | "unknown";
+  requestedAt: number;
+  updatedAt: number;
 };
 
 export const TRADING_DEVELOPER_EMAIL = "areejalloush1988@gmail.com";
@@ -169,6 +209,132 @@ async function requireAccess(request: Request, roles?: TradingRole[]) {
   return { user, profile, environment: await runtime() };
 }
 
+async function requireBrokerAccess(request: Request) {
+  const access = await requireAccess(request, ["developer"]);
+  if (!isTradingDeveloperEmail(access.user.email)) throw new TradingAccessError(403, "ربط التداول الحقيقي متاح لحساب الإدارة الأساسي فقط.");
+  return access;
+}
+
+function credentialKey(environment: CashierAuthEnv) {
+  const value = String(environment.TRADING_CREDENTIAL_KEY || "");
+  if (!value) throw new TradingAccessError(503, "حماية بيانات ربط التداول غير مجهزة حالياً.");
+  return value;
+}
+
+async function brokerConnection(environment: CashierAuthEnv, userId: string) {
+  return environment.DB.prepare(`SELECT user_id AS userId, provider, account_label AS accountLabel,
+      api_key_ciphertext AS apiKeyCiphertext, api_key_iv AS apiKeyIv,
+      api_secret_ciphertext AS apiSecretCiphertext, api_secret_iv AS apiSecretIv,
+      key_fingerprint AS keyFingerprint, status, live_trading_enabled AS liveTradingEnabled,
+      max_live_order_cents AS maxLiveOrderCents, permission_snapshot AS permissionSnapshot,
+      last_error AS lastError, last_checked_at AS lastCheckedAt, created_at AS createdAt, updated_at AS updatedAt
+      FROM trading_broker_connection WHERE user_id = ? LIMIT 1`)
+    .bind(userId).first<BrokerConnectionRow>();
+}
+
+async function brokerCredentials(environment: CashierAuthEnv, connection: BrokerConnectionRow): Promise<BinanceCredentials> {
+  const masterKey = credentialKey(environment);
+  const [apiKey, apiSecret] = await Promise.all([
+    decryptTradingSecret({ ciphertext: connection.apiKeyCiphertext, iv: connection.apiKeyIv }, masterKey),
+    decryptTradingSecret({ ciphertext: connection.apiSecretCiphertext, iv: connection.apiSecretIv }, masterKey),
+  ]);
+  return { apiKey, apiSecret };
+}
+
+function parseAccountSummary(value: string): BinanceAccountSummary | null {
+  try {
+    const parsed = JSON.parse(value) as BinanceAccountSummary;
+    return parsed?.provider === "binance" && Array.isArray(parsed.balances) ? parsed : null;
+  } catch { return null; }
+}
+
+async function liveOrders(environment: CashierAuthEnv, userId: string) {
+  const rows = await environment.DB.prepare(`SELECT id, client_order_id AS clientOrderId, provider_order_id AS providerOrderId,
+      symbol, side, quote_amount_cents AS quoteAmountCents, executed_quote_amount AS executedQuoteAmount,
+      executed_quantity AS executedQuantity, status, requested_at AS requestedAt, updated_at AS updatedAt
+      FROM trading_live_order WHERE user_id = ? ORDER BY requested_at DESC LIMIT 100`).bind(userId).all<LiveOrderRow>();
+  return rows.results || [];
+}
+
+function brokerPayload(connection: BrokerConnectionRow | null, orders: LiveOrderRow[] = []) {
+  if (!connection) return {
+    available: true,
+    connected: false,
+    mode: "paper",
+    provider: "binance",
+    label: "حساب التداول غير مربوط",
+    liveTradingEnabled: false,
+    maxLiveOrderUsd: 100,
+    balances: [],
+    orders,
+  };
+  const summary = parseAccountSummary(connection.permissionSnapshot);
+  const liveTradingEnabled = Boolean(connection.liveTradingEnabled) && connection.status === "connected";
+  return {
+    available: true,
+    connected: true,
+    mode: liveTradingEnabled ? "live-ready" : "paper",
+    provider: connection.provider,
+    providerLabel: "Binance Spot",
+    accountLabel: connection.accountLabel,
+    keyFingerprint: connection.keyFingerprint,
+    status: connection.status,
+    liveTradingEnabled,
+    maxLiveOrderUsd: connection.maxLiveOrderCents / 100,
+    lastCheckedAt: connection.lastCheckedAt,
+    lastError: connection.lastError,
+    permissions: summary?.permissions || null,
+    balances: summary?.balances || [],
+    availableUsdt: summary?.availableUsdt || 0,
+    accountType: summary?.accountType || "SPOT",
+    label: liveTradingEnabled ? "Binance مربوط · التداول الحقيقي بتأكيد يدوي" : "Binance مربوط · التداول الحقيقي متوقف",
+    orders,
+  };
+}
+
+async function brokerState(environment: CashierAuthEnv, profile: ProfileRow) {
+  if (profile.role !== "developer") return {
+    available: false,
+    connected: false,
+    mode: "paper",
+    label: "التداول الورقي فقط لهذا الحساب",
+    liveTradingEnabled: false,
+    balances: [],
+    orders: [],
+  };
+  const connection = await brokerConnection(environment, profile.userId);
+  return brokerPayload(connection, await liveOrders(environment, profile.userId));
+}
+
+async function saveConnectionSnapshot(environment: CashierAuthEnv, userId: string, summary: BinanceAccountSummary) {
+  const now = Date.now();
+  await environment.DB.prepare(`UPDATE trading_broker_connection SET status = 'connected', permission_snapshot = ?,
+    last_error = NULL, last_checked_at = ?, updated_at = ? WHERE user_id = ?`)
+    .bind(JSON.stringify(summary), now, now, userId).run();
+}
+
+async function markConnectionError(environment: CashierAuthEnv, userId: string, message: string) {
+  const now = Date.now();
+  await environment.DB.prepare(`UPDATE trading_broker_connection SET status = 'error', live_trading_enabled = 0,
+    last_error = ?, last_checked_at = ?, updated_at = ? WHERE user_id = ?`)
+    .bind(message.slice(0, 240), now, now, userId).run();
+}
+
+function cleanCredential(value: unknown, label: string) {
+  const credential = String(value || "").trim();
+  if (credential.length < 16 || credential.length > 256 || /\s/.test(credential)) throw new TradingAccessError(400, `${label} غير صالح.`);
+  return credential;
+}
+
+function orderJson(order: LiveOrderRow) {
+  return {
+    ...order,
+    quoteAmount: order.quoteAmountCents / 100,
+    requestedAt: new Date(order.requestedAt).toISOString(),
+    updatedAt: new Date(order.updatedAt).toISOString(),
+  };
+}
+
 async function stateFor(profile: ProfileRow) {
   const database = (await runtime()).DB;
   let row = await database.prepare("SELECT state_json AS stateJson, version FROM trading_state WHERE user_id = ? LIMIT 1")
@@ -201,7 +367,16 @@ async function mutateState(profile: ProfileRow, change: (state: TradingStateData
 }
 
 function profileJson(user: AccountUser, profile: ProfileRow) {
-  return { id: profile.userId, email: normalizeTradingEmail(user.email), displayName: profile.displayName, role: profile.role, status: profile.status, canManageUsers: profile.role === "developer", canTrade: profile.role !== "viewer" };
+  return {
+    id: profile.userId,
+    email: normalizeTradingEmail(user.email),
+    displayName: profile.displayName,
+    role: profile.role,
+    status: profile.status,
+    canManageUsers: profile.role === "developer",
+    canTrade: profile.role !== "viewer",
+    canConnectBroker: profile.role === "developer" && isTradingDeveloperEmail(user.email),
+  };
 }
 
 async function listUsers(request: Request) {
@@ -210,7 +385,7 @@ async function listUsers(request: Request) {
       p.created_at AS createdAt, p.updated_at AS updatedAt FROM trading_profile p JOIN "user" u ON u.id = p.user_id ORDER BY p.created_at ASC`).all<Record<string, unknown>>();
   const invites = await environment.DB.prepare(`SELECT id, email, display_name AS displayName, role, status, created_at AS createdAt,
       updated_at AS updatedAt FROM trading_invite WHERE status = 'pending' ORDER BY created_at DESC`).all<Record<string, unknown>>();
-  return [...(profiles.results || []), ...(invites.results || []).map((invite) => ({ ...invite, pending: true }))];
+  return [...(profiles.results || []), ...(invites.results || []).map((invite: Record<string, unknown>) => ({ ...invite, pending: true }))];
 }
 
 function startOfUtcDay() { const date = new Date(); return Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()); }
@@ -219,8 +394,156 @@ function realizedToday(state: TradingStateData) {
   return state.trades.filter((trade) => trade.status === "closed" && trade.closedAt && Date.parse(trade.closedAt) >= start).reduce((total, trade) => total + Number(trade.pnl || 0), 0);
 }
 
+async function connectBroker(request: Request, body: Record<string, unknown>) {
+  const { profile, environment } = await requireBrokerAccess(request);
+  if (body.fundsAtProvider !== true) throw new TradingAccessError(400, "يلزم تأكيد بقاء الإيداع والسحب داخل منصة التداول.");
+  if (String(body.provider || "binance") !== "binance") throw new TradingAccessError(400, "المزود غير مدعوم حالياً.");
+  const apiKey = cleanCredential(body.apiKey, "API Key"), apiSecret = cleanCredential(body.apiSecret, "Secret Key");
+  const accountLabel = cleanName(body.accountLabel, "حساب Binance Spot");
+  const summary = await validateBinanceConnection({ apiKey, apiSecret });
+  const masterKey = credentialKey(environment);
+  const [encryptedKey, encryptedSecret] = await Promise.all([
+    encryptTradingSecret(apiKey, masterKey),
+    encryptTradingSecret(apiSecret, masterKey),
+  ]);
+  const now = Date.now();
+  await environment.DB.prepare(`INSERT INTO trading_broker_connection
+    (user_id, provider, account_label, api_key_ciphertext, api_key_iv, api_secret_ciphertext, api_secret_iv,
+      key_fingerprint, status, live_trading_enabled, max_live_order_cents, permission_snapshot,
+      last_error, last_checked_at, created_at, updated_at)
+    VALUES (?, 'binance', ?, ?, ?, ?, ?, ?, 'connected', 0, 10000, ?, NULL, ?, ?, ?)
+    ON CONFLICT(user_id) DO UPDATE SET provider = 'binance', account_label = excluded.account_label,
+      api_key_ciphertext = excluded.api_key_ciphertext, api_key_iv = excluded.api_key_iv,
+      api_secret_ciphertext = excluded.api_secret_ciphertext, api_secret_iv = excluded.api_secret_iv,
+      key_fingerprint = excluded.key_fingerprint, status = 'connected', live_trading_enabled = 0,
+      permission_snapshot = excluded.permission_snapshot, last_error = NULL,
+      last_checked_at = excluded.last_checked_at, updated_at = excluded.updated_at`)
+    .bind(profile.userId, accountLabel, encryptedKey.ciphertext, encryptedKey.iv, encryptedSecret.ciphertext,
+      encryptedSecret.iv, apiKey.slice(-4), JSON.stringify(summary), now, now, now).run();
+  return json({ connected: true, broker: await brokerState(environment, profile) });
+}
+
+async function refreshBrokerConnection(environment: CashierAuthEnv, profile: ProfileRow) {
+  const connection = await brokerConnection(environment, profile.userId);
+  if (!connection) throw new TradingAccessError(404, "حساب التداول غير مربوط.");
+  try {
+    const summary = await validateBinanceConnection(await brokerCredentials(environment, connection));
+    await saveConnectionSnapshot(environment, profile.userId, summary);
+    return { connection: await brokerConnection(environment, profile.userId) as BrokerConnectionRow, summary };
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "تعذر التحقق من حساب التداول.";
+    await markConnectionError(environment, profile.userId, message);
+    throw error;
+  }
+}
+
+async function refreshBroker(request: Request) {
+  const { profile, environment } = await requireBrokerAccess(request);
+  await refreshBrokerConnection(environment, profile);
+  return json({ refreshed: true, broker: await brokerState(environment, profile) });
+}
+
+async function configureLiveTrading(request: Request, body: Record<string, unknown>) {
+  const { profile, environment } = await requireBrokerAccess(request);
+  const enabled = body.enabled === true;
+  if (!enabled) {
+    await environment.DB.prepare("UPDATE trading_broker_connection SET live_trading_enabled = 0, updated_at = ? WHERE user_id = ?")
+      .bind(Date.now(), profile.userId).run();
+    return json({ saved: true, broker: await brokerState(environment, profile) });
+  }
+  if (body.confirmation !== "ENABLE_LIVE_SPOT") throw new TradingAccessError(400, "يلزم تأكيد تفعيل التداول الحقيقي.");
+  const maxLiveOrderUsd = Number(body.maxLiveOrderUsd);
+  if (!Number.isFinite(maxLiveOrderUsd) || maxLiveOrderUsd < 25 || maxLiveOrderUsd > 10_000) {
+    throw new TradingAccessError(400, "حد الصفقة الحقيقية يجب أن يكون بين 25 و10,000 دولار.");
+  }
+  await refreshBrokerConnection(environment, profile);
+  const now = Date.now();
+  await environment.DB.prepare(`UPDATE trading_broker_connection SET live_trading_enabled = 1,
+    max_live_order_cents = ?, status = 'connected', last_error = NULL, updated_at = ? WHERE user_id = ?`)
+    .bind(Math.round(maxLiveOrderUsd * 100), now, profile.userId).run();
+  return json({ saved: true, broker: await brokerState(environment, profile) });
+}
+
+async function disconnectBroker(request: Request, body: Record<string, unknown>) {
+  const { profile, environment } = await requireBrokerAccess(request);
+  if (body.confirmation !== "DISCONNECT_BROKER") throw new TradingAccessError(400, "يلزم تأكيد فصل حساب التداول.");
+  await environment.DB.prepare("DELETE FROM trading_broker_connection WHERE user_id = ?").bind(profile.userId).run();
+  return json({ disconnected: true, broker: await brokerState(environment, profile) });
+}
+
+async function placeLiveOrder(request: Request, body: Record<string, unknown>) {
+  const { profile, environment } = await requireBrokerAccess(request);
+  if (body.confirmation !== "LIVE_ORDER_CONFIRMED") throw new TradingAccessError(400, "يلزم تأكيد الصفقة الحقيقية قبل التنفيذ.");
+  const connection = await brokerConnection(environment, profile.userId);
+  if (!connection || connection.status !== "connected" || !Boolean(connection.liveTradingEnabled)) {
+    throw new TradingAccessError(409, "التداول الحقيقي غير مفعّل لهذا الحساب.");
+  }
+  const amount = Number(body.amount), amountCents = Math.round(amount * 100);
+  if (!Number.isFinite(amount) || amountCents < 2500) throw new TradingAccessError(400, "الحد الأدنى للصفقة الحقيقية 25 دولاراً.");
+  if (amountCents > connection.maxLiveOrderCents) throw new TradingAccessError(400, `حجم الصفقة يتجاوز الحد المضبوط وهو ${connection.maxLiveOrderCents / 100} دولار.`);
+  const symbol = String(body.symbol || "").toUpperCase();
+  if (!SUPPORTED_SYMBOLS.has(symbol)) throw new TradingAccessError(400, "السوق المطلوب غير مدعوم في التداول الحقيقي حالياً.");
+  if (body.side !== "buy" && body.side !== "sell") throw new TradingAccessError(400, "اتجاه الصفقة غير صالح.");
+  const side: "buy" | "sell" = body.side;
+  const requestId = String(body.clientRequestId || "").trim();
+  if (!/^[a-f0-9-]{20,64}$/i.test(requestId)) throw new TradingAccessError(400, "معرّف طلب الصفقة غير صالح.");
+  const clientOrderId = `vx${requestId.replace(/-/g, "")}`.slice(0, 36);
+  const existing = await environment.DB.prepare(`SELECT id, client_order_id AS clientOrderId, provider_order_id AS providerOrderId,
+      symbol, side, quote_amount_cents AS quoteAmountCents, executed_quote_amount AS executedQuoteAmount,
+      executed_quantity AS executedQuantity, status, requested_at AS requestedAt, updated_at AS updatedAt
+      FROM trading_live_order WHERE client_order_id = ? AND user_id = ? LIMIT 1`).bind(clientOrderId, profile.userId).first<LiveOrderRow>();
+  if (existing) return json({ submitted: existing.status === "filled" || existing.status === "submitted", duplicate: true, order: orderJson(existing), broker: await brokerState(environment, profile) });
+
+  const orderId = crypto.randomUUID(), now = Date.now();
+  await environment.DB.prepare(`INSERT INTO trading_live_order
+    (id, user_id, provider, client_order_id, symbol, side, quote_amount_cents, status, requested_at, updated_at)
+    VALUES (?, ?, 'binance', ?, ?, ?, ?, 'pending', ?, ?)`)
+    .bind(orderId, profile.userId, clientOrderId, symbol, side, amountCents, now, now).run();
+
+  let credentials: BinanceCredentials;
+  try {
+    credentials = await brokerCredentials(environment, connection);
+    const summary = await validateBinanceConnection(credentials);
+    await saveConnectionSnapshot(environment, profile.userId, summary);
+    if (side === "buy" && amount > summary.availableUsdt) {
+      throw new TradingBrokerError(400, "رصيد USDT المتاح لا يكفي لتنفيذ أمر الشراء.");
+    }
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "تعذر التحقق من صلاحيات حساب التداول.";
+    await environment.DB.batch([
+      environment.DB.prepare("UPDATE trading_live_order SET status = 'rejected', updated_at = ? WHERE id = ?").bind(Date.now(), orderId),
+      environment.DB.prepare(`UPDATE trading_broker_connection SET status = 'error', live_trading_enabled = 0,
+        last_error = ?, last_checked_at = ?, updated_at = ? WHERE user_id = ?`).bind(message.slice(0, 240), Date.now(), Date.now(), profile.userId),
+    ]);
+    throw error;
+  }
+
+  try {
+    const result = await placeBinanceMarketOrder(credentials, { symbol, side, quoteAmount: amount, clientOrderId });
+    const status = result.status === "FILLED" ? "filled" : "submitted", updatedAt = Date.now();
+    await environment.DB.prepare(`UPDATE trading_live_order SET provider_order_id = ?, executed_quote_amount = ?,
+      executed_quantity = ?, status = ?, updated_at = ? WHERE id = ?`)
+      .bind(result.providerOrderId, result.executedQuoteAmount, result.executedQuantity, status, updatedAt, orderId).run();
+    const saved = await environment.DB.prepare(`SELECT id, client_order_id AS clientOrderId, provider_order_id AS providerOrderId,
+      symbol, side, quote_amount_cents AS quoteAmountCents, executed_quote_amount AS executedQuoteAmount,
+      executed_quantity AS executedQuantity, status, requested_at AS requestedAt, updated_at AS updatedAt
+      FROM trading_live_order WHERE id = ?`).bind(orderId).first<LiveOrderRow>();
+    return json({ submitted: true, order: saved ? orderJson(saved) : result, broker: await brokerState(environment, profile) });
+  } catch (error) {
+    const uncertain = error instanceof TradingBrokerError && error.uncertain;
+    await environment.DB.prepare("UPDATE trading_live_order SET status = ?, updated_at = ? WHERE id = ?")
+      .bind(uncertain ? "unknown" : "rejected", Date.now(), orderId).run();
+    throw error;
+  }
+}
+
 async function handlePost(request: Request, body: Record<string, unknown>) {
   const action = String(body.action || "");
+  if (action === "connect_broker") return connectBroker(request, body);
+  if (action === "refresh_broker") return refreshBroker(request);
+  if (action === "configure_live_trading") return configureLiveTrading(request, body);
+  if (action === "disconnect_broker") return disconnectBroker(request, body);
+  if (action === "place_live_order") return placeLiveOrder(request, body);
   if (action === "save_preferences") {
     const { profile } = await requireAccess(request);
     const result = await mutateState(profile, (state) => {
@@ -331,12 +654,18 @@ export async function tradingRequest(request: Request) {
         return json(await getMarketBoard(url.searchParams.get("symbol")));
       }
       if (action === "users") return json({ users: await listUsers(request) });
-      const { user, profile } = await requireAccess(request), state = await stateFor(profile);
-      return json({ profile: profileJson(user, profile), ...state, broker: { connected: false, mode: "paper", label: "التجربة جاهزة — لا تحتاج وسيط" }, supportedMarkets: Object.values(TRADING_MARKETS) });
+      const { user, profile, environment } = await requireAccess(request), state = await stateFor(profile);
+      return json({
+        profile: profileJson(user, profile),
+        ...state,
+        broker: await brokerState(environment, profile),
+        supportedMarkets: Object.values(TRADING_MARKETS),
+      });
     }
     return handlePost(request, await bodyOf(request));
   } catch (error) {
     if (error instanceof TradingAccessError) return json({ error: error.message }, error.status);
+    if (error instanceof TradingBrokerError) return json({ error: error.message, executionUncertain: error.uncertain }, error.status);
     if (error instanceof TradingMarketError) return json({ error: error.message, marketUnavailable: true }, 502);
     console.error("Trading request error", error);
     return json({ error: "تعذر إكمال الطلب حالياً." }, 500);

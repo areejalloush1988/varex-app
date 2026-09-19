@@ -14,6 +14,7 @@
     users: [],
     view: "dashboard",
     tradeSide: "buy",
+    executionMode: "paper",
     marketError: "",
     usersLoading: false,
   };
@@ -189,9 +190,29 @@
     $("#topUserRole").textContent = roleLabel(profile.role);
     $("#avatar").textContent = initials(profile.displayName);
     $("#usersNav").classList.toggle("hidden", !profile.canManageUsers);
-    $("#brokerLabel").textContent = app.broker?.label || "التجربة جاهزة — لا تحتاج وسيط";
+    $("#brokerNav").classList.toggle("hidden", !profile.canConnectBroker);
+    updateExecutionUi();
     $("#dateLabel").textContent = new Date().toLocaleDateString("ar-AE", { weekday: "long", year: "numeric", month: "long", day: "numeric" });
     document.documentElement.classList.toggle("compact-mode", app.state?.settings?.compactMode === true);
+  }
+
+  function updateExecutionUi() {
+    const connected = app.broker?.connected === true;
+    const liveReady = connected && app.broker?.liveTradingEnabled === true;
+    $("#brokerLabel").textContent = app.broker?.label || "حساب التداول غير مربوط";
+    $("#executionStatus").textContent = liveReady ? "LIVE READY" : "PAPER TRADING";
+    $("#executionStatus").classList.toggle("live-ready", liveReady);
+    $("#executionBanner").classList.toggle("live-ready", liveReady);
+    if (liveReady) {
+      $("#executionBannerTitle").textContent = "حساب Binance مربوط — كل صفقة حقيقية تحتاج تأكيداً يدوياً";
+      $("#executionBannerText").textContent = "الإيداع والسحب يتمان من Binance فقط. VAREX لا يحتفظ بالأموال ولا يملك صلاحية نقلها.";
+    } else if (connected) {
+      $("#executionBannerTitle").textContent = "حساب Binance مربوط — التداول الحقيقي متوقف";
+      $("#executionBannerText").textContent = "يمكن الاستمرار بالتداول الورقي أو تفعيل التنفيذ الحقيقي من شاشة حساب التداول.";
+    } else {
+      $("#executionBannerTitle").textContent = "التجربة الحالية ورقية وآمنة للتعلّم";
+      $("#executionBannerText").textContent = "لا حاجة إلى ربط حساب تداول أو إيداع مال. الأسعار حية، لكن كل الصفقات تجريبية فقط.";
+    }
   }
 
   function bindAuth() {
@@ -310,6 +331,7 @@
   }
   function goTo(view) {
     if (view === "users" && !app.profile.canManageUsers) return;
+    if (view === "broker" && !app.profile.canConnectBroker) return;
     app.view = view;
     $$(".nav-item[data-view]").forEach((item) => item.classList.toggle("active", item.dataset.view === view));
     closeMenu();
@@ -377,8 +399,9 @@
     const map = {
       dashboard: [`${greeting()}، ${app.profile.displayName}`, "اختيار عملة، تشغيل تحليل VAREX، ثم تجربة صفقة ورقية."],
       intelligence: ["فرص الذكاء", "تحليل احتمالي مبني على أسعار السوق الحية وحركة آخر 24 ساعة."],
-      trades: ["الصفقات", "فتح وإغلاق صفقات ورقية بأسعار حية مع سجل كامل."],
+      trades: ["الصفقات", "فتح وإغلاق صفقات ورقية أو تنفيذ أمر Spot حقيقي بعد تأكيد واضح."],
       risk: ["مركز المخاطر", "حدود حقيقية يطبقها الخادم قبل السماح بأي صفقة ورقية."],
+      broker: ["حساب التداول", "ربط Binance Spot ومراجعة الرصيد والصلاحيات دون إتاحة السحب عبر VAREX."],
       watchlist: ["قائمة المراقبة", "اختيار الأسواق المطلوبة للمتابعة وحفظها في الحساب."],
       reports: ["التقارير", "نتائج محسوبة من صفقات حسابك المحفوظة فقط."],
       users: ["الحسابات", "إضافة الحسابات وتحديد صلاحية التداول أو العرض فقط."],
@@ -391,6 +414,7 @@
       dashboard: '<div class="panel-actions"><button class="primary-button" data-action="guided-analysis">✦ بدء التجربة</button><button class="small-button" data-action="refresh-markets">↻ تحديث الأسعار</button></div>',
       intelligence: '<button class="primary-button" data-action="analyze-current">✦ تحليل السوق المحدد</button>',
       reports: '<button class="primary-button" data-action="export-report">⇩ تصدير CSV</button>',
+      broker: app.broker?.connected ? '<button class="primary-button" data-action="refresh-broker">↻ فحص الاتصال والرصيد</button>' : "",
     };
     $("#pageActions").innerHTML = actions[app.view] || "";
   }
@@ -398,7 +422,7 @@
     if (!app.state || !app.profile) return;
     document.documentElement.classList.toggle("compact-mode", app.state.settings.compactMode === true);
     headerForView();
-    const renderers = { dashboard: renderDashboard, intelligence: renderIntelligence, trades: renderTrades, risk: renderRisk, watchlist: renderWatchlist, reports: renderReports, users: renderUsers, settings: renderSettings };
+    const renderers = { dashboard: renderDashboard, intelligence: renderIntelligence, trades: renderTrades, risk: renderRisk, broker: renderBroker, watchlist: renderWatchlist, reports: renderReports, users: renderUsers, settings: renderSettings };
     $("#viewRoot").innerHTML = (renderers[app.view] || renderDashboard)();
   }
   function statCard(icon, label, value, note, valueClass = "") {
@@ -440,13 +464,19 @@
   function tradeTicket() {
     const canTrade = app.profile.canTrade, marketOptions = app.markets.map((market) => `<option value="${market.symbol}" ${market.symbol === app.state.selectedSymbol ? "selected" : ""}>${market.label}</option>`).join("");
     const selected = getMarket(app.state.selectedSymbol) || app.selectedMarket;
-    return `<article class="panel"><header class="panel-head"><div><h2>فتح صفقة ورقية</h2><p>السعر يؤخذ من السوق عند تأكيد الطلب.</p></div><span class="badge pending">PAPER</span></header>
+    const liveReady = app.profile.canConnectBroker && app.broker?.connected && app.broker?.liveTradingEnabled;
+    if (!liveReady && app.executionMode === "live") app.executionMode = "paper";
+    const liveMode = liveReady && app.executionMode === "live";
+    const modePicker = app.profile.canConnectBroker ? `<div class="execution-picker"><button type="button" class="${!liveMode ? "active" : ""}" data-execution-mode="paper">تداول ورقي</button>${liveReady ? `<button type="button" class="${liveMode ? "active live" : ""}" data-execution-mode="live">تداول حقيقي</button>` : '<button type="button" data-view="broker">إعداد التداول الحقيقي</button>'}</div>` : "";
+    return `<article class="panel ${liveMode ? "live-ticket" : ""}"><header class="panel-head"><div><h2>${liveMode ? "تنفيذ صفقة حقيقية" : "فتح صفقة ورقية"}</h2><p>${liveMode ? "يُرسل أمر MARKET إلى Binance Spot بعد تأكيد مستقل." : "السعر يؤخذ من السوق عند تأكيد الطلب."}</p></div><span class="badge ${liveMode ? "live" : "pending"}">${liveMode ? "LIVE" : "PAPER"}</span></header>
       ${canTrade ? `<form class="trade-ticket" id="tradeForm">
+        ${modePicker}
         <label class="control">السوق<select name="symbol">${marketOptions}</select></label>
         <div class="side-picker"><button type="button" class="${app.tradeSide === "buy" ? "active" : ""}" data-side="buy">↗ شراء</button><button type="button" class="${app.tradeSide === "sell" ? "active" : ""}" data-side="sell">↘ بيع</button></div>
-        <label class="control">حجم الصفقة بالدولار<input name="amount" type="number" min="25" step="25" value="500" required></label>
-        <div class="trade-summary"><p><span>السعر المعروض</span><b>${selected ? money(selected.price) : "يؤخذ عند التنفيذ"}</b></p><p><span>حد الصفقات المفتوحة</span><b>${app.state.risk.maxOpenTrades}</b></p><p><span>المخاطرة لكل صفقة</span><b>${app.state.risk.riskPerTradePct}%</b></p></div>
-        <button class="primary-button" type="submit">فتح صفقة ${app.tradeSide === "buy" ? "شراء" : "بيع"} ورقية</button>
+        <label class="control">${liveMode ? "قيمة الأمر بـ USDT" : "حجم الصفقة بالدولار"}<input name="amount" type="number" min="25" max="${liveMode ? Number(app.broker.maxLiveOrderUsd || 100) : "6250"}" step="25" value="${liveMode ? Math.min(100, Number(app.broker.maxLiveOrderUsd || 100)) : 500}" required></label>
+        <div class="trade-summary"><p><span>السعر المعروض</span><b>${selected ? money(selected.price) : "يؤخذ عند التنفيذ"}</b></p>${liveMode ? `<p><span>حد الأمر الحقيقي</span><b>${money(app.broker.maxLiveOrderUsd)}</b></p><p><span>رصيد USDT المتاح</span><b>${money(app.broker.availableUsdt)}</b></p>` : `<p><span>حد الصفقات المفتوحة</span><b>${app.state.risk.maxOpenTrades}</b></p><p><span>المخاطرة لكل صفقة</span><b>${app.state.risk.riskPerTradePct}%</b></p>`}</div>
+        ${liveMode ? '<div class="live-warning">صفقة حقيقية بأموال موجودة في Binance. لا يوجد ضمان للربح، ولا يمكن لـ VAREX سحب الأموال.</div>' : ""}
+        <button class="primary-button" type="submit">${liveMode ? `مراجعة أمر ${app.tradeSide === "buy" ? "شراء" : "بيع"} حقيقي` : `فتح صفقة ${app.tradeSide === "buy" ? "شراء" : "بيع"} ورقية`}</button>
       </form>` : '<div class="notice">صلاحية هذا الحساب للعرض فقط. يمكن لإدارة النظام تغييرها من شاشة الحسابات.</div>'}
     </article>`;
   }
@@ -507,7 +537,57 @@
       <label class="control">أقصى صفقات مفتوحة<input name="maxOpenTrades" type="number" min="1" max="10" step="1" value="${app.state.risk.maxOpenTrades}"></label>
       <label class="control">مخاطرة الصفقة %<input name="riskPerTradePct" type="number" min=".25" max="5" step=".25" value="${app.state.risk.riskPerTradePct}"></label>
     </div><div class="toggle-row"><p><b>تحديد وقف خسارة</b><small>يحفظ مستوى وقف محسوباً مع كل صفقة جديدة</small></p><button type="button" class="switch ${app.state.risk.autoStop ? "on" : ""}" data-toggle-risk="autoStop"><i></i></button></div><button class="primary-button" type="submit">حفظ حدود المخاطر</button></form>
-      <article class="panel"><header class="panel-head"><div><h2>حالة الحماية</h2><p>ملخص القرارات الحالية.</p></div></header><div class="notice">حد الخسارة وعدد الصفقات وحجم الصفقة تُفحص على الخادم، لذلك لا يمكن تجاوزها بتعديل الواجهة.</div><div class="toggle-row"><p><b>القدرة على التداول</b><small>حسب صلاحية الحساب</small></p><span class="badge ${app.profile.canTrade ? "active" : "inactive"}">${app.profile.canTrade ? "مسموح" : "عرض فقط"}</span></div><div class="toggle-row"><p><b>الوسيط المالي</b><small>يُطلب لاحقاً للتداول بأموال حقيقية فقط</small></p><span class="badge active">غير مطلوب للتجربة</span></div></article></section>`;
+      <article class="panel"><header class="panel-head"><div><h2>حالة الحماية</h2><p>ملخص القرارات الحالية.</p></div></header><div class="notice">حد الخسارة وعدد الصفقات وحجم الصفقة تُفحص على الخادم في التداول الورقي. التداول الحقيقي يطبق حد الأمر المضبوط في شاشة حساب التداول.</div><div class="toggle-row"><p><b>القدرة على التداول</b><small>حسب صلاحية الحساب</small></p><span class="badge ${app.profile.canTrade ? "active" : "inactive"}">${app.profile.canTrade ? "مسموح" : "عرض فقط"}</span></div><div class="toggle-row"><p><b>حساب Binance</b><small>الربط متاح لحساب الإدارة فقط</small></p><span class="badge ${app.broker?.connected ? "active" : "pending"}">${app.broker?.connected ? "مربوط" : "غير مربوط"}</span></div></article></section>`;
+  }
+
+  function balanceAmount(value) {
+    const number = Number(value);
+    if (!Number.isFinite(number)) return "—";
+    return new Intl.NumberFormat("en-US", { maximumFractionDigits: 8 }).format(number);
+  }
+
+  function permissionBadge(enabled, safeWhenDisabled = false) {
+    const safe = safeWhenDisabled ? !enabled : enabled;
+    return `<span class="badge ${safe ? "active" : "inactive"}">${enabled ? "مفعّلة" : "متوقفة"}</span>`;
+  }
+
+  function liveOrderStatus(status) {
+    return ({ filled: "منفّذ", submitted: "مُرسل", pending: "قيد الإرسال", rejected: "مرفوض", unknown: "تحتاج مراجعة" })[status] || status;
+  }
+
+  function renderBroker() {
+    if (!app.profile.canConnectBroker) return '<div class="notice">ربط حساب التداول الحقيقي متاح لحساب الإدارة الأساسي فقط. بقية الحسابات تعمل بالتداول الورقي.</div>';
+    const flow = `<section class="money-flow"><article><span>1</span><div><b>الإيداع</b><small>داخل Binance من حساب موثّق</small></div></article><i>←</i><article><span>2</span><div><b>التداول</b><small>VAREX يرسل أوامر Spot فقط</small></div></article><i>←</i><article><span>3</span><div><b>السحب</b><small>داخل Binance فقط</small></div></article></section>`;
+    if (!app.broker?.connected) {
+      return `${flow}<section class="content-grid equal-grid"><form class="panel broker-form" id="brokerConnectForm"><header class="panel-head"><div><span class="eyebrow">الموصل الأول</span><h2>ربط Binance Spot</h2><p>اختبار الصلاحيات أولاً ثم حفظ المفتاح مشفراً على الخادم.</p></div><span class="provider-logo">B</span></header>
+        <label class="control">اسم الحساب داخل VAREX<input name="accountLabel" maxlength="80" value="حساب Binance Spot" required></label>
+        <label class="control">API Key<span class="password-field"><input name="apiKey" type="password" autocomplete="off" spellcheck="false" dir="ltr" required><button class="password-toggle" type="button" data-password-toggle aria-label="إظهار API Key" aria-pressed="false">إظهار</button></span></label>
+        <label class="control">Secret Key<span class="password-field"><input name="apiSecret" type="password" autocomplete="off" spellcheck="false" dir="ltr" required><button class="password-toggle" type="button" data-password-toggle aria-label="إظهار Secret Key" aria-pressed="false">إظهار</button></span></label>
+        <label class="check security-check"><input name="fundsAtProvider" type="checkbox" required><span>تأكيد بقاء الإيداع والسحب داخل Binance وعدم مشاركة المفتاح خارج هذه الخانة.</span></label>
+        <button class="primary-button" type="submit">اختبار الصلاحيات وربط الحساب</button>
+      </form><article class="panel"><header class="panel-head"><div><h2>الصلاحيات المطلوبة</h2><p>يرفض VAREX المفتاح عند وجود صلاحية مالية زائدة.</p></div></header><div class="permission-list"><p><span>Reading</span><b class="positive">مطلوبة</b></p><p><span>Spot Trading</span><b class="positive">مطلوبة</b></p><p><span>Withdrawals</span><b class="negative">يجب تعطيلها</b></p><p><span>Internal / Universal Transfer</span><b class="negative">يجب تعطيلها</b></p><p><span>Margin / Futures / Options</span><b class="negative">يجب تعطيلها</b></p></div><div class="notice">إنشاء المفتاح يتم من صفحة API Management في Binance. لا يتم وضع أي عنوان سحب أو محفظة داخل VAREX.</div><div class="external-links"><a class="secondary-button" href="https://www.binance.com/en/my/settings/api-management" target="_blank" rel="noopener noreferrer">صفحة مفاتيح Binance ↗</a><a class="small-button" href="https://www.vara.ae/en/licenses-and-register/public-register/" target="_blank" rel="noopener noreferrer">سجل VARA العام ↗</a></div></article></section>`;
+    }
+
+    const permissions = app.broker.permissions || {};
+    const balances = (app.broker.balances || []).map((balance) => `<tr><td><b dir="ltr">${escapeHtml(balance.asset)}</b></td><td dir="ltr">${balanceAmount(balance.free)}</td><td dir="ltr">${balanceAmount(balance.locked)}</td><td dir="ltr">${balanceAmount(balance.total)}</td></tr>`).join("");
+    const orders = (app.broker.orders || []).map((order) => `<tr><td dir="ltr">${escapeHtml(order.symbol)}</td><td>${directionLabel(order.side)}</td><td dir="ltr">${money(Number(order.quoteAmountCents || 0) / 100)}</td><td><span class="badge ${order.status === "filled" ? "active" : order.status === "rejected" || order.status === "unknown" ? "inactive" : "pending"}">${liveOrderStatus(order.status)}</span></td><td dir="ltr">${escapeHtml(order.providerOrderId || "—")}</td><td>${localDate(order.requestedAt, true)}</td></tr>`).join("");
+    return `${flow}<section class="stats-grid">
+      ${statCard("B", "حالة الاتصال", app.broker.status === "connected" ? "متصل" : "يحتاج فحصاً", app.broker.accountLabel, app.broker.status === "connected" ? "positive" : "negative")}
+      ${statCard("$", "USDT المتاح", money(app.broker.availableUsdt), "رصيد Spot الحر في Binance")}
+      ${statCard("◇", "التداول الحقيقي", app.broker.liveTradingEnabled ? "مفعّل" : "متوقف", "تأكيد يدوي مطلوب لكل صفقة", app.broker.liveTradingEnabled ? "positive" : "")}
+      ${statCard("⇄", "حد الأمر", money(app.broker.maxLiveOrderUsd), "يمكن ضبطه قبل التفعيل")}
+    </section><section class="content-grid equal-grid"><article class="panel"><header class="panel-head"><div><h2>تفاصيل الربط</h2><p>${escapeHtml(app.broker.providerLabel || "Binance Spot")} · المفتاح المنتهي بـ ${escapeHtml(app.broker.keyFingerprint || "—")}</p></div><span class="badge ${app.broker.status === "connected" ? "active" : "inactive"}">${app.broker.status === "connected" ? "آمن" : "خطأ"}</span></header>
+      <div class="permission-list"><p><span>القراءة</span>${permissionBadge(permissions.reading)}</p><p><span>Spot Trading</span>${permissionBadge(permissions.spotTrading)}</p><p><span>السحب</span>${permissionBadge(permissions.withdrawals, true)}</p><p><span>نقل الأموال</span>${permissionBadge(Boolean(permissions.internalTransfer || permissions.universalTransfer), true)}</p><p><span>Margin / Futures / Options</span>${permissionBadge(Boolean(permissions.margin || permissions.futures || permissions.options || permissions.portfolioMargin), true)}</p></div>
+      <div class="notice">آخر فحص: ${localDate(app.broker.lastCheckedAt, true)}. مفاتيح الربط لا تظهر مجدداً بعد الحفظ.</div>${app.broker.lastError ? `<div class="live-warning">${escapeHtml(app.broker.lastError)}</div>` : ""}
+      <div class="panel-actions broker-actions"><button class="secondary-button" data-action="refresh-broker">فحص الاتصال</button><button class="danger-button" data-action="disconnect-broker">فصل الحساب</button></div></article>
+      <form class="panel" id="liveConfigForm"><header class="panel-head"><div><h2>ضبط التداول الحقيقي</h2><p>التنفيذ يبقى يدوياً؛ لا توجد أوامر تلقائية أثناء النوم.</p></div><span class="badge ${app.broker.liveTradingEnabled ? "active" : "pending"}">${app.broker.liveTradingEnabled ? "LIVE READY" : "متوقف"}</span></header>
+        <label class="control">الحد الأعلى لكل أمر بالدولار<input name="maxLiveOrderUsd" type="number" min="25" max="10000" step="25" value="${Number(app.broker.maxLiveOrderUsd || 100)}" required></label>
+        <label class="check security-check"><input name="enableLive" type="checkbox" ${app.broker.liveTradingEnabled ? "checked" : ""}><span>تفعيل إرسال أوامر حقيقية إلى Binance بعد نافذة تأكيد مستقلة لكل أمر.</span></label>
+        <div class="live-warning">الذكاء الاصطناعي يعرض تحليلاً احتمالياً ولا يضمن الربح. مفتاح السحب غير مقبول، لكن خسارة التداول نفسها تبقى ممكنة.</div>
+        <button class="primary-button" type="submit">حفظ حالة التداول الحقيقي</button>
+      </form></section>
+      <section class="panel"><header class="panel-head"><div><h2>أرصدة Binance Spot</h2><p>عرض فقط. الإيداع والسحب من تطبيق Binance.</p></div><a class="small-button" href="https://www.binance.com/en/my/wallet/account/main/deposit/crypto" target="_blank" rel="noopener noreferrer">فتح Binance ↗</a></header><div class="table-wrap">${balances ? `<table class="data-table"><thead><tr><th>الأصل</th><th>متاح</th><th>محجوز</th><th>الإجمالي</th></tr></thead><tbody>${balances}</tbody></table>` : '<div class="empty"><p>لا يوجد رصيد ظاهر في Spot حالياً.</p></div>'}</div></section>
+      <section class="panel"><header class="panel-head"><div><h2>سجل الأوامر الحقيقية</h2><p>سجل تدقيق لأوامر Binance المرسلة من VAREX.</p></div></header><div class="table-wrap">${orders ? `<table class="data-table"><thead><tr><th>السوق</th><th>الاتجاه</th><th>القيمة</th><th>الحالة</th><th>رقم Binance</th><th>الوقت</th></tr></thead><tbody>${orders}</tbody></table>` : '<div class="empty"><p>لا توجد أوامر حقيقية بعد.</p></div>'}</div></section>`;
   }
 
   function renderWatchlist() {
@@ -565,6 +645,8 @@
       app.tradeSide = useAnalysis.dataset.side === "sell" ? "sell" : "buy";
       return goTo("trades");
     }
+    const executionMode = event.target.closest("[data-execution-mode]");
+    if (executionMode) { app.executionMode = executionMode.dataset.executionMode === "live" ? "live" : "paper"; render(); return; }
     const sideButton = event.target.closest("[data-side]");
     if (sideButton) { app.tradeSide = sideButton.dataset.side; render(); return; }
     const toggleRisk = event.target.closest("[data-toggle-risk]");
@@ -587,6 +669,8 @@
     if (action === "analyze-current") return runAnalysis(app.state.selectedSymbol);
     if (action === "export-report") return exportReport();
     if (action === "reload-users") return loadUsers();
+    if (action === "refresh-broker") return refreshBroker();
+    if (action === "disconnect-broker") return disconnectBroker();
     if (action === "logout") return logout();
     if (action === "reset-paper") return resetPaper();
   }
@@ -597,11 +681,22 @@
     if (submit) submit.disabled = true;
     try {
       if (form.id === "tradeForm") {
-        const result = await tradingPost("open_trade", { symbol: String(data.get("symbol")), side: app.tradeSide, amount: Number(data.get("amount")) });
-        app.state = result.state; app.version = result.version;
-        await loadMarkets(app.state.selectedSymbol, true);
-        showToast("تم فتح الصفقة الورقية. لم يُخصم أي مال حقيقي.");
-        goTo("trades");
+        const symbol = String(data.get("symbol")), amount = Number(data.get("amount"));
+        if (app.executionMode === "live") {
+          const accepted = await confirmAction("تأكيد صفقة حقيقية", `سيتم إرسال أمر ${app.tradeSide === "buy" ? "شراء" : "بيع"} MARKET حقيقي بقيمة ${money(amount)} إلى Binance Spot. التداول قد يحقق خسارة، ولا توجد إعادة تلقائية عند انقطاع الاتصال.`);
+          if (!accepted) return;
+          const result = await tradingPost("place_live_order", { symbol, side: app.tradeSide, amount, clientRequestId: crypto.randomUUID(), confirmation: "LIVE_ORDER_CONFIRMED" });
+          app.broker = result.broker;
+          updateExecutionUi();
+          showToast("تم إرسال الأمر الحقيقي إلى Binance وحفظ نتيجة التنفيذ.");
+          goTo("broker");
+        } else {
+          const result = await tradingPost("open_trade", { symbol, side: app.tradeSide, amount });
+          app.state = result.state; app.version = result.version;
+          await loadMarkets(app.state.selectedSymbol, true);
+          showToast("تم فتح الصفقة الورقية. لم يُخصم أي مال حقيقي.");
+          goTo("trades");
+        }
       } else if (form.id === "riskForm") {
         const risk = { ...app.state.risk, maxDailyLossPct: Number(data.get("maxDailyLossPct")), maxOpenTrades: Number(data.get("maxOpenTrades")), riskPerTradePct: Number(data.get("riskPerTradePct")) };
         const result = await tradingPost("save_preferences", { risk });
@@ -633,6 +728,36 @@
         app.state = result.state; app.version = result.version;
         showToast("تم حفظ التفضيلات.");
         render();
+      } else if (form.id === "brokerConnectForm") {
+        const result = await tradingPost("connect_broker", {
+          provider: "binance",
+          accountLabel: String(data.get("accountLabel")),
+          apiKey: String(data.get("apiKey")),
+          apiSecret: String(data.get("apiSecret")),
+          fundsAtProvider: Boolean(data.get("fundsAtProvider")),
+        });
+        app.broker = result.broker;
+        app.executionMode = "paper";
+        form.reset();
+        updateExecutionUi();
+        showToast("تم اختبار الصلاحيات وربط حساب Binance. التداول الحقيقي ما زال متوقفاً.");
+        render();
+      } else if (form.id === "liveConfigForm") {
+        const enabled = Boolean(data.get("enableLive"));
+        if (enabled && !app.broker.liveTradingEnabled) {
+          const accepted = await confirmAction("تفعيل التداول الحقيقي", "سيصبح إرسال أوامر Spot حقيقية متاحاً، مع بقاء تأكيد مستقل مطلوب لكل صفقة. الإيداع والسحب يبقيان داخل Binance.");
+          if (!accepted) return;
+        }
+        const result = await tradingPost("configure_live_trading", {
+          enabled,
+          maxLiveOrderUsd: Number(data.get("maxLiveOrderUsd")),
+          confirmation: enabled ? "ENABLE_LIVE_SPOT" : "DISABLE_LIVE_SPOT",
+        });
+        app.broker = result.broker;
+        if (!enabled) app.executionMode = "paper";
+        updateExecutionUi();
+        showToast(enabled ? "تم تفعيل التداول الحقيقي مع تأكيد يدوي لكل صفقة." : "تم إيقاف التداول الحقيقي.");
+        render();
       }
     } catch (error) {
       showToast(error.message, "error");
@@ -661,6 +786,37 @@
       app.state = result.state; app.version = result.version;
       await loadMarkets(app.state.selectedSymbol, true);
       showToast("تم إغلاق الصفقة وحفظ النتيجة.");
+      render();
+    } catch (error) { showToast(error.message, "error"); }
+  }
+  async function refreshBroker() {
+    const buttons = $$('[data-action="refresh-broker"]');
+    buttons.forEach((button) => { button.disabled = true; });
+    try {
+      const result = await tradingPost("refresh_broker");
+      app.broker = result.broker;
+      updateExecutionUi();
+      showToast("تم فحص صلاحيات Binance وتحديث الأرصدة.");
+      render();
+    } catch (error) {
+      showToast(error.message, "error");
+      try {
+        const bootstrap = await request("/api/trading");
+        app.broker = bootstrap.broker;
+        updateExecutionUi();
+        render();
+      } catch {}
+    } finally { buttons.forEach((button) => { button.disabled = false; }); }
+  }
+  async function disconnectBroker() {
+    const accepted = await confirmAction("فصل حساب Binance", "سيتم حذف مفاتيح الربط المشفرة من VAREX وإيقاف التداول الحقيقي. الأموال والأوامر السابقة تبقى داخل Binance.");
+    if (!accepted) return;
+    try {
+      const result = await tradingPost("disconnect_broker", { confirmation: "DISCONNECT_BROKER" });
+      app.broker = result.broker;
+      app.executionMode = "paper";
+      updateExecutionUi();
+      showToast("تم فصل حساب Binance وحذف بيانات الربط المشفرة.");
       render();
     } catch (error) { showToast(error.message, "error"); }
   }
@@ -694,7 +850,7 @@
   }
   async function logout() {
     try { await authRequest("/api/auth/sign-out", {}); } catch {}
-    app.profile = null; app.state = null; app.users = [];
+    app.profile = null; app.state = null; app.broker = null; app.users = []; app.executionMode = "paper";
     showLoggedOut();
   }
   function exportReport() {
