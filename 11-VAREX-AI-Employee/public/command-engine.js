@@ -65,6 +65,10 @@
     let spoken = '';
     const spokenMatch = payload.match(/^(.*?)(?:\s+(?:وقل(?:ه|ها|هم)?|وقل\s+له|وقل\s+لها|واحكي(?:له|لها)?|وخبر(?:ه|ها|هم)?|والرسالة|والرساله)\s+)(.+)$/i);
     if (spokenMatch) { payload = spokenMatch[1].trim(); spoken = spokenMatch[2].trim(); }
+    if (!spoken) {
+      const goalMatch = payload.match(/^(.*?)(?:\s+)((?:و?(?:حد[ّ]?د(?:\s+(?:معه|معها|معهم))?|اس[أا]ل(?:ه|ها|هم)?|استفسر(?:\s+(?:منه|منها))?|اتفق(?:\s+(?:معه|معها|معهم))?|احجز(?:\s+(?:له|لها|معه|معها))?|ت[أا]كد(?:\s+(?:منه|منها))?|اطلب(?:\s+(?:منه|منها))?|خبر(?:ه|ها|هم)?|احكي(?:له|لها|معه|معها)?))\s+.+)$/i);
+      if (goalMatch) { payload = goalMatch[1].trim(); spoken = goalMatch[2].replace(/^و/, '').trim(); }
+    }
     const values = splitPayload(payload);
     const target = values.primary.replace(/^(?:على|بـ?|مع|to)\s*/i, '').trim();
     const instructions = values.secondary || spoken;

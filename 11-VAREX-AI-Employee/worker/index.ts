@@ -2384,26 +2384,6 @@ async function resolveSavedContactNumber(env: Env, organizationId: string, targe
   return normalizePhoneDigits(row?.contact_address || "");
 }
 
-async function prepareCallHandoff(env: Env, organizationId: string, execution: Row, payload: Row) {
-  const explicit = normalizePhoneDigits(payload.phone || payload.to || "");
-  const target = String(execution.target || "").trim();
-  const digits = explicit.length >= 8 ? explicit : await resolveSavedContactNumber(env, organizationId, target);
-  if (digits.length < 8 || digits.length > 15) return null;
-  const phone = `+${digits}`;
-  const recipient = target || phone;
-  return {
-    summary: `الاتصال بـ ${recipient} جاهز على هذا الجهاز. اضغط «بدء الاتصال الآن»؛ نظام الهاتف قد يطلب منك تأكيد الاتصال.`,
-    details: {
-      mode: "device_handoff",
-      call_uri: `tel:${phone}`,
-      phone,
-      recipient,
-      requires_user_confirmation: true,
-      call_started: false,
-    } as Row,
-  };
-}
-
 function xmlEscape(value: string) {
   return value.replace(/[&<>"']/g, character => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&apos;" })[character] || character);
 }
@@ -2469,6 +2449,8 @@ async function startAiVoiceCall(request: Request, env: Env, user: Row, execution
     const providerStatus = String(placed.status || "queued");
     await env.DB.prepare("UPDATE ai_voice_calls SET provider_call_id=?,status=?,metadata=?,updated_at=? WHERE id=?")
       .bind(providerCallId, providerStatus === "in-progress" ? "in_progress" : providerStatus, JSON.stringify({ recording_enabled: false, transcribing_enabled: false, disclosure_required: true, provider_status: providerStatus }), now(), callId).run();
+    await env.DB.prepare("INSERT INTO ai_messages (id,organization_id,contact_name,contact_address,channel,direction,body,send_status,created_by,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?)")
+      .bind(crypto.randomUUID(), organizationId, target || toNumber, toNumber, "voice", "outbound", purpose, "initiated", user.id || null, stamp, stamp).run();
     const summary = `بدأ طلب الاتصال بـ ${target || toNumber} من رقمك الموثّق. حالة المكالمة تُحدّث من السنترال؛ لم نعتبر المحادثة مكتملة بعد.`;
     const details: Row = { mode: "sip_ai_call", voice_call_id: callId, from: fromNumber, to: toNumber, recipient: target || toNumber, purpose, status: providerStatus, recording_enabled: false };
     await env.DB.prepare("UPDATE ai_action_executions SET status='running',result_summary=?,result_details=?,error_code=NULL,started_at=COALESCE(started_at,?),updated_at=? WHERE id=?")
@@ -2498,6 +2480,9 @@ function aiVoiceInstructions(call: Row, agent: Row, owner: Row, voice: Row) {
     `في أول رد منطوق وبعد أن تسمع الطرف الآخر، قل بوضوح هذا التعريف قبل أي شيء: «${disclosure}» ولا تدّعِ أنك إنسان أو أنك ${ownerName}.`,
     `غرض المكالمة المصرح به فقط: ${purpose}`,
     ownerRules ? `تعليمات المالك المسموحة: ${ownerRules}` : "",
+    "نفّذ الغرض كمحادثة حقيقية تفاعلية، ولا تقرأ أمر المالك حرفياً للطرف الآخر. افهم الهدف وصغ كلامك الطبيعي بنفسك.",
+    "اسأل الأسئلة اللازمة، واجمع التفاصيل المطلوبة، وناقش البدائل المسموحة، ثم أكّد النتيجة بوضوح. إذا كان الهدف موعداً فاسأل عن التاريخ والوقت المناسبين والسعر وأي تفاصيل مرتبطة ضمن نطاق الهدف.",
+    "لا تطلب من المالك التدخل أثناء المكالمة ولا تنتظر منه تلقين كل جملة. أنهِ المكالمة فقط بعد الوصول إلى نتيجة واضحة أو رفض الطرف الآخر أو تعذر تحقيق الهدف ضمن الصلاحيات.",
     "تحدث بالعربية وبأسلوب طبيعي مهني، وابق ضمن غرض المكالمة. لا تخترع معلومات أو أسعاراً أو وعوداً أو موافقات. لا تطلب كلمات مرور أو رموز تحقق أو بيانات مصرفية.",
     "إذا رفض الطرف الآخر المكالمة أو طلب إنهاءها، اعتذر باختصار وأنهِ الحديث. لا تسجّل المكالمة ولا تقل إنها مسجلة.",
   ].filter(Boolean).join("\n");
@@ -2766,17 +2751,7 @@ async function performActionExecution(request: Request, env: Env, user: Row, exe
           .bind("بانتظار استلام الجهاز للمهمة", stamp, execution.task_id, organizationId).run();
         return { ok: true, status: 202, message: queuedMessage, execution: hydrate({ ...execution, status: "queued", device_id: device.device_id, result_summary: queuedMessage }) };
       }
-      if (appKey === "phone" && ["start_call", "redial"].includes(actionKey)) {
-        const handoff = await prepareCallHandoff(env, organizationId, execution, payload);
-        if (handoff) {
-          await env.DB.prepare("UPDATE ai_action_executions SET status='action_required',result_summary=?,result_details=?,error_code=NULL,started_at=COALESCE(started_at,?),updated_at=? WHERE id=?")
-            .bind(handoff.summary, JSON.stringify(handoff.details), stamp, stamp, execution.id).run();
-          if (execution.task_id) await env.DB.prepare("UPDATE ai_tasks SET status='awaiting_user',output=?,updated_at=? WHERE id=? AND organization_id=?")
-            .bind(handoff.summary, stamp, execution.task_id, organizationId).run();
-          return { ok: true, status: 200, message: handoff.summary, execution: hydrate({ ...execution, status: "action_required", result_summary: handoff.summary, result_details: handoff.details, started_at: execution.started_at || stamp }) };
-        }
-      }
-      throw new AgentActionError("DEVICE_CAPABILITY_REQUIRED", `لا يوجد جهاز متصل الآن يملك صلاحية ${deviceAppCatalog[appKey].label}. افتح VAREX AI على جهاز يدعم هذه الصلاحية، أو اكتب رقم الهاتف كاملاً لبدء الاتصال من هذا الجهاز.`);
+      throw new AgentActionError("DEVICE_CAPABILITY_REQUIRED", `لا يوجد جهاز متصل الآن يملك صلاحية ${deviceAppCatalog[appKey].label}. افتح VAREX AI على جهاز يدعم هذه الصلاحية.`);
     }
     await env.DB.prepare("UPDATE ai_action_executions SET status='running',started_at=?,updated_at=? WHERE id=?").bind(stamp, stamp, execution.id).run();
     if (execution.task_id) await env.DB.prepare("UPDATE ai_tasks SET status='running',started_at=COALESCE(started_at,?),updated_at=? WHERE id=? AND organization_id=?")
@@ -2838,7 +2813,15 @@ async function executeAgentAction(request: Request, env: Env) {
   if (!agent) return error("الموظف المحدد غير موجود", 404);
   const permission = await env.DB.prepare("SELECT mode FROM ai_agent_permissions WHERE organization_id=? AND agent_id=? AND app_key=? AND action_key=? LIMIT 1").bind(organizationId, agentId, appKey, actionKey).first<Row>();
   const configuredMode = String(permission?.mode || "denied");
-  const mode = body.force_approval === true && configuredMode === "automatic" ? "approval" : configuredMode;
+  const directOwnerVoice = body.direct_owner_command === true
+    && !body.task_id
+    && body.force_approval !== true
+    && appKey === "voice"
+    && actionKey === "speak_on_behalf"
+    && await authorizeOrg(env, user, organizationId, true);
+  const mode = configuredMode === "approval" && directOwnerVoice
+    ? "automatic"
+    : body.force_approval === true && configuredMode === "automatic" ? "approval" : configuredMode;
   if (agent.status !== "active") {
     const execution = await createActionExecution(env, user, body, mode, "blocked", "AGENT_PAUSED", "الموظف متوقف");
     if (body.task_id) await env.DB.prepare("UPDATE ai_tasks SET status='failed',output='فعّل الموظف أولاً؛ لم يتم تنفيذ أي شيء.',completed_at=?,updated_at=? WHERE id=? AND organization_id=?").bind(now(), now(), body.task_id, organizationId).run();
@@ -3113,7 +3096,7 @@ function pendingPrompt(intent: ChatActionIntent) {
   if (intent.missing === "target") return ["phone", "voice"].includes(intent.appKey) ? "أكيد. بمين بدك أتصل؟ اكتب الاسم أو الرقم." : "أكيد. لمين بدك أرسل الرسالة؟ اكتب الاسم أو الرقم.";
   if (intent.missing === "message") return intent.appKey === "voice" ? `تمام، الاتصال مع ${intent.target}. شو بدك الموظف الذكي يحكي نيابة عنك؟` : `تمام، فهمت إن المستلم هو ${intent.target}. شو نص الرسالة اللي بدك أبعتها؟`;
   if (intent.missing === "time") return intent.appKey === "alarms" ? "على أي ساعة بدك المنبّه؟ مثلاً: 7 صباحاً." : "متى الموعد؟ اكتب اليوم والساعة، مثلاً: بكرا الساعة 2 ظهراً.";
-  if (intent.missing === "contact_details") return "اكتب اسم جهة الاتصال ورقمها مع رمز الدولة، مثلاً: سارة | +971501234567";
+  if (intent.missing === "contact_details") return `لم أجد رقم ${intent.target || "المستلم"}. اكتب الرقم مع رمز الدولة مرة واحدة، مثلاً +971501234567، وسأتذكره لهذا الاسم في المرات القادمة.`;
   return "بدي معلومة إضافية قبل ما أنفّذ المهمة.";
 }
 
@@ -3144,23 +3127,55 @@ async function executeChatDecision(request: Request, env: Env, organizationId: s
   return { ok: response.ok, status: response.status, data };
 }
 
+function normalizeChatAction(action: { appKey: string; actionKey: string; target: string; payload: Record<string, unknown> }): ChatActionIntent {
+  const payload = action.payload && typeof action.payload === "object" ? { ...action.payload } : {};
+  const target = String(action.target || "").trim();
+  const isCallRequest = action.appKey === "voice" && action.actionKey === "speak_on_behalf"
+    || action.appKey === "phone" && ["start_call", "redial"].includes(action.actionKey);
+  if (!isCallRequest) return { kind: "action", appKey: action.appKey, actionKey: action.actionKey, target, payload };
+  const purpose = String(payload.purpose || payload.message || payload.instruction || "").trim();
+  if (purpose) {
+    payload.purpose = purpose;
+    payload.message = purpose;
+  }
+  return {
+    kind: "action",
+    appKey: "voice",
+    actionKey: "speak_on_behalf",
+    target,
+    payload,
+    missing: !target ? "target" : !purpose ? "message" : undefined,
+  };
+}
+
 async function dispatchChatAction(request: Request, env: Env, organizationId: string, agentId: string, action: { appKey: string; actionKey: string; target: string; payload: Record<string, unknown> }) {
-  if (!deviceAppCatalog[action.appKey]?.actions[action.actionKey]) {
-    return { body: "فهمت الطلب، لكن العملية التي اختارها نموذج الذكاء غير موجودة ضمن صلاحيات VAREX، لذلك لم يُنفّذ أي شيء.", kind: "error", executionId: null as string | null, metadata: { app_key: action.appKey, action_key: action.actionKey, invalid_tool_action: true } as Row };
+  const normalized = normalizeChatAction(action);
+  if (!deviceAppCatalog[normalized.appKey]?.actions[normalized.actionKey]) {
+    return { body: "فهمت الطلب، لكن العملية التي اختارها نموذج الذكاء غير موجودة ضمن صلاحيات VAREX، لذلك لم يُنفّذ أي شيء.", kind: "error", executionId: null as string | null, metadata: { app_key: normalized.appKey, action_key: normalized.actionKey, invalid_tool_action: true } as Row };
   }
   const forwarded = new Request(request.url, {
     method: "POST",
     headers: { Authorization: request.headers.get("Authorization") || "", "Content-Type": "application/json" },
-    body: JSON.stringify({ organization_id: organizationId, agent_id: agentId, app_key: action.appKey, action_key: action.actionKey, target: action.target, payload: action.payload }),
+    body: JSON.stringify({
+      organization_id: organizationId,
+      agent_id: agentId,
+      app_key: normalized.appKey,
+      action_key: normalized.actionKey,
+      target: normalized.target,
+      payload: normalized.payload,
+      direct_owner_command: normalized.appKey === "voice" && normalized.actionKey === "speak_on_behalf",
+    }),
   });
   const response = await executeAgentAction(forwarded, env);
   const result = await response.json<Row>().catch(() => ({}));
   const execution = result.execution && typeof result.execution === "object" ? result.execution as Row : null;
+  const needsContactNumber = result.code === "CONTACT_NUMBER_REQUIRED" && ["voice", "whatsapp"].includes(normalized.appKey);
+  const pendingIntent = needsContactNumber ? { ...normalized, missing: "contact_details" } : null;
   return {
-    body: String(result.message || "تعذر تنفيذ المهمة حالياً."),
-    kind: execution?.status === "awaiting_approval" ? "approval" : response.ok ? "action" : "error",
+    body: pendingIntent ? pendingPrompt(pendingIntent) : String(result.message || "تعذر تنفيذ المهمة حالياً."),
+    kind: pendingIntent ? "clarification" : execution?.status === "awaiting_approval" ? "approval" : response.ok ? "action" : "error",
     executionId: execution?.id ? String(execution.id) : null,
-    metadata: { app_key: action.appKey, action_key: action.actionKey, approval_id: result.approval_id || null } as Row,
+    metadata: { app_key: normalized.appKey, action_key: normalized.actionKey, approval_id: result.approval_id || null, ...(pendingIntent ? { pending_intent: pendingIntent } : {}) } as Row,
   };
 }
 
@@ -3191,8 +3206,8 @@ async function chatMessages(request: Request, env: Env) {
   const pendingIntent = await latestPendingChatIntent(env, organizationId, agentId, String(user.id));
   const userMessage = await insertChatMessage(env, { organizationId, agentId, userId: String(user.id), role: "user", body: content, kind: inputMode, clientMessageId: clientMessageId || null, metadata: { input_mode: inputMode } });
   let intent = parseChatIntent(content);
-  if (intent.kind === "unknown") {
-    const continued = pendingIntent ? continuePendingIntent(pendingIntent, content) : null;
+  if (pendingIntent && !["approve", "reject"].includes(intent.kind)) {
+    const continued = continuePendingIntent(pendingIntent, content);
     if (continued) intent = continued;
   }
   let assistantBody = "", assistantKind = "text", executionId: string | null = null, metadata: Row = { speak: true };
@@ -3206,6 +3221,16 @@ async function chatMessages(request: Request, env: Env) {
       assistantKind = decided.ok ? "action" : "error";
       executionId = String(pendingExecution.id);
     }
+  } else if (intent.kind === "action" && intent.appKey === "voice") {
+    if (intent.missing) {
+      assistantBody = pendingPrompt(intent);
+      assistantKind = "clarification";
+      metadata.pending_intent = intent;
+    } else {
+      const dispatched = await dispatchChatAction(request, env, organizationId, agentId, intent);
+      assistantBody = dispatched.body; assistantKind = dispatched.kind; executionId = dispatched.executionId;
+      metadata = { ...metadata, ...dispatched.metadata };
+    }
   } else {
     const intelligent = await intelligentChatReply(env, organizationId, agent, user);
     if (intelligent.reply) {
@@ -3217,9 +3242,16 @@ async function chatMessages(request: Request, env: Env) {
         assistantBody = await chatReport(env, organizationId, agentId, String(agent.name || "الموظف"));
         assistantKind = "report";
       } else if (intelligent.reply.kind === "action" && intelligent.reply.action) {
-        const dispatched = await dispatchChatAction(request, env, organizationId, agentId, intelligent.reply.action);
-        assistantBody = dispatched.body; assistantKind = dispatched.kind; executionId = dispatched.executionId;
-        metadata = { ...metadata, ...dispatched.metadata };
+        const normalizedAction = normalizeChatAction(intelligent.reply.action);
+        if (normalizedAction.missing) {
+          assistantBody = pendingPrompt(normalizedAction);
+          assistantKind = "clarification";
+          metadata.pending_intent = normalizedAction;
+        } else {
+          const dispatched = await dispatchChatAction(request, env, organizationId, agentId, normalizedAction);
+          assistantBody = dispatched.body; assistantKind = dispatched.kind; executionId = dispatched.executionId;
+          metadata = { ...metadata, ...dispatched.metadata };
+        }
       }
     } else if (intent.kind === "report") assistantBody = await chatReport(env, organizationId, agentId, String(agent.name || "الموظف"));
     else if (intelligent.error === "AI_PROVIDER_UNAVAILABLE") {

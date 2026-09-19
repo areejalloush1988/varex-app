@@ -35,10 +35,11 @@ test('every permission card exposes a real connection action', () => {
   assert.match(worker, /googleScopes\("youtube"\)/);
 });
 
-test('web phone handoff stays truthful and device-neutral', () => {
-  assert.match(client, /callUriForExecution/);
-  assert.match(client, /بدء الاتصال الآن/);
-  assert.match(client, /\^tel:/);
+test('AI call commands never fall back to a manual phone handoff', () => {
+  assert.doesNotMatch(client, /callUriForExecution/);
+  assert.doesNotMatch(client, /بدء الاتصال الآن/);
+  assert.doesNotMatch(client, /window\.location\.assign\(uri\)/);
+  assert.match(client, /app_key: 'voice', action_key: 'speak_on_behalf'/);
   assert.match(client, /device\.online === false/);
   assert.doesNotMatch(client, /استخدم تطبيق Android/);
 });
@@ -70,6 +71,10 @@ test('Arabic WhatsApp and phone commands resolve recipient and message', () => {
   assert.equal(call.type, 'phoneCall');
   assert.equal(call.target, 'أبو كرم');
   assert.equal(call.instructions, 'اسأله عن الموعد');
+  const autonomousCall = parse('اتصل بزوجي وحدد معه موعد بكرا واسأله عن السعر');
+  assert.equal(autonomousCall.type, 'phoneCall');
+  assert.equal(autonomousCall.target, 'زوجي');
+  assert.equal(autonomousCall.instructions, 'حدد معه موعد بكرا واسأله عن السعر');
   const alarm = parse('اضبط منبه الساعة 7 صباحاً');
   assert.equal(alarm.type, 'agentAction');
   assert.equal(alarm.appKey, 'alarms');

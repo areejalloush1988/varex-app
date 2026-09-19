@@ -1229,7 +1229,6 @@
       state.tasks = await rest('ai_tasks', { query: `organization_id=eq.${state.org.id}&select=*&order=created_at.desc` });
       renderAll();
       notify(result.message || 'تمت معالجة المهمة');
-      openCallHandoff(result.execution);
       if (result.code === 'APPROVAL_REQUIRED') showView('approvals');
     } catch (error) {
       state.tasks = await rest('ai_tasks', { query: `organization_id=eq.${state.org.id}&select=*&order=created_at.desc` }).catch(() => state.tasks);
@@ -1291,7 +1290,6 @@
       try {
         const result = await authorizedRequest(`actions/${encodeURIComponent(approval.action_execution_id)}/decision`, { method: 'POST', body: { decision: status } });
         notify(result.message || (status === 'approved' ? 'تمت الموافقة وتنفيذ العملية' : 'تم الرفض ولم يُنفّذ أي شيء'));
-        if (status === 'approved') openCallHandoff(result.execution);
       } catch (error) { notify(error.message, true); }
       finally {
         const [approvals, tasks, executions] = await Promise.all([
@@ -1834,19 +1832,6 @@
     bubble.append(nav);
   }
 
-  function callUriForExecution(execution) {
-    const uri = String(execution?.result_details?.call_uri || '').trim();
-    return /^tel:\+[0-9]{8,15}$/.test(uri) ? uri : '';
-  }
-
-  function openCallHandoff(execution) {
-    const uri = callUriForExecution(execution);
-    if (!uri) return false;
-    commandStatus('يتم فتح تطبيق الهاتف على هذا الجهاز…', 'working');
-    window.location.assign(uri);
-    return true;
-  }
-
   function employeeChatPreferenceKey(name) { return `varex-ai-employee-chat-${name}-${state.org?.id || 'default'}`; }
 
   function renderEmployeeChatAgentOptions() {
@@ -1905,19 +1890,6 @@
         meta.append(speak);
       }
       bubble.append(meta);
-      const callUri = callUriForExecution(message.execution);
-      if (callUri) {
-        const actions = document.createElement('div');
-        actions.className = 'employee-chat-approval';
-        const call = document.createElement('a');
-        call.className = 'btn btn-success';
-        call.href = callUri;
-        call.textContent = 'بدء الاتصال الآن';
-        call.setAttribute('aria-label', `بدء الاتصال بـ ${message.execution?.result_details?.recipient || message.execution?.result_details?.phone || ''}`.trim());
-        call.addEventListener('click', () => commandStatus('تم تسليم الرقم إلى تطبيق الهاتف؛ قد يطلب النظام تأكيد الاتصال.', 'success'));
-        actions.append(call);
-        bubble.append(actions);
-      }
       if (message.execution?.status === 'awaiting_approval' && (!message.execution.approval_status || message.execution.approval_status === 'pending')) {
         const actions = document.createElement('div');
         actions.className = 'employee-chat-approval';
@@ -1970,8 +1942,6 @@
       const returned = Array.isArray(result.messages) ? result.messages : [];
       const assistant = [...returned].reverse().find(message => message.role === 'assistant');
       commandStatus(assistant?.execution?.status === 'awaiting_approval' ? 'الأمر بانتظار موافقتك داخل المحادثة.' : '');
-      const savedAssistant = assistant ? state.employeeChatMessages.find(message => message.id === assistant.id) : null;
-      if (savedAssistant?.execution?.status === 'action_required') openCallHandoff(savedAssistant.execution);
       if (assistant && assistant.kind !== 'error' && assistant.metadata?.speak !== false && state.employeeChatVoiceEnabled) void speakEmployeeChat(customerSafeChatText(assistant.display_body || assistant.body || ''), false);
     } catch (error) {
       state.employeeChatThinking = false;
@@ -1986,7 +1956,6 @@
       const result = await authorizedRequest(`chat/actions/${encodeURIComponent(executionId)}/decision`, { method: 'POST', body: { organization_id: state.org.id, agent_id: state.employeeChatAgentId, decision } });
       await loadEmployeeChat();
       commandStatus(result.message || (decision === 'approved' ? 'تمت معالجة العملية.' : 'تم الرفض ولم يُنفّذ شيء.'), 'success');
-      if (decision === 'approved') openCallHandoff(result.execution);
     } catch (error) { commandStatus(customerSafeChatError(error), 'error'); }
   }
 
@@ -2148,9 +2117,8 @@
     }
     if (parsed.type === 'phoneCall') {
       if (!parsed.target) throw new Error('اكتب الاسم أو الرقم بعد كلمة اتصل؛ لم يبدأ أي اتصال.');
-      return parsed.instructions
-        ? { app_key: 'voice', action_key: 'speak_on_behalf', target: parsed.target, payload: { purpose: parsed.instructions, message: parsed.instructions } }
-        : { app_key: 'phone', action_key: 'start_call', target: parsed.target, payload: {} };
+      if (!parsed.instructions) throw new Error('اكتب هدف المكالمة أيضاً. مثال: اتصل بفلان وحدد معه موعداً واسأله عن السعر.');
+      return { app_key: 'voice', action_key: 'speak_on_behalf', target: parsed.target, payload: { purpose: parsed.instructions, message: parsed.instructions } };
     }
     if (parsed.type === 'agentAction') {
       return { app_key: parsed.appKey, action_key: parsed.actionKey, target: parsed.target || '', payload: parsed.payload || {} };
@@ -2163,8 +2131,9 @@
     if (!request) throw new Error('تعليمات المهمة ليست بصيغة عملية قابلة للتنفيذ. استخدم مثلاً: أرسل واتساب إلى +971...: نص الرسالة');
     const agent = agentForExecution(agentId);
     if (!agent) throw new Error('أنشئ موظفاً ذكياً وحدده للمهمة أولاً؛ لم يتم تنفيذ أي شيء.');
+    const directOwnerVoice = !taskId && !forceApproval && request.app_key === 'voice' && request.action_key === 'speak_on_behalf';
     try {
-      const result = await authorizedRequest('actions/execute', { method: 'POST', body: { organization_id: state.org.id, agent_id: agent.id, task_id: taskId, force_approval: forceApproval, ...request } });
+      const result = await authorizedRequest('actions/execute', { method: 'POST', body: { organization_id: state.org.id, agent_id: agent.id, task_id: taskId, force_approval: forceApproval, direct_owner_command: directOwnerVoice, ...request } });
       if (result.execution) state.actionExecutions.unshift(result.execution);
       if (result.approval_id) state.approvals = await rest('ai_approvals', { query: `organization_id=eq.${state.org.id}&select=*&order=created_at.desc` });
       return result;
@@ -2196,7 +2165,6 @@
       if (parsed.type === 'whatsappSend' || parsed.type === 'phoneCall' || parsed.type === 'agentAction') {
         const result = await submitAgentAction(parsed);
         commandStatus(result.message || 'تم إرسال العملية إلى محرك التنفيذ.', result.code === 'APPROVAL_REQUIRED' ? 'working' : 'success');
-        openCallHandoff(result.execution);
         if (result.code === 'APPROVAL_REQUIRED') notify('العملية بانتظار موافقتك في مركز الموافقات');
         return;
       }

@@ -36,6 +36,13 @@ test('spoken phone command becomes a guarded AI voice action', () => {
   assert.match(worker, /mode === "denied"/);
   assert.match(worker, /mode === "approval"/);
   assert.match(worker, /startAiVoiceCall/);
+  const goalCall = context.window.VarexCommandEngine.parse('اتصل بزوجي وحدد معه موعد بكرا واسأله عن السعر');
+  assert.equal(goalCall.target, 'زوجي');
+  assert.equal(goalCall.instructions, 'حدد معه موعد بكرا واسأله عن السعر');
+  assert.doesNotMatch(client, /app_key: 'phone', action_key: 'start_call'/);
+  assert.match(client, /direct_owner_command: directOwnerVoice/);
+  assert.match(worker, /configuredMode === "approval" && directOwnerVoice/);
+  assert.match(worker, /mode === "denied"/);
 });
 
 test('outbound call is bridged to signed SIP and only a pending call is accepted', () => {
@@ -57,6 +64,9 @@ test('call policy discloses AI identity and blocks unsafe or excessive calling',
   assert.match(worker, /recording_enabled: false/);
   assert.match(worker, /transcribing_enabled: false/);
   assert.match(worker, /EMERGENCY_STOP/);
+  assert.match(worker, /كمحادثة حقيقية تفاعلية/);
+  assert.match(worker, /التاريخ والوقت المناسبين والسعر/);
+  assert.match(worker, /INSERT INTO ai_messages \(id,organization_id,contact_name,contact_address,channel,direction,body,send_status/);
 });
 
 test('voice credentials are admin-only and encrypted', () => {

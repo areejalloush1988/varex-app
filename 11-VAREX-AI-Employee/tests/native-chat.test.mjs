@@ -25,8 +25,8 @@ test('chat history is durable and linked to action executions', () => {
   assert.match(worker, /awaiting_approval/);
 });
 
-test('Arabic chat interpreter covers reports and supported native actions', () => {
-  for (const value of ['whatsapp', 'phone', 'alarms', 'calendar', 'contacts', 'settings']) assert.match(parser, new RegExp(`appKey: "${value}"`));
+test('Arabic chat interpreter covers reports, AI calls, and supported native actions', () => {
+  for (const value of ['whatsapp', 'voice', 'alarms', 'calendar', 'contacts', 'settings']) assert.match(parser, new RegExp(`appKey: "${value}"`));
   assert.match(parser, /kind: "report"/);
   assert.match(parser, /continuePendingIntent/);
   assert.match(parser, /digits\.startsWith\("00"\)/);
@@ -107,8 +107,8 @@ test('provider outages are truthful and never fall through to blind automatic ex
 });
 
 test('updated chat assets replace stale installed-app code before using the offline cache', () => {
-  assert.match(html, /app\.js\?v=20260919-65/);
-  assert.match(serviceWorker, /varex-ai-shell-v65/);
+  assert.match(html, /app\.js\?v=20260919-66/);
+  assert.match(serviceWorker, /varex-ai-shell-v66/);
   assert.ok(serviceWorker.indexOf('const response = await fetch(request)') < serviceWorker.indexOf('await cache.match(request)'));
 });
 

@@ -57,6 +57,8 @@ function splitMessage(raw: string) {
   if (pipe.length > 1) return { intent: pipe.shift()!.trim(), message: pipe.join(" | ").trim() };
   const spoken = raw.match(/^(.*?)(?:\s+(?:وقل(?:ه|ها|هم)?|وقل\s+له|وقل\s+لها|واكتب(?:له|لها)?|والنص|والرساله|الرساله\s+هي|بانه|انه|إنه)\s+)(.+)$/i);
   if (spoken) return { intent: spoken[1].trim(), message: spoken[2].trim() };
+  const goal = raw.match(/^(.*?)(?:\s+)((?:و?(?:حد[ّ]?د(?:\s+(?:معه|معها|معهم))?|اس[أا]ل(?:ه|ها|هم)?|استفسر(?:\s+(?:منه|منها))?|اتفق(?:\s+(?:معه|معها|معهم))?|احجز(?:\s+(?:له|لها|معه|معها))?|ت[أا]كد(?:\s+(?:منه|منها))?|اطلب(?:\s+(?:منه|منها))?|خبر(?:ه|ها|هم)?|احكي(?:له|لها|معه|معها)?))\s+.+)$/i);
+  if (goal) return { intent: goal[1].trim(), message: goal[2].replace(/^و/, "").trim() };
   const colon = Math.max(raw.lastIndexOf(":"), raw.lastIndexOf("："));
   return colon >= 0 ? { intent: raw.slice(0, colon).trim(), message: raw.slice(colon + 1).trim() } : { intent: raw.trim(), message: "" };
 }
@@ -89,17 +91,14 @@ function phoneIntent(raw: string): ChatActionIntent | null {
   const parts = splitMessage(raw);
   const target = parts.intent.replace(/^(?:اتصل|إتصل|دق|رن|call)(?:\s+(?:على|بـ?|مع|to))?\s*/i, "").trim();
   const phone = firstPhone(target);
-  if (parts.message) {
-    return {
-      kind: "action",
-      appKey: "voice",
-      actionKey: "speak_on_behalf",
-      target,
-      payload: { instruction: raw, purpose: parts.message, message: parts.message, ...(phone ? { phone } : {}) },
-      missing: !target ? "target" : !parts.message ? "message" : undefined,
-    };
-  }
-  return { kind: "action", appKey: "phone", actionKey: "start_call", target, payload: { instruction: raw, ...(phone ? { phone } : {}) }, missing: target ? undefined : "target" };
+  return {
+    kind: "action",
+    appKey: "voice",
+    actionKey: "speak_on_behalf",
+    target,
+    payload: { instruction: raw, ...(parts.message ? { purpose: parts.message, message: parts.message } : {}), ...(phone ? { phone } : {}) },
+    missing: !target ? "target" : !parts.message ? "message" : undefined,
+  };
 }
 
 function alarmIntent(raw: string): ChatActionIntent | null {
@@ -165,16 +164,30 @@ export function continuePendingIntent(pending: Record<string, unknown>, input: u
     payload: pending.payload && typeof pending.payload === "object" ? { ...(pending.payload as Record<string, unknown>) } : {},
   };
   const value = String(input || "").trim();
-  if (pending.missing === "target") action.target = value;
-  else if (pending.missing === "message") action.payload.message = value;
+  if (pending.missing === "target") {
+    const parts = splitMessage(value);
+    action.target = parts.intent;
+    if (parts.message) {
+      action.payload.message = parts.message;
+      if (action.appKey === "voice") action.payload.purpose = parts.message;
+    }
+  }
+  else if (pending.missing === "message") {
+    action.payload.message = value;
+    if (action.appKey === "voice") action.payload.purpose = value;
+  }
   else if (pending.missing === "time") {
     action.target = `${action.target} | ${value}`.trim();
     action.payload.instruction = action.target;
   } else if (pending.missing === "contact_details") {
-    action.target = `${action.target} | ${value}`.trim();
-    action.payload.instruction = action.target;
+    const phone = firstPhone(value);
+    if (phone) {
+      action.payload.phone = phone;
+      action.payload.to = phone;
+    } else action.missing = "contact_details";
   } else return null;
   if (!action.target) action.missing = "target";
   else if (action.appKey === "whatsapp" && !String(action.payload.message || "").trim()) action.missing = "message";
+  else if (action.appKey === "voice" && !String(action.payload.purpose || action.payload.message || "").trim()) action.missing = "message";
   return action;
 }

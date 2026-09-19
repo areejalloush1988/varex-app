@@ -1,4 +1,4 @@
-const CACHE_NAME = "varex-ai-shell-v65";
+const CACHE_NAME = "varex-ai-shell-v66";
 const scopeRoot = new URL("./", self.registration.scope);
 const scoped = path => new URL(path, scopeRoot).href;
 const APP_SHELL = [

@@ -40,11 +40,10 @@ test('server exposes device-neutral register, poll, result, and disconnect route
   assert.doesNotMatch(worker, /VAREX AI Android/);
 });
 
-test('phone actions can hand off safely to the current device when no native bridge is online', () => {
-  assert.match(worker, /prepareCallHandoff/);
-  assert.match(worker, /status='action_required'/);
-  assert.match(worker, /call_uri/);
-  assert.match(worker, /requires_user_confirmation/);
+test('phone actions never produce a browser handoff when no native bridge is online', () => {
+  assert.doesNotMatch(worker, /prepareCallHandoff/);
+  assert.doesNotMatch(worker, /call_uri/);
+  assert.doesNotMatch(worker, /requires_user_confirmation/);
   assert.match(worker, /DEVICE_CAPABILITY_REQUIRED/);
 });
 
