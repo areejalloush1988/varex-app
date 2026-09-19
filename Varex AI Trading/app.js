@@ -46,7 +46,7 @@
     return date.toLocaleString("ar-AE", withTime ? { dateStyle: "medium", timeStyle: "short" } : { dateStyle: "medium" });
   }
   function roleLabel(role) {
-    return ({ developer: "مطوّر", trader: "متداول", viewer: "مشاهِد" })[role] || "مستخدم";
+    return ({ developer: "إدارة النظام", trader: "صلاحية تداول", viewer: "عرض فقط" })[role] || "حساب";
   }
   function directionLabel(direction) {
     return ({ buy: "شراء", sell: "بيع", wait: "انتظار" })[direction] || "انتظار";
@@ -177,7 +177,7 @@
       await loadMarkets(app.state.selectedSymbol, true);
       render();
     } catch (error) {
-      if (error.status === 401) return showLoggedOut("سجّل الدخول للمتابعة.");
+      if (error.status === 401) return showLoggedOut("يلزم تسجيل الدخول للمتابعة.");
       showLoggedOut(error.message);
     } finally {
       $("#loadingScreen").classList.add("hidden");
@@ -218,9 +218,9 @@
       event.preventDefault();
       const form = event.currentTarget, data = new FormData(form);
       const displayName = String(data.get("displayName") || "").trim(), email = String(data.get("email") || "").trim().toLowerCase(), password = String(data.get("password") || ""), confirmPassword = String(data.get("confirmPassword") || "");
-      if (displayName.length < 2) return showAuthMessage("أدخل اسم مستخدم واضحاً.");
+      if (displayName.length < 2) return showAuthMessage("يلزم إدخال اسم مستخدم واضح.");
       if (!passwordStrong(password)) return showAuthMessage("كلمة المرور يجب أن تحتوي على حرف كبير وصغير ورقم ورمز خاص، و8 أحرف على الأقل.");
-      if (password !== confirmPassword) return showAuthMessage("كلمتا المرور غير متطابقتين. أعد كتابتهما بشكل متطابق.");
+      if (password !== confirmPassword) return showAuthMessage("كلمتا المرور غير متطابقتين. يجب أن تكونا متطابقتين.");
       try {
         await runForm(form, async () => {
           await authRequest("/api/auth/sign-up/email", { name: displayName, email, password, rememberMe: false });
@@ -248,7 +248,7 @@
     $("#otpPane").addEventListener("submit", async (event) => {
       event.preventDefault();
       const form = event.currentTarget, otp = String(new FormData(form).get("otp") || "").replace(/\D/g, "");
-      if (otp.length !== 6) return showAuthMessage("أدخل رمزاً من 6 أرقام.");
+      if (otp.length !== 6) return showAuthMessage("يلزم إدخال رمز من 6 أرقام.");
       if (pendingAuth.purpose === "recovery") {
         pendingAuth.otp = otp;
         showAuthPane("resetPane");
@@ -260,12 +260,12 @@
           $("#loginForm [name=email]").value = pendingAuth.email;
           pendingAuth = { purpose: "", email: "", password: "", displayName: "", otp: "" };
           showAuthPane("loginForm");
-          showAuthMessage("تم تأكيد الحساب. يمكنك تسجيل الدخول الآن.", "success");
+          showAuthMessage("تم تأكيد الحساب. تسجيل الدخول متاح الآن.", "success");
         }, "جاري تأكيد الحساب…");
       } catch {}
     });
     $("#resendOtp").addEventListener("click", async () => {
-      if (!pendingAuth.email) return showAuthMessage("ابدأ العملية من جديد.");
+      if (!pendingAuth.email) return showAuthMessage("يلزم بدء العملية من جديد.");
       try {
         await authRequest("/api/trading-auth/send-otp", { email: pendingAuth.email, password: pendingAuth.password || undefined, purpose: pendingAuth.purpose === "recovery" ? "reset" : "verify" });
         showAuthMessage("تم إرسال رمز جديد.", "success");
@@ -281,7 +281,7 @@
           $("#loginForm [name=email]").value = pendingAuth.email;
           pendingAuth = { purpose: "", email: "", password: "", displayName: "", otp: "" };
           showAuthPane("loginForm");
-          showAuthMessage("تم تحديث كلمة المرور. سجّل الدخول الآن.", "success");
+          showAuthMessage("تم تحديث كلمة المرور. تسجيل الدخول متاح الآن.", "success");
         }, "جاري حفظ كلمة المرور…");
       } catch {}
     });
@@ -375,20 +375,20 @@
 
   function headerForView() {
     const map = {
-      dashboard: [`${greeting()}، ${app.profile.displayName}`, "اختاري عملة، دعي VAREX يحللها، ثم جرّبي صفقة ورقية."],
+      dashboard: [`${greeting()}، ${app.profile.displayName}`, "اختيار عملة، تشغيل تحليل VAREX، ثم تجربة صفقة ورقية."],
       intelligence: ["فرص الذكاء", "تحليل احتمالي مبني على أسعار السوق الحية وحركة آخر 24 ساعة."],
-      trades: ["الصفقات", "افتح وأغلق صفقات ورقية بأسعار حية وراجع سجلها الكامل."],
+      trades: ["الصفقات", "فتح وإغلاق صفقات ورقية بأسعار حية مع سجل كامل."],
       risk: ["مركز المخاطر", "حدود حقيقية يطبقها الخادم قبل السماح بأي صفقة ورقية."],
-      watchlist: ["قائمة المراقبة", "اختر الأسواق التي تريد متابعتها واحفظها في حسابك."],
+      watchlist: ["قائمة المراقبة", "اختيار الأسواق المطلوبة للمتابعة وحفظها في الحساب."],
       reports: ["التقارير", "نتائج محسوبة من صفقات حسابك المحفوظة فقط."],
-      users: ["المستخدمون", "أضف مستخدمين وحدد صلاحية التداول أو المشاهدة."],
+      users: ["الحسابات", "إضافة الحسابات وتحديد صلاحية التداول أو العرض فقط."],
       settings: ["الإعدادات", "إدارة اسم المستخدم والتفضيلات وجلسة الحساب."],
     };
     const [title, subtitle] = map[app.view] || map.dashboard;
     $("#pageTitle").textContent = title;
     $("#pageSubtitle").textContent = subtitle;
     const actions = {
-      dashboard: '<div class="panel-actions"><button class="primary-button" data-action="guided-analysis">✦ ابدئي التجربة</button><button class="small-button" data-action="refresh-markets">↻ تحديث الأسعار</button></div>',
+      dashboard: '<div class="panel-actions"><button class="primary-button" data-action="guided-analysis">✦ بدء التجربة</button><button class="small-button" data-action="refresh-markets">↻ تحديث الأسعار</button></div>',
       intelligence: '<button class="primary-button" data-action="analyze-current">✦ تحليل السوق المحدد</button>',
       reports: '<button class="primary-button" data-action="export-report">⇩ تصدير CSV</button>',
     };
@@ -434,7 +434,7 @@
   }
   function renderRecentTrades(limit = 5) {
     const trades = app.state.trades.slice(0, limit);
-    if (!trades.length) return '<div class="empty"><span>▣</span><p>لا توجد صفقات بعد. افتح أول صفقة ورقية من بطاقة التنفيذ.</p></div>';
+    if (!trades.length) return '<div class="empty"><span>▣</span><p>لا توجد صفقات بعد. يمكن فتح أول صفقة ورقية من بطاقة التنفيذ.</p></div>';
     return `<div class="list">${trades.map((trade) => `<div class="list-row"><span><strong>${escapeHtml(trade.symbol)}</strong><small class="muted"> · ${localDate(trade.openedAt, true)}</small></span><span class="badge ${trade.side}">${directionLabel(trade.side)}</span><span class="${trade.status === "closed" ? (trade.pnl >= 0 ? "positive" : "negative") : "muted"}">${trade.status === "closed" ? money(trade.pnl) : "مفتوحة"}</span><button class="small-button" data-view="trades">التفاصيل</button></div>`).join("")}</div>`;
   }
   function tradeTicket() {
@@ -447,12 +447,12 @@
         <label class="control">حجم الصفقة بالدولار<input name="amount" type="number" min="25" step="25" value="500" required></label>
         <div class="trade-summary"><p><span>السعر المعروض</span><b>${selected ? money(selected.price) : "يؤخذ عند التنفيذ"}</b></p><p><span>حد الصفقات المفتوحة</span><b>${app.state.risk.maxOpenTrades}</b></p><p><span>المخاطرة لكل صفقة</span><b>${app.state.risk.riskPerTradePct}%</b></p></div>
         <button class="primary-button" type="submit">فتح صفقة ${app.tradeSide === "buy" ? "شراء" : "بيع"} ورقية</button>
-      </form>` : '<div class="notice">صلاحية هذا الحساب مشاهدة فقط. المطوّر يستطيع تغييرها من شاشة المستخدمين.</div>'}
+      </form>` : '<div class="notice">صلاحية هذا الحساب للعرض فقط. يمكن لإدارة النظام تغييرها من شاشة الحسابات.</div>'}
     </article>`;
   }
   function renderDashboard() {
     const metrics = accountMetrics(), dailyRisk = metrics.todayPnl < 0 && metrics.balance ? Math.abs(metrics.todayPnl) / metrics.balance * 100 : 0;
-    return `<section class="trial-guide"><div><span class="eyebrow">تجربة بدون أموال حقيقية</span><h2>ابدئي أول تجربة تداول الآن</h2><p>لا تحتاجين وسيطاً في هذه المرحلة. يقرأ VAREX السوق الحي، يعطيك قراراً احتمالياً، وأنت تؤكدين الصفقة الورقية.</p></div><ol class="trial-steps"><li><b>1</b><span>اختاري عملة</span></li><li><b>2</b><span>شغّلي تحليل VAREX</span></li><li><b>3</b><span>افتحي صفقة ورقية</span></li></ol><button class="primary-button" data-action="guided-analysis">✦ حلّلي ${escapeHtml(app.selectedMarket?.label || "BTC / USD")} الآن</button></section>
+    return `<section class="trial-guide"><div><span class="eyebrow">تجربة بدون أموال حقيقية</span><h2>بدء أول تجربة تداول</h2><p>لا حاجة إلى وسيط في هذه المرحلة. يقرأ VAREX السوق الحي ويعرض قراراً احتمالياً، ثم يتم تأكيد الصفقة الورقية يدوياً.</p></div><ol class="trial-steps"><li><b>1</b><span>اختيار عملة</span></li><li><b>2</b><span>تشغيل تحليل VAREX</span></li><li><b>3</b><span>فتح صفقة ورقية</span></li></ol><button class="primary-button" data-action="guided-analysis">✦ تحليل ${escapeHtml(app.selectedMarket?.label || "BTC / USD")} الآن</button></section>
     <section class="stats-grid">
       ${statCard("▣", "الرصيد الورقي", money(metrics.balance), "الرصيد المحفوظ في حسابك")}
       ${statCard("$", "صافي اليوم", money(metrics.todayPnl), metrics.closed.length ? "من الصفقات المغلقة اليوم" : "لا توجد صفقات مغلقة اليوم", metrics.todayPnl >= 0 ? "positive" : "negative")}
@@ -464,13 +464,13 @@
   }
 
   function analysisCard(analysis) {
-    if (!analysis) return '<div class="empty"><span>✦</span><p>لم تنفذ أي تحليل بعد. اختر سوقاً واضغط تحليل.</p></div>';
+    if (!analysis) return '<div class="empty"><span>✦</span><p>لا يوجد تحليل بعد. يبدأ التحليل بعد اختيار سوق والضغط على «تحليل».</p></div>';
     const colorClass = analysis.direction === "wait" ? "muted" : analysis.direction === "buy" ? "positive" : "negative";
     return `<div class="signal-card"><div class="signal-main"><small>${escapeHtml(analysis.symbol)} · ${localDate(analysis.createdAt, true)}</small><strong class="${colorClass}">${directionLabel(analysis.direction)}</strong><span class="muted">المحرك: ${escapeHtml(analysis.engine || "VAREX")}</span></div><span class="score-ring" style="--score:${Number(analysis.confidence || 0) * 3.6}deg"><b>${Number(analysis.confidence || 0)}%</b></span></div>
       <ul class="reasons">${(analysis.reasons || []).map((reason) => `<li>${escapeHtml(reason)}</li>`).join("")}</ul>
       <div class="level-grid"><span><small>سعر التحليل</small><b>${money(analysis.price)}</b></span><span><small>الهدف الاحتمالي</small><b class="positive">${money(analysis.target)}</b></span><span><small>وقف مقترح</small><b class="negative">${money(analysis.stop)}</b></span></div>
       <p class="notice">${escapeHtml(analysis.disclaimer || "التحليل احتمالي وليس ضماناً للربح.")}</p>
-      ${analysis.direction === "wait" ? '<div class="analysis-next wait"><div><b>قرار VAREX الآن: الانتظار</b><small>لا يفتح النظام صفقة عندما لا يرى إشارة دخول كافية. اختاري عملة ثانية وجرّبي تحليلها.</small></div><button class="secondary-button" data-view="dashboard">اختيار عملة أخرى</button></div>' : `<div class="analysis-next"><div><b>الخطوة التالية</b><small>استخدمي نتيجة التحليل لتهيئة صفقة ورقية؛ لن يُخصم أي مال حقيقي.</small></div><button class="primary-button" data-use-analysis="${escapeHtml(analysis.symbol)}" data-side="${analysis.direction}">استخدام النتيجة وفتح صفقة ${directionLabel(analysis.direction)} تجريبية</button></div>`}`;
+      ${analysis.direction === "wait" ? '<div class="analysis-next wait"><div><b>قرار VAREX الآن: الانتظار</b><small>لا يفتح النظام صفقة عندما لا يرى إشارة دخول كافية. يمكن اختيار عملة ثانية وتشغيل تحليل جديد.</small></div><button class="secondary-button" data-view="dashboard">اختيار عملة أخرى</button></div>' : `<div class="analysis-next"><div><b>الخطوة التالية</b><small>يمكن استخدام نتيجة التحليل لتهيئة صفقة ورقية؛ لن يُخصم أي مال حقيقي.</small></div><button class="primary-button" data-use-analysis="${escapeHtml(analysis.symbol)}" data-side="${analysis.direction}">استخدام النتيجة وفتح صفقة ${directionLabel(analysis.direction)} تجريبية</button></div>`}`;
   }
   function renderIntelligence() {
     const latest = app.state.analyses[0], opportunities = app.markets.map((market) => {
@@ -498,7 +498,7 @@
     const metrics = accountMetrics(), lossToday = Math.min(0, metrics.todayPnl), used = metrics.balance ? Math.abs(lossToday) / metrics.balance * 100 : 0;
     return `<section class="stats-grid">
       ${statCard("◇", "حد الخسارة اليومي", `${app.state.risk.maxDailyLossPct}%`, "يمنع فتح صفقة بعد بلوغه")}
-      ${statCard("⌁", "المستخدم اليوم", `${used.toFixed(2)}%`, lossToday ? money(lossToday) : "لا توجد خسارة محققة", used >= app.state.risk.maxDailyLossPct ? "negative" : "positive")}
+      ${statCard("⌁", "استهلاك الحد اليومي", `${used.toFixed(2)}%`, lossToday ? money(lossToday) : "لا توجد خسارة محققة", used >= app.state.risk.maxDailyLossPct ? "negative" : "positive")}
       ${statCard("▣", "حد الصفقات", String(app.state.risk.maxOpenTrades), `${metrics.open.length} مفتوحة حالياً`)}
       ${statCard("%", "مخاطرة الصفقة", `${app.state.risk.riskPerTradePct}%`, "من الرصيد الورقي")}
     </section>
@@ -507,7 +507,7 @@
       <label class="control">أقصى صفقات مفتوحة<input name="maxOpenTrades" type="number" min="1" max="10" step="1" value="${app.state.risk.maxOpenTrades}"></label>
       <label class="control">مخاطرة الصفقة %<input name="riskPerTradePct" type="number" min=".25" max="5" step=".25" value="${app.state.risk.riskPerTradePct}"></label>
     </div><div class="toggle-row"><p><b>تحديد وقف خسارة</b><small>يحفظ مستوى وقف محسوباً مع كل صفقة جديدة</small></p><button type="button" class="switch ${app.state.risk.autoStop ? "on" : ""}" data-toggle-risk="autoStop"><i></i></button></div><button class="primary-button" type="submit">حفظ حدود المخاطر</button></form>
-      <article class="panel"><header class="panel-head"><div><h2>حالة الحماية</h2><p>ملخص القرارات الحالية.</p></div></header><div class="notice">حد الخسارة وعدد الصفقات وحجم الصفقة تُفحص على الخادم، لذلك لا يمكن تجاوزها بتعديل الواجهة.</div><div class="toggle-row"><p><b>القدرة على التداول</b><small>حسب دور المستخدم</small></p><span class="badge ${app.profile.canTrade ? "active" : "inactive"}">${app.profile.canTrade ? "مسموح" : "مشاهدة فقط"}</span></div><div class="toggle-row"><p><b>الوسيط المالي</b><small>يُطلب لاحقاً للتداول بأموال حقيقية فقط</small></p><span class="badge active">غير مطلوب للتجربة</span></div></article></section>`;
+      <article class="panel"><header class="panel-head"><div><h2>حالة الحماية</h2><p>ملخص القرارات الحالية.</p></div></header><div class="notice">حد الخسارة وعدد الصفقات وحجم الصفقة تُفحص على الخادم، لذلك لا يمكن تجاوزها بتعديل الواجهة.</div><div class="toggle-row"><p><b>القدرة على التداول</b><small>حسب صلاحية الحساب</small></p><span class="badge ${app.profile.canTrade ? "active" : "inactive"}">${app.profile.canTrade ? "مسموح" : "عرض فقط"}</span></div><div class="toggle-row"><p><b>الوسيط المالي</b><small>يُطلب لاحقاً للتداول بأموال حقيقية فقط</small></p><span class="badge active">غير مطلوب للتجربة</span></div></article></section>`;
   }
 
   function renderWatchlist() {
@@ -515,7 +515,7 @@
       const market = getMarket(item.symbol), checked = app.state.watchlist.includes(item.symbol);
       return `<label class="watch-card"><input type="checkbox" name="symbols" value="${item.symbol}" ${checked ? "checked" : ""}><span class="coin">${escapeHtml(item.icon)}</span><p><b>${escapeHtml(item.label)}</b><small>${escapeHtml(item.name)}</small></p><span><b>${market ? money(market.price) : "—"}</b><small class="${market?.changePct >= 0 ? "positive" : "negative"}">${market ? pct(market.changePct) : "غير متاح"}</small></span></label>`;
     }).join("");
-    return `<form class="panel" id="watchlistForm"><header class="panel-head"><div><h2>الأسواق المتاحة</h2><p>اختر سوقاً واحداً على الأقل.</p></div><button class="primary-button" type="submit">حفظ القائمة</button></header><div class="watch-grid">${cards}</div></form>`;
+    return `<form class="panel" id="watchlistForm"><header class="panel-head"><div><h2>الأسواق المتاحة</h2><p>يجب اختيار سوق واحد على الأقل.</p></div><button class="primary-button" type="submit">حفظ القائمة</button></header><div class="watch-grid">${cards}</div></form>`;
   }
 
   function renderReports() {
@@ -531,20 +531,20 @@
   }
 
   function renderUsers() {
-    if (!app.profile.canManageUsers) return '<div class="notice">هذه الشاشة متاحة للمطوّر فقط.</div>';
-    if (app.usersLoading) return '<section class="panel"><div class="empty"><span class="loader"></span><p>جاري تحميل المستخدمين…</p></div></section>';
+    if (!app.profile.canManageUsers) return '<div class="notice">هذه الشاشة متاحة لحساب الإدارة فقط.</div>';
+    if (app.usersLoading) return '<section class="panel"><div class="empty"><span class="loader"></span><p>جاري تحميل الحسابات…</p></div></section>';
     const cards = app.users.map((user) => {
       const developer = user.role === "developer", status = user.pending ? "pending" : user.status;
-      return `<div class="user-card" data-user-row="${escapeHtml(user.email)}"><p><b>${escapeHtml(user.displayName)}</b><small dir="ltr">${escapeHtml(user.email)}</small></p><aside><span class="badge ${status}">${status === "pending" ? "بانتظار التسجيل" : status === "active" ? "نشط" : "متوقف"}</span>${developer ? '<span class="badge active">مطوّر</span>' : `<select class="small-button user-role"><option value="trader" ${user.role === "trader" ? "selected" : ""}>متداول</option><option value="viewer" ${user.role === "viewer" ? "selected" : ""}>مشاهِد</option></select><button class="small-button" data-user-save="${escapeHtml(user.email)}" data-status="${status === "inactive" || status === "revoked" ? "active" : "inactive"}">${status === "inactive" || status === "revoked" ? "تفعيل" : "إيقاف"}</button>`}</aside></div>`;
+      return `<div class="user-card" data-user-row="${escapeHtml(user.email)}"><p><b>${escapeHtml(user.displayName)}</b><small dir="ltr">${escapeHtml(user.email)}</small></p><aside><span class="badge ${status}">${status === "pending" ? "بانتظار التسجيل" : status === "active" ? "نشط" : "متوقف"}</span>${developer ? '<span class="badge active">إدارة</span>' : `<select class="small-button user-role"><option value="trader" ${user.role === "trader" ? "selected" : ""}>صلاحية تداول</option><option value="viewer" ${user.role === "viewer" ? "selected" : ""}>عرض فقط</option></select><button class="small-button" data-user-save="${escapeHtml(user.email)}" data-status="${status === "inactive" || status === "revoked" ? "active" : "inactive"}">${status === "inactive" || status === "revoked" ? "تفعيل" : "إيقاف"}</button>`}</aside></div>`;
     }).join("");
-    return `<section class="content-grid"><form class="panel" id="inviteForm"><header class="panel-head"><div><h2>إضافة مستخدم</h2><p>يستطيع البريد المدعو إنشاء حسابه من نفس الرابط.</p></div></header><div class="form-grid"><label class="control">اسم المستخدم<input name="displayName" required maxlength="80" placeholder="مثال: مسؤول الاستثمار"></label><label class="control">البريد الإلكتروني<input name="email" type="email" required placeholder="user@example.com"></label><label class="control">الصلاحية<select name="role"><option value="trader">متداول — فتح وإغلاق صفقات ورقية</option><option value="viewer">مشاهِد — قراءة فقط</option></select></label></div><button class="primary-button" type="submit">إضافة المستخدم</button></form><article class="panel"><header class="panel-head"><div><h2>طريقة الدخول</h2><p>خطوات المستخدم المدعو.</p></div></header><div class="notice">أرسل للمستخدم رابط التطبيق. ينشئ حساباً بالبريد نفسه، يؤكد رمز OTP، ثم تظهر له صلاحياته تلقائياً.</div></article></section><section class="panel"><header class="panel-head"><div><h2>قائمة المستخدمين</h2><p>${app.users.length} حساباً أو دعوة.</p></div><button class="small-button" data-action="reload-users">تحديث</button></header>${cards || '<div class="empty"><p>لا يوجد مستخدمون بعد.</p></div>'}</section>`;
+    return `<section class="content-grid"><form class="panel" id="inviteForm"><header class="panel-head"><div><h2>إضافة حساب</h2><p>يُنشأ الحساب من الرابط نفسه باستخدام البريد المضاف.</p></div></header><div class="form-grid"><label class="control">اسم المستخدم<input name="displayName" required maxlength="80" placeholder="مثال: إدارة الاستثمار"></label><label class="control">البريد الإلكتروني<input name="email" type="email" required placeholder="user@example.com"></label><label class="control">الصلاحية<select name="role"><option value="trader">صلاحية تداول — فتح وإغلاق صفقات ورقية</option><option value="viewer">عرض فقط — قراءة فقط</option></select></label></div><button class="primary-button" type="submit">إضافة الحساب</button></form><article class="panel"><header class="panel-head"><div><h2>طريقة الدخول</h2><p>خطوات تفعيل الحساب المضاف.</p></div></header><div class="notice">يتم إرسال رابط التطبيق إلى البريد المضاف، ثم إنشاء الحساب بالبريد نفسه وتأكيد رمز OTP لتظهر الصلاحيات تلقائياً.</div></article></section><section class="panel"><header class="panel-head"><div><h2>قائمة الحسابات</h2><p>${app.users.length} حساباً أو دعوة.</p></div><button class="small-button" data-action="reload-users">تحديث</button></header>${cards || '<div class="empty"><p>لا توجد حسابات بعد.</p></div>'}</section>`;
   }
 
   function renderSettings() {
     const settings = app.state.settings;
     return `<section class="settings-stack"><form class="panel" id="profileForm"><header class="panel-head"><div><h2>بيانات الحساب</h2><p>يظهر اسم المستخدم في التحية والقائمة.</p></div></header><div class="form-grid"><label class="control">اسم المستخدم<input name="displayName" value="${escapeHtml(app.profile.displayName)}" maxlength="80" required></label><label class="control">البريد الإلكتروني<input value="${escapeHtml(app.profile.email)}" disabled dir="ltr"></label></div><button class="primary-button" type="submit">حفظ اسم المستخدم</button></form>
       <form class="panel" id="settingsForm"><header class="panel-head"><div><h2>تفضيلات الواجهة</h2><p>محفوظة في حسابك على قاعدة البيانات.</p></div></header><div class="form-grid"><label class="control">المنطقة الزمنية<select name="timezone"><option value="Asia/Dubai" ${settings.timezone === "Asia/Dubai" ? "selected" : ""}>الإمارات — دبي</option><option value="Asia/Riyadh" ${settings.timezone === "Asia/Riyadh" ? "selected" : ""}>السعودية — الرياض</option><option value="UTC" ${settings.timezone === "UTC" ? "selected" : ""}>UTC</option></select></label></div><div class="toggle-row"><p><b>إشعارات داخل التطبيق</b><small>إظهار تنبيهات نجاح العمليات وأخطاء السوق</small></p><button type="button" class="switch ${settings.notifications ? "on" : ""}" data-toggle-setting="notifications"><i></i></button></div><div class="toggle-row"><p><b>الوضع المضغوط</b><small>جاهز للاستخدام في تحديث واجهة لاحق</small></p><button type="button" class="switch ${settings.compactMode ? "on" : ""}" data-toggle-setting="compactMode"><i></i></button></div><button class="primary-button" type="submit">حفظ التفضيلات</button></form>
-      ${app.profile.canTrade ? '<article class="panel danger-zone"><header class="panel-head"><div><h2>إعادة ضبط التداول الورقي</h2><p>يحذف الصفقات والتحليلات ويعيد الرصيد إلى 25,000 دولار. لا يحذف الحساب أو المستخدمين.</p></div></header><button class="danger-button" data-action="reset-paper">إعادة الضبط</button></article>' : ""}
+      ${app.profile.canTrade ? '<article class="panel danger-zone"><header class="panel-head"><div><h2>إعادة ضبط التداول الورقي</h2><p>يحذف الصفقات والتحليلات ويعيد الرصيد إلى 25,000 دولار. لا يحذف الحساب أو الحسابات المضافة.</p></div></header><button class="danger-button" data-action="reset-paper">إعادة الضبط</button></article>' : ""}
     </section>`;
   }
 
@@ -610,7 +610,7 @@
         render();
       } else if (form.id === "watchlistForm") {
         const watchlist = data.getAll("symbols").map(String);
-        if (!watchlist.length) throw new Error("اختر سوقاً واحداً على الأقل.");
+        if (!watchlist.length) throw new Error("يجب اختيار سوق واحد على الأقل.");
         const result = await tradingPost("save_preferences", { watchlist });
         app.state = result.state; app.version = result.version;
         showToast("تم حفظ قائمة المراقبة.");
@@ -619,7 +619,7 @@
         const result = await tradingPost("invite_user", { displayName: String(data.get("displayName")), email: String(data.get("email")), role: String(data.get("role")) });
         app.users = result.users || [];
         form.reset();
-        showToast("تمت إضافة المستخدم. يمكنه إنشاء حساب بالبريد نفسه.");
+        showToast("تمت إضافة الحساب. أصبح إنشاء الحساب بالبريد نفسه متاحاً.");
         render();
       } else if (form.id === "profileForm") {
         const result = await tradingPost("update_profile", { displayName: String(data.get("displayName")) });
@@ -648,7 +648,7 @@
       const result = await tradingPost("analyze", { symbol });
       app.state = result.state; app.version = result.version;
       await loadMarkets(symbol, true);
-      showToast("اكتمل تحليل VAREX. راجعي القرار ثم اختاري الخطوة التالية.");
+      showToast("اكتمل تحليل VAREX. يمكن مراجعة القرار واختيار الخطوة التالية.");
       goTo("intelligence");
     } catch (error) { showToast(error.message, "error"); }
     finally { buttons.forEach((button) => { button.disabled = false; }); }
@@ -678,7 +678,7 @@
       const user = app.users.find((item) => item.email === email);
       const result = await tradingPost("update_user", { email, role, status, displayName: user?.displayName || email.split("@")[0] });
       app.users = result.users || [];
-      showToast(status === "inactive" ? "تم إيقاف المستخدم." : "تم تفعيل المستخدم.");
+      showToast(status === "inactive" ? "تم إيقاف الحساب." : "تم تفعيل الحساب.");
       render();
     } catch (error) { showToast(error.message, "error"); }
   }
