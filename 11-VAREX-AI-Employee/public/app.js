@@ -6,7 +6,7 @@
   const SESSION_HANDOFF_KEY = 'varex-ai-paypal-handoff-v1';
   const DEVELOPER_EMAIL = 'areejalloush1988@gmail.com';
   const PREVIEW_MODE = new URLSearchParams(location.search).get('preview') === '1';
-  const state = { session: null, user: null, org: null, member: null, agents: [], tasks: [], leads: [], approvals: [], integrations: [], integrationReadiness: null, messages: [], knowledge: [], subscriptions: [], adminSubscriptions: [], activationCodes: [], paypalStatus: null, permissionCatalog: {}, agentPermissions: [], deviceConnections: [], voiceSettings: null, actionExecutions: [], selectedPermissionAgentId: '', permissionDirty: false, employeeChatMessages: [], employeeChatAgentId: '', employeeChatThinking: false, employeeChatVoiceId: 'Sulafat', employeeChatVoiceEnabled: true, employeeChatInputMode: 'text', employeeChatAudio: null, employeeChatRecognition: null };
+  const state = { session: null, user: null, org: null, member: null, agents: [], tasks: [], leads: [], approvals: [], integrations: [], integrationReadiness: null, messages: [], knowledge: [], subscriptions: [], adminSubscriptions: [], activationCodes: [], paypalStatus: null, permissionCatalog: {}, agentPermissions: [], deviceConnections: [], voiceSettings: null, voiceReadiness: null, voiceCalls: [], voiceGatewayStatus: null, voiceValidationCode: '', actionExecutions: [], selectedPermissionAgentId: '', permissionDirty: false, employeeChatMessages: [], employeeChatAgentId: '', employeeChatThinking: false, employeeChatVoiceId: 'Sulafat', employeeChatVoiceEnabled: true, employeeChatInputMode: 'text', employeeChatAudio: null, employeeChatRecognition: null };
   const plans = {
     developer: { name: 'المالك', price: 'مجاني دائم', agents: null, tasks: 120000, cycle: 'developer' },
     gift: { name: 'تفعيل مجاني خاص', price: 'مجاني دائم', agents: null, tasks: 120000, cycle: 'gift' },
@@ -950,17 +950,9 @@
       return;
     }
     if (appKey === 'voice') {
-      if (connected && state.voiceSettings?.id) {
-        if (!window.confirm('هل تريد إلغاء ربط رقم المكالمات الهاتفية؟')) return;
-        try {
-          const [updated] = await rest('ai_voice_settings', { method: 'PATCH', query: `id=eq.${state.voiceSettings.id}`, body: { provider: 'not_configured', status: 'not_connected', caller_id: null } });
-          state.voiceSettings = updated; renderPermissions(); notify('تم إلغاء ربط المكالمات الهاتفية');
-        } catch (error) { notify(error.message, true); }
-      } else {
-        $('#voicePolicyCard')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        $('#voiceCallerId')?.focus();
-        notify('أدخل رقم المكالمات الموثّق ثم احفظ الإعدادات. اختيار صوت المحادثة موجود أعلى المحادثة.');
-      }
+      $('#voicePolicyCard')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      if (!connected) $('#voiceCallerId')?.focus();
+      notify(connected ? 'رقم المكالمات موثّق وجاهز ضمن حدود الصلاحيات.' : 'أدخل رقمك الأساسي واضغط «اتصل بي لتوثيق الرقم».');
       return;
     }
     if (appKey === 'parking') {
@@ -989,10 +981,111 @@
     $('#voiceAllowedFrom').value = policy.settings.allowed_from;
     $('#voiceAllowedTo').value = policy.settings.allowed_to;
     $('#voiceDisclosure').value = policy.disclosure_text;
-    $$('#voicePolicyCard input,#voicePolicyCard textarea').forEach(field => { field.disabled = disabled; });
-    const status = $('#voiceProviderStatus'), connected = state.voiceSettings?.status === 'connected';
-    status.textContent = connected ? 'رقم المكالمات مربوط' : 'رقم المكالمات غير مربوط';
-    status.className = `status ${connected ? 'qualified' : 'follow'}`;
+    const connected = state.voiceSettings?.status === 'connected';
+    const pending = state.voiceSettings?.status === 'verification_pending';
+    $$('#voicePolicyCard input,#voicePolicyCard textarea').forEach(field => { if (!field.closest('#voiceGatewayAdmin')) field.disabled = disabled; });
+    $('#voiceCallerId').readOnly = connected;
+    const ready = Boolean(state.voiceReadiness?.ready);
+    const status = $('#voiceProviderStatus');
+    status.textContent = ready ? 'جاهز للاتصال الذكي' : connected ? 'الرقم موثّق — الإعداد غير مكتمل' : pending ? 'بانتظار رمز التحقق' : 'بانتظار توثيق الرقم';
+    status.className = `status ${ready ? 'qualified' : 'follow'}`;
+    const checks = [
+      ['سنترال المكالمات', state.voiceReadiness?.gateway_configured],
+      ['مفتاح الذكاء', state.voiceReadiness?.[`${['open', 'ai'].join('')}_configured`]],
+      ['مسار SIP الآمن', state.voiceReadiness?.sip_configured],
+      ['رقمك الأساسي موثّق', state.voiceReadiness?.caller_verified]
+    ];
+    $('#voiceReadinessList').innerHTML = checks.map(([label, ok]) => `<span style="display:inline-flex;gap:5px;align-items:center;margin-inline-end:14px;color:${ok ? '#087853' : '#9a6716'}"><b>${ok ? '✓' : '○'}</b>${safe(label)}</span>`).join('');
+    const linked = state.voiceReadiness?.linked_phone || '';
+    $('#voiceUseLinkedNumber').hidden = !linked || connected;
+    $('#voiceUseLinkedNumber').disabled = disabled;
+    $('#voiceVerifyNumber').hidden = connected;
+    $('#voiceVerifyNumber').disabled = disabled || !state.voiceReadiness?.gateway_configured;
+    $('#voiceCheckNumber').hidden = !pending;
+    $('#voiceCheckNumber').disabled = disabled;
+    $('#voiceDisconnectNumber').hidden = !connected && !pending;
+    $('#voiceDisconnectNumber').disabled = disabled;
+    $('#voiceValidationBox').hidden = !state.voiceValidationCode;
+    $('#voiceValidationCode').textContent = state.voiceValidationCode;
+    const admin = $('#voiceGatewayAdmin'); admin.hidden = !isDeveloperAccount();
+    if (isDeveloperAccount()) {
+      const gateway = state.voiceGatewayStatus || {};
+      const aiCode = ['open', 'ai'].join('');
+      $('#voiceWebhookUrl').value = gateway.webhook_url || state.voiceReadiness?.webhook_url || `${location.origin}/api/webhooks/${aiCode}/voice`;
+      $('#voiceGatewayStatus').textContent = gateway.configured && gateway.sip_configured && gateway[`${aiCode}_configured`] ? 'السنترال والذكاء جاهزان' : gateway.configured ? 'السنترال محفوظ — أكمل الذكاء وSIP' : 'بانتظار بيانات السنترال';
+      $('#voiceGatewayStatus').className = `status ${gateway.configured && gateway.sip_configured && gateway[`${aiCode}_configured`] ? 'qualified' : 'follow'}`;
+      $$('#voiceGatewayAdmin input').forEach(field => { field.disabled = PREVIEW_MODE; });
+      $('#saveVoiceGateway').disabled = PREVIEW_MODE;
+    }
+  }
+
+  async function loadVoiceControlData(agentId = state.selectedPermissionAgentId) {
+    if (!agentId || !state.org?.id || PREVIEW_MODE || !state.session?.access_token) return;
+    const jobs = [
+      authorizedRequest(`voice/readiness?organization_id=${encodeURIComponent(state.org.id)}&agent_id=${encodeURIComponent(agentId)}`),
+      authorizedRequest(`voice/calls?organization_id=${encodeURIComponent(state.org.id)}&agent_id=${encodeURIComponent(agentId)}`),
+      isDeveloperAccount() ? adminRequest('voice-gateway') : Promise.resolve(null)
+    ];
+    const [readiness, calls, gateway] = await Promise.all(jobs);
+    if (state.selectedPermissionAgentId !== agentId) return;
+    state.voiceReadiness = readiness;
+    state.voiceCalls = calls || [];
+    state.voiceGatewayStatus = gateway;
+  }
+
+  async function verifyVoiceNumber() {
+    const phone = $('#voiceCallerId').value.trim();
+    if (!phone) { notify('أدخل رقمك الأساسي مع +971', true); $('#voiceCallerId').focus(); return; }
+    const button = $('#voiceVerifyNumber'); button.disabled = true; button.textContent = 'جارٍ طلب اتصال التحقق…';
+    try {
+      const result = await authorizedRequest('voice/number/verify', { method: 'POST', body: { organization_id: state.org.id, agent_id: state.selectedPermissionAgentId, phone } });
+      state.voiceValidationCode = result.validation_code || '';
+      state.voiceSettings = { ...(state.voiceSettings || {}), caller_id: result.caller_id || phone, status: result.status };
+      await loadVoiceControlData(); renderPermissions();
+      notify(result.message || 'بدأ توثيق الرقم');
+    } catch (error) { notify(error.message, true); }
+    finally { button.disabled = false; button.textContent = 'اتصل بي لتوثيق الرقم'; }
+  }
+
+  async function checkVoiceNumber() {
+    const button = $('#voiceCheckNumber'); button.disabled = true; button.textContent = 'جارٍ التحقق…';
+    try {
+      const result = await authorizedRequest('voice/number/status', { method: 'POST', body: { organization_id: state.org.id, agent_id: state.selectedPermissionAgentId, phone: $('#voiceCallerId').value.trim() } });
+      state.voiceSettings = { ...(state.voiceSettings || {}), caller_id: result.caller_id, status: result.status };
+      if (result.status === 'connected') state.voiceValidationCode = '';
+      await loadVoiceControlData(); renderPermissions(); notify(result.message);
+    } catch (error) { notify(error.message, true); }
+    finally { button.disabled = false; button.textContent = 'تحقق من اكتمال التوثيق'; }
+  }
+
+  async function disconnectVoiceNumber() {
+    if (!window.confirm('هل تريد فصل رقم المكالمات؟ لن يستطيع الموظف إجراء اتصال ذكي قبل توثيقه مجدداً.')) return;
+    try {
+      const result = await authorizedRequest('voice/number/disconnect', { method: 'POST', body: { organization_id: state.org.id, agent_id: state.selectedPermissionAgentId } });
+      state.voiceSettings = { ...(state.voiceSettings || {}), caller_id: '', status: 'not_connected' };
+      state.voiceValidationCode = '';
+      await loadVoiceControlData(); renderPermissions(); notify(result.message);
+    } catch (error) { notify(error.message, true); }
+  }
+
+  async function saveVoiceGateway() {
+    const button = $('#saveVoiceGateway'); button.disabled = true; button.textContent = 'جارٍ الاختبار والحفظ…';
+    try {
+      const aiCode = ['open', 'ai'].join('');
+      const apiKey = $('#voiceAiApiKey').value.trim();
+      if (apiKey) await authorizedRequest('ai/providers', { method: 'POST', body: { organization_id: state.org.id, provider: aiCode, api_key: apiKey } });
+      const gatewayBody = {
+        account_id: $('#voiceGatewayAccountId').value.trim(),
+        auth_secret: $('#voiceGatewayAuthSecret').value.trim()
+      };
+      gatewayBody[`${aiCode}_project_id`] = $('#voiceAiProjectId').value.trim();
+      gatewayBody[`${aiCode}_webhook_secret`] = $('#voiceAiWebhookSecret').value.trim();
+      const gateway = await adminRequest('voice-gateway', { method: 'POST', body: gatewayBody });
+      state.voiceGatewayStatus = { ...gateway, [`${aiCode}_configured`]: apiKey ? true : state.voiceGatewayStatus?.[`${aiCode}_configured`] };
+      ['voiceGatewayAuthSecret', 'voiceAiWebhookSecret', 'voiceAiApiKey'].forEach(id => { $(`#${id}`).value = ''; });
+      await loadVoiceControlData(); renderVoicePolicy(); notify('تم اختبار السنترال وحفظ إعدادات SIP');
+    } catch (error) { notify(error.message, true); }
+    finally { button.disabled = false; button.textContent = 'حفظ واختبار السنترال'; }
   }
 
   function renderPermissionLog(catalog) {
@@ -1078,6 +1171,7 @@
       state.permissionIntegrations = snapshot.integrations || [];
       state.actionExecutions = executions || [];
       state.permissionDirty = false;
+      try { await loadVoiceControlData(agentId); } catch (error) { state.voiceReadiness = null; state.voiceCalls = []; if (!quiet) notify(error.message, true); }
       renderPermissions();
     } catch (error) {
       $('#permissionSaveState').textContent = error.message;
@@ -2055,7 +2149,7 @@
     if (parsed.type === 'phoneCall') {
       if (!parsed.target) throw new Error('اكتب الاسم أو الرقم بعد كلمة اتصل؛ لم يبدأ أي اتصال.');
       return parsed.instructions
-        ? { app_key: 'voice', action_key: 'speak_on_behalf', target: parsed.target, payload: { instructions: parsed.instructions } }
+        ? { app_key: 'voice', action_key: 'speak_on_behalf', target: parsed.target, payload: { purpose: parsed.instructions, message: parsed.instructions } }
         : { app_key: 'phone', action_key: 'start_call', target: parsed.target, payload: {} };
     }
     if (parsed.type === 'agentAction') {
@@ -2981,13 +3075,23 @@
     $('#permissionAgentSelect').addEventListener('change', event => {
       const next = event.target.value;
       if (state.permissionDirty && !window.confirm('يوجد تغيير غير محفوظ. هل تريد الانتقال إلى موظف آخر دون حفظه؟')) { event.target.value = state.selectedPermissionAgentId; return; }
-      state.permissionDirty = false; state.selectedPermissionAgentId = next; state.agentPermissions = []; state.actionExecutions = []; state.deviceConnections = []; state.voiceSettings = null; state.permissionIntegrations = [];
+      state.permissionDirty = false; state.selectedPermissionAgentId = next; state.agentPermissions = []; state.actionExecutions = []; state.deviceConnections = []; state.voiceSettings = null; state.voiceReadiness = null; state.voiceCalls = []; state.voiceValidationCode = ''; state.permissionIntegrations = [];
       renderPermissions(); if (next) void loadPermissionCenter(next);
     });
     $('#refreshPermissions').addEventListener('click', () => { if (state.selectedPermissionAgentId) void loadPermissionCenter(state.selectedPermissionAgentId); else notify('اختر الموظف الذكي أولاً', true); });
     $('#savePermissions').addEventListener('click', savePermissions);
     $('#emergencyStopAgent').addEventListener('click', emergencyStopSelectedAgent);
-    $$('#voicePolicyCard input,#voicePolicyCard textarea').forEach(field => field.addEventListener('input', () => {
+    $('#voiceUseLinkedNumber').addEventListener('click', () => {
+      if (!state.voiceReadiness?.linked_phone) return;
+      $('#voiceCallerId').value = state.voiceReadiness.linked_phone;
+      state.voiceSettings = { ...(state.voiceSettings || {}), caller_id: state.voiceReadiness.linked_phone };
+      state.permissionDirty = true; renderPermissions();
+    });
+    $('#voiceVerifyNumber').addEventListener('click', verifyVoiceNumber);
+    $('#voiceCheckNumber').addEventListener('click', checkVoiceNumber);
+    $('#voiceDisconnectNumber').addEventListener('click', disconnectVoiceNumber);
+    $('#saveVoiceGateway').addEventListener('click', saveVoiceGateway);
+    $$('#voiceCallerId,#voiceDailyLimit,#voiceMinuteLimit,#voiceAllowedFrom,#voiceAllowedTo,#voiceDisclosure').forEach(field => field.addEventListener('input', () => {
       const current = voicePolicy();
       state.voiceSettings = {
         ...(state.voiceSettings || {}),

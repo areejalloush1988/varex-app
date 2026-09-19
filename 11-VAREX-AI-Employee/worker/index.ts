@@ -1,5 +1,6 @@
 import { handleImageOptimization, DEFAULT_DEVICE_SIZES, DEFAULT_IMAGE_SIZES } from "vinext/server/image-optimization";
 import handler from "vinext/server/app-router-entry";
+import OpenAI from "openai";
 import { continuePendingIntent, normalizePhoneDigits, parseChatIntent, type ChatActionIntent } from "./chat-command";
 import { askAiProvider, generateGeminiSpeech, verifyAiProviderCredential, GEMINI_TTS_MODEL, GEMINI_MODEL, GEMINI_VOICES, OPENAI_MODEL, type AiProvider } from "./ai-provider";
 
@@ -33,6 +34,10 @@ interface Env {
   PAYPAL_CLIENT_SECRET?: string;
   PAYPAL_ENV?: string;
   OPENAI_API_KEY?: string;
+  OPENAI_PROJECT_ID?: string;
+  OPENAI_WEBHOOK_SECRET?: string;
+  VOICE_GATEWAY_ACCOUNT_ID?: string;
+  VOICE_GATEWAY_AUTH_SECRET?: string;
   GEMINI_API_KEY?: string;
 }
 interface ExecutionContext { waitUntil(promise: Promise<unknown>): void; passThroughOnException(): void }
@@ -72,6 +77,7 @@ const tableColumns: Record<string, string[]> = {
   ai_agent_permissions: ["organization_id","agent_id","app_key","action_key","mode","risk_level","updated_by"],
   ai_action_executions: ["organization_id","agent_id","task_id","app_key","action_key","permission_mode","status","target","device_id","claimed_at","request_payload","result_summary","result_details","error_code","approved_by","approved_at","started_at","completed_at","created_by"],
   ai_voice_settings: ["organization_id","agent_id","provider","status","caller_id","voice_id","disclosure_text","settings","updated_by"],
+  ai_voice_calls: ["organization_id","agent_id","action_execution_id","provider_call_id","openai_session_id","from_number","to_number","contact_name","purpose","status","error_code","started_at","answered_at","completed_at","metadata"],
   ai_messages: ["organization_id","contact_name","contact_address","channel","direction","body","send_status","created_by"],
   ai_knowledge_items: ["organization_id","title","file_type","file_size","storage_path","status","created_by"],
   ai_subscriptions: ["organization_id","plan_code","status","agent_limit","monthly_task_limit","trial_ends_at","starts_at","renews_at","billing_cycle","payment_method"],
@@ -87,6 +93,7 @@ const defaults: Record<string, Row> = {
   ai_agent_permissions: { mode: "denied", risk_level: "standard" },
   ai_action_executions: { permission_mode: "denied", status: "queued", request_payload: {}, result_details: {} },
   ai_voice_settings: { provider: "not_configured", status: "not_connected", disclosure_text: "مرحباً، أنا المساعد الذكي وأتصل نيابة عن صاحب الحساب.", settings: {} },
+  ai_voice_calls: { status: "queued", metadata: {} },
 };
 const permissionModes = new Set(["denied", "approval", "automatic"]);
 const permissionRiskLevels = new Set(["standard", "sensitive", "critical"]);
@@ -339,6 +346,185 @@ async function aiProviderConfiguration(request: Request, env: Env) {
     .bind(crypto.randomUUID(), organizationId, user.id, "ai_provider_connected", "integration", provider, JSON.stringify({ provider, model: aiProviderModels[provider] }), stamp, stamp).run();
   return api({ ok: true, provider, configured: true, model: aiProviderModels[provider] });
 }
+
+type VoiceGatewayConfig = {
+  accountId: string;
+  authSecret: string;
+  projectId: string;
+  webhookSecret: string;
+};
+
+function phoneE164(value: unknown) {
+  const digits = normalizePhoneDigits(value);
+  return digits.length >= 8 && digits.length <= 15 ? `+${digits}` : "";
+}
+
+async function storedVoiceGatewayConfig(env: Env): Promise<VoiceGatewayConfig> {
+  const empty = { accountId: "", authSecret: "", projectId: "", webhookSecret: "" };
+  const row = await env.DB.prepare("SELECT value FROM ai_system_secrets WHERE key='voice_gateway_credentials_encrypted' LIMIT 1").first<Row>();
+  if (!row?.value) return empty;
+  try {
+    const encrypted = JSON.parse(String(row.value)) as Row;
+    const value = await decryptIntegrationCredentials(env, encrypted);
+    return {
+      accountId: String(value.account_id || "").trim(),
+      authSecret: String(value.auth_secret || "").trim(),
+      projectId: String(value.openai_project_id || "").trim(),
+      webhookSecret: String(value.openai_webhook_secret || "").trim(),
+    };
+  } catch (caught) {
+    console.error("VAREX voice gateway decryption failed", caught instanceof Error ? caught.message : caught);
+    return empty;
+  }
+}
+
+async function voiceGatewayConfig(env: Env): Promise<VoiceGatewayConfig> {
+  const stored = await storedVoiceGatewayConfig(env);
+  return {
+    accountId: String(env.VOICE_GATEWAY_ACCOUNT_ID || stored.accountId || "").trim(),
+    authSecret: String(env.VOICE_GATEWAY_AUTH_SECRET || stored.authSecret || "").trim(),
+    projectId: String(env.OPENAI_PROJECT_ID || stored.projectId || "").trim(),
+    webhookSecret: String(env.OPENAI_WEBHOOK_SECRET || stored.webhookSecret || "").trim(),
+  };
+}
+
+async function voiceGatewayRequest(config: VoiceGatewayConfig, path: string, options: { method?: "GET" | "POST"; form?: Record<string, string>; query?: Record<string, string> } = {}) {
+  const url = new URL(path === "__account__"
+    ? `https://api.twilio.com/2010-04-01/Accounts/${encodeURIComponent(config.accountId)}.json`
+    : `https://api.twilio.com/2010-04-01/Accounts/${encodeURIComponent(config.accountId)}/${path.replace(/^\//, "")}`);
+  for (const [key, value] of Object.entries(options.query || {})) url.searchParams.set(key, value);
+  const response = await fetch(url, {
+    method: options.method || "GET",
+    headers: {
+      Authorization: `Basic ${btoa(`${config.accountId}:${config.authSecret}`)}`,
+      ...(options.form ? { "Content-Type": "application/x-www-form-urlencoded" } : {}),
+    },
+    ...(options.form ? { body: new URLSearchParams(options.form).toString() } : {}),
+  });
+  const payload = await response.json<Row>().catch(() => ({}));
+  if (!response.ok) {
+    console.error("VAREX voice gateway request failed", response.status, String(payload.code || ""), String(payload.message || ""));
+    throw new AgentActionError("VOICE_GATEWAY_REQUEST_FAILED", "تعذر تنفيذ الطلب عبر سنترال المكالمات. تحقق من بيانات السنترال وصلاحية الاتصال الدولي.", 502);
+  }
+  return payload;
+}
+
+async function voiceReadinessSnapshot(env: Env, organizationId: string, agentId: string) {
+  const [config, voice, linkedWhatsApp] = await Promise.all([
+    voiceGatewayConfig(env),
+    env.DB.prepare("SELECT * FROM ai_voice_settings WHERE organization_id=? AND agent_id=? LIMIT 1").bind(organizationId, agentId).first<Row>(),
+    env.DB.prepare("SELECT connected_account FROM ai_integrations WHERE organization_id=? AND provider='whatsapp' AND status='connected' LIMIT 1").bind(organizationId).first<Row>(),
+  ]);
+  let openaiConfigured = false;
+  try { openaiConfigured = Boolean((await platformAiProviderKey(env, "openai"))?.key); } catch (_) { openaiConfigured = false; }
+  const callerVerified = voice?.status === "connected" && Boolean(voice?.caller_id);
+  const gatewayConfigured = Boolean(config.accountId && config.authSecret);
+  const sipConfigured = Boolean(config.projectId && config.webhookSecret);
+  return {
+    gateway_configured: gatewayConfigured,
+    openai_configured: openaiConfigured,
+    sip_configured: sipConfigured,
+    caller_verified: callerVerified,
+    ready: gatewayConfigured && openaiConfigured && sipConfigured && callerVerified,
+    caller_id: voice?.caller_id || null,
+    caller_status: voice?.status || "not_connected",
+    linked_phone: phoneE164(linkedWhatsApp?.connected_account || "") || null,
+    webhook_url: `${String(env.APP_BASE_URL || "").replace(/\/$/, "")}/api/webhooks/openai/voice`,
+  };
+}
+
+async function voiceGatewayAdmin(request: Request, env: Env) {
+  const user = await currentUser(request, env); if (!user) return error("يلزم تسجيل الدخول", 401);
+  if (!isDeveloperAccount(user)) return error("هذه الإعدادات متاحة لإدارة VAREX فقط", 403);
+  if (request.method === "GET") {
+    const config = await voiceGatewayConfig(env);
+    let openaiConfigured = false;
+    try { openaiConfigured = Boolean((await platformAiProviderKey(env, "openai"))?.key); } catch (_) { openaiConfigured = false; }
+    return api({
+      configured: Boolean(config.accountId && config.authSecret),
+      sip_configured: Boolean(config.projectId && config.webhookSecret),
+      openai_configured: openaiConfigured,
+      account_hint: config.accountId ? `••••${config.accountId.slice(-4)}` : null,
+      project_hint: config.projectId ? `••••${config.projectId.slice(-6)}` : null,
+      webhook_url: `${appOrigin(request, env)}/api/webhooks/openai/voice`,
+    });
+  }
+  if (request.method !== "POST") return error("الطريقة غير مدعومة", 405);
+  const body = await request.json<Row>().catch(() => ({}));
+  const accountId = String(body.account_id || "").trim();
+  const authSecret = String(body.auth_secret || "").trim();
+  const projectId = String(body.openai_project_id || "").trim();
+  const webhookSecret = String(body.openai_webhook_secret || "").trim();
+  if (!/^AC[a-zA-Z0-9]{30,40}$/.test(accountId)) return error("معرّف السنترال غير صالح");
+  if (authSecret.length < 20 || authSecret.length > 200 || /\s/.test(authSecret)) return error("مفتاح السنترال غير صالح");
+  if (!/^proj_[a-zA-Z0-9_-]{6,}$/.test(projectId)) return error("معرّف مشروع الذكاء غير صالح");
+  if (!/^whsec_[a-zA-Z0-9_+/=-]{12,}$/.test(webhookSecret)) return error("مفتاح توقيع المكالمات غير صالح");
+  const config = { accountId, authSecret, projectId, webhookSecret };
+  try { await voiceGatewayRequest(config, "__account__"); }
+  catch (_) { return error("بيانات السنترال مرفوضة أو الحساب غير مفعّل للمكالمات", 422); }
+  const encrypted = await encryptIntegrationCredentials(env, { account_id: accountId, auth_secret: authSecret, openai_project_id: projectId, openai_webhook_secret: webhookSecret });
+  const stamp = now();
+  await env.DB.prepare("INSERT INTO ai_system_secrets (key,value,created_at,updated_at) VALUES ('voice_gateway_credentials_encrypted',?,?,?) ON CONFLICT(key) DO UPDATE SET value=excluded.value,updated_at=excluded.updated_at")
+    .bind(JSON.stringify(encrypted), stamp, stamp).run();
+  await env.DB.prepare("INSERT INTO ai_audit_logs (id,organization_id,user_id,action,entity_type,entity_id,details,created_at,updated_at) SELECT ?,id,?,'voice_gateway_configured','system','voice_gateway',?, ?, ? FROM ai_organizations WHERE owner_id=? LIMIT 1")
+    .bind(crypto.randomUUID(), user.id, JSON.stringify({ account_hint: accountId.slice(-4), project_hint: projectId.slice(-6) }), stamp, stamp, user.id).run();
+  return api({ ok: true, configured: true, sip_configured: true, account_hint: `••••${accountId.slice(-4)}`, project_hint: `••••${projectId.slice(-6)}`, webhook_url: `${appOrigin(request, env)}/api/webhooks/openai/voice` });
+}
+
+async function voiceReadiness(request: Request, env: Env) {
+  if (request.method !== "GET") return error("الطريقة غير مدعومة", 405);
+  const user = await currentUser(request, env); if (!user) return error("يلزم تسجيل الدخول", 401);
+  const url = new URL(request.url), organizationId = String(url.searchParams.get("organization_id") || ""), agentId = String(url.searchParams.get("agent_id") || "");
+  if (!organizationId || !agentId || !await authorizeOrg(env, user, organizationId)) return error("ليست لديك صلاحية على مساحة العمل", 403);
+  const agent = await env.DB.prepare("SELECT id FROM ai_agents WHERE id=? AND organization_id=? LIMIT 1").bind(agentId, organizationId).first<Row>();
+  if (!agent) return error("الموظف المحدد غير موجود", 404);
+  return api(await voiceReadinessSnapshot(env, organizationId, agentId));
+}
+
+async function upsertVoiceCallerStatus(env: Env, user: Row, organizationId: string, agentId: string, phone: string, status: "verification_pending" | "connected" | "not_connected", extra: Row = {}) {
+  const current = await env.DB.prepare("SELECT * FROM ai_voice_settings WHERE organization_id=? AND agent_id=? LIMIT 1").bind(organizationId, agentId).first<Row>();
+  let settings: Row = { daily_call_limit: 10, max_call_minutes: 10, allowed_from: "09:00", allowed_to: "18:00" };
+  try { settings = { ...settings, ...JSON.parse(String(current?.settings || "{}")) as Row, ...extra }; } catch (_) { settings = { ...settings, ...extra }; }
+  const stamp = now();
+  await env.DB.prepare("INSERT INTO ai_voice_settings (id,organization_id,agent_id,provider,status,caller_id,voice_id,disclosure_text,settings,updated_by,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?) ON CONFLICT(organization_id,agent_id) DO UPDATE SET provider=excluded.provider,status=excluded.status,caller_id=excluded.caller_id,settings=excluded.settings,updated_by=excluded.updated_by,updated_at=excluded.updated_at")
+    .bind(crypto.randomUUID(), organizationId, agentId, status === "not_connected" ? "not_configured" : "sip_gateway", status, phone || null, String(current?.voice_id || "Sulafat"), String(current?.disclosure_text || "مرحباً، أنا المساعد الذكي وأتصل نيابة عن صاحب الحساب."), JSON.stringify(settings), user.id, stamp, stamp).run();
+}
+
+async function verifiedOutgoingCaller(config: VoiceGatewayConfig, phone: string) {
+  const list = await voiceGatewayRequest(config, "OutgoingCallerIds.json", { query: { PhoneNumber: phone, PageSize: "20" } });
+  const callers = Array.isArray(list.outgoing_caller_ids) ? list.outgoing_caller_ids as Row[] : [];
+  return callers.find(item => phoneE164(item.phone_number) === phone) || null;
+}
+
+async function voiceNumberVerification(request: Request, env: Env, action: "start" | "status" | "disconnect") {
+  if (request.method !== "POST") return error("الطريقة غير مدعومة", 405);
+  const user = await currentUser(request, env); if (!user) return error("يلزم تسجيل الدخول", 401);
+  const body = await request.json<Row>().catch(() => ({}));
+  const organizationId = String(body.organization_id || ""), agentId = String(body.agent_id || "");
+  if (!organizationId || !agentId || !await authorizeOrg(env, user, organizationId, true)) return error("مالك المساحة فقط يستطيع ربط رقم المكالمات", 403);
+  const agent = await env.DB.prepare("SELECT id FROM ai_agents WHERE id=? AND organization_id=? LIMIT 1").bind(agentId, organizationId).first<Row>();
+  if (!agent) return error("الموظف المحدد غير موجود", 404);
+  const existing = await env.DB.prepare("SELECT caller_id,settings FROM ai_voice_settings WHERE organization_id=? AND agent_id=? LIMIT 1").bind(organizationId, agentId).first<Row>();
+  if (action === "disconnect") {
+    await upsertVoiceCallerStatus(env, user, organizationId, agentId, "", "not_connected", { disconnected_at: now() });
+    return api({ ok: true, status: "not_connected", message: "تم فصل رقم المكالمات عن هذا الموظف" });
+  }
+  const phone = phoneE164(body.phone || existing?.caller_id || "");
+  if (!phone) return error("أدخل الرقم الأساسي بصيغة دولية مثل +971...", 400);
+  const config = await voiceGatewayConfig(env);
+  if (!config.accountId || !config.authSecret) return error("سنترال المكالمات غير مربوط بعد. يلزم أن تضيف إدارة VAREX بيانات السنترال أولاً.", 409);
+  const alreadyVerified = await verifiedOutgoingCaller(config, phone);
+  if (alreadyVerified) {
+    await upsertVoiceCallerStatus(env, user, organizationId, agentId, phone, "connected", { verified_caller_id: alreadyVerified.sid, verified_at: now(), verification_requested_at: null });
+    return api({ ok: true, status: "connected", caller_id: phone, message: "تم توثيق الرقم وربطه بالمكالمات الذكية" });
+  }
+  if (action === "status") return api({ ok: true, status: "verification_pending", caller_id: phone, message: "لم يكتمل إدخال رمز التحقق على المكالمة بعد" }, 202);
+  const validation = await voiceGatewayRequest(config, "OutgoingCallerIds.json", { method: "POST", form: { PhoneNumber: phone, FriendlyName: "VAREX primary number", CallDelay: "1" } });
+  const validationCode = String(validation.validation_code || "");
+  if (!/^\d{6}$/.test(validationCode)) return error("بدأ طلب التحقق لكن لم يصل رمز صالح؛ أعد المحاولة", 502);
+  await upsertVoiceCallerStatus(env, user, organizationId, agentId, phone, "verification_pending", { verification_requested_at: now(), verification_call_id: validation.call_sid || null });
+  return api({ ok: true, status: "verification_pending", caller_id: phone, validation_code: validationCode, message: "سيصل اتصال تحقق إلى رقمك. أدخل هذا الرمز عندما يُطلب منك." }, 202);
+}
 async function passwordHash(password: string, saltHex: string) {
   const salt = new Uint8Array(saltHex.match(/.{2}/g)!.map(value => Number.parseInt(value, 16)));
   const key = await crypto.subtle.importKey("raw", new TextEncoder().encode(password), "PBKDF2", false, ["deriveBits"]);
@@ -543,7 +729,7 @@ async function auth(request: Request, env: Env, route: string) {
     const statements: D1PreparedStatement[] = [];
     for (const organization of organizations) {
       const organizationId = String(organization.id);
-      for (const table of ["ai_approvals", "ai_audit_logs", "ai_integrations", "ai_knowledge_items", "ai_leads", "ai_messages", "ai_oauth_states", "ai_payments", "ai_subscriptions", "ai_tasks", "ai_agents", "ai_members"]) {
+      for (const table of ["ai_approvals", "ai_chat_messages", "ai_voice_calls", "ai_action_executions", "ai_agent_permissions", "ai_voice_settings", "ai_device_connections", "ai_audit_logs", "ai_integrations", "ai_knowledge_items", "ai_leads", "ai_messages", "ai_oauth_states", "ai_payments", "ai_subscriptions", "ai_tasks", "ai_agents", "ai_members"]) {
         statements.push(env.DB.prepare(`DELETE FROM ${table} WHERE organization_id=?`).bind(organizationId));
       }
       statements.push(env.DB.prepare("DELETE FROM ai_activation_codes WHERE redeemed_organization_id=?").bind(organizationId));
@@ -1996,7 +2182,10 @@ async function permissionCenter(request: Request, env: Env) {
   if (body.voice && typeof body.voice === "object") {
     const voice = body.voice as Row;
     const settings = voice.settings && typeof voice.settings === "object" ? voice.settings as Row : {};
-    const callerId = String(voice.caller_id || "").trim();
+    const currentVoice = await env.DB.prepare("SELECT caller_id,status,settings FROM ai_voice_settings WHERE organization_id=? AND agent_id=? LIMIT 1").bind(organizationId, agentId).first<Row>();
+    const requestedCallerId = String(voice.caller_id || "").trim();
+    if (currentVoice?.status === "connected" && phoneE164(requestedCallerId) !== phoneE164(currentVoice.caller_id)) return error("لفصل الرقم الموثّق أو تغييره استخدم زر فصل الرقم ثم أعد التوثيق");
+    const callerId = currentVoice?.status === "connected" ? String(currentVoice.caller_id || "") : requestedCallerId;
     const voiceId = String(voice.voice_id || "Sulafat").trim();
     const disclosureText = String(voice.disclosure_text || "").trim();
     const dailyCallLimit = Number(settings.daily_call_limit || 0), maxCallMinutes = Number(settings.max_call_minutes || 0);
@@ -2007,7 +2196,9 @@ async function permissionCenter(request: Request, env: Env) {
     if (!Number.isInteger(dailyCallLimit) || dailyCallLimit < 1 || dailyCallLimit > 100) return error("حد المكالمات اليومي يجب أن يكون بين 1 و100");
     if (!Number.isInteger(maxCallMinutes) || maxCallMinutes < 1 || maxCallMinutes > 60) return error("حد مدة المكالمة يجب أن يكون بين دقيقة و60 دقيقة");
     if (!/^\d{2}:\d{2}$/.test(allowedFrom) || !/^\d{2}:\d{2}$/.test(allowedTo) || allowedFrom >= allowedTo) return error("حدد ساعات اتصال صحيحة؛ وقت البداية يجب أن يسبق وقت النهاية");
-    const voiceSettings = { daily_call_limit: dailyCallLimit, max_call_minutes: maxCallMinutes, allowed_from: allowedFrom, allowed_to: allowedTo };
+    let savedSettings: Row = {};
+    try { savedSettings = JSON.parse(String(currentVoice?.settings || "{}")) as Row; } catch (_) { savedSettings = {}; }
+    const voiceSettings = { ...savedSettings, daily_call_limit: dailyCallLimit, max_call_minutes: maxCallMinutes, allowed_from: allowedFrom, allowed_to: allowedTo };
     statements.push(env.DB.prepare("INSERT INTO ai_voice_settings (id,organization_id,agent_id,provider,status,caller_id,voice_id,disclosure_text,settings,updated_by,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?) ON CONFLICT(organization_id,agent_id) DO UPDATE SET caller_id=excluded.caller_id,voice_id=excluded.voice_id,disclosure_text=excluded.disclosure_text,settings=excluded.settings,updated_by=excluded.updated_by,updated_at=excluded.updated_at")
       .bind(crypto.randomUUID(), organizationId, agentId, "not_configured", "not_connected", callerId || null, voiceId, disclosureText, JSON.stringify(voiceSettings), user.id, stamp, stamp));
   }
@@ -2026,11 +2217,20 @@ async function emergencyStopAgent(request: Request, env: Env) {
   const agent = await env.DB.prepare("SELECT id FROM ai_agents WHERE id=? AND organization_id=? LIMIT 1").bind(agentId, organizationId).first<Row>();
   if (!agent) return error("الموظف المحدد غير موجود", 404);
   const stamp = now();
+  const activeCalls = await env.DB.prepare("SELECT provider_call_id FROM ai_voice_calls WHERE organization_id=? AND agent_id=? AND status IN ('queued','initiated','ringing','accepting','in_progress') AND provider_call_id IS NOT NULL").bind(organizationId, agentId).all<Row>();
+  const gateway = await voiceGatewayConfig(env);
+  if (gateway.accountId && gateway.authSecret) {
+    for (const call of activeCalls.results || []) {
+      try { await voiceGatewayRequest(gateway, `Calls/${encodeURIComponent(String(call.provider_call_id))}.json`, { method: "POST", form: { Status: "completed" } }); }
+      catch (_) { /* The database stop remains authoritative even if the carrier already ended the call. */ }
+    }
+  }
   await env.DB.batch([
     env.DB.prepare("UPDATE ai_agents SET status='paused',updated_at=? WHERE id=? AND organization_id=?").bind(stamp, agentId, organizationId),
     env.DB.prepare("UPDATE ai_agent_permissions SET mode='denied',updated_by=?,updated_at=? WHERE agent_id=? AND organization_id=?").bind(user.id, stamp, agentId, organizationId),
     env.DB.prepare("UPDATE ai_tasks SET status='cancelled',output='أوقف المالك الموظف وسحب صلاحياته',completed_at=?,updated_at=? WHERE organization_id=? AND id IN (SELECT task_id FROM ai_action_executions WHERE agent_id=? AND organization_id=? AND status IN ('queued','awaiting_approval','running') AND task_id IS NOT NULL)").bind(stamp, stamp, organizationId, agentId, organizationId),
     env.DB.prepare("UPDATE ai_action_executions SET status='cancelled',error_code='EMERGENCY_STOP',result_summary='أوقف المالك الموظف وسحب صلاحياته',completed_at=?,updated_at=? WHERE agent_id=? AND organization_id=? AND status IN ('queued','awaiting_approval','running')").bind(stamp, stamp, agentId, organizationId),
+    env.DB.prepare("UPDATE ai_voice_calls SET status='cancelled',error_code='EMERGENCY_STOP',completed_at=?,updated_at=? WHERE agent_id=? AND organization_id=? AND status IN ('queued','initiated','ringing','accepting','in_progress')").bind(stamp, stamp, agentId, organizationId),
     env.DB.prepare("UPDATE ai_approvals SET status='rejected',reviewed_by=?,reviewed_at=?,updated_at=? WHERE organization_id=? AND action_execution_id IN (SELECT id FROM ai_action_executions WHERE agent_id=? AND organization_id=? AND error_code='EMERGENCY_STOP') AND status='pending'").bind(user.id, stamp, stamp, organizationId, agentId, organizationId),
     env.DB.prepare("INSERT INTO ai_audit_logs (id,organization_id,user_id,action,entity_type,entity_id,details,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?)").bind(crypto.randomUUID(), organizationId, user.id, "agent_emergency_stopped", "agent", agentId, JSON.stringify({ permissions_revoked: true }), stamp, stamp),
   ]);
@@ -2202,6 +2402,208 @@ async function prepareCallHandoff(env: Env, organizationId: string, execution: R
       call_started: false,
     } as Row,
   };
+}
+
+function xmlEscape(value: string) {
+  return value.replace(/[&<>"']/g, character => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&apos;" })[character] || character);
+}
+
+function voicePolicySettings(row: Row) {
+  let settings: Row = {};
+  try { settings = JSON.parse(String(row.settings || "{}")) as Row; } catch (_) { settings = {}; }
+  return {
+    dailyCallLimit: Math.max(1, Math.min(100, Number(settings.daily_call_limit || 10))),
+    maxCallMinutes: Math.max(1, Math.min(60, Number(settings.max_call_minutes || 10))),
+    allowedFrom: String(settings.allowed_from || "09:00"),
+    allowedTo: String(settings.allowed_to || "18:00"),
+  };
+}
+
+function localTimeInZone(timeZone: string) {
+  try {
+    const parts = new Intl.DateTimeFormat("en-GB", { timeZone, hour: "2-digit", minute: "2-digit", hourCycle: "h23" }).formatToParts(new Date());
+    const hour = parts.find(part => part.type === "hour")?.value || "00";
+    const minute = parts.find(part => part.type === "minute")?.value || "00";
+    return `${hour}:${minute}`;
+  } catch (_) { return new Date().toISOString().slice(11, 16); }
+}
+
+async function startAiVoiceCall(request: Request, env: Env, user: Row, execution: Row, payload: Row) {
+  const organizationId = String(execution.organization_id), agentId = String(execution.agent_id || "");
+  if (String(execution.action_key) !== "speak_on_behalf") throw new AgentActionError("VOICE_ACTION_NOT_AVAILABLE", "هذه العملية الصوتية لم تُفعّل بعد؛ الاتصال والتحدث هما المتاحان حالياً.");
+  const [voice, organization, agent, openaiCredential, gateway] = await Promise.all([
+    env.DB.prepare("SELECT * FROM ai_voice_settings WHERE organization_id=? AND agent_id=? LIMIT 1").bind(organizationId, agentId).first<Row>(),
+    env.DB.prepare("SELECT timezone FROM ai_organizations WHERE id=? LIMIT 1").bind(organizationId).first<Row>(),
+    env.DB.prepare("SELECT name,role,instructions FROM ai_agents WHERE id=? AND organization_id=? LIMIT 1").bind(agentId, organizationId).first<Row>(),
+    platformAiProviderKey(env, "openai"),
+    voiceGatewayConfig(env),
+  ]);
+  if (!voice || voice.status !== "connected" || !voice.caller_id) throw new AgentActionError("VOICE_CALLER_NOT_VERIFIED", "وثّق رقمك الأساسي من قسم المكالمات قبل بدء اتصال ذكي.");
+  if (!gateway.accountId || !gateway.authSecret) throw new AgentActionError("VOICE_GATEWAY_NOT_CONFIGURED", "سنترال المكالمات غير مربوط بعد. يلزم إعداد السنترال من حساب إدارة VAREX.");
+  if (!gateway.projectId || !gateway.webhookSecret) throw new AgentActionError("VOICE_SIP_NOT_CONFIGURED", "مسار SIP غير مكتمل. يلزم إضافة معرّف مشروع الذكاء ومفتاح توقيع المكالمات.");
+  if (!openaiCredential?.key) throw new AgentActionError("VOICE_AI_NOT_CONFIGURED", "مفتاح الذكاء غير مضاف إلى VAREX بعد.");
+  const explicit = normalizePhoneDigits(payload.phone || payload.to || "");
+  const target = String(execution.target || "").trim();
+  const digits = explicit.length >= 8 ? explicit : await resolveSavedContactNumber(env, organizationId, target);
+  if (digits.length < 8 || digits.length > 15) throw new AgentActionError("CONTACT_NUMBER_REQUIRED", `لم أجد رقم ${target || "المستلم"}. اكتب الرقم مع رمز الدولة أو احفظه أولاً.`);
+  const toNumber = `+${digits}`, fromNumber = phoneE164(voice.caller_id);
+  if (!fromNumber) throw new AgentActionError("VOICE_CALLER_INVALID", "رقم الاتصال الموثّق غير صالح؛ أعد توثيقه.");
+  if (toNumber === fromNumber) throw new AgentActionError("VOICE_SELF_CALL_BLOCKED", "لا يمكن للموظف الاتصال من الرقم نفسه إلى الرقم نفسه.", 400);
+  const purpose = String(payload.purpose || payload.message || payload.body || "").trim();
+  if (purpose.length < 2 || purpose.length > 1500) throw new AgentActionError("VOICE_PURPOSE_REQUIRED", "اكتب للموظف ماذا يقول أو ما الهدف من المكالمة.", 400);
+  const policy = voicePolicySettings(voice);
+  const localTime = localTimeInZone(String(organization?.timezone || "Asia/Dubai"));
+  if (localTime < policy.allowedFrom || localTime >= policy.allowedTo) throw new AgentActionError("VOICE_OUTSIDE_ALLOWED_HOURS", `المكالمات مسموحة بين ${policy.allowedFrom} و${policy.allowedTo} حسب توقيت مساحة العمل.`);
+  const todayCount = await env.DB.prepare("SELECT COUNT(*) AS count FROM ai_voice_calls WHERE organization_id=? AND agent_id=? AND created_at>=datetime('now','start of day') AND status NOT IN ('failed','cancelled')")
+    .bind(organizationId, agentId).first<Row>();
+  if (Number(todayCount?.count || 0) >= policy.dailyCallLimit) throw new AgentActionError("VOICE_DAILY_LIMIT_REACHED", `وصل الموظف إلى حد ${policy.dailyCallLimit} مكالمة لهذا اليوم.`);
+  const callId = crypto.randomUUID(), stamp = now();
+  await env.DB.prepare("INSERT INTO ai_voice_calls (id,organization_id,agent_id,action_execution_id,provider_call_id,openai_session_id,from_number,to_number,contact_name,purpose,status,error_code,started_at,answered_at,completed_at,metadata,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)")
+    .bind(callId, organizationId, agentId, execution.id, null, null, fromNumber, toNumber, target || toNumber, purpose, "queued", null, stamp, null, null, JSON.stringify({ recording_enabled: false, transcribing_enabled: false, disclosure_required: true }), stamp, stamp).run();
+  const sipUri = `sip:${gateway.projectId}@sip.api.openai.com;transport=tls?x-varex-call-id=${encodeURIComponent(callId)}`;
+  const twiml = `<Response><Dial answerOnBridge="true" timeout="30" timeLimit="${policy.maxCallMinutes * 60}" callerId="${xmlEscape(fromNumber)}"><Sip>${xmlEscape(sipUri)}</Sip></Dial></Response>`;
+  try {
+    const placed = await voiceGatewayRequest(gateway, "Calls.json", { method: "POST", form: { To: toNumber, From: fromNumber, Twiml: twiml, Timeout: "30" } });
+    const providerCallId = String(placed.sid || "");
+    if (!providerCallId) throw new AgentActionError("VOICE_CALL_NOT_CREATED", "لم يؤكد السنترال إنشاء المكالمة.", 502);
+    const providerStatus = String(placed.status || "queued");
+    await env.DB.prepare("UPDATE ai_voice_calls SET provider_call_id=?,status=?,metadata=?,updated_at=? WHERE id=?")
+      .bind(providerCallId, providerStatus === "in-progress" ? "in_progress" : providerStatus, JSON.stringify({ recording_enabled: false, transcribing_enabled: false, disclosure_required: true, provider_status: providerStatus }), now(), callId).run();
+    const summary = `بدأ طلب الاتصال بـ ${target || toNumber} من رقمك الموثّق. حالة المكالمة تُحدّث من السنترال؛ لم نعتبر المحادثة مكتملة بعد.`;
+    const details: Row = { mode: "sip_ai_call", voice_call_id: callId, from: fromNumber, to: toNumber, recipient: target || toNumber, purpose, status: providerStatus, recording_enabled: false };
+    await env.DB.prepare("UPDATE ai_action_executions SET status='running',result_summary=?,result_details=?,error_code=NULL,started_at=COALESCE(started_at,?),updated_at=? WHERE id=?")
+      .bind(summary, JSON.stringify(details), stamp, now(), execution.id).run();
+    return { ok: true, status: 202, message: summary, execution: hydrate({ ...execution, status: "running", result_summary: summary, result_details: details, started_at: execution.started_at || stamp }) };
+  } catch (caught) {
+    const failure = caught instanceof AgentActionError ? caught : new AgentActionError("VOICE_CALL_FAILED", "تعذر على السنترال بدء المكالمة.", 502);
+    await env.DB.prepare("UPDATE ai_voice_calls SET status='failed',error_code=?,completed_at=?,updated_at=? WHERE id=?").bind(failure.code, now(), now(), callId).run();
+    throw failure;
+  }
+}
+
+function sipHeaderValue(headers: unknown, name: string) {
+  const rows = Array.isArray(headers) ? headers as Row[] : [];
+  return String(rows.find(header => String(header.name || "").toLocaleLowerCase() === name.toLocaleLowerCase())?.value || "").trim();
+}
+
+function aiVoiceInstructions(call: Row, agent: Row, owner: Row, voice: Row) {
+  const agentName = String(agent.name || "مساعد VAREX").replace(/[\r\n\t]+/g, " ").trim().slice(0, 80);
+  const ownerName = String(owner.full_name || "صاحب الحساب").replace(/[\r\n\t]+/g, " ").trim().slice(0, 80);
+  const recipient = String(call.contact_name || call.to_number || "الطرف الآخر").replace(/[\r\n\t]+/g, " ").trim().slice(0, 100);
+  const disclosure = String(voice.disclosure_text || `مرحباً، أنا ${agentName}، مساعد ذكي وأتصل نيابة عن ${ownerName}.`).replace(/[\r\n\t]+/g, " ").trim().slice(0, 500);
+  const purpose = String(call.purpose || "").replace(/[\r\n\t]+/g, " ").trim().slice(0, 1500);
+  const ownerRules = String(agent.instructions || "").replace(/[\r\n\t]+/g, " ").trim().slice(0, 1200);
+  return [
+    `أنت ${agentName}، مساعد صوتي ذكي تابع لـ VAREX AI وتتحدث الآن مع ${recipient} نيابة عن ${ownerName}.`,
+    `في أول رد منطوق وبعد أن تسمع الطرف الآخر، قل بوضوح هذا التعريف قبل أي شيء: «${disclosure}» ولا تدّعِ أنك إنسان أو أنك ${ownerName}.`,
+    `غرض المكالمة المصرح به فقط: ${purpose}`,
+    ownerRules ? `تعليمات المالك المسموحة: ${ownerRules}` : "",
+    "تحدث بالعربية وبأسلوب طبيعي مهني، وابق ضمن غرض المكالمة. لا تخترع معلومات أو أسعاراً أو وعوداً أو موافقات. لا تطلب كلمات مرور أو رموز تحقق أو بيانات مصرفية.",
+    "إذا رفض الطرف الآخر المكالمة أو طلب إنهاءها، اعتذر باختصار وأنهِ الحديث. لا تسجّل المكالمة ولا تقل إنها مسجلة.",
+  ].filter(Boolean).join("\n");
+}
+
+function openAiCallVoice(voiceId: unknown) {
+  return new Set(["Achird", "Orus", "Puck", "Alnilam", "Charon", "Fenrir", "Iapetus", "Algenib", "Rasalgethi"]).has(String(voiceId || "")) ? "cedar" : "marin";
+}
+
+async function rejectOpenAiSip(apiKey: string, eventType: string, sessionId: string) {
+  const base = eventType === "realtime.call.incoming" ? `/v1/realtime/calls/${encodeURIComponent(sessionId)}` : `/v1/live/sessions/${encodeURIComponent(sessionId)}`;
+  await fetch(`https://api.openai.com${base}/reject`, { method: "POST", headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" }, body: JSON.stringify({ status_code: 603 }) }).catch(() => null);
+}
+
+async function openAiVoiceWebhook(request: Request, env: Env) {
+  if (request.method !== "POST") return new Response("Method Not Allowed", { status: 405 });
+  const [gateway, openaiCredential] = await Promise.all([voiceGatewayConfig(env), platformAiProviderKey(env, "openai")]);
+  if (!gateway.webhookSecret || !openaiCredential?.key) return new Response("Voice integration is not configured", { status: 503 });
+  const rawBody = await request.text();
+  let event: Row;
+  try {
+    const client = new OpenAI({ apiKey: openaiCredential.key, webhookSecret: gateway.webhookSecret });
+    event = await client.webhooks.unwrap(rawBody, request.headers, gateway.webhookSecret) as unknown as Row;
+  } catch (caught) {
+    console.error("VAREX OpenAI voice webhook signature rejected", caught instanceof Error ? caught.message : caught);
+    return new Response("Invalid signature", { status: 400 });
+  }
+  const eventType = String(event.type || ""), data = event.data && typeof event.data === "object" ? event.data as Row : {};
+  if (!["live.transport.incoming", "live.call.incoming", "realtime.call.incoming"].includes(eventType)) return new Response(null, { status: 200 });
+  const sessionId = String(data.session_id || data.call_id || "");
+  const callId = sipHeaderValue(data.sip_headers, "x-varex-call-id");
+  if (!sessionId || !/^[0-9a-f]{8}-[0-9a-f-]{27}$/i.test(callId)) {
+    if (sessionId) await rejectOpenAiSip(openaiCredential.key, eventType, sessionId);
+    return new Response(null, { status: 200 });
+  }
+  const call = await env.DB.prepare("SELECT * FROM ai_voice_calls WHERE id=? LIMIT 1").bind(callId).first<Row>();
+  if (!call || !["queued", "initiated", "ringing", "accepting"].includes(String(call.status || ""))) {
+    if (!call) await rejectOpenAiSip(openaiCredential.key, eventType, sessionId);
+    return new Response(null, { status: 200 });
+  }
+  const lock = await env.DB.prepare("UPDATE ai_voice_calls SET status='accepting',openai_session_id=?,updated_at=? WHERE id=? AND openai_session_id IS NULL AND status IN ('queued','initiated','ringing')")
+    .bind(sessionId, now(), callId).run();
+  if (!Number(lock.meta?.changes || 0)) return new Response(null, { status: 200 });
+  const [agent, organization, voice, owner] = await Promise.all([
+    env.DB.prepare("SELECT name,role,instructions FROM ai_agents WHERE id=? AND organization_id=? LIMIT 1").bind(call.agent_id, call.organization_id).first<Row>(),
+    env.DB.prepare("SELECT owner_id FROM ai_organizations WHERE id=? LIMIT 1").bind(call.organization_id).first<Row>(),
+    env.DB.prepare("SELECT disclosure_text,voice_id FROM ai_voice_settings WHERE organization_id=? AND agent_id=? LIMIT 1").bind(call.organization_id, call.agent_id).first<Row>(),
+    env.DB.prepare("SELECT full_name FROM ai_users WHERE id=(SELECT owner_id FROM ai_organizations WHERE id=? LIMIT 1) LIMIT 1").bind(call.organization_id).first<Row>(),
+  ]);
+  if (!agent || !organization || !voice || !owner) {
+    await rejectOpenAiSip(openaiCredential.key, eventType, sessionId);
+    await env.DB.prepare("UPDATE ai_voice_calls SET status='failed',error_code='VOICE_CONTEXT_MISSING',completed_at=?,updated_at=? WHERE id=?").bind(now(), now(), callId).run();
+    return new Response(null, { status: 200 });
+  }
+  const instructions = aiVoiceInstructions(call, agent, owner, voice);
+  const callVoice = openAiCallVoice(voice.voice_id);
+  const legacy = eventType === "realtime.call.incoming";
+  const endpoint = legacy ? `https://api.openai.com/v1/realtime/calls/${encodeURIComponent(sessionId)}/accept` : `https://api.openai.com/v1/live/sessions/${encodeURIComponent(sessionId)}/accept`;
+  const acceptBody = legacy
+    ? { type: "realtime", model: "gpt-realtime-2.1", instructions, audio: { output: { voice: callVoice } } }
+    : { session: { type: "live", model: "gpt-live-1", instructions, audio: { output: { voice: callVoice } }, delegation: { type: "responses", responses: { model: "gpt-5.6-luna", instructions: `التزم بهدف المكالمة وتعليمات المالك التالية:\n${instructions}`, tool_choice: "none" } } } };
+  const accepted = await fetch(endpoint, { method: "POST", headers: { Authorization: `Bearer ${openaiCredential.key}`, "Content-Type": "application/json" }, body: JSON.stringify(acceptBody) });
+  if (!accepted.ok) {
+    const providerMessage = await accepted.text().catch(() => "");
+    console.error("VAREX OpenAI SIP accept failed", accepted.status, providerMessage.slice(0, 500));
+    await env.DB.prepare("UPDATE ai_voice_calls SET status='failed',error_code='OPENAI_SIP_ACCEPT_FAILED',completed_at=?,updated_at=? WHERE id=?").bind(now(), now(), callId).run();
+    return new Response(null, { status: 200 });
+  }
+  const stamp = now();
+  await env.DB.prepare("UPDATE ai_voice_calls SET status='in_progress',answered_at=COALESCE(answered_at,?),metadata=?,updated_at=? WHERE id=?")
+    .bind(stamp, JSON.stringify({ recording_enabled: false, transcribing_enabled: false, disclosure_required: true, webhook_event_id: event.id || null, openai_api: legacy ? "realtime" : "live" }), stamp, callId).run();
+  return new Response(null, { status: 200 });
+}
+
+async function refreshVoiceCall(env: Env, gateway: VoiceGatewayConfig, call: Row) {
+  if (!call.provider_call_id || ["completed", "failed", "busy", "no_answer", "cancelled"].includes(String(call.status || ""))) return call;
+  try {
+    const provider = await voiceGatewayRequest(gateway, `Calls/${encodeURIComponent(String(call.provider_call_id))}.json`);
+    const providerStatus = String(provider.status || "");
+    const mapped = providerStatus === "in-progress" ? "in_progress" : providerStatus === "no-answer" ? "no_answer" : providerStatus;
+    const final = ["completed", "failed", "busy", "no_answer", "canceled", "cancelled"].includes(mapped);
+    const failed = ["failed", "busy", "no_answer", "canceled", "cancelled"].includes(mapped);
+    const status = mapped === "canceled" ? "cancelled" : mapped || String(call.status || "queued");
+    const stamp = now();
+    await env.DB.prepare("UPDATE ai_voice_calls SET status=?,error_code=?,answered_at=CASE WHEN ?='in_progress' THEN COALESCE(answered_at,?) ELSE answered_at END,completed_at=CASE WHEN ? THEN COALESCE(completed_at,?) ELSE completed_at END,metadata=?,updated_at=? WHERE id=?")
+      .bind(status, failed ? `VOICE_${status.toUpperCase()}` : null, status, stamp, final ? 1 : 0, stamp, JSON.stringify({ recording_enabled: false, transcribing_enabled: false, disclosure_required: true, provider_status: providerStatus, duration_seconds: Number(provider.duration || 0) || null }), stamp, call.id).run();
+    if (final && call.action_execution_id) {
+      const summary = failed ? `انتهت محاولة الاتصال بحالة: ${status}.` : "انتهت المكالمة عبر السنترال.";
+      await env.DB.prepare("UPDATE ai_action_executions SET status=?,result_summary=?,error_code=?,completed_at=?,updated_at=? WHERE id=? AND status='running'")
+        .bind(failed ? "failed" : "completed", summary, failed ? `VOICE_${status.toUpperCase()}` : null, stamp, stamp, call.action_execution_id).run();
+    }
+    return { ...call, status, error_code: failed ? `VOICE_${status.toUpperCase()}` : null, completed_at: final ? stamp : call.completed_at, metadata: { recording_enabled: false, transcribing_enabled: false, provider_status: providerStatus, duration_seconds: Number(provider.duration || 0) || null } };
+  } catch (_) { return call; }
+}
+
+async function voiceCalls(request: Request, env: Env) {
+  if (request.method !== "GET") return error("الطريقة غير مدعومة", 405);
+  const user = await currentUser(request, env); if (!user) return error("يلزم تسجيل الدخول", 401);
+  const url = new URL(request.url), organizationId = String(url.searchParams.get("organization_id") || ""), agentId = String(url.searchParams.get("agent_id") || "");
+  if (!organizationId || !await authorizeOrg(env, user, organizationId)) return error("ليست لديك صلاحية على مساحة العمل", 403);
+  const result = await env.DB.prepare(`SELECT * FROM ai_voice_calls WHERE organization_id=?${agentId ? " AND agent_id=?" : ""} ORDER BY created_at DESC LIMIT 50`)
+    .bind(...(agentId ? [organizationId, agentId] : [organizationId])).all<Row>();
+  const gateway = await voiceGatewayConfig(env);
+  const rows: Row[] = [];
+  for (const row of result.results || []) rows.push(gateway.accountId && gateway.authSecret ? await refreshVoiceCall(env, gateway, row as Row) : row as Row);
+  return api(rows.map(row => hydrate(row)));
 }
 
 async function connectedIntegrationCredentials(env: Env, organizationId: string, provider: "facebook" | "instagram" | "tiktok") {
@@ -2402,9 +2804,7 @@ async function performActionExecution(request: Request, env: Env, user: Row, exe
       const result = await executeTikTokAction(env, organizationId, actionKey, payload);
       summary = result.summary; details = result.details;
     } else if (appKey === "voice") {
-      const voice = await env.DB.prepare("SELECT status FROM ai_voice_settings WHERE organization_id=? AND agent_id=? LIMIT 1").bind(organizationId, execution.agent_id).first<Row>();
-      if (!voice || voice.status !== "connected") throw new AgentActionError("VOICE_PROVIDER_NOT_CONNECTED", "اربط مزود المكالمات الصوتية ورقم المتصل قبل أن يتحدث الموظف في المكالمة.");
-      throw new AgentActionError("VOICE_PROVIDER_NOT_READY", "مزود المكالمات مربوط لكن تنفيذ المكالمة الصوتية لم يُفعّل بعد.");
+      return await startAiVoiceCall(request, env, user, execution, payload);
     } else if (appKey === "email") throw new AgentActionError("EMAIL_NOT_CONNECTED", "اربط Gmail أو Outlook أولاً لتنفيذ أوامر البريد الإلكتروني.");
     else if (appKey === "youtube") throw new AgentActionError("YOUTUBE_NOT_CONNECTED", "اربط قناة YouTube وامنح الصلاحيات المطلوبة أولاً.");
     else if (appKey === "parking") throw new AgentActionError("PARKING_PROVIDER_NOT_CONNECTED", "اختر مزود المواقف المدعوم واربط حساب المالك أولاً.");
@@ -2710,8 +3110,8 @@ async function chatReport(env: Env, organizationId: string, agentId: string, age
 }
 
 function pendingPrompt(intent: ChatActionIntent) {
-  if (intent.missing === "target") return intent.appKey === "phone" ? "أكيد. بمين بدك أتصل؟ اكتب الاسم أو الرقم." : "أكيد. لمين بدك أرسل الرسالة؟ اكتب الاسم أو الرقم.";
-  if (intent.missing === "message") return `تمام، فهمت إن المستلم هو ${intent.target}. شو نص الرسالة اللي بدك أبعتها؟`;
+  if (intent.missing === "target") return ["phone", "voice"].includes(intent.appKey) ? "أكيد. بمين بدك أتصل؟ اكتب الاسم أو الرقم." : "أكيد. لمين بدك أرسل الرسالة؟ اكتب الاسم أو الرقم.";
+  if (intent.missing === "message") return intent.appKey === "voice" ? `تمام، الاتصال مع ${intent.target}. شو بدك الموظف الذكي يحكي نيابة عنك؟` : `تمام، فهمت إن المستلم هو ${intent.target}. شو نص الرسالة اللي بدك أبعتها؟`;
   if (intent.missing === "time") return intent.appKey === "alarms" ? "على أي ساعة بدك المنبّه؟ مثلاً: 7 صباحاً." : "متى الموعد؟ اكتب اليوم والساعة، مثلاً: بكرا الساعة 2 ظهراً.";
   if (intent.missing === "contact_details") return "اكتب اسم جهة الاتصال ورقمها مع رمز الدولة، مثلاً: سارة | +971501234567";
   return "بدي معلومة إضافية قبل ما أنفّذ المهمة.";
@@ -2869,6 +3269,8 @@ async function dataApi(request: Request, env: Env, table: string) {
   if (table === "ai_integrations" && method !== "GET") return error("تعديل ربط الحسابات متاح فقط عبر بوابة الربط الآمنة", 405);
   if (table === "ai_knowledge_items" && method !== "GET") return error("إضافة الملفات متاحة فقط عبر مسار الرفع الآمن", 405);
   if (table === "ai_action_executions" && method !== "GET") return error("سجل التنفيذ يُكتب فقط من محرك التنفيذ", 405);
+  if (table === "ai_voice_calls" && method !== "GET") return error("سجل المكالمات يُكتب فقط من سنترال المكالمات", 405);
+  if (table === "ai_voice_settings" && method !== "GET") return error("ربط رقم المكالمات متاح فقط عبر مسار التوثيق الآمن", 405);
   if (method === "GET") {
     if (!subscriptionSetupTables.has(table) && !isDeveloperAccount(user)) {
       const requestedOrg = url.searchParams.get("organization_id");
@@ -2992,6 +3394,7 @@ const worker = { async fetch(request: Request, env: Env, ctx: ExecutionContext):
     if (url.pathname === "/api/admin/meta-secret") return metaAdmin(request, env, "secret");
     if (url.pathname === "/api/admin/paypal-status") return payPalAdmin(request, env, "status");
     if (url.pathname === "/api/admin/paypal-credentials") return payPalAdmin(request, env, "credentials");
+    if (url.pathname === "/api/admin/voice-gateway") return voiceGatewayAdmin(request, env);
     if (url.pathname === "/api/admin/activation-codes") return activationCodeAdmin(request, env);
     if (url.pathname === "/api/admin/subscriptions") return subscriptionAdmin(request, env);
     if (url.pathname === "/api/activation-codes/redeem") return redeemActivationCode(request, env);
@@ -3009,9 +3412,15 @@ const worker = { async fetch(request: Request, env: Env, ctx: ExecutionContext):
     if (url.pathname === "/api/integrations/callback/google" && request.method === "GET") return integrationCallback(request, env, "google");
     if (url.pathname === "/api/integrations/disconnect") return disconnectIntegration(request, env);
     if (url.pathname === "/api/webhooks/meta/whatsapp") return whatsappWebhook(request, env, ctx);
+    if (url.pathname === "/api/webhooks/openai/voice") return openAiVoiceWebhook(request, env);
     if (url.pathname === "/api/integrations/whatsapp/send" && request.method === "POST") return sendWhatsAppMessage(request, env);
     if (url.pathname === "/api/permissions") return permissionCenter(request, env);
     if (url.pathname === "/api/permissions/emergency-stop") return emergencyStopAgent(request, env);
+    if (url.pathname === "/api/voice/readiness") return voiceReadiness(request, env);
+    if (url.pathname === "/api/voice/number/verify") return voiceNumberVerification(request, env, "start");
+    if (url.pathname === "/api/voice/number/status") return voiceNumberVerification(request, env, "status");
+    if (url.pathname === "/api/voice/number/disconnect") return voiceNumberVerification(request, env, "disconnect");
+    if (url.pathname === "/api/voice/calls") return voiceCalls(request, env);
     if (url.pathname === "/api/ai/providers") return aiProviderConfiguration(request, env);
     if (url.pathname === "/api/chat/messages") return chatMessages(request, env);
     if (url.pathname === "/api/chat/voice") return employeeVoicePreference(request, env);

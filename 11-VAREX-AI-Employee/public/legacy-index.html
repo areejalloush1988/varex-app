@@ -276,16 +276,37 @@
           </div>
           <div class="permission-app-grid" id="permissionAppGrid"><article class="card permission-empty">اختر موظفاً لعرض صلاحياته.</article></div>
           <article class="card billing-panel" id="voicePolicyCard" style="margin-top:16px">
-            <div class="card-head" style="padding:0 0 15px;margin-bottom:15px"><div><h3>إعداد المكالمات الهاتفية الخارجية</h3><span style="font-size:12px;color:var(--muted)">هذا القسم للمكالمات على أرقام الهاتف فقط، وهو منفصل عن صوت الموظف داخل المحادثة.</span></div><span class="status follow" id="voiceProviderStatus">رقم المكالمات غير مربوط</span></div>
+            <div class="card-head" style="padding:0 0 15px;margin-bottom:15px"><div><h3>السنترال الذكي والمكالمات الخارجية</h3><span style="font-size:12px;color:var(--muted)">يتصل الموظف من رقمك الأساسي بعد توثيقه، ويتحدث عبر الذكاء الاصطناعي داخل المكالمة.</span></div><span class="status follow" id="voiceProviderStatus">بانتظار الإعداد</span></div>
+            <div id="voiceReadinessList" class="module-note" style="margin:0 0 14px;line-height:2">جارٍ فحص السنترال ومسار الذكاء والرقم...</div>
             <div class="form-grid">
-              <div class="field"><label for="voiceCallerId">رقم المتصل الموثّق</label><input id="voiceCallerId" dir="ltr" inputmode="tel" placeholder="+971..." /></div>
+              <div class="field"><label for="voiceCallerId">رقمك الأساسي الذي سيظهر عند الاتصال</label><input id="voiceCallerId" dir="ltr" inputmode="tel" placeholder="+971..." /></div>
               <div class="field"><label for="voiceDailyLimit">الحد الأقصى للمكالمات يومياً</label><input id="voiceDailyLimit" type="number" min="1" max="100" value="10" /></div>
               <div class="field"><label for="voiceMinuteLimit">الحد الأقصى لدقائق المكالمة</label><input id="voiceMinuteLimit" type="number" min="1" max="60" value="10" /></div>
               <div class="field"><label for="voiceAllowedFrom">السماح من الساعة</label><input id="voiceAllowedFrom" type="time" value="09:00" /></div>
               <div class="field"><label for="voiceAllowedTo">السماح حتى الساعة</label><input id="voiceAllowedTo" type="time" value="18:00" /></div>
               <div class="field full"><label for="voiceDisclosure">تعريف الموظف بنفسه في بداية المكالمة</label><textarea id="voiceDisclosure" rows="2">مرحباً، أنا المساعد الذكي وأتصل نيابة عن صاحب الحساب.</textarea></div>
             </div>
-            <div class="module-note" style="margin:14px 0 0">لا يجوز للموظف انتحال شخصية المالك. التسجيل والتفريغ يخضعان لموافقتك والقوانين المحلية، ويجب إبلاغ الطرف الآخر عند اللزوم.</div>
+            <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:14px">
+              <button class="btn btn-light" id="voiceUseLinkedNumber" type="button">استخدام رقمي المرتبط</button>
+              <button class="btn btn-primary" id="voiceVerifyNumber" type="button">اتصل بي لتوثيق الرقم</button>
+              <button class="btn btn-light" id="voiceCheckNumber" type="button">تحقق من اكتمال التوثيق</button>
+              <button class="btn btn-light" id="voiceDisconnectNumber" type="button" hidden>فصل الرقم</button>
+            </div>
+            <div class="module-note" id="voiceValidationBox" style="margin:14px 0 0" hidden>ردّ على اتصال التحقق، ثم أدخل هذا الرمز على لوحة الهاتف: <strong id="voiceValidationCode" dir="ltr" style="font-size:20px;letter-spacing:4px"></strong></div>
+            <div class="module-note" style="margin:14px 0 0">المكالمة لا تُسجّل ولا تُفرّغ افتراضياً. الموظف يعرّف نفسه كمساعد ذكي ولا ينتحل شخصية صاحب الرقم. ظهور رقمك يعتمد أيضاً على قبول شبكة الاتصال المحلية له كرقم متصل موثّق.</div>
+            <details id="voiceGatewayAdmin" style="margin-top:16px" hidden>
+              <summary style="cursor:pointer;font-weight:800">إعداد سنترال VAREX — خاص بالإدارة</summary>
+              <p class="module-note">تُحفظ المفاتيح مشفّرة ولا تظهر للمستخدمين. أدخل بيانات حساب السنترال ومشروع الذكاء، ثم أضف رابط الـWebhook الظاهر هنا داخل مشروع الذكاء.</p>
+              <div class="form-grid">
+                <div class="field"><label for="voiceGatewayAccountId">معرّف حساب السنترال</label><input id="voiceGatewayAccountId" dir="ltr" autocomplete="off" placeholder="AC..." /></div>
+                <div class="field"><label for="voiceGatewayAuthSecret">مفتاح السنترال</label><div class="password-wrap"><input id="voiceGatewayAuthSecret" type="password" dir="ltr" autocomplete="new-password" placeholder="Auth token" /><button class="password-toggle" type="button" data-password-toggle="voiceGatewayAuthSecret" aria-label="إظهار مفتاح السنترال"><svg class="icon"><use href="#i-eye"/></svg></button></div></div>
+                <div class="field"><label for="voiceAiProjectId">معرّف مشروع الذكاء</label><input id="voiceAiProjectId" dir="ltr" autocomplete="off" placeholder="proj_..." /></div>
+                <div class="field"><label for="voiceAiWebhookSecret">مفتاح توقيع Webhook</label><div class="password-wrap"><input id="voiceAiWebhookSecret" type="password" dir="ltr" autocomplete="new-password" placeholder="whsec_..." /><button class="password-toggle" type="button" data-password-toggle="voiceAiWebhookSecret" aria-label="إظهار مفتاح التوقيع"><svg class="icon"><use href="#i-eye"/></svg></button></div></div>
+                <div class="field full"><label for="voiceAiApiKey">مفتاح الذكاء API (إن لم يكن محفوظاً)</label><div class="password-wrap"><input id="voiceAiApiKey" type="password" dir="ltr" autocomplete="new-password" placeholder="sk-..." /><button class="password-toggle" type="button" data-password-toggle="voiceAiApiKey" aria-label="إظهار مفتاح الذكاء"><svg class="icon"><use href="#i-eye"/></svg></button></div></div>
+                <div class="field full"><label for="voiceWebhookUrl">رابط استقبال المكالمات</label><input id="voiceWebhookUrl" dir="ltr" readonly /></div>
+              </div>
+              <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:14px"><button class="btn btn-primary" id="saveVoiceGateway" type="button">حفظ واختبار السنترال</button><span class="status follow" id="voiceGatewayStatus">بانتظار الربط</span></div>
+            </details>
           </article>
           <article class="card permission-footer"><p id="permissionSaveState">أي تغيير لا يصبح فعالاً قبل الحفظ.</p><button class="btn btn-primary" id="savePermissions" type="button" disabled>حفظ الصلاحيات</button></article>
           <article class="card mobile-bridge-note"><div class="stat-icon purple">📱</div><div><h3>ربط الجهاز تلقائياً</h3><p>يرسل VAREX المهمة إلى أي جهاز متصل يملك الصلاحية المطلوبة، بصرف النظر عن الشركة المصنّعة. عندما يكون رقم الهاتف معروفاً، تستطيع نسخة الويب تجهيز الاتصال على الجهاز الحالي. الوصول التلقائي إلى جهات اتصال الجهاز وتجاوز شاشة تأكيد الاتصال يظل خاضعاً لحماية نظام الهاتف.</p></div></article>
@@ -466,7 +487,7 @@
 
   <script src="/i18n.js?v=20260916-45"></script>
   <script src="/command-engine.js?v=20260916-51"></script>
-  <script src="/app.js?v=20260919-64"></script>
+  <script src="/app.js?v=20260919-65"></script>
   <script>
     if ("serviceWorker" in navigator) {
       window.addEventListener("load", () => navigator.serviceWorker.register("/sw.js", { scope: "/" }).then(registration => registration.update()).catch(() => {}), { once: true });

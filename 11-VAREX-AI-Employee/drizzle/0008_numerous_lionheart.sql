@@ -1,0 +1,1 @@
+ALTER TABLE `ai_approvals` ADD `action_execution_id` text;

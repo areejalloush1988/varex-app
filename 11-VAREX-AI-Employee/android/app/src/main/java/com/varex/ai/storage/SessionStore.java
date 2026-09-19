@@ -121,10 +121,8 @@ public final class SessionStore {
     public String selectedAgentName() { return preferences.getString("selected_agent_name", ""); }
     public void setVoiceRepliesEnabled(boolean enabled) { preferences.edit().putBoolean("voice_replies_enabled", enabled).apply(); }
     public boolean voiceRepliesEnabled() { return preferences.getBoolean("voice_replies_enabled", true); }
-    public void setAiProvider(String provider) { preferences.edit().putString("ai_provider", provider).apply(); }
-    public String aiProvider() { return preferences.getString("ai_provider", "auto"); }
-    public void setGeminiVoice(String voice) { preferences.edit().putString("gemini_voice", voice).apply(); }
-    public String geminiVoice() { return preferences.getString("gemini_voice", "Sulafat"); }
+    public void setVoiceStyle(String voice) { preferences.edit().putString("voice_style", voice).apply(); }
+    public String voiceStyle() { return preferences.getString("voice_style", "Sulafat"); }
     public void setConnected(boolean connected) { preferences.edit().putBoolean("connected", connected).apply(); }
     public boolean isConnected() { return preferences.getBoolean("connected", false); }
     public void setLastAction(String value) { preferences.edit().putString("last_action", value).apply(); }

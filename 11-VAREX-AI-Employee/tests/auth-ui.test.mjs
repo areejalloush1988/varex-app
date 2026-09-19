@@ -23,28 +23,94 @@ test("authentication includes password visibility, email verification, and reset
   assert.match(worker, /route === "reset-password"/);
 });
 
+test("settings provide secure password changes, email reset, and confirmed account deletion", () => {
+  assert.match(html, /id="changePasswordForm"/);
+  assert.match(html, /id="settingsCurrentPassword"/);
+  assert.match(html, /id="settingsNewPassword"/);
+  assert.match(html, /id="settingsPasswordReset"/);
+  assert.match(html, /id="deleteAccountModal"/);
+  assert.match(html, /id="deleteAccountConfirmation"/);
+  assert.match(client, /accountRequest\('change-password'/);
+  assert.match(client, /accountRequest\('delete-account'/);
+  assert.match(worker, /route === "change-password"/);
+  assert.match(worker, /route === "delete-account"/);
+  assert.match(worker, /حساب المالك محمي ولا يمكن حذفه/);
+});
+
 test("password policy requires uppercase, lowercase, and six digits", () => {
   assert.match(worker, /\[A-Z\]/);
   assert.match(worker, /\[a-z\]/);
   assert.match(worker, /match\(\/\\d\/g\).*length >= 6/);
 });
 
-test("developer account is free while every customer workspace requires a paid activation", () => {
+test("owner account is free while customer workspaces require a paid or gift activation", () => {
   assert.match(worker, /const developerAccountEmail = "areejalloush1988@gmail\.com"/);
   assert.doesNotMatch(worker, /varexAdminEmails = new Set\(\[.*varexapp@gmail\.com/);
   assert.match(worker, /function subscriptionRequired\(\)/);
-  assert.match(worker, /status='active' AND plan_code IN \('solo','team3','team5','team10','unlimited'\)/);
+  assert.match(worker, /status='active' AND plan_code IN \('gift','solo','team3','team5','team10','unlimited'\)/);
   assert.match(worker, /url\.pathname === "\/api\/admin\/subscriptions"/);
   assert.match(client, /function applySubscriptionGate\(\)/);
   assert.match(client, /DEVELOPER_EMAIL = 'areejalloush1988@gmail\.com'/);
   assert.match(html, /id="developerSubscriptionsPanel"/);
   assert.match(html, /id="subscriptionHistoryBody"/);
-  assert.match(html, /إرسال طلب الاشتراك/);
+  assert.match(html, />الدفع عبر PayPal</);
   assert.doesNotMatch(html, /<h3>تجربة مجانية<\/h3>/);
   assert.doesNotMatch(client, /plan_code: 'trial'/);
 });
 
-test("integration screen contains communication channels only", () => {
+test("logout uses an in-app confirmation from the right sidebar", () => {
+  assert.match(html, /id="logoutButton"/);
+  assert.match(html, /id="logoutModal"/);
+  assert.match(html, /id="confirmLogout"/);
+  assert.doesNotMatch(client, /confirm\('تسجيل الخروج/);
+});
+
+test("gift codes are one-time server-side entitlements", () => {
+  assert.match(html, /id="activationCodeCard"/);
+  assert.match(html, /id="ownerCodeGeneratorCard"/);
+  assert.match(html, /مولّد أكواد الدخول المجاني/);
+  assert.match(html, /id="generateActivationCode"/);
+  assert.match(html, /id="redeemActivationCode"/);
+  assert.match(worker, /randomActivationCode/);
+  assert.match(worker, /code_hash/);
+  assert.match(worker, /WHERE id=\? AND status='active'/);
+  assert.match(worker, /plan_code IN \('gift'/);
+  assert.match(schema, /aiActivationCodes/);
+});
+
+test("PayPal checkout is created and captured on the server", () => {
+  assert.match(html, /id="paypalAdminPanel"/);
+  assert.match(html, /id="savePayPalCredentials"/);
+  assert.match(client, /authorizedRequest\('paypal\/orders'/);
+  assert.match(client, /paypal\/orders\/\$\{encodeURIComponent\(orderId\)\}\/capture/);
+  assert.match(worker, /\/v2\/checkout\/orders/);
+  assert.match(worker, /String\(order\.status\) !== "COMPLETED"/);
+  assert.match(worker, /capturedAmount\.value/);
+  assert.match(schema, /aiPayments/);
+});
+
+test("selected subscription card rises while the other cards move down", () => {
+  assert.match(html, /\.plan-grid\.has-selection \.plan-card:not\(\.selected\)\{transform:translateY\(18px\) scale\(\.985\)/);
+  assert.match(html, /\.plan-card\.selected\{[^}]*border:3px solid var\(--blue\)[^}]*transform:translateY\(-24px\) scale\(1\.025\)/);
+  assert.match(client, /classList\.toggle\('has-selection', Boolean\(card\)\)/);
+  assert.doesNotMatch(html, /\.plan-card\.recommended\{/);
+});
+
+test("subscription actions use PayPal labels and PayPal yellow", () => {
+  assert.match(html, /class="btn choose-plan paypal-button"[^>]*>الدفع عبر PayPal</);
+  assert.match(html, /\.paypal-button\{background:#ffc439!important/);
+  assert.match(html, /id="addPayment">الدفع عبر PayPal</);
+});
+
+test("login sessions are tab-scoped and cleared when leaving the page", () => {
+  assert.match(client, /sessionStorage\.setItem\(SESSION_KEY/);
+  assert.match(client, /sessionStorage\.getItem\(SESSION_KEY/);
+  assert.match(client, /window\.addEventListener\('pagehide'/);
+  assert.match(client, /localStorage\.removeItem\(SESSION_KEY\)/);
+  assert.doesNotMatch(client, /localStorage\.getItem\(SESSION_KEY/);
+});
+
+test("integration screen contains connectable customer channels", () => {
   const integrationSection = html.match(/<section class="view" id="integrations">([\s\S]*?)<\/section>/)?.[1] || "";
   assert.match(integrationSection, /WhatsApp Business/);
   assert.match(integrationSection, /Instagram/);
@@ -54,18 +120,22 @@ test("integration screen contains communication channels only", () => {
   assert.match(integrationSection, /data-provider="facebook"/);
   assert.match(integrationSection, /data-provider="instagram"/);
   assert.match(integrationSection, /data-provider="tiktok"/);
-  assert.doesNotMatch(integrationSection, /البريد الإلكتروني|موقع الشركة/);
+  assert.match(integrationSection, /data-provider="email"/);
+  assert.match(integrationSection, /data-provider="youtube"/);
+  assert.match(integrationSection, /البريد الإلكتروني/);
+  assert.match(integrationSection, /YouTube/);
+  assert.doesNotMatch(integrationSection, /موقع الشركة/);
   assert.doesNotMatch(integrationSection, /نظام الصيدليات|نظام العقارات|الكاشير|نظام مخصص|ربط أنظمة VAREX/);
 });
 
 test("integration cards use local official-style brand assets without oversized phone artwork", () => {
   const integrationSection = html.match(/<section class="view" id="integrations">([\s\S]*?)<\/section>/)?.[1] || "";
-  for (const provider of ["whatsapp", "instagram", "facebook", "tiktok"]) {
+  for (const provider of ["whatsapp", "instagram", "facebook", "tiktok", "email", "youtube"]) {
     assert.match(integrationSection, new RegExp(`/brands/${provider}\\.svg`));
   }
   assert.match(html, /\.brand-logo\{width:24px;height:24px/);
   assert.match(html, /\.network\{width:46px;height:46px;flex:0 0 46px/);
-  assert.match(html, /rel="icon" href="\/favicon\.svg"/);
+  assert.match(html, /rel="icon" href="\/favicon\.svg\?v=20260916-2"/);
 });
 
 test("customer social accounts use tenant-scoped OAuth with encrypted credentials", () => {
@@ -83,9 +153,10 @@ test("customer social accounts use tenant-scoped OAuth with encrypted credential
   assert.match(worker, /blockedMetaLoginScopes = new Set\(\["pages_manage_engagement", "pages_read_user_content"\]\)/);
   assert.match(worker, /\/api\/integrations\/callback\/meta/);
   assert.match(worker, /\/api\/integrations\/callback\/tiktok/);
+  assert.match(worker, /\/api\/integrations\/callback\/google/);
   assert.match(worker, /url\.pathname === "\/api\/integrations\/callback\/tiktok" && request\.method === "GET"\) return integrationCallback\(request, env, "tiktok"\)/);
   assert.match(worker, /\/api\/integrations\/readiness/);
-  assert.match(worker, /provider IN \('whatsapp','facebook','instagram','tiktok'\)/);
+  assert.match(worker, /provider IN \('whatsapp','facebook','instagram','tiktok','email','youtube','parking','website'\)/);
   assert.match(schema, /aiOauthStates/);
 });
 

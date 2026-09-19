@@ -49,6 +49,8 @@ import java.util.concurrent.Executors;
 public class ChatActivity extends Activity {
     private static final int AUDIO_PERMISSION_REQUEST = 2001;
     private static final long REFRESH_INTERVAL_MS = 4000L;
+    private static final String[] VOICE_IDS = {"Sulafat", "Achird", "Achernar", "Kore", "Aoede", "Orus", "Puck", "Alnilam"};
+    private static final String[] VOICE_LABELS = {"ليان — دافئ", "آدم — ودود", "نور — هادئ", "سارة — واضح", "ريم — حيوي", "عمر — عميق", "كريم — نشيط", "سامر — متزن"};
 
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
     private final Handler handler = new Handler(Looper.getMainLooper());
@@ -64,7 +66,6 @@ public class ChatActivity extends Activity {
     private SessionStore store;
     private ApiClient api;
     private Spinner agentSpinner;
-    private Spinner providerSpinner;
     private Spinner voiceSpinner;
     private LinearLayout messagesContainer;
     private ScrollView scrollView;
@@ -80,6 +81,7 @@ public class ChatActivity extends Activity {
     private boolean chatVisible;
     private boolean loadingMessages;
     private boolean selectingAgents;
+    private boolean selectingVoice;
     private boolean listening;
     private String lastSpokenKey = "";
 
@@ -102,7 +104,6 @@ public class ChatActivity extends Activity {
         updateVoiceButton();
         updateConnectionState();
         if (store.isConnected()) startBridge();
-        showLocalWelcome("أهلاً! اسألني أي سؤال أو اطلب مني مهمة. فيك تكتب أو تضغط زر المايك، وأنا برجعلك بجواب أو بنتيجة تنفيذ حقيقية.");
         loadAgents();
         startChatPolling();
     }
@@ -118,7 +119,6 @@ public class ChatActivity extends Activity {
 
     private void bindViews() {
         agentSpinner = findViewById(R.id.agentSpinner);
-        providerSpinner = findViewById(R.id.chatProviderSpinner);
         voiceSpinner = findViewById(R.id.chatVoiceSpinner);
         messagesContainer = findViewById(R.id.chatMessagesContainer);
         scrollView = findViewById(R.id.chatScrollView);
@@ -141,19 +141,17 @@ public class ChatActivity extends Activity {
             updateVoiceButton();
             toast(enabled ? "تم تشغيل صوت الموظف" : "تم كتم صوت الموظف");
         });
-        ArrayAdapter<String> providers = new ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item, new String[]{"تلقائي", "ChatGPT", "Gemini"});
-        providerSpinner.setAdapter(providers);
-        providerSpinner.setSelection("openai".equals(store.aiProvider()) ? 1 : "gemini".equals(store.aiProvider()) ? 2 : 0);
-        providerSpinner.setOnItemSelectedListener(new android.widget.AdapterView.OnItemSelectedListener() {
-            @Override public void onItemSelected(android.widget.AdapterView<?> parent, View view, int position, long id) { store.setAiProvider(position == 1 ? "openai" : position == 2 ? "gemini" : "auto"); }
-            @Override public void onNothingSelected(android.widget.AdapterView<?> parent) { }
-        });
-        ArrayAdapter<String> voices = new ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item, new String[]{"صوت دافئ", "صوت ودود", "صوت هادئ", "صوت واضح"});
+        ArrayAdapter<String> voices = new ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item, VOICE_LABELS);
         voiceSpinner.setAdapter(voices);
-        String currentVoice = store.geminiVoice();
-        voiceSpinner.setSelection("Achird".equals(currentVoice) ? 1 : "Achernar".equals(currentVoice) ? 2 : "Kore".equals(currentVoice) ? 3 : 0);
+        selectingVoice = true;
+        voiceSpinner.setSelection(voiceIndex(store.voiceStyle()));
+        selectingVoice = false;
         voiceSpinner.setOnItemSelectedListener(new android.widget.AdapterView.OnItemSelectedListener() {
-            @Override public void onItemSelected(android.widget.AdapterView<?> parent, View view, int position, long id) { store.setGeminiVoice(position == 1 ? "Achird" : position == 2 ? "Achernar" : position == 3 ? "Kore" : "Sulafat"); }
+            @Override public void onItemSelected(android.widget.AdapterView<?> parent, View view, int position, long id) {
+                if (selectingVoice || position < 0 || position >= VOICE_IDS.length) return;
+                store.setVoiceStyle(VOICE_IDS[position]);
+                saveEmployeeVoice(VOICE_IDS[position]);
+            }
             @Override public void onNothingSelected(android.widget.AdapterView<?> parent) { }
         });
         input.setOnEditorActionListener((view, actionId, event) -> {
@@ -171,6 +169,7 @@ public class ChatActivity extends Activity {
                     store.setSelectedAgent(selected.id, selected.name);
                     lastSpokenKey = "";
                 }
+                loadEmployeeVoice();
                 loadMessages(true);
             }
             @Override public void onNothingSelected(android.widget.AdapterView<?> parent) { }
@@ -231,7 +230,38 @@ public class ChatActivity extends Activity {
         input.setEnabled(true);
         sendButton.setEnabled(true);
         micButton.setEnabled(true);
+        loadEmployeeVoice();
         loadMessages(true);
+    }
+
+    private int voiceIndex(String voiceId) {
+        for (int index = 0; index < VOICE_IDS.length; index++) if (VOICE_IDS[index].equals(voiceId)) return index;
+        return 0;
+    }
+
+    private void loadEmployeeVoice() {
+        if (store.selectedAgentId().isEmpty()) return;
+        executor.execute(() -> {
+            try {
+                JSONObject result = api.getObject("/chat/voice?organization_id=" + encode(store.organizationId()) + "&agent_id=" + encode(store.selectedAgentId()));
+                String voiceId = result.optString("voice_id", "Sulafat");
+                store.setVoiceStyle(voiceId);
+                runOnUiThread(() -> {
+                    selectingVoice = true;
+                    voiceSpinner.setSelection(voiceIndex(voiceId));
+                    selectingVoice = false;
+                });
+            } catch (Exception ignored) { }
+        });
+    }
+
+    private void saveEmployeeVoice(String voiceId) {
+        if (store.selectedAgentId().isEmpty()) return;
+        executor.execute(() -> {
+            try {
+                api.put("/chat/voice", new JSONObject().put("organization_id", store.organizationId()).put("agent_id", store.selectedAgentId()).put("voice_id", voiceId));
+            } catch (Exception exception) { runOnUiThread(() -> toast(message(exception))); }
+        });
     }
 
     private void loadMessages(boolean showLoading) {
@@ -256,10 +286,7 @@ public class ChatActivity extends Activity {
 
     private void renderMessages(JSONArray messages) {
         messagesContainer.removeAllViews();
-        if (messages.length() == 0) {
-            showLocalWelcome("أنا " + (store.selectedAgentName().isEmpty() ? "موظفك الذكي" : store.selectedAgentName()) + ". احكي معي بطريقتك، وأنا بنفّذ ضمن الصلاحيات وبرجعلك بالنتيجة هون.");
-            return;
-        }
+        if (messages.length() == 0) return;
         JSONObject lastAssistant = null;
         for (int index = 0; index < messages.length(); index++) {
             JSONObject message = messages.optJSONObject(index);
@@ -350,11 +377,8 @@ public class ChatActivity extends Activity {
                 default: break;
             }
         }
-        JSONObject metadata = message.optJSONObject("metadata");
-        String provider = metadata == null ? "" : metadata.optString("provider");
-        String providerLabel = "openai".equals(provider) ? "ChatGPT" : "gemini".equals(provider) ? "Gemini" : "";
         String time = "voice".equals(message.optString("kind")) ? "أمر صوتي" : shortTime(message.optString("created_at"));
-        return providerLabel.isEmpty() ? time : providerLabel + (time.isEmpty() ? "" : " • " + time);
+        return time;
     }
 
     private void showLocalWelcome(String value) {
@@ -377,7 +401,7 @@ public class ChatActivity extends Activity {
         input.setText("");
         hideKeyboard();
         setComposerEnabled(false);
-        setWorking(true, "الموظف عم يفهم الطلب…");
+        setWorking(true, "•••");
         appendTemporaryUser(value);
         executor.execute(() -> {
             try {
@@ -386,7 +410,6 @@ public class ChatActivity extends Activity {
                         .put("agent_id", store.selectedAgentId())
                         .put("body", value)
                         .put("input_mode", mode)
-                        .put("model_provider", store.aiProvider())
                         .put("client_message_id", UUID.randomUUID().toString());
                 api.post("/chat/messages", body);
                 runOnUiThread(() -> loadMessages(true));
@@ -522,8 +545,8 @@ public class ChatActivity extends Activity {
                         .put("organization_id", store.organizationId())
                         .put("agent_id", store.selectedAgentId())
                         .put("text", speech)
-                        .put("voice", store.geminiVoice()));
-                File audio = new File(getCacheDir(), "varex-gemini-voice.wav");
+                        .put("voice", store.voiceStyle()));
+                File audio = new File(getCacheDir(), "varex-voice.wav");
                 try (FileOutputStream output = new FileOutputStream(audio, false)) { output.write(wave); }
                 runOnUiThread(() -> playVoiceFile(audio, manual));
             } catch (Exception exception) {
@@ -538,12 +561,12 @@ public class ChatActivity extends Activity {
             voicePlayer = new MediaPlayer();
             voicePlayer.setDataSource(audio.getAbsolutePath());
             voicePlayer.setOnCompletionListener(player -> stopVoicePlayer());
-            voicePlayer.setOnErrorListener((player, what, extra) -> { stopVoicePlayer(); if (manual) toast("تعذر تشغيل صوت Gemini"); return true; });
+            voicePlayer.setOnErrorListener((player, what, extra) -> { stopVoicePlayer(); if (manual) toast("تعذر تشغيل الصوت الطبيعي"); return true; });
             voicePlayer.prepare();
             voicePlayer.start();
         } catch (Exception exception) {
             stopVoicePlayer();
-            if (manual) toast("تعذر تشغيل صوت Gemini");
+            if (manual) toast("تعذر تشغيل الصوت الطبيعي");
         }
     }
 

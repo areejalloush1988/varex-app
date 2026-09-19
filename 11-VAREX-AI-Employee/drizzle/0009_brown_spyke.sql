@@ -1,0 +1,1 @@
+CREATE INDEX `ai_approvals_action_execution_idx` ON `ai_approvals` (`action_execution_id`);

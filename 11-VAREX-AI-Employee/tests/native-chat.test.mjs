@@ -107,8 +107,8 @@ test('provider outages are truthful and never fall through to blind automatic ex
 });
 
 test('updated chat assets replace stale installed-app code before using the offline cache', () => {
-  assert.match(html, /app\.js\?v=20260919-64/);
-  assert.match(serviceWorker, /varex-ai-shell-v64/);
+  assert.match(html, /app\.js\?v=20260919-65/);
+  assert.match(serviceWorker, /varex-ai-shell-v65/);
   assert.ok(serviceWorker.indexOf('const response = await fetch(request)') < serviceWorker.indexOf('await cache.match(request)'));
 });
 

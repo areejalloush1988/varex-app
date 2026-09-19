@@ -1,0 +1,54 @@
+{
+  "id": "./",
+  "name": "VAREX AI",
+  "short_name": "VAREX AI",
+  "description": "الموظف الذكي من VAREX لإدارة المهام والعملاء والرسائل والموافقات.",
+  "lang": "ar",
+  "dir": "rtl",
+  "start_url": "./?source=installed-app",
+  "scope": "./",
+  "display": "standalone",
+  "display_override": ["window-controls-overlay", "standalone", "minimal-ui"],
+  "orientation": "any",
+  "background_color": "#f3f6fb",
+  "theme_color": "#091433",
+  "categories": ["business", "productivity"],
+  "prefer_related_applications": false,
+  "launch_handler": {
+    "client_mode": "navigate-existing"
+  },
+  "icons": [
+    {
+      "src": "./icons/icon-192.png?v=20260916-2",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./icons/icon-512.png?v=20260916-2",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./icons/icon-maskable-512.png?v=20260916-2",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "فتح VAREX AI",
+      "short_name": "فتح التطبيق",
+      "url": "./?source=app-shortcut",
+      "icons": [
+        {
+          "src": "./icons/icon-192.png?v=20260916-2",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    }
+  ]
+}

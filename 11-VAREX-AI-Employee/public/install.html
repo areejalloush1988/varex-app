@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#091433" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="VAREX AI" />
+  <meta name="description" content="ثبّت تطبيق VAREX AI على الكمبيوتر أو الهاتف أو التابلت." />
+  <title>تثبيت VAREX AI</title>
+  <link rel="manifest" href="./manifest.webmanifest?v=20260916-2" />
+  <link rel="icon" href="./favicon.svg?v=20260916-2" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="./icons/apple-touch-icon.png?v=20260916-2" />
+  <link rel="stylesheet" href="./install.css?v=20260916-1" />
+</head>
+<body>
+  <main class="install-page">
+    <section class="install-card" aria-labelledby="installTitle">
+      <div class="brand-row">
+        <img class="app-icon" src="./icons/icon-192.png?v=20260916-2" width="86" height="86" alt="شعار تطبيق VAREX AI" />
+        <div>
+          <span class="product-tag">تطبيق مستقل من VAREX</span>
+          <strong class="brand-name">VAREX AI</strong>
+        </div>
+      </div>
+
+      <div class="install-copy">
+        <span class="eyebrow"><i></i> جاهز للتثبيت على جهازك</span>
+        <h1 id="installTitle">ثبّت الموظف الذكي<br />وافتحه كتطبيق حقيقي</h1>
+        <p>نفس النظام ونفس الحساب والواجهة، لكن داخل نافذة تطبيق مستقلة بدل فتحه كل مرة كصفحة ويب.</p>
+      </div>
+
+      <div class="device-strip" aria-label="الأجهزة المدعومة">
+        <span><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="13" rx="2"/><path d="M8 21h8M12 17v4"/></svg>Windows وMac</span>
+        <span><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="7" y="2" width="10" height="20" rx="2"/><path d="M10 5h4M11 19h2"/></svg>Android</span>
+        <span><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="7" y="2" width="10" height="20" rx="2"/><path d="M10 5h4M11 19h2"/></svg>iPhone وiPad</span>
+      </div>
+
+      <div class="install-actions">
+        <button class="primary-action" id="installButton" type="button" disabled>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m0 0 5-5m-5 5-5-5M5 20h14"/></svg>
+          <span>جارٍ تجهيز التثبيت…</span>
+        </button>
+        <a class="secondary-action" id="openAppLink" href="./?source=install-page">فتح التطبيق في المتصفح</a>
+      </div>
+
+      <div class="install-status" id="installStatus" role="status" aria-live="polite">
+        <span class="status-dot"></span>
+        <span>يتم فحص طريقة التثبيت المناسبة لجهازك.</span>
+      </div>
+
+      <section class="instruction-panel" id="iosInstructions" hidden aria-labelledby="iosTitle">
+        <div class="instruction-heading">
+          <span class="instruction-icon">↥</span>
+          <div><strong id="iosTitle">التثبيت على iPhone أو iPad</strong><small>تُنفّذ مرة واحدة من Safari</small></div>
+        </div>
+        <ol>
+          <li><b>1</b><span>افتح هذه الصفحة في متصفح <strong>Safari</strong>.</span></li>
+          <li><b>2</b><span>اضغط زر <strong>المشاركة</strong> <span class="share-glyph">↥</span>.</span></li>
+          <li><b>3</b><span>اختر <strong>إضافة إلى الشاشة الرئيسية</strong>.</span></li>
+          <li><b>4</b><span>فعّل <strong>فتح كتطبيق ويب</strong> ثم اضغط إضافة.</span></li>
+        </ol>
+      </section>
+
+      <section class="instruction-panel" id="manualInstructions" hidden aria-labelledby="manualTitle">
+        <div class="instruction-heading">
+          <span class="instruction-icon">⋮</span>
+          <div><strong id="manualTitle">التثبيت من قائمة المتصفح</strong><small id="manualSubtitle">الطريقة المتاحة على هذا المتصفح</small></div>
+        </div>
+        <p id="manualCopy">افتح قائمة المتصفح واختر «تثبيت التطبيق» أو «إضافة إلى الشاشة الرئيسية».</p>
+      </section>
+
+      <div class="trust-row">
+        <span><i>✓</i> لا يحتاج متجر تطبيقات</span>
+        <span><i>✓</i> يفتح بنافذة مستقلة</span>
+        <span><i>✓</i> يبدأ من تسجيل الدخول</span>
+      </div>
+    </section>
+  </main>
+  <script src="./install.js?v=20260916-1"></script>
+</body>
+</html>
