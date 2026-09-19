@@ -189,7 +189,7 @@
     $("#topUserRole").textContent = roleLabel(profile.role);
     $("#avatar").textContent = initials(profile.displayName);
     $("#usersNav").classList.toggle("hidden", !profile.canManageUsers);
-    $("#brokerLabel").textContent = app.broker?.label || "غير مربوط بوسيط";
+    $("#brokerLabel").textContent = app.broker?.label || "التجربة جاهزة — لا تحتاج وسيط";
     $("#dateLabel").textContent = new Date().toLocaleDateString("ar-AE", { weekday: "long", year: "numeric", month: "long", day: "numeric" });
     document.documentElement.classList.toggle("compact-mode", app.state?.settings?.compactMode === true);
   }
@@ -375,7 +375,7 @@
 
   function headerForView() {
     const map = {
-      dashboard: [`${greeting()}، ${app.profile.displayName}`, "ملخص حي لحسابك الورقي وقراراتك المحفوظة."],
+      dashboard: [`${greeting()}، ${app.profile.displayName}`, "اختاري عملة، دعي VAREX يحللها، ثم جرّبي صفقة ورقية."],
       intelligence: ["فرص الذكاء", "تحليل احتمالي مبني على أسعار السوق الحية وحركة آخر 24 ساعة."],
       trades: ["الصفقات", "افتح وأغلق صفقات ورقية بأسعار حية وراجع سجلها الكامل."],
       risk: ["مركز المخاطر", "حدود حقيقية يطبقها الخادم قبل السماح بأي صفقة ورقية."],
@@ -388,7 +388,7 @@
     $("#pageTitle").textContent = title;
     $("#pageSubtitle").textContent = subtitle;
     const actions = {
-      dashboard: '<button class="primary-button" data-action="refresh-markets">↻ تحديث الأسعار</button>',
+      dashboard: '<div class="panel-actions"><button class="primary-button" data-action="guided-analysis">✦ ابدئي التجربة</button><button class="small-button" data-action="refresh-markets">↻ تحديث الأسعار</button></div>',
       intelligence: '<button class="primary-button" data-action="analyze-current">✦ تحليل السوق المحدد</button>',
       reports: '<button class="primary-button" data-action="export-report">⇩ تصدير CSV</button>',
     };
@@ -406,7 +406,7 @@
   }
   function marketTabs() {
     if (!app.markets.length) return "";
-    return `<div class="market-tabs">${app.markets.map((market) => `<button class="${market.symbol === app.selectedMarket?.symbol ? "active" : ""}" data-market="${market.symbol}">${market.label}</button>`).join("")}</div>`;
+    return `<div class="market-tabs">${app.markets.map((market) => `<button class="${market.symbol === app.selectedMarket?.symbol ? "active" : ""}" data-market="${market.symbol}" aria-label="اختيار وتحليل ${escapeHtml(market.label)}">✦ ${escapeHtml(market.label)}</button>`).join("")}</div>`;
   }
   function chartSvg(market) {
     const candles = Array.isArray(market?.candles) ? market.candles : [];
@@ -427,7 +427,7 @@
     if (!market) return '<article class="panel"><div class="empty"><span>⌁</span><p>جاري تحميل السوق…</p></div></article>';
     return `<article class="panel">
       ${marketTabs()}
-      <div class="market-summary"><div class="asset-title"><span class="coin">${escapeHtml(market.icon)}</span><span><b>${escapeHtml(market.label)}</b><small>${escapeHtml(market.name)} · Coinbase Exchange</small></span></div><div class="market-price"><b>${money(market.price)}</b><small class="${market.changePct >= 0 ? "positive" : "negative"}">${pct(market.changePct)}</small></div></div>
+      <div class="market-summary"><div class="asset-title"><span class="coin">${escapeHtml(market.icon)}</span><span><b>${escapeHtml(market.label)}</b><small>${escapeHtml(market.name)} · ${escapeHtml(market.source || "مصدر سوق حي")}</small></span></div><div class="market-price"><b>${money(market.price)}</b><small class="${market.changePct >= 0 ? "positive" : "negative"}">${pct(market.changePct)}</small></div></div>
       <div class="chart-wrap">${chartSvg(market)}</div>
       <div class="market-details"><span><small>افتتاح 24 س</small><b>${money(market.open)}</b></span><span><small>أعلى سعر</small><b>${money(market.high)}</b></span><span><small>أدنى سعر</small><b>${money(market.low)}</b></span><span><small>الحجم التقديري</small><b>${compactMoney(market.volumeUsd)}</b></span></div>
     </article>`;
@@ -452,7 +452,8 @@
   }
   function renderDashboard() {
     const metrics = accountMetrics(), dailyRisk = metrics.todayPnl < 0 && metrics.balance ? Math.abs(metrics.todayPnl) / metrics.balance * 100 : 0;
-    return `<section class="stats-grid">
+    return `<section class="trial-guide"><div><span class="eyebrow">تجربة بدون أموال حقيقية</span><h2>ابدئي أول تجربة تداول الآن</h2><p>لا تحتاجين وسيطاً في هذه المرحلة. يقرأ VAREX السوق الحي، يعطيك قراراً احتمالياً، وأنت تؤكدين الصفقة الورقية.</p></div><ol class="trial-steps"><li><b>1</b><span>اختاري عملة</span></li><li><b>2</b><span>شغّلي تحليل VAREX</span></li><li><b>3</b><span>افتحي صفقة ورقية</span></li></ol><button class="primary-button" data-action="guided-analysis">✦ حلّلي ${escapeHtml(app.selectedMarket?.label || "BTC / USD")} الآن</button></section>
+    <section class="stats-grid">
       ${statCard("▣", "الرصيد الورقي", money(metrics.balance), "الرصيد المحفوظ في حسابك")}
       ${statCard("$", "صافي اليوم", money(metrics.todayPnl), metrics.closed.length ? "من الصفقات المغلقة اليوم" : "لا توجد صفقات مغلقة اليوم", metrics.todayPnl >= 0 ? "positive" : "negative")}
       ${statCard("⌁", "صفقات مفتوحة", String(metrics.open.length), `الحد المسموح ${app.state.risk.maxOpenTrades}`)}
@@ -468,7 +469,8 @@
     return `<div class="signal-card"><div class="signal-main"><small>${escapeHtml(analysis.symbol)} · ${localDate(analysis.createdAt, true)}</small><strong class="${colorClass}">${directionLabel(analysis.direction)}</strong><span class="muted">المحرك: ${escapeHtml(analysis.engine || "VAREX")}</span></div><span class="score-ring" style="--score:${Number(analysis.confidence || 0) * 3.6}deg"><b>${Number(analysis.confidence || 0)}%</b></span></div>
       <ul class="reasons">${(analysis.reasons || []).map((reason) => `<li>${escapeHtml(reason)}</li>`).join("")}</ul>
       <div class="level-grid"><span><small>سعر التحليل</small><b>${money(analysis.price)}</b></span><span><small>الهدف الاحتمالي</small><b class="positive">${money(analysis.target)}</b></span><span><small>وقف مقترح</small><b class="negative">${money(analysis.stop)}</b></span></div>
-      <p class="notice">${escapeHtml(analysis.disclaimer || "التحليل احتمالي وليس ضماناً للربح.")}</p>`;
+      <p class="notice">${escapeHtml(analysis.disclaimer || "التحليل احتمالي وليس ضماناً للربح.")}</p>
+      ${analysis.direction === "wait" ? '<div class="analysis-next wait"><div><b>قرار VAREX الآن: الانتظار</b><small>لا يفتح النظام صفقة عندما لا يرى إشارة دخول كافية. اختاري عملة ثانية وجرّبي تحليلها.</small></div><button class="secondary-button" data-view="dashboard">اختيار عملة أخرى</button></div>' : `<div class="analysis-next"><div><b>الخطوة التالية</b><small>استخدمي نتيجة التحليل لتهيئة صفقة ورقية؛ لن يُخصم أي مال حقيقي.</small></div><button class="primary-button" data-use-analysis="${escapeHtml(analysis.symbol)}" data-side="${analysis.direction}">استخدام النتيجة وفتح صفقة ${directionLabel(analysis.direction)} تجريبية</button></div>`}`;
   }
   function renderIntelligence() {
     const latest = app.state.analyses[0], opportunities = app.markets.map((market) => {
@@ -505,7 +507,7 @@
       <label class="control">أقصى صفقات مفتوحة<input name="maxOpenTrades" type="number" min="1" max="10" step="1" value="${app.state.risk.maxOpenTrades}"></label>
       <label class="control">مخاطرة الصفقة %<input name="riskPerTradePct" type="number" min=".25" max="5" step=".25" value="${app.state.risk.riskPerTradePct}"></label>
     </div><div class="toggle-row"><p><b>تحديد وقف خسارة</b><small>يحفظ مستوى وقف محسوباً مع كل صفقة جديدة</small></p><button type="button" class="switch ${app.state.risk.autoStop ? "on" : ""}" data-toggle-risk="autoStop"><i></i></button></div><button class="primary-button" type="submit">حفظ حدود المخاطر</button></form>
-      <article class="panel"><header class="panel-head"><div><h2>حالة الحماية</h2><p>ملخص القرارات الحالية.</p></div></header><div class="notice">حد الخسارة وعدد الصفقات وحجم الصفقة تُفحص على الخادم، لذلك لا يمكن تجاوزها بتعديل الواجهة.</div><div class="toggle-row"><p><b>القدرة على التداول</b><small>حسب دور المستخدم</small></p><span class="badge ${app.profile.canTrade ? "active" : "inactive"}">${app.profile.canTrade ? "مسموح" : "مشاهدة فقط"}</span></div><div class="toggle-row"><p><b>الوسيط المالي</b><small>لا توجد أوامر مالية</small></p><span class="badge pending">غير مربوط</span></div></article></section>`;
+      <article class="panel"><header class="panel-head"><div><h2>حالة الحماية</h2><p>ملخص القرارات الحالية.</p></div></header><div class="notice">حد الخسارة وعدد الصفقات وحجم الصفقة تُفحص على الخادم، لذلك لا يمكن تجاوزها بتعديل الواجهة.</div><div class="toggle-row"><p><b>القدرة على التداول</b><small>حسب دور المستخدم</small></p><span class="badge ${app.profile.canTrade ? "active" : "inactive"}">${app.profile.canTrade ? "مسموح" : "مشاهدة فقط"}</span></div><div class="toggle-row"><p><b>الوسيط المالي</b><small>يُطلب لاحقاً للتداول بأموال حقيقية فقط</small></p><span class="badge active">غير مطلوب للتجربة</span></div></article></section>`;
   }
 
   function renderWatchlist() {
@@ -554,9 +556,14 @@
       try {
         const result = await tradingPost("save_preferences", { selectedSymbol: marketButton.dataset.market });
         app.state = result.state; app.version = result.version;
-        await refreshMarkets(marketButton.dataset.market);
+        await runAnalysis(marketButton.dataset.market);
       } catch (error) { showToast(error.message, "error"); }
       return;
+    }
+    const useAnalysis = event.target.closest("[data-use-analysis]");
+    if (useAnalysis) {
+      app.tradeSide = useAnalysis.dataset.side === "sell" ? "sell" : "buy";
+      return goTo("trades");
     }
     const sideButton = event.target.closest("[data-side]");
     if (sideButton) { app.tradeSide = sideButton.dataset.side; render(); return; }
@@ -576,6 +583,7 @@
     const action = event.target.closest("[data-action]")?.dataset.action;
     if (!action) return;
     if (action === "refresh-markets") return refreshMarkets();
+    if (action === "guided-analysis") return runAnalysis(app.state.selectedSymbol || app.selectedMarket?.symbol || "BTC-USD");
     if (action === "analyze-current") return runAnalysis(app.state.selectedSymbol);
     if (action === "export-report") return exportReport();
     if (action === "reload-users") return loadUsers();
@@ -592,8 +600,8 @@
         const result = await tradingPost("open_trade", { symbol: String(data.get("symbol")), side: app.tradeSide, amount: Number(data.get("amount")) });
         app.state = result.state; app.version = result.version;
         await loadMarkets(app.state.selectedSymbol, true);
-        showToast("تم فتح الصفقة الورقية بسعر السوق الحي.");
-        render();
+        showToast("تم فتح الصفقة الورقية. لم يُخصم أي مال حقيقي.");
+        goTo("trades");
       } else if (form.id === "riskForm") {
         const risk = { ...app.state.risk, maxDailyLossPct: Number(data.get("maxDailyLossPct")), maxOpenTrades: Number(data.get("maxOpenTrades")), riskPerTradePct: Number(data.get("riskPerTradePct")) };
         const result = await tradingPost("save_preferences", { risk });
@@ -634,15 +642,14 @@
   }
 
   async function runAnalysis(symbol) {
-    const buttons = $$("[data-analyze], [data-action=analyze-current]");
+    const buttons = $$("[data-analyze], [data-market], [data-action=analyze-current], [data-action=guided-analysis]");
     buttons.forEach((button) => { button.disabled = true; });
     try {
       const result = await tradingPost("analyze", { symbol });
       app.state = result.state; app.version = result.version;
       await loadMarkets(symbol, true);
-      app.view = "intelligence";
-      showToast("اكتمل التحليل وحُفظ في حسابك.");
-      render();
+      showToast("اكتمل تحليل VAREX. راجعي القرار ثم اختاري الخطوة التالية.");
+      goTo("intelligence");
     } catch (error) { showToast(error.message, "error"); }
     finally { buttons.forEach((button) => { button.disabled = false; }); }
   }
