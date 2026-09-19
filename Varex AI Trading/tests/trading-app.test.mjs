@@ -8,15 +8,16 @@ const access = fs.readFileSync(new URL("../backend/lib/trading-access.ts", impor
 const market = fs.readFileSync(new URL("../backend/lib/trading-market.ts", import.meta.url), "utf8");
 const migration = fs.readFileSync(new URL("../backend/drizzle/0005_trading_schema.sql", import.meta.url), "utf8");
 
-test("includes all VAREX AI Trading workspaces", () => {
+test("ships every requested trading workspace as a real navigation view", () => {
   for (const view of ["dashboard", "intelligence", "trades", "risk", "watchlist", "reports", "users", "settings"]) {
     assert.match(html, new RegExp(`data-view="${view}"`));
+    assert.match(client, new RegExp(`${view}: render`, "i"));
   }
   assert.doesNotMatch(html, /أريج/);
   assert.match(client, /profile\.displayName/);
 });
 
-test("includes password visibility, confirmation, strength rules and sidebar logout", () => {
+test("ships complete password controls and keeps logout last in the right menu", () => {
   assert.match(html, /name="confirmPassword"/);
   assert.ok((html.match(/data-password-toggle/g) || []).length >= 4);
   for (const rule of ["length", "upper", "lower", "number", "symbol"]) {
@@ -27,11 +28,39 @@ test("includes password visibility, confirmation, strength rules and sidebar log
   assert.match(html, /class="nav-item logout-item"[^>]*data-action="logout"/);
 });
 
-test("persists paper trading and uses live primary market data", () => {
+test("keeps financial execution in persistent paper mode with server-side controls", () => {
   assert.match(access, /mode: "paper"/);
+  assert.match(access, /maxOpenTrades/);
+  assert.match(access, /maxDailyLossPct/);
   assert.match(access, /UPDATE trading_state SET state_json/);
+  assert.doesNotMatch(access, /apiKey|secretKey|placeOrder/);
+});
+
+test("uses resilient live market endpoints and never inserts sample trades", () => {
   assert.match(market, /api\.exchange\.coinbase\.com/);
+  assert.match(market, /products\/\$\{symbol\}\/stats/);
+  assert.match(market, /products\/\$\{symbol\}\/candles/);
+  assert.match(market, /api\.kraken\.com/);
+  assert.match(market, /0\/public\/Ticker/);
+  assert.match(market, /0\/public\/OHLC/);
+  assert.match(market, /Promise\.allSettled/);
+  assert.match(client, /app\.state\.trades/);
+  assert.doesNotMatch(client, /sampleTrade|fakePrice|mockTrade/i);
+});
+
+test("guides a user from currency selection to AI analysis and a paper trade", () => {
+  assert.match(client, /ابدئي أول تجربة تداول الآن/);
+  assert.match(client, /data-action="guided-analysis"/);
+  assert.match(client, /data-use-analysis/);
+  assert.match(client, /await runAnalysis\(marketButton\.dataset\.market\)/);
+  assert.match(client, /لم يُخصم أي مال حقيقي/);
+  assert.match(access, /التجربة جاهزة — لا تحتاج وسيط/);
+  assert.match(html, /لا تحتاجين ربط وسيط أو إيداع مال/);
+});
+
+test("persists profiles, invites and trading state in D1", () => {
   assert.match(migration, /CREATE TABLE `trading_profile`/);
   assert.match(migration, /CREATE TABLE `trading_invite`/);
   assert.match(migration, /CREATE TABLE `trading_state`/);
+  assert.match(migration, /FOREIGN KEY/);
 });
