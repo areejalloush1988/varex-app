@@ -107,9 +107,35 @@ test('provider outages are truthful and never fall through to blind automatic ex
 });
 
 test('updated chat assets replace stale installed-app code before using the offline cache', () => {
-  assert.match(html, /app\.js\?v=20260919-67/);
-  assert.match(serviceWorker, /varex-ai-shell-v67/);
+  assert.match(html, /app\.js\?v=20260919-68/);
+  assert.match(serviceWorker, /varex-ai-shell-v68/);
   assert.ok(serviceWorker.indexOf('const response = await fetch(request)') < serviceWorker.indexOf('await cache.match(request)'));
+});
+
+test('live talk is low-latency, interruptible, named by the user, and durable', () => {
+  for (const id of ['employeeLiveBar', 'employeeLiveStart', 'employeeLiveStop', 'employeeLiveMute', 'employeeLiveAudio']) assert.match(html, new RegExp(`id="${id}"`));
+  assert.match(client, /new RTCPeerConnection\(\)/);
+  assert.match(client, /navigator\.mediaDevices\.getUserMedia/);
+  assert.match(client, /createDataChannel\('oai-events'\)/);
+  assert.match(client, /chat\/live\/session/);
+  assert.match(client, /chat\/live\/message/);
+  assert.match(client, /chat\/identity/);
+  assert.match(worker, /gpt-realtime-2\.1-mini/);
+  assert.match(worker, /type: "semantic_vad", eagerness: "high", create_response: true, interrupt_response: true/);
+  assert.match(worker, /save_employee_name/);
+  assert.match(worker, /agent_name_updated/);
+  assert.match(worker, /\/api\/chat\/live\/session/);
+  assert.match(worker, /\/api\/chat\/live\/message/);
+  assert.match(worker, /\/api\/chat\/identity/);
+  assert.doesNotMatch(`${html}\n${client}\n${worker}\n${aiProvider}`, /Lina AI|Lina|لينا|أنا مساعدتك/i);
+});
+
+test('the live picker exposes every realtime voice currently supported by the API', () => {
+  const voiceIds = ['alloy', 'ash', 'ballad', 'coral', 'echo', 'sage', 'shimmer', 'verse', 'marin', 'cedar'];
+  for (const voice of voiceIds) {
+    assert.match(client, new RegExp(`id: '${voice}'`));
+    assert.match(worker, new RegExp(`"${voice}"`));
+  }
 });
 
 test('customer chat uses the developer-selected engine without exposing provider identity', () => {

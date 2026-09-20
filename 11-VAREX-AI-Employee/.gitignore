@@ -35,14 +35,8 @@ yarn-error.log*
 
 # typescript
 next-env.d.ts
-*.tsbuildinfo
 /dist/
 /.wrangler/
 /.sites-runtime/
 /outputs/
 /work/
-/android/.gradle/
-/android/local.properties
-/android/**/build/
-*.apk
-*.aab

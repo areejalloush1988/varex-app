@@ -14,7 +14,7 @@ test("serves the VAREX AI application shell", async () => {
       ASSETS: {
         fetch: async (request) => {
           assert.equal(new URL(request.url).pathname, "/legacy-index.html");
-          return new Response("<!doctype html><title>VAREX AI</title>", {
+          return new Response("<!doctype html><title>VAREX AI Employee</title>", {
             headers: { "content-type": "text/html; charset=utf-8" },
           });
         },
@@ -31,7 +31,7 @@ test("serves the VAREX AI application shell", async () => {
     response.headers.get("content-type") ?? "",
     /^text\/html\b/i,
   );
-  assert.match(await response.text(), /VAREX AI/);
+  assert.match(await response.text(), /VAREX AI Employee/);
 });
 
 test("serves the application shell and client script without stale browser caching", async () => {

@@ -33,15 +33,15 @@ test('recognizes real command verbs in all twelve supported languages', () => {
   vm.runInNewContext(commandSource, context);
   const parse = context.window.VarexCommandEngine.parse;
   const commands = {
-    ar: 'أضف موظف: Lina | مبيعات', en: 'add employee: Lina | Sales', ur: 'ملازم شامل کریں: Lina | سیلز',
-    fa: 'افزودن کارمند: Lina | فروش', zh: '添加员工: Lina | 销售', ko: '직원 추가: Lina | 영업',
-    it: 'aggiungi dipendente: Lina | Vendite', es: 'añadir empleado: Lina | Ventas', he: 'הוסף עובד: Lina | מכירות',
-    fr: 'ajouter un employé : Lina | Ventes', ru: 'добавить сотрудника: Lina | Продажи', tr: 'çalışan ekle: Lina | Satış'
+    ar: 'أضف موظف: Sami | مبيعات', en: 'add employee: Sami | Sales', ur: 'ملازم شامل کریں: Sami | سیلز',
+    fa: 'افزودن کارمند: Sami | فروش', zh: '添加员工: Sami | 销售', ko: '직원 추가: Sami | 영업',
+    it: 'aggiungi dipendente: Sami | Vendite', es: 'añadir empleado: Sami | Ventas', he: 'הוסף עובד: Sami | מכירות',
+    fr: 'ajouter un employé : Sami | Ventes', ru: 'добавить сотрудника: Sami | Продажи', tr: 'çalışan ekle: Sami | Satış'
   };
   for (const [code, command] of Object.entries(commands)) {
     const result = parse(command);
     assert.equal(result.type, 'addAgent', `${code} employee command`);
-    assert.equal(result.name, 'Lina');
+    assert.equal(result.name, 'Sami');
     assert.ok(result.role);
   }
   assert.equal(parse('طباعة').type, 'print');

@@ -48,12 +48,6 @@ public final class ApiClient {
         return (JSONObject) result;
     }
 
-    public JSONObject put(String path, JSONObject body) throws Exception {
-        Object result = request("PUT", path, body, true, true);
-        if (!(result instanceof JSONObject)) throw new ApiException(500, "INVALID_RESPONSE", "استجابة الخادم غير صالحة");
-        return (JSONObject) result;
-    }
-
     public byte[] postBytes(String path, JSONObject body) throws Exception {
         return requestBytes(path, body, true);
     }

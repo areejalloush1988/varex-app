@@ -6,7 +6,7 @@
   const SESSION_HANDOFF_KEY = 'varex-ai-paypal-handoff-v1';
   const DEVELOPER_EMAIL = 'areejalloush1988@gmail.com';
   const PREVIEW_MODE = new URLSearchParams(location.search).get('preview') === '1';
-  const state = { session: null, user: null, org: null, member: null, agents: [], tasks: [], leads: [], approvals: [], integrations: [], integrationReadiness: null, messages: [], knowledge: [], subscriptions: [], adminSubscriptions: [], activationCodes: [], paypalStatus: null, permissionCatalog: {}, agentPermissions: [], deviceConnections: [], voiceSettings: null, voiceReadiness: null, voiceCalls: [], voiceGatewayStatus: null, voiceValidationCode: '', actionExecutions: [], selectedPermissionAgentId: '', permissionDirty: false, employeeChatMessages: [], employeeChatAgentId: '', employeeChatThinking: false, employeeChatVoiceId: 'Sulafat', employeeChatVoiceEnabled: true, employeeChatInputMode: 'text', employeeChatAudio: null, employeeChatRecognition: null };
+  const state = { session: null, user: null, org: null, member: null, agents: [], tasks: [], leads: [], approvals: [], integrations: [], integrationReadiness: null, messages: [], knowledge: [], subscriptions: [], adminSubscriptions: [], activationCodes: [], paypalStatus: null, permissionCatalog: {}, agentPermissions: [], deviceConnections: [], voiceSettings: null, voiceReadiness: null, voiceCalls: [], voiceGatewayStatus: null, voiceValidationCode: '', actionExecutions: [], selectedPermissionAgentId: '', permissionDirty: false, employeeChatMessages: [], employeeChatAgentId: '', employeeChatThinking: false, employeeChatVoiceId: 'marin', employeeChatVoiceEnabled: true, employeeChatInputMode: 'text', employeeChatAudio: null, employeeChatRecognition: null, employeeLivePeer: null, employeeLiveChannel: null, employeeLiveStream: null, employeeLiveAudio: null, employeeLiveStatus: 'idle', employeeLiveMuted: false, employeeLiveUserDraft: '', employeeLiveAssistantDraft: '', employeeLiveSavedItems: new Set() };
   const plans = {
     developer: { name: 'المالك', price: 'مجاني دائم', agents: null, tasks: 120000, cycle: 'developer' },
     gift: { name: 'تفعيل مجاني خاص', price: 'مجاني دائم', agents: null, tasks: 120000, cycle: 'gift' },
@@ -40,14 +40,16 @@
   const integrationChannel = 'BroadcastChannel' in window ? new BroadcastChannel('varex-integration') : null;
   const providerNames = { whatsapp: 'WhatsApp Business', facebook: 'Facebook', instagram: 'Instagram', tiktok: 'TikTok', email: 'البريد الإلكتروني', youtube: 'YouTube' };
   const employeeVoiceCatalog = [
-    { id: 'Sulafat', name: 'ليان', style: 'دافئ وطبيعي', icon: '🌷' },
-    { id: 'Achird', name: 'آدم', style: 'ودود وهادئ', icon: '🎙️' },
-    { id: 'Achernar', name: 'نور', style: 'هادئ ومتزن', icon: '✨' },
-    { id: 'Kore', name: 'سارة', style: 'واضح واحترافي', icon: '💼' },
-    { id: 'Aoede', name: 'ريم', style: 'لطيف وحيوي', icon: '🌼' },
-    { id: 'Orus', name: 'عمر', style: 'عميق وواثق', icon: '🎧' },
-    { id: 'Puck', name: 'كريم', style: 'نشيط وسريع', icon: '⚡' },
-    { id: 'Alnilam', name: 'سامر', style: 'واضح ومتزن', icon: '🔷' }
+    { id: 'cedar', name: 'شبابي 1', style: 'عميق وواثق', group: 'شبابي', icon: '🎙️' },
+    { id: 'ash', name: 'شبابي 2', style: 'هادئ وواضح', group: 'شبابي', icon: '🎧' },
+    { id: 'ballad', name: 'شبابي 3', style: 'دافئ ومتزن', group: 'شبابي', icon: '🔷' },
+    { id: 'echo', name: 'شبابي 4', style: 'عملي ومباشر', group: 'شبابي', icon: '📻' },
+    { id: 'verse', name: 'شبابي 5', style: 'حيوي وسريع', group: 'شبابي', icon: '⚡' },
+    { id: 'marin', name: 'نسائي 1', style: 'طبيعي وعالي الجودة', group: 'نسائي', icon: '🌊' },
+    { id: 'coral', name: 'نسائي 2', style: 'واضح واحترافي', group: 'نسائي', icon: '🪸' },
+    { id: 'sage', name: 'نسائي 3', style: 'هادئ ومتزن', group: 'نسائي', icon: '🌿' },
+    { id: 'shimmer', name: 'نسائي 4', style: 'لطيف وحيوي', group: 'نسائي', icon: '✨' },
+    { id: 'alloy', name: 'محايد', style: 'مرن وطبيعي', group: 'محايد', icon: '◉' }
   ];
   const permissionCatalogFallback = {
     email: { label: 'البريد الإلكتروني', icon: '✉️', description: 'قراءة البريد وإنشاء المسودات وإرسالها وإدارتها', connectionType: 'cloud', actions: {
@@ -112,18 +114,18 @@
   let activeTheme = localStorage.getItem(THEME_KEY) in themes ? localStorage.getItem(THEME_KEY) : 'navy';
   let selectedConversationKey = '';
   const commandExamples = {
-    ar: { whatsapp: 'أرسل واتساب إلى +971500000000: مرحباً، كيف يمكنني مساعدتك؟', agent: 'أضف موظف: Lina | موظف مبيعات', print: 'طباعة', copy: 'انسخ: VAREX AI', integrations: 'افحص البوابات' },
-    en: { agent: 'add employee: Lina | Sales employee', print: 'print', copy: 'copy: VAREX AI', integrations: 'check integrations' },
-    ur: { agent: 'ملازم شامل کریں: Lina | سیلز ملازم', print: 'پرنٹ', copy: 'کاپی: VAREX AI', integrations: 'گیٹ وے کی حالت' },
-    fa: { agent: 'افزودن کارمند: Lina | کارمند فروش', print: 'چاپ', copy: 'کپی: VAREX AI', integrations: 'وضعیت درگاه‌ها' },
-    zh: { agent: '添加员工: Lina | 销售员工', print: '打印', copy: '复制: VAREX AI', integrations: '网关状态' },
-    ko: { agent: '직원 추가: Lina | 영업 직원', print: '인쇄', copy: '복사: VAREX AI', integrations: '연결 상태' },
-    it: { agent: 'aggiungi dipendente: Lina | Addetta vendite', print: 'stampa', copy: 'copia: VAREX AI', integrations: 'stato integrazioni' },
-    es: { agent: 'añadir empleado: Lina | Ventas', print: 'imprimir', copy: 'copiar: VAREX AI', integrations: 'estado de integraciones' },
-    he: { agent: 'הוסף עובד: Lina | מכירות', print: 'הדפס', copy: 'העתק: VAREX AI', integrations: 'מצב החיבורים' },
-    fr: { agent: 'ajouter un employé : Lina | Ventes', print: 'imprimer', copy: 'copier : VAREX AI', integrations: 'état des intégrations' },
-    ru: { agent: 'добавить сотрудника: Lina | Продажи', print: 'печать', copy: 'копировать: VAREX AI', integrations: 'статус интеграций' },
-    tr: { agent: 'çalışan ekle: Lina | Satış çalışanı', print: 'yazdır', copy: 'kopyala: VAREX AI', integrations: 'entegrasyon durumu' }
+    ar: { whatsapp: 'أرسل واتساب إلى +971500000000: مرحباً، كيف يمكنني مساعدتك؟', agent: 'أضف موظف: اسم الموظف | موظف مبيعات', print: 'طباعة', copy: 'انسخ: VAREX AI', integrations: 'افحص البوابات' },
+    en: { agent: 'add employee: Employee name | Sales employee', print: 'print', copy: 'copy: VAREX AI', integrations: 'check integrations' },
+    ur: { agent: 'ملازم شامل کریں: ملازم کا نام | سیلز ملازم', print: 'پرنٹ', copy: 'کاپی: VAREX AI', integrations: 'گیٹ وے کی حالت' },
+    fa: { agent: 'افزودن کارمند: نام کارمند | کارمند فروش', print: 'چاپ', copy: 'کپی: VAREX AI', integrations: 'وضعیت درگاه‌ها' },
+    zh: { agent: '添加员工：员工姓名 | 销售员工', print: '打印', copy: '复制: VAREX AI', integrations: '网关状态' },
+    ko: { agent: '직원 추가: 직원 이름 | 영업 직원', print: '인쇄', copy: '복사: VAREX AI', integrations: '연결 상태' },
+    it: { agent: 'aggiungi dipendente: Nome dipendente | Vendite', print: 'stampa', copy: 'copia: VAREX AI', integrations: 'stato integrazioni' },
+    es: { agent: 'añadir empleado: Nombre del empleado | Ventas', print: 'imprimir', copy: 'copiar: VAREX AI', integrations: 'estado de integraciones' },
+    he: { agent: 'הוסף עובד: שם העובד | מכירות', print: 'הדפס', copy: 'העתק: VAREX AI', integrations: 'מצב החיבורים' },
+    fr: { agent: 'ajouter un employé : Nom de l’employé | Ventes', print: 'imprimer', copy: 'copier : VAREX AI', integrations: 'état des intégrations' },
+    ru: { agent: 'добавить сотрудника: Имя сотрудника | Продажи', print: 'печать', copy: 'копировать: VAREX AI', integrations: 'статус интеграций' },
+    tr: { agent: 'çalışan ekle: Çalışan adı | Satış çalışanı', print: 'yazdır', copy: 'kopyala: VAREX AI', integrations: 'entegrasyon durumu' }
   };
   const i18n = () => window.VarexI18n;
   const t = (key, fallback, variables) => i18n()?.t(key, fallback, variables) ?? fallback ?? key;
@@ -565,6 +567,22 @@
     return response.blob();
   }
 
+  async function authorizedSdpRequest(path, body, retry = true) {
+    if (!state.session?.access_token) throw new Error('يلزم تسجيل الدخول');
+    if (state.session.expires_at && state.session.expires_at * 1000 < Date.now() + 20000) await refreshSession();
+    const response = await fetch(`${API_URL}/${path}`, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${state.session.access_token}`, 'Content-Type': 'application/json' },
+      body: json(body)
+    });
+    if (response.status === 401 && retry) { await refreshSession(); return authorizedSdpRequest(path, body, false); }
+    if (!response.ok) {
+      const data = await response.json().catch(() => ({}));
+      throw new Error(data.message || 'تعذر بدء المحادثة الصوتية المباشرة');
+    }
+    return response.text();
+  }
+
   async function refreshMetaAdminStatus() {
     const panel = $('#metaAdminPanel');
     if (!panel) return;
@@ -790,7 +808,9 @@
       button.classList.toggle('active', active);
       button.setAttribute('aria-current', active ? 'page' : 'false');
     });
-    $('#pageTitle').textContent = t(titles[id][0], titles[id][2]);
+    const defaultTitle = t(titles[id][0], titles[id][2]);
+    const userName = String(state.user?.user_metadata?.full_name || state.user?.email?.split('@')[0] || 'المستخدم').trim();
+    $('#pageTitle').textContent = id === 'dashboard' && currentLocale().startsWith('ar') ? `صباح الخير، ${userName}` : defaultTitle;
     $('#pageSubtitle').textContent = t(titles[id][1], titles[id][3]);
     setSidebarOpen(false);
     if (updateHash) history.replaceState(null, '', `#${id}`);
@@ -1881,6 +1901,16 @@
 
   function employeeChatPreferenceKey(name) { return `varex-ai-employee-chat-${name}-${state.org?.id || 'default'}`; }
 
+  function applyEmployeeIdentity(agent) {
+    if (!agent?.id || !agent?.name) return;
+    const index = state.agents.findIndex(item => item.id === agent.id);
+    if (index >= 0) state.agents[index] = { ...state.agents[index], ...agent };
+    renderEmployeeChatAgentOptions();
+    if (typeof renderAgents === 'function') renderAgents();
+    const subtitle = $('#employeeVoiceSubtitle');
+    if (subtitle && agent.id === state.employeeChatAgentId) subtitle.textContent = `اختر صوت ${agent.name}. يبدأ الصوت الجديد في جلسة اللايف التالية.`;
+  }
+
   function renderEmployeeChatAgentOptions() {
     const select = $('#employeeChatAgent');
     if (!select) return;
@@ -1964,6 +1994,7 @@
     if (!state.org?.id || !agentId || PREVIEW_MODE) { renderEmployeeChat(); renderDashboardResults(); return; }
     const params = new URLSearchParams({ organization_id: state.org.id, agent_id: agentId, limit: '120' });
     const result = await authorizedRequest(`chat/messages?${params}`);
+    applyEmployeeIdentity(result.agent);
     state.employeeChatMessages = Array.isArray(result.messages) ? result.messages : [];
     renderEmployeeChat();
     renderDashboardResults();
@@ -2018,7 +2049,7 @@
     if (label) label.textContent = `${voice.name} — ${voice.style}`;
     const choices = $('#employeeVoiceChoices');
     if (choices) {
-      choices.innerHTML = employeeVoiceCatalog.map(item => `<button class="voice-choice ${item.id === voice.id ? 'active' : ''}" type="button" data-employee-voice="${safe(item.id)}" aria-pressed="${String(item.id === voice.id)}"><span class="voice-choice-icon">${safe(item.icon)}</span><span><b>${safe(item.name)}</b><small>${safe(item.style)}</small></span><span class="voice-choice-check">✓</span></button>`).join('');
+      choices.innerHTML = employeeVoiceCatalog.map(item => `<button class="voice-choice ${item.id === voice.id ? 'active' : ''}" type="button" data-employee-voice="${safe(item.id)}" aria-pressed="${String(item.id === voice.id)}"><span class="voice-choice-icon">${safe(item.icon)}</span><span><b>${safe(item.name)} <em>${safe(item.group)}</em></b><small>${safe(item.style)}</small></span><span class="voice-choice-check">✓</span></button>`).join('');
       $$('[data-employee-voice]', choices).forEach(button => button.addEventListener('click', () => void saveEmployeeVoice(button.dataset.employeeVoice)));
     }
   }
@@ -2035,8 +2066,8 @@
 
   async function loadEmployeeVoice() {
     const agentId = state.employeeChatAgentId;
-    if (!agentId) { state.employeeChatVoiceId = 'Sulafat'; renderEmployeeVoiceUi(); return; }
-    const fallback = localStorage.getItem(employeeChatPreferenceKey(`voice-${agentId}`)) || 'Sulafat';
+    if (!agentId) { state.employeeChatVoiceId = 'marin'; renderEmployeeVoiceUi(); return; }
+    const fallback = localStorage.getItem(employeeChatPreferenceKey(`voice-${agentId}`)) || 'marin';
     if (PREVIEW_MODE || !state.session?.access_token || !state.org?.id) { state.employeeChatVoiceId = fallback; renderEmployeeVoiceUi(); return; }
     try {
       const result = await authorizedRequest(`chat/voice?organization_id=${encodeURIComponent(state.org.id)}&agent_id=${encodeURIComponent(agentId)}`);
@@ -2052,14 +2083,21 @@
     renderEmployeeVoiceUi();
     localStorage.setItem(employeeChatPreferenceKey(`voice-${state.employeeChatAgentId}`), option.id);
     if (PREVIEW_MODE) { notify('تم اختيار الصوت في المعاينة؛ لا تُحفظ تغييرات المعاينة.'); return; }
+    const restartLive = Boolean(state.employeeLivePeer);
+    if (restartLive) await stopEmployeeLiveTalk(true);
     try {
       const result = await authorizedRequest('chat/voice', { method: 'PUT', body: { organization_id: state.org.id, agent_id: state.employeeChatAgentId, voice_id: option.id } });
       state.employeeChatVoiceId = result.voice_id || option.id;
       if (state.selectedPermissionAgentId === state.employeeChatAgentId && state.voiceSettings) state.voiceSettings.voice_id = state.employeeChatVoiceId;
       renderEmployeeVoiceUi();
       notify(`تم حفظ صوت ${option.name} لهذا الموظف`);
+      if (restartLive) await startEmployeeLiveTalk();
     } catch (error) {
-      state.employeeChatVoiceId = previous; renderEmployeeVoiceUi(); notify(error.message, true);
+      state.employeeChatVoiceId = previous;
+      localStorage.setItem(employeeChatPreferenceKey(`voice-${state.employeeChatAgentId}`), previous);
+      renderEmployeeVoiceUi();
+      if (restartLive) await startEmployeeLiveTalk().catch(() => {});
+      notify(error.message, true);
     }
   }
 
@@ -2072,7 +2110,7 @@
     if (!text.trim() || !state.employeeChatAgentId) return;
     try {
       if (state.employeeChatAudio) { state.employeeChatAudio.pause(); URL.revokeObjectURL(state.employeeChatAudio.src); }
-      const blob = await authorizedBinaryRequest('chat/speech', { body: { organization_id: state.org.id, agent_id: state.employeeChatAgentId, text, voice: state.employeeChatVoiceId || 'Sulafat' } });
+      const blob = await authorizedBinaryRequest('chat/speech', { body: { organization_id: state.org.id, agent_id: state.employeeChatAgentId, text, voice: state.employeeChatVoiceId || 'marin' } });
       const audio = new Audio(URL.createObjectURL(blob));
       state.employeeChatAudio = audio;
       audio.addEventListener('ended', () => { URL.revokeObjectURL(audio.src); if (state.employeeChatAudio === audio) state.employeeChatAudio = null; }, { once: true });
@@ -2089,6 +2127,244 @@
     button.textContent = state.employeeChatVoiceEnabled ? '🔊' : '🔇';
     button.setAttribute('aria-pressed', String(state.employeeChatVoiceEnabled));
     button.setAttribute('aria-label', state.employeeChatVoiceEnabled ? 'إيقاف قراءة الردود صوتياً' : 'تشغيل قراءة الردود صوتياً');
+  }
+
+  function renderEmployeeLiveStatus(status = state.employeeLiveStatus, message = '') {
+    state.employeeLiveStatus = status;
+    const bar = $('#employeeLiveBar');
+    if (!bar) return;
+    const labels = {
+      idle: 'جاهز لمحادثة صوتية مباشرة',
+      connecting: 'جارٍ فتح الاتصال الآمن…',
+      listening: state.employeeLiveMuted ? 'الميكروفون مكتوم' : 'عم بسمعك الآن…',
+      thinking: 'فهمت كلامك، عم حضّر الرد…',
+      speaking: 'الموظف عم يرد الآن — فيك تقاطعه بأي لحظة',
+      closing: 'جارٍ إنهاء المحادثة…',
+      error: 'تعذر استمرار المحادثة الصوتية'
+    };
+    bar.dataset.state = status;
+    $('#employeeLiveStatus').textContent = message || labels[status] || labels.idle;
+    const active = ['connecting', 'listening', 'thinking', 'speaking', 'closing'].includes(status);
+    $('#employeeLiveStart').hidden = active;
+    $('#employeeLiveStop').hidden = !active;
+    $('#employeeLiveMute').hidden = !active || status === 'connecting' || status === 'closing';
+    $('#employeeLiveStart').disabled = status === 'connecting';
+    $('#employeeLiveStop').disabled = status === 'closing';
+    $('#employeeLiveMute').textContent = state.employeeLiveMuted ? '🎙 تشغيل المايك' : '🔇 كتم المايك';
+    $('#employeeLiveUserText').textContent = state.employeeLiveUserDraft || '';
+    $('#employeeLiveAssistantText').textContent = state.employeeLiveAssistantDraft || '';
+    $('#employeeLiveTranscript').hidden = !state.employeeLiveUserDraft && !state.employeeLiveAssistantDraft;
+  }
+
+  async function saveEmployeeLiveTranscript(role, text, itemId) {
+    const body = String(text || '').trim();
+    if (!body || !state.org?.id || !state.employeeChatAgentId) return;
+    const stableId = String(itemId || `${Date.now()}-${Math.random()}`).replace(/[^a-zA-Z0-9_-]/g, '').slice(0, 70);
+    const key = `${role}:${stableId}`;
+    if (state.employeeLiveSavedItems.has(key)) return;
+    state.employeeLiveSavedItems.add(key);
+    const clientMessageId = `live-${role}-${stableId}`.slice(0, 120);
+    const pendingId = `pending-${clientMessageId}`;
+    state.employeeChatMessages.push({ id: pendingId, role, body, kind: 'live_voice', created_at: new Date().toISOString(), metadata: { realtime: true, speak: false } });
+    renderEmployeeChat();
+    try {
+      const result = await authorizedRequest('chat/live/message', { method: 'POST', body: { organization_id: state.org.id, agent_id: state.employeeChatAgentId, role, body, client_message_id: clientMessageId } });
+      const index = state.employeeChatMessages.findIndex(message => message.id === pendingId);
+      if (index >= 0 && result.message) state.employeeChatMessages[index] = result.message;
+      renderEmployeeChat();
+    } catch (error) {
+      console.warn('تعذر حفظ جزء من محادثة اللايف', error);
+    }
+  }
+
+  async function handleEmployeeLiveToolCall(item) {
+    if (!item?.call_id || item.name !== 'save_employee_name' || !state.employeeLiveChannel || state.employeeLiveChannel.readyState !== 'open') return false;
+    const toolKey = `tool:${item.call_id}`;
+    if (state.employeeLiveSavedItems.has(toolKey)) return true;
+    state.employeeLiveSavedItems.add(toolKey);
+    let output;
+    try {
+      const args = JSON.parse(item.arguments || '{}');
+      const result = await authorizedRequest('chat/identity', { method: 'PUT', body: { organization_id: state.org.id, agent_id: state.employeeChatAgentId, name: args.name, source: 'live_voice' } });
+      applyEmployeeIdentity(result.agent);
+      output = { ok: true, name: result.agent.name, message: `تم حفظ الاسم ${result.agent.name}` };
+    } catch (error) {
+      output = { ok: false, message: error.message || 'تعذر حفظ الاسم' };
+    }
+    state.employeeLiveChannel.send(json({ type: 'conversation.item.create', item: { type: 'function_call_output', call_id: item.call_id, output: json(output) } }));
+    state.employeeLiveChannel.send(json({ type: 'response.create' }));
+    renderEmployeeLiveStatus('thinking', output.ok ? 'تم حفظ الاسم، عم أكد لك الآن…' : 'تعذر حفظ الاسم، عم أوضح السبب…');
+    return true;
+  }
+
+  async function handleEmployeeLiveEvent(raw) {
+    let event;
+    try { event = typeof raw === 'string' ? JSON.parse(raw) : raw; } catch (_) { return; }
+    if (!event?.type) return;
+    if (event.type === 'session.created' || event.type === 'session.updated') {
+      renderEmployeeLiveStatus('listening');
+      return;
+    }
+    if (event.type === 'input_audio_buffer.speech_started') {
+      state.employeeLiveUserDraft = '';
+      state.employeeLiveAssistantDraft = '';
+      renderEmployeeLiveStatus('listening', 'عم بسمعك… احكي بشكل طبيعي');
+      return;
+    }
+    if (event.type === 'input_audio_buffer.speech_stopped') {
+      renderEmployeeLiveStatus('thinking');
+      return;
+    }
+    if (event.type === 'conversation.item.input_audio_transcription.delta') {
+      state.employeeLiveUserDraft += String(event.delta || '');
+      renderEmployeeLiveStatus('listening', 'عم بسمعك…');
+      return;
+    }
+    if (event.type === 'conversation.item.input_audio_transcription.completed') {
+      const transcript = String(event.transcript || state.employeeLiveUserDraft || '').trim();
+      state.employeeLiveUserDraft = transcript;
+      renderEmployeeLiveStatus('thinking');
+      void saveEmployeeLiveTranscript('user', transcript, event.item_id);
+      return;
+    }
+    if (event.type === 'response.created') {
+      renderEmployeeLiveStatus('thinking');
+      return;
+    }
+    if (event.type === 'response.output_audio_transcript.delta') {
+      state.employeeLiveAssistantDraft += String(event.delta || '');
+      renderEmployeeLiveStatus('speaking');
+      return;
+    }
+    if (event.type === 'response.output_audio_transcript.done') {
+      const transcript = String(event.transcript || state.employeeLiveAssistantDraft || '').trim();
+      state.employeeLiveAssistantDraft = transcript;
+      renderEmployeeLiveStatus('speaking');
+      void saveEmployeeLiveTranscript('assistant', transcript, event.item_id || event.response_id);
+      return;
+    }
+    if (event.type === 'response.done') {
+      if (event.response?.status === 'cancelled') {
+        state.employeeLiveAssistantDraft = '';
+        renderEmployeeLiveStatus('listening', 'سمعت مقاطعتك — كمل كلامك');
+        return;
+      }
+      const outputs = Array.isArray(event.response?.output) ? event.response.output : [];
+      const calls = outputs.filter(item => item?.type === 'function_call');
+      if (calls.length) {
+        for (const item of calls) await handleEmployeeLiveToolCall(item);
+      } else {
+        state.employeeLiveUserDraft = '';
+        state.employeeLiveAssistantDraft = '';
+        renderEmployeeLiveStatus('listening');
+      }
+      return;
+    }
+    if (event.type === 'response.cancelled') {
+      state.employeeLiveAssistantDraft = '';
+      renderEmployeeLiveStatus('listening', 'سمعت مقاطعتك — كمل كلامك');
+      return;
+    }
+    if (event.type === 'session.closed') {
+      cleanupEmployeeLiveTalk();
+      return;
+    }
+    if (event.type === 'error') {
+      console.warn('VAREX live event error', event.error?.code || event.error?.message || event);
+      renderEmployeeLiveStatus('error', 'صار انقطاع بالصوت. اضغط إعادة المحاولة.');
+    }
+  }
+
+  function cleanupEmployeeLiveTalk(nextStatus = 'idle') {
+    const peer = state.employeeLivePeer, channel = state.employeeLiveChannel, stream = state.employeeLiveStream;
+    state.employeeLivePeer = null;
+    state.employeeLiveChannel = null;
+    state.employeeLiveStream = null;
+    state.employeeLiveMuted = false;
+    state.employeeLiveUserDraft = '';
+    state.employeeLiveAssistantDraft = '';
+    try { channel?.close(); } catch (_) { }
+    try { peer?.close(); } catch (_) { }
+    try { stream?.getTracks().forEach(track => track.stop()); } catch (_) { }
+    if (state.employeeLiveAudio) {
+      try { state.employeeLiveAudio.pause(); state.employeeLiveAudio.srcObject = null; } catch (_) { }
+    }
+    state.employeeLiveAudio = null;
+    renderEmployeeLiveStatus(nextStatus);
+  }
+
+  async function startEmployeeLiveTalk() {
+    if (state.employeeLivePeer || state.employeeLiveStatus === 'connecting') return;
+    if (!state.employeeChatAgentId) { notify('اختر الموظف الذكي أولاً', true); return; }
+    if (PREVIEW_MODE) { notify('المحادثة اللايف تعمل بعد تسجيل الدخول إلى الحساب الحقيقي.', true); return; }
+    if (!window.RTCPeerConnection || !navigator.mediaDevices?.getUserMedia) { notify('هذا المتصفح لا يدعم المحادثة الصوتية المباشرة. حدّث المتصفح وحاول مرة ثانية.', true); return; }
+    if (!window.isSecureContext) { notify('المحادثة الصوتية تحتاج فتح التطبيق من الرابط الآمن HTTPS.', true); return; }
+    renderEmployeeLiveStatus('connecting');
+    state.employeeLiveSavedItems = new Set();
+    try {
+      if (state.employeeChatRecognition) state.employeeChatRecognition.stop();
+      if (state.employeeChatAudio) { state.employeeChatAudio.pause(); state.employeeChatAudio = null; }
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true }, video: false });
+      const peer = new RTCPeerConnection();
+      const audio = $('#employeeLiveAudio');
+      audio.autoplay = true;
+      audio.setAttribute('playsinline', '');
+      peer.addEventListener('track', event => {
+        audio.srcObject = event.streams[0];
+        void audio.play().catch(() => renderEmployeeLiveStatus('listening', 'اضغط الشاشة مرة واحدة إذا لم تسمع الصوت'));
+      });
+      const channel = peer.createDataChannel('oai-events');
+      channel.addEventListener('open', () => renderEmployeeLiveStatus('listening'));
+      channel.addEventListener('message', event => void handleEmployeeLiveEvent(event.data));
+      channel.addEventListener('close', () => { if (state.employeeLiveStatus !== 'closing' && state.employeeLivePeer === peer) cleanupEmployeeLiveTalk('error'); });
+      peer.addEventListener('connectionstatechange', () => {
+        if (peer.connectionState === 'connected') renderEmployeeLiveStatus('listening');
+        if (['failed', 'disconnected'].includes(peer.connectionState) && state.employeeLivePeer === peer) cleanupEmployeeLiveTalk('error');
+      });
+      for (const track of stream.getAudioTracks()) peer.addTrack(track, stream);
+      state.employeeLivePeer = peer;
+      state.employeeLiveChannel = channel;
+      state.employeeLiveStream = stream;
+      state.employeeLiveAudio = audio;
+      const offer = await peer.createOffer();
+      await peer.setLocalDescription(offer);
+      const localSdp = offer.sdp;
+      const answerSdp = await authorizedSdpRequest('chat/live/session', { organization_id: state.org.id, agent_id: state.employeeChatAgentId, voice_id: state.employeeChatVoiceId, sdp: localSdp });
+      await peer.setRemoteDescription({ type: 'answer', sdp: answerSdp });
+      renderEmployeeLiveStatus('listening');
+    } catch (error) {
+      cleanupEmployeeLiveTalk('error');
+      renderEmployeeLiveStatus('error', error.message || 'تعذر بدء المحادثة الصوتية');
+      notify(error.message || 'تعذر بدء المحادثة الصوتية', true);
+    }
+  }
+
+  async function stopEmployeeLiveTalk(quiet = false) {
+    const peer = state.employeeLivePeer, channel = state.employeeLiveChannel;
+    if (!peer) { cleanupEmployeeLiveTalk(); return; }
+    renderEmployeeLiveStatus('closing');
+    if (channel?.readyState === 'open') {
+      try {
+        await new Promise(resolve => {
+          let finished = false;
+          const finish = () => { if (finished) return; finished = true; clearTimeout(timer); channel.removeEventListener('message', onMessage); channel.removeEventListener('close', finish); resolve(); };
+          const onMessage = event => { try { if (JSON.parse(event.data)?.type === 'session.closed') finish(); } catch (_) { } };
+          const timer = setTimeout(finish, 1800);
+          channel.addEventListener('message', onMessage);
+          channel.addEventListener('close', finish, { once: true });
+          channel.send(json({ type: 'session.close' }));
+        });
+      } catch (_) { }
+    }
+    cleanupEmployeeLiveTalk();
+    if (!quiet) notify('تم إنهاء المحادثة الصوتية وحفظ نصها.');
+  }
+
+  function toggleEmployeeLiveMute() {
+    if (!state.employeeLiveStream) return;
+    state.employeeLiveMuted = !state.employeeLiveMuted;
+    state.employeeLiveStream.getAudioTracks().forEach(track => { track.enabled = !state.employeeLiveMuted; });
+    renderEmployeeLiveStatus('listening');
   }
 
   function startEmployeeVoiceInput() {
@@ -2112,6 +2388,7 @@
 
   async function initializeEmployeeChat() {
     renderEmployeeChatAgentOptions();
+    renderEmployeeLiveStatus('idle');
     state.employeeChatVoiceEnabled = localStorage.getItem(employeeChatPreferenceKey('voice-enabled')) !== '0';
     const voiceButton = $('#employeeChatVoiceToggle');
     if (voiceButton) { voiceButton.textContent = state.employeeChatVoiceEnabled ? '🔊' : '🔇'; voiceButton.setAttribute('aria-pressed', String(state.employeeChatVoiceEnabled)); }
@@ -2249,9 +2526,9 @@
       starts_at: previewDate(20), renews_at: new Date(Date.now() + 30 * 86400000).toISOString(), created_at: previewDate(20)
     }];
     state.agents = [
-      { id: 'preview-agent-sales', name: 'Lina AI', role: 'موظفة مبيعات', language: 'العربية', channels: ['WhatsApp', 'Instagram'], status: 'active' },
-      { id: 'preview-agent-support', name: 'Noor AI', role: 'خدمة العملاء', language: 'العربية والإنجليزية', channels: ['WhatsApp', 'Facebook'], status: 'active' },
-      { id: 'preview-agent-marketing', name: 'Rami AI', role: 'موظف تسويق', language: 'العربية', channels: ['Instagram', 'TikTok'], status: 'paused' }
+      { id: 'preview-agent-sales', name: 'موظف المبيعات', role: 'موظف مبيعات', language: 'العربية', channels: ['WhatsApp', 'Instagram'], status: 'active' },
+      { id: 'preview-agent-support', name: 'موظف الدعم', role: 'خدمة العملاء', language: 'العربية والإنجليزية', channels: ['WhatsApp', 'Facebook'], status: 'active' },
+      { id: 'preview-agent-marketing', name: 'موظف التسويق', role: 'موظف تسويق', language: 'العربية', channels: ['Instagram', 'TikTok'], status: 'paused' }
     ];
     state.tasks = [
       { id: 'preview-task-1', agent_id: 'preview-agent-sales', title: 'متابعة العملاء الجدد', instructions: 'تصنيف الاستفسارات وتجهيز الردود للمراجعة قبل الإرسال.', priority: 'high', status: 'completed', requires_approval: true, created_at: previewDate(1) },
@@ -2673,7 +2950,11 @@
   }
 
   function openAgentModal() {
-    agentStep = 0; renderAgentStep(); $('#agentModal').classList.add('open'); $('#agentName').focus();
+    agentStep = 0;
+    $('#agentName').value = '';
+    renderAgentStep();
+    $('#agentModal').classList.add('open');
+    $('#agentName').focus();
   }
 
   let agentStep = 0;
@@ -3153,7 +3434,11 @@
     $('#pasteCommand').addEventListener('click', () => { void pasteIntoCommand().catch(error => commandStatus(error.message, 'error')); });
     $('#employeeChatMic').addEventListener('click', startEmployeeVoiceInput);
     $('#employeeChatVoiceToggle').addEventListener('click', toggleEmployeeChatVoice);
-    $('#employeeChatAgent').addEventListener('change', event => {
+    $('#employeeLiveStart').addEventListener('click', () => void startEmployeeLiveTalk());
+    $('#employeeLiveStop').addEventListener('click', () => void stopEmployeeLiveTalk());
+    $('#employeeLiveMute').addEventListener('click', toggleEmployeeLiveMute);
+    $('#employeeChatAgent').addEventListener('change', async event => {
+      if (state.employeeLivePeer) await stopEmployeeLiveTalk(true);
       state.employeeChatAgentId = event.target.value;
       localStorage.setItem(employeeChatPreferenceKey('agent'), state.employeeChatAgentId);
       state.employeeChatMessages = [];
@@ -3184,6 +3469,7 @@
       $$('.modal').filter(modal => modal.id !== 'integrationModal').forEach(modal => modal.classList.remove('open'));
     });
     $('#downloadInvoice')?.addEventListener('click', downloadSubscriptionSummary);
+    window.addEventListener('pagehide', () => cleanupEmployeeLiveTalk());
   }
 
   async function boot() {

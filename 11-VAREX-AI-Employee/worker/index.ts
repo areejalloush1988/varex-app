@@ -63,6 +63,25 @@ const payPalPlanPrices: Record<string, { amount: string; currency: "USD"; name: 
   unlimited: { amount: "1905.79", currency: "USD", name: "غير محدود" },
 };
 
+const REALTIME_MODEL = "gpt-realtime-2.1-mini";
+const REALTIME_TRANSCRIBE_MODEL = "gpt-live-transcribe";
+const REALTIME_VOICE_IDS = ["marin", "cedar", "ash", "ballad", "coral", "echo", "sage", "shimmer", "verse", "alloy"] as const;
+const REALTIME_VOICES = new Set<string>(REALTIME_VOICE_IDS);
+const GEMINI_TO_REALTIME_VOICE: Record<string, string> = {
+  Sulafat: "marin", Achird: "cedar", Achernar: "sage", Kore: "coral", Aoede: "shimmer",
+  Orus: "echo", Puck: "verse", Alnilam: "ballad", Zephyr: "alloy", Charon: "ash",
+};
+const REALTIME_TO_GEMINI_VOICE: Record<string, string> = {
+  marin: "Sulafat", cedar: "Achird", ash: "Charon", ballad: "Alnilam", coral: "Kore",
+  echo: "Orus", sage: "Achernar", shimmer: "Aoede", verse: "Puck", alloy: "Zephyr",
+};
+
+function realtimeVoiceId(value: unknown) {
+  const requested = String(value || "").trim();
+  if (REALTIME_VOICES.has(requested)) return requested;
+  return GEMINI_TO_REALTIME_VOICE[requested] || "marin";
+}
+
 const jsonColumns = new Set(["channels", "metadata", "details", "capabilities", "request_payload", "result_details", "settings"]);
 const booleanColumns = new Set(["requires_price_approval", "audit_enabled", "auto_publish", "vat_enabled", "requires_approval"]);
 const tableColumns: Record<string, string[]> = {
@@ -2957,16 +2976,18 @@ async function employeeVoicePreference(request: Request, env: Env) {
   const agent = await env.DB.prepare("SELECT id,name FROM ai_agents WHERE id=? AND organization_id=? LIMIT 1").bind(agentId, organizationId).first<Row>();
   if (!agent) return error("الموظف المحدد غير موجود", 404);
   const existing = await env.DB.prepare("SELECT * FROM ai_voice_settings WHERE organization_id=? AND agent_id=? LIMIT 1").bind(organizationId, agentId).first<Row>();
-  if (method === "GET") return api({ ok: true, agent: hydrate(agent), voice_id: GEMINI_VOICES.has(String(existing?.voice_id || "")) ? existing?.voice_id : "Sulafat" });
+  const savedVoice = String(existing?.voice_id || "");
+  if (method === "GET") return api({ ok: true, agent: hydrate(agent), voice_id: realtimeVoiceId(savedVoice) });
   if (method !== "PUT") return error("الطريقة غير مدعومة", 405);
   const voiceId = String(body.voice_id || "").trim();
-  if (!GEMINI_VOICES.has(voiceId)) return error("اختر صوتاً متاحاً من مكتبة VAREX", 400);
+  if (!REALTIME_VOICES.has(voiceId) && !GEMINI_VOICES.has(voiceId)) return error("اختر صوتاً متاحاً من مكتبة VAREX", 400);
+  const storedVoiceId = realtimeVoiceId(voiceId);
   const stamp = now();
   await env.DB.prepare("INSERT INTO ai_voice_settings (id,organization_id,agent_id,provider,status,caller_id,voice_id,disclosure_text,settings,updated_by,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?) ON CONFLICT(organization_id,agent_id) DO UPDATE SET voice_id=excluded.voice_id,updated_by=excluded.updated_by,updated_at=excluded.updated_at")
-    .bind(crypto.randomUUID(), organizationId, agentId, "not_configured", "not_connected", null, voiceId, "مرحباً، أنا المساعد الذكي وأتصل نيابة عن صاحب الحساب.", JSON.stringify({}), user.id, stamp, stamp).run();
+    .bind(crypto.randomUUID(), organizationId, agentId, "not_configured", "not_connected", null, storedVoiceId, "مرحباً، أنا المساعد الذكي وأتصل نيابة عن صاحب الحساب.", JSON.stringify({ realtime_voice_id: storedVoiceId }), user.id, stamp, stamp).run();
   await env.DB.prepare("INSERT INTO ai_audit_logs (id,organization_id,user_id,action,entity_type,entity_id,details,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?)")
-    .bind(crypto.randomUUID(), organizationId, user.id, "agent_chat_voice_updated", "agent", agentId, JSON.stringify({ voice_id: voiceId }), stamp, stamp).run();
-  return api({ ok: true, agent: hydrate(agent), voice_id: voiceId });
+    .bind(crypto.randomUUID(), organizationId, user.id, "agent_chat_voice_updated", "agent", agentId, JSON.stringify({ voice_id: storedVoiceId }), stamp, stamp).run();
+  return api({ ok: true, agent: hydrate(agent), voice_id: storedVoiceId });
 }
 
 async function chatSpeech(request: Request, env: Env) {
@@ -2975,7 +2996,7 @@ async function chatSpeech(request: Request, env: Env) {
   const body = await request.json<Row>().catch(() => ({}));
   const organizationId = String(body.organization_id || "").trim(), agentId = String(body.agent_id || "").trim();
   const text = String(body.text || "").replace(/https?:\/\/\S+/g, "رابط").trim();
-  const requestedVoice = String(body.voice || "Sulafat").trim();
+  const requestedVoice = String(body.voice || "marin").trim();
   if (!organizationId || !agentId || !text) return error("حدد الموظف والنص المطلوب قراءته", 400);
   if (text.length > 2200) return error("النص أطول من الحد المسموح للصوت", 400);
   if (!await authorizeOrg(env, user, organizationId)) return error("ليست لديك صلاحية على مساحة العمل", 403);
@@ -2983,7 +3004,9 @@ async function chatSpeech(request: Request, env: Env) {
   if (!agent) return error("الموظف المحدد غير موجود", 404);
   const voiceSettings = await env.DB.prepare("SELECT voice_id FROM ai_voice_settings WHERE organization_id=? AND agent_id=? LIMIT 1").bind(organizationId, agentId).first<Row>();
   const savedVoice = String(voiceSettings?.voice_id || "");
-  const voice = GEMINI_VOICES.has(savedVoice) ? savedVoice : GEMINI_VOICES.has(requestedVoice) ? requestedVoice : "Sulafat";
+  const savedGeminiVoice = GEMINI_VOICES.has(savedVoice) ? savedVoice : REALTIME_TO_GEMINI_VOICE[realtimeVoiceId(savedVoice)];
+  const requestedGeminiVoice = GEMINI_VOICES.has(requestedVoice) ? requestedVoice : REALTIME_TO_GEMINI_VOICE[realtimeVoiceId(requestedVoice)];
+  const voice = savedGeminiVoice || requestedGeminiVoice || "Sulafat";
   let credential;
   try { credential = await platformAiProviderKey(env, "gemini"); }
   catch (_) { credential = null; }
@@ -2998,6 +3021,181 @@ async function chatSpeech(request: Request, env: Env) {
     await setAiProviderHealth(env, organizationId, failure);
     return api({ code: "VOICE_UNAVAILABLE", message: "تعذر تشغيل الصوت الطبيعي حالياً." }, 502);
   }
+}
+
+function normalizeEmployeeName(value: unknown) {
+  const name = String(value || "").replace(/[\r\n\t]+/g, " ").replace(/\s+/g, " ").replace(/^["'«»]+|["'«»]+$/g, "").trim();
+  if (name.length < 2 || name.length > 48) return "";
+  if (!/^[\p{L}\p{M}\p{N}][\p{L}\p{M}\p{N} ._'’\-]{1,47}$/u.test(name)) return "";
+  if (/^(?:شو|ما|ماذا|مين|من|what|who|name|اسمك|المساعد|الموظف)$/iu.test(name)) return "";
+  return name;
+}
+
+function requestedEmployeeName(value: unknown) {
+  const text = String(value || "").replace(/\s+/g, " ").trim();
+  const patterns = [
+    /(?:^|[،,.!?؟]\s*)(?:إنت|انت|أنت)\s+اسمك\s+(?:هو\s+)?["«]?([^"»،,.!?؟]{2,48})["»]?(?:[،,.!?؟]|$)/iu,
+    /(?:^|[،,.!?؟]\s*)(?:سمّيتك|سميتك|رح\s+سمّيك|رح\s+سميك|بدي\s+سمّيك|بدي\s+سميك|خلّي\s+اسمك|خلي\s+اسمك|غيّر\s+اسمك|غير\s+اسمك|اجعل\s+اسمك)\s*(?:إلى|الى|هو|يكون|:)?\s*["«]?([^"»،,.!?؟]{2,48})["»]?(?:[،,.!?؟]|$)/iu,
+    /(?:^|[،,.!?؟]\s*)اسمك\s+(?:من\s+(?:هلا|الآن|اليوم)\s+)?(?:هو|يكون|صار)\s+["«]?([^"»،,.!?؟]{2,48})["»]?(?:[،,.!?؟]|$)/iu,
+  ];
+  for (const pattern of patterns) {
+    const match = text.match(pattern);
+    const candidate = normalizeEmployeeName(match?.[1]?.replace(/\s+(?:من\s+هلا|من\s+الآن|من\s+اليوم|تمام|أوكي|اوكي)$/iu, ""));
+    if (candidate) return candidate;
+  }
+  return "";
+}
+
+async function saveEmployeeName(env: Env, organizationId: string, agentId: string, userId: string, requestedName: unknown, source: string) {
+  const name = normalizeEmployeeName(requestedName);
+  if (!name) throw new Error("EMPLOYEE_NAME_INVALID");
+  const existing = await env.DB.prepare("SELECT id,name,role,status FROM ai_agents WHERE id=? AND organization_id=? LIMIT 1").bind(agentId, organizationId).first<Row>();
+  if (!existing) throw new Error("EMPLOYEE_NOT_FOUND");
+  if (String(existing.name || "") === name) return hydrate(existing);
+  const stamp = now();
+  await env.DB.prepare("UPDATE ai_agents SET name=?,updated_at=? WHERE id=? AND organization_id=?").bind(name, stamp, agentId, organizationId).run();
+  await env.DB.prepare("INSERT INTO ai_audit_logs (id,organization_id,user_id,action,entity_type,entity_id,details,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?)")
+    .bind(crypto.randomUUID(), organizationId, userId, "agent_name_updated", "agent", agentId, JSON.stringify({ previous_name: existing.name || null, name, source }), stamp, stamp).run();
+  return { ...hydrate(existing), name, updated_at: stamp };
+}
+
+async function employeeIdentity(request: Request, env: Env) {
+  const user = await currentUser(request, env); if (!user) return error("يلزم تسجيل الدخول", 401);
+  const method = request.method.toUpperCase();
+  const url = new URL(request.url);
+  const body = method === "GET" ? {} as Row : await request.json<Row>().catch(() => ({}));
+  const organizationId = String(method === "GET" ? url.searchParams.get("organization_id") || "" : body.organization_id || "").trim();
+  const agentId = String(method === "GET" ? url.searchParams.get("agent_id") || "" : body.agent_id || "").trim();
+  if (!organizationId || !agentId) return error("حدد الموظف الذكي أولاً", 400);
+  if (!await authorizeOrg(env, user, organizationId, method === "PUT")) return error(method === "PUT" ? "مالك المساحة فقط يستطيع تغيير اسم الموظف" : "ليست لديك صلاحية على مساحة العمل", 403);
+  if (method === "GET") {
+    const agent = await env.DB.prepare("SELECT id,name,role,status FROM ai_agents WHERE id=? AND organization_id=? LIMIT 1").bind(agentId, organizationId).first<Row>();
+    return agent ? api({ ok: true, agent: hydrate(agent) }) : error("الموظف المحدد غير موجود", 404);
+  }
+  if (method !== "PUT") return error("الطريقة غير مدعومة", 405);
+  try {
+    const agent = await saveEmployeeName(env, organizationId, agentId, String(user.id), body.name, String(body.source || "settings"));
+    return api({ ok: true, agent, message: `تم حفظ الاسم ${String(agent.name)}.` });
+  } catch (caught) {
+    const code = caught instanceof Error ? caught.message : "";
+    return code === "EMPLOYEE_NOT_FOUND" ? error("الموظف المحدد غير موجود", 404) : error("اكتب اسماً واضحاً من حرفين إلى 48 حرفاً", 400);
+  }
+}
+
+async function liveChatMessage(request: Request, env: Env) {
+  if (request.method !== "POST") return error("الطريقة غير مدعومة", 405);
+  const user = await currentUser(request, env); if (!user) return error("يلزم تسجيل الدخول", 401);
+  const body = await request.json<Row>().catch(() => ({}));
+  const organizationId = String(body.organization_id || "").trim(), agentId = String(body.agent_id || "").trim();
+  const role = body.role === "assistant" ? "assistant" : body.role === "user" ? "user" : "";
+  const content = String(body.body || "").trim().slice(0, 12000);
+  const clientMessageId = String(body.client_message_id || "").trim().slice(0, 120);
+  if (!organizationId || !agentId || !role || !content || !clientMessageId) return error("بيانات رسالة اللايف غير مكتملة", 400);
+  if (!await authorizeOrg(env, user, organizationId)) return error("ليست لديك صلاحية على مساحة العمل", 403);
+  const agent = await env.DB.prepare("SELECT id FROM ai_agents WHERE id=? AND organization_id=? LIMIT 1").bind(agentId, organizationId).first<Row>();
+  if (!agent) return error("الموظف المحدد غير موجود", 404);
+  const duplicate = await env.DB.prepare("SELECT * FROM ai_chat_messages WHERE organization_id=? AND user_id=? AND client_message_id=? LIMIT 1")
+    .bind(organizationId, user.id, clientMessageId).first<Row>();
+  if (duplicate) return api({ ok: true, duplicate: true, message: presentChatRow(duplicate) });
+  const saved = await insertChatMessage(env, {
+    organizationId, agentId, userId: String(user.id), role, body: content, kind: "live_voice", clientMessageId,
+    metadata: { input_mode: "live_voice", realtime: true, speak: false },
+  });
+  return api({ ok: true, message: presentChatRow(saved!) }, 201);
+}
+
+function realtimeEmployeeInstructions(agent: Row, user: Row, history: Row[]) {
+  const name = String(agent.name || "الموظف الذكي").trim();
+  const recent = history.slice(-16).map(message => `${message.role === "assistant" ? name : chatDisplayName(user)}: ${String(message.display_body || message.body || "").slice(0, 1000)}`).join("\n");
+  return [
+    `اسمك المحفوظ هو «${name}» وأنت موظف ذكي داخل VAREX AI. هذا هو اسمك الوحيد في هذه الجلسة.`,
+    `دورك: ${String(agent.role || "مساعد تنفيذي")}.`,
+    agent.objective ? `هدفك: ${String(agent.objective)}.` : "",
+    agent.instructions ? `تعليمات المالك: ${String(agent.instructions)}.` : "",
+    `أنت تتحدث الآن مباشرة مع ${chatDisplayName(user)} بالصوت. رد بنفس لغة المستخدم، وبالعربية الشامية عندما يتحدث بها.`,
+    "ابدأ الرد فور اكتمال كلام المستخدم. اجعل الردود قصيرة وطبيعية، غالباً جملة إلى ثلاث جمل، ولا تكرر السؤال ولا تقدم مقدمات طويلة.",
+    "إذا قاطعك المستخدم، توقف فوراً واستمع إليه ثم أكمل على أساس كلامه الجديد.",
+    `عندما يناديك المستخدم باسم «${name}» استجب بصورة طبيعية. لا تخترع لنفسك اسماً ولا تستخدم اسماً آخر.`,
+    "إذا طلب المستخدم صراحة تغيير اسمك، استدعِ أداة save_employee_name بالاسم الجديد أولاً، ولا تؤكد نجاح التغيير قبل أن ترجع الأداة بنتيجة ناجحة.",
+    "بعد نجاح أداة save_employee_name يصبح الاسم الذي أعادته الأداة اسمك الوحيد لباقي الجلسة، واستجب فوراً عند مناداتك به.",
+    "لا تقل إنك اتصلت أو أرسلت أو حذفت أو دفعت أو نفذت إجراءً خارج المحادثة ما لم تكن هناك أداة تنفيذ أعادت نجاحاً حقيقياً. في هذه الجلسة الصوتية يمكنك الحوار والشرح وتسجيل طلب المستخدم فقط.",
+    "لا تذكر اسم مزود النموذج أو المفتاح أو البنية التقنية. عرّف نفسك كموظف ذكي داخل VAREX AI فقط إذا سُئلت.",
+    recent ? `سياق مختصر من المحادثة المحفوظة:\n${recent}` : "",
+  ].filter(Boolean).join("\n");
+}
+
+async function employeeLiveSession(request: Request, env: Env) {
+  if (request.method !== "POST") return error("الطريقة غير مدعومة", 405);
+  const user = await currentUser(request, env); if (!user) return error("يلزم تسجيل الدخول", 401);
+  const body = await request.json<Row>().catch(() => ({}));
+  const organizationId = String(body.organization_id || "").trim(), agentId = String(body.agent_id || "").trim();
+  const sdp = String(body.sdp || "").trim();
+  if (!organizationId || !agentId || !sdp) return error("تعذر تجهيز جلسة الصوت؛ أعد المحاولة", 400);
+  if (sdp.length > 120000 || !sdp.startsWith("v=0")) return error("بيانات الاتصال الصوتي غير صالحة", 400);
+  if (!await authorizeOrg(env, user, organizationId)) return error("ليست لديك صلاحية على مساحة العمل", 403);
+  const [agent, voiceSettings, history, credential] = await Promise.all([
+    env.DB.prepare("SELECT id,name,role,objective,instructions,language,tone,status FROM ai_agents WHERE id=? AND organization_id=? LIMIT 1").bind(agentId, organizationId).first<Row>(),
+    env.DB.prepare("SELECT voice_id FROM ai_voice_settings WHERE organization_id=? AND agent_id=? LIMIT 1").bind(organizationId, agentId).first<Row>(),
+    loadChatMessages(env, organizationId, agentId, String(user.id), 16),
+    platformAiProviderKey(env, "openai").catch(() => null),
+  ]);
+  if (!agent) return error("الموظف المحدد غير موجود", 404);
+  if (!credential?.key) return error("المحادثة الصوتية المباشرة غير مفعّلة بعد في حساب VAREX", 409);
+  const voice = realtimeVoiceId(voiceSettings?.voice_id || body.voice_id);
+  const session = {
+    type: "realtime",
+    model: REALTIME_MODEL,
+    output_modalities: ["audio"],
+    instructions: realtimeEmployeeInstructions(agent, user, history as Row[]),
+    audio: {
+      input: {
+        transcription: { model: REALTIME_TRANSCRIBE_MODEL, languages: ["ar", "en"], delay: "minimal" },
+        turn_detection: { type: "semantic_vad", eagerness: "high", create_response: true, interrupt_response: true },
+      },
+      output: { voice },
+    },
+    tools: [{
+      type: "function",
+      name: "save_employee_name",
+      description: "Save a new name for this VAREX employee when the account owner explicitly asks to rename the employee. Always call this before confirming the new name.",
+      parameters: {
+        type: "object",
+        properties: { name: { type: "string", description: "The exact new employee name chosen by the user." } },
+        required: ["name"],
+        additionalProperties: false,
+      },
+    }],
+    tool_choice: "auto",
+  };
+  const form = new FormData();
+  form.set("sdp", sdp);
+  form.set("session", JSON.stringify(session));
+  const headers: Record<string, string> = {
+    Authorization: `Bearer ${credential.key}`,
+    "OpenAI-Safety-Identifier": `varex_${(await sha256(`${user.id}:${organizationId}`)).slice(0, 48)}`,
+  };
+  if (env.OPENAI_PROJECT_ID) headers["OpenAI-Project"] = env.OPENAI_PROJECT_ID;
+  let upstream: Response;
+  try {
+    upstream = await fetch("https://api.openai.com/v1/realtime/calls", { method: "POST", headers, body: form });
+  } catch (caught) {
+    console.error("VAREX realtime session network failure", caught instanceof Error ? caught.message : caught);
+    return error("تعذر بدء المحادثة اللايف حالياً. حاول مرة ثانية بعد قليل.", 502);
+  }
+  const answer = await upstream.text();
+  if (!upstream.ok) {
+    console.error("VAREX realtime session rejected", upstream.status, answer.slice(0, 500));
+    const message = upstream.status === 429
+      ? "رصيد أو سعة المحادثة الصوتية غير متاحة حالياً. تحقق من رصيد API ثم أعد المحاولة."
+      : upstream.status === 401 || upstream.status === 403
+        ? "إعداد مفتاح الذكاء لا يسمح بالمحادثة الصوتية المباشرة بعد."
+        : "تعذر بدء المحادثة اللايف حالياً. حاول مرة ثانية بعد قليل.";
+    return error(message, upstream.status === 429 ? 429 : 502);
+  }
+  return new Response(answer, {
+    status: 201,
+    headers: { "Content-Type": "application/sdp", "Cache-Control": "private, no-store", "X-Content-Type-Options": "nosniff", "X-VAREX-Voice": voice },
+  });
 }
 
 function chatMetadata(value: unknown) {
@@ -3209,13 +3407,32 @@ async function chatMessages(request: Request, env: Env) {
   }
   const pendingIntent = await latestPendingChatIntent(env, organizationId, agentId, String(user.id));
   const userMessage = await insertChatMessage(env, { organizationId, agentId, userId: String(user.id), role: "user", body: content, kind: inputMode, clientMessageId: clientMessageId || null, metadata: { input_mode: inputMode } });
+  const requestedName = requestedEmployeeName(content);
   let intent = parseChatIntent(content);
   if (pendingIntent && !["approve", "reject"].includes(intent.kind)) {
     const continued = continuePendingIntent(pendingIntent, content);
     if (continued) intent = continued;
   }
   let assistantBody = "", assistantKind = "text", executionId: string | null = null, metadata: Row = { speak: true };
-  if ((intent.kind === "approve" || intent.kind === "reject")) {
+  if (requestedName) {
+    if (!await authorizeOrg(env, user, organizationId, true)) {
+      assistantBody = "تغيير اسم الموظف متاح لمالك مساحة العمل فقط.";
+      assistantKind = "error";
+      metadata.speak = false;
+    } else {
+      try {
+        const renamed = await saveEmployeeName(env, organizationId, agentId, String(user.id), requestedName, "chat");
+        agent.name = renamed.name;
+        assistantBody = `تمام، اسمي «${String(renamed.name)}» من هلا. لما تناديني بهالاسم برد عليك.`;
+        metadata.agent_name = renamed.name;
+        metadata.identity_updated = true;
+      } catch (_) {
+        assistantBody = "اكتب الاسم الجديد بشكل واضح، من حرفين إلى 48 حرفاً.";
+        assistantKind = "error";
+        metadata.speak = false;
+      }
+    }
+  } else if ((intent.kind === "approve" || intent.kind === "reject")) {
     const pendingExecution = await latestPendingChatExecution(env, organizationId, agentId, String(user.id));
     if (!pendingExecution?.id) assistantBody = "ما في عملية معلّقة تنتظر موافقتك بهالمحادثة.";
     else {
@@ -3462,6 +3679,9 @@ const worker = { async fetch(request: Request, env: Env, ctx: ExecutionContext):
     if (url.pathname === "/api/chat/messages") return chatMessages(request, env);
     if (url.pathname === "/api/chat/voice") return employeeVoicePreference(request, env);
     if (url.pathname === "/api/chat/speech") return chatSpeech(request, env);
+    if (url.pathname === "/api/chat/identity") return employeeIdentity(request, env);
+    if (url.pathname === "/api/chat/live/message") return liveChatMessage(request, env);
+    if (url.pathname === "/api/chat/live/session") return employeeLiveSession(request, env);
     const chatActionDecision = url.pathname.match(/^\/api\/chat\/actions\/([^/]+)\/decision$/);
     if (chatActionDecision) return decideChatAction(request, env, decodeURIComponent(chatActionDecision[1]));
     if (url.pathname === "/api/actions/execute") return executeAgentAction(request, env);
