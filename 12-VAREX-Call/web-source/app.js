@@ -1098,7 +1098,11 @@
   async function boot() {
     bindEvents();
     bindOtpBoxes();
-    if ("serviceWorker" in navigator) navigator.serviceWorker.register("/call/sw.js", { scope: "/call/" }).catch(() => {});
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.register("/call/sw.js?v=20260920-4", { scope: "/call/", updateViaCache: "none" })
+        .then(registration => registration.update())
+        .catch(() => {});
+    }
     const started = Date.now();
     try {
       const [config, me] = await Promise.all([

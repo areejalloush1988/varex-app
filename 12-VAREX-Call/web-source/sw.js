@@ -1,10 +1,10 @@
-const CACHE = "varex-call-shell-v2";
+const CACHE = "varex-call-shell-v4";
 const SHELL = [
   "/call/",
   "/call/index.html",
-  "/call/styles.css",
-  "/call/app.js",
-  "/call/manifest.webmanifest",
+  "/call/styles.css?v=20260920-4",
+  "/call/app.js?v=20260920-4",
+  "/call/manifest.webmanifest?v=20260920-4",
   "/varex-icon-192.png",
   "/varex-icon-512.png",
   "/fonts/noto-kufi-arabic.woff"
@@ -28,6 +28,16 @@ self.addEventListener("fetch", event => {
     return;
   }
   if (!url.pathname.startsWith("/call/") && !url.pathname.startsWith("/varex-icon-") && !url.pathname.startsWith("/fonts/")) return;
+  const mustRefresh = url.pathname.endsWith(".css") || url.pathname.endsWith(".js") || url.pathname.endsWith(".webmanifest");
+  if (mustRefresh) {
+    event.respondWith(
+      fetch(event.request).then(response => {
+        if (response.ok) caches.open(CACHE).then(cache => cache.put(event.request, response.clone()));
+        return response;
+      }).catch(() => caches.match(event.request)),
+    );
+    return;
+  }
   event.respondWith(
     caches.match(event.request).then(cached => cached || fetch(event.request).then(response => {
       if (response.ok) caches.open(CACHE).then(cache => cache.put(event.request, response.clone()));

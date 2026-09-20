@@ -10,11 +10,20 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="VAREX Call">
     <title>VAREX Call | فاركس كول</title>
-    <link rel="manifest" href="/call/manifest.webmanifest">
+    <link rel="manifest" href="/call/manifest.webmanifest?v=20260920-4">
     <link rel="icon" href="/varex-icon-192.png">
     <link rel="apple-touch-icon" href="/varex-icon-192.png">
     <link rel="preload" href="/fonts/noto-kufi-arabic.woff" as="font" type="font/woff" crossorigin>
-    <link rel="stylesheet" href="/call/styles.css">
+    <style id="callCritical">
+      html,body{margin:0;min-height:100%;background:#f7f8fb}
+      [hidden]{display:none!important}
+      .phone-shell{min-height:100dvh}
+      .view{display:none!important}
+      .view.active{display:flex!important}
+      .auth-step{display:none!important}
+      .auth-step.active{display:block!important}
+    </style>
+    <link rel="stylesheet" href="/call/styles.css?v=20260920-4">
   </head>
   <body>
     <div class="phone-shell">
@@ -238,6 +247,6 @@
     <div class="loading-overlay" id="loadingOverlay" hidden><span></span><p id="loadingText">جارٍ التحميل…</p></div>
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
     <noscript>يلزم تفعيل JavaScript لتشغيل التطبيق.</noscript>
-    <script src="/call/app.js" defer></script>
+    <script src="/call/app.js?v=20260920-4" defer></script>
   </body>
 </html>
