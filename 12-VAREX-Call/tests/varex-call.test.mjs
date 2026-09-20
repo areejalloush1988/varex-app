@@ -47,7 +47,8 @@ test("contains durable chats, secure PIN sessions, contact import, and WebRTC", 
   assert.match(client, /createAnswer/);
   assert.match(client, /updateViaCache: "none"/);
   assert.match(api, /PBKDF2/);
-  assert.match(api, /PIN_HASH_ITERATIONS/);
+  assert.match(api, /PIN_HASH_ITERATIONS = 100_000/);
+  assert.doesNotMatch(api, /PIN_HASH_ITERATIONS = 120_000/);
   assert.match(api, /\/call\/api\/auth\/register/);
   assert.match(api, /\/call\/api\/auth\/login/);
   assert.match(api, /HttpOnly; Secure; SameSite=Strict/);

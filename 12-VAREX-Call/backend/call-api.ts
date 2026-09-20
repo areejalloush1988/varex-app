@@ -45,7 +45,7 @@ const SESSION_LIFETIME_MS = 30 * 24 * 60 * 60 * 1000;
 const ROOM_LIFETIME_MS = 12 * 60 * 60 * 1000;
 const SIGNAL_LIFETIME_MS = 12 * 60 * 60 * 1000;
 const RING_TIMEOUT_MS = 60 * 1000;
-const PIN_HASH_ITERATIONS = 120_000;
+const PIN_HASH_ITERATIONS = 100_000;
 const JSON_HEADERS = { "content-type": "application/json; charset=utf-8", "cache-control": "no-store, max-age=0" };
 const AVATAR_COLORS = ["#3157d5", "#00897b", "#7b4cc2", "#d06038", "#2376a8", "#b64271"];
 
