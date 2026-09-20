@@ -1,9 +1,9 @@
 {
   "name": "varex-call",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "private": true,
   "type": "module",
-  "description": "VAREX Call installable voice and video calling PWA",
+  "description": "VAREX Call phone-authenticated messaging, voice, and video PWA",
   "scripts": {
     "check": "node --check web-source/app.js && node --check web-source/sw.js && node --test tests/varex-call.test.mjs"
   }

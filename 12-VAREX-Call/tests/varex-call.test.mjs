@@ -4,35 +4,45 @@ import test from "node:test";
 
 const read = path => readFile(new URL(`../${path}`, import.meta.url), "utf8");
 
-test("publishes the installable VAREX Call mobile surface", async () => {
+test("contains the phone verification and messaging mobile surface", async () => {
   const [html, manifest, serviceWorker] = await Promise.all([
     read("web-source/index.html"),
     read("web-source/manifest.webmanifest"),
     read("web-source/sw.js"),
   ]);
-  assert.match(html, /VAREX Call/);
-  assert.match(html, /data-start-call="video"/);
-  assert.match(html, /data-start-call="voice"/);
-  assert.match(html, /rel="manifest" href="\/call\/manifest\.webmanifest"/);
+  assert.match(html, /id="phoneForm"/);
+  assert.match(html, /name="otpChannel" value="sms"/);
+  assert.match(html, /name="otpChannel" value="whatsapp"/);
+  assert.match(html, /name="otpChannel" value="call"/);
+  assert.match(html, /id="conversationList"/);
+  assert.match(html, /data-chat-call="video"/);
+  assert.match(html, /data-chat-call="voice"/);
+  assert.match(html, /src="\/varex-icon-192\.png"/);
   const parsed = JSON.parse(manifest);
   assert.equal(parsed.scope, "/call/");
   assert.equal(parsed.display, "standalone");
   assert.match(serviceWorker, /\/call\/api\//);
 });
 
-test("ships real WebRTC media and signaling controls", async () => {
-  const [client, api, worker, migration] = await Promise.all([
+test("contains durable chats, contact import, secure sessions, and WebRTC", async () => {
+  const [client, api, readme, migration] = await Promise.all([
     read("web-source/app.js"),
     read("backend/call-api.ts"),
     read("README.md"),
-    read("database/0007_varex_call.sql"),
+    read("database/0008_varex_call_messaging.sql"),
   ]);
+  assert.match(client, /navigator\.contacts\.select/);
   assert.match(client, /getUserMedia/);
   assert.match(client, /RTCPeerConnection/);
   assert.match(client, /createOffer/);
   assert.match(client, /createAnswer/);
-  assert.match(api, /export async function callApi/);
-  assert.match(worker, /https:\/\/app\.varexapp\.com\/call/);
-  assert.match(migration, /CREATE TABLE `varex_call_room`/);
-  assert.match(migration, /CREATE TABLE `varex_call_signal`/);
+  assert.match(api, /TWILIO_VERIFY_SERVICE_SID/);
+  assert.match(api, /HttpOnly; Secure; SameSite=Strict/);
+  assert.match(api, /varex_call_conversation/);
+  assert.match(api, /varex_call_message/);
+  assert.doesNotMatch(api, /123456/);
+  assert.match(readme, /https:\/\/app\.varexapp\.com\/call/);
+  assert.match(migration, /CREATE TABLE `varex_call_account`/);
+  assert.match(migration, /CREATE TABLE `varex_call_conversation`/);
+  assert.match(migration, /CREATE TABLE `varex_call_message`/);
 });

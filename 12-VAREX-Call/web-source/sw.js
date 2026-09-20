@@ -1,4 +1,4 @@
-const CACHE = "varex-call-shell-v1";
+const CACHE = "varex-call-shell-v2";
 const SHELL = [
   "/call/",
   "/call/index.html",
@@ -35,4 +35,3 @@ self.addEventListener("fetch", event => {
     })),
   );
 });
-

@@ -2,23 +2,22 @@
   "id": "/call/",
   "name": "VAREX Call | فاركس كول",
   "short_name": "VAREX Call",
-  "description": "مكالمات صوت وصورة مباشرة من VAREX.",
+  "description": "محادثات ومكالمات صوت وفيديو برقم الموبايل.",
   "lang": "ar",
   "dir": "rtl",
   "start_url": "/call/?source=installed-app",
   "scope": "/call/",
   "display": "standalone",
   "orientation": "any",
-  "background_color": "#071426",
-  "theme_color": "#071426",
+  "background_color": "#f7f8fb",
+  "theme_color": "#f7f8fb",
   "categories": ["social", "communication"],
   "icons": [
     { "src": "/varex-icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
     { "src": "/varex-icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
   ],
   "shortcuts": [
-    { "name": "مكالمة فيديو", "short_name": "فيديو", "url": "/call/?new=video", "icons": [{ "src": "/varex-icon-192.png", "sizes": "192x192" }] },
-    { "name": "مكالمة صوتية", "short_name": "صوت", "url": "/call/?new=voice", "icons": [{ "src": "/varex-icon-192.png", "sizes": "192x192" }] }
+    { "name": "المحادثات", "short_name": "المحادثات", "url": "/call/", "icons": [{ "src": "/varex-icon-192.png", "sizes": "192x192" }] },
+    { "name": "جهات الاتصال", "short_name": "جهات الاتصال", "url": "/call/?tab=contacts", "icons": [{ "src": "/varex-icon-192.png", "sizes": "192x192" }] }
   ]
 }
-
