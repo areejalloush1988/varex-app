@@ -10,7 +10,7 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="VAREX Call">
     <title>VAREX Call | فاركس كول</title>
-    <link rel="manifest" href="/call/manifest.webmanifest?v=20260920-4">
+    <link rel="manifest" href="/call/manifest.webmanifest?v=20260920-5">
     <link rel="icon" href="/varex-icon-192.png">
     <link rel="apple-touch-icon" href="/varex-icon-192.png">
     <link rel="preload" href="/fonts/noto-kufi-arabic.woff" as="font" type="font/woff" crossorigin>
@@ -23,7 +23,7 @@
       .auth-step{display:none!important}
       .auth-step.active{display:block!important}
     </style>
-    <link rel="stylesheet" href="/call/styles.css?v=20260920-4">
+    <link rel="stylesheet" href="/call/styles.css?v=20260920-5">
   </head>
   <body>
     <div class="phone-shell">
@@ -36,11 +36,19 @@
         <div class="auth-brand"><img class="official-v" src="/varex-icon-192.png" alt="VAREX"></div>
         <div class="auth-step active" id="phoneStep">
           <div class="auth-copy">
-            <h1 id="authTitle">أدخل رقم موبايلك</h1>
-            <p>سنرسل لك رمز تحقق لتأكيد الرقم وفتح المحادثات والمكالمات.</p>
+            <h1 id="authTitle">أنشئ حسابك مجاناً</h1>
+            <p id="authSubtitle">رقم موبايل ورمز سري، من دون رسائل مدفوعة.</p>
+          </div>
+          <div class="auth-mode-switch" role="tablist" aria-label="نوع الدخول">
+            <button class="active" type="button" role="tab" aria-selected="true" data-auth-mode="register">حساب جديد</button>
+            <button type="button" role="tab" aria-selected="false" data-auth-mode="login">تسجيل الدخول</button>
           </div>
           <form id="phoneForm" novalidate>
-            <label class="field-label" for="phoneNumber">رقم الموبايل أو واتساب</label>
+            <div class="auth-field-group" id="registerNameGroup">
+              <label class="field-label" for="accountName">اسمك الظاهر</label>
+              <input class="auth-field" id="accountName" type="text" autocomplete="name" maxlength="48" placeholder="مثلاً: أريج" required>
+            </div>
+            <label class="field-label" for="phoneNumber">رقم الموبايل</label>
             <div class="phone-field" dir="ltr">
               <select id="countryCode" aria-label="رمز الدولة">
                 <option value="+971" selected>🇦🇪 +971</option>
@@ -61,58 +69,18 @@
               <input id="phoneNumber" type="tel" inputmode="tel" autocomplete="tel-national" placeholder="50 123 4567" aria-describedby="phoneHint" required>
             </div>
             <small id="phoneHint" class="field-hint">اكتب الرقم من دون الصفر الأول بعد رمز الدولة.</small>
-
-            <fieldset class="delivery-options">
-              <legend>كيف تريد استلام الرمز؟</legend>
-              <label class="delivery-choice active">
-                <input type="radio" name="otpChannel" value="sms" checked>
-                <span class="choice-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5.5h16v11H8l-4 3v-14Z"/><path d="M8 10h8M8 13h5"/></svg></span>
-                <span><strong>رسالة SMS</strong><small>على رقم الموبايل</small></span>
-                <i></i>
-              </label>
-              <label class="delivery-choice">
-                <input type="radio" name="otpChannel" value="whatsapp">
-                <span class="choice-icon whatsapp"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11.6a8 8 0 0 1-11.8 7l-4.2 1 1.1-4A8 8 0 1 1 20 11.6Z"/><path d="M8.5 8.1c.4 3.4 2 5 5.4 5.4l1.2-1.1 1.7 1.1c-.4 1.4-1.4 2-2.8 1.9-4.1-.5-6.9-3.3-7.4-7.4-.1-1.4.5-2.4 1.9-2.8l1.1 1.7-1.1 1.2Z"/></svg></span>
-                <span><strong>واتساب</strong><small>رسالة خاصة على واتساب</small></span>
-                <i></i>
-              </label>
-              <label class="delivery-choice">
-                <input type="radio" name="otpChannel" value="call">
-                <span class="choice-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m7.3 4.1-2-1a2 2 0 0 0-2.4.7L2 5.1c-.7 1-.8 2.2-.3 3.3a27 27 0 0 0 13.8 13.8c1 .5 2.3.4 3.3-.3l1.3-1a2 2 0 0 0 .7-2.4l-1-2a2 2 0 0 0-2.3-1.1l-2.9.8a2.6 2.6 0 0 1-2.5-.7l-3.6-3.6a2.6 2.6 0 0 1-.7-2.5l.8-2.9a2 2 0 0 0-1.3-2.4Z"/></svg></span>
-                <span><strong>اتصال آلي</strong><small>سماع الرمز بمكالمة</small></span>
-                <i></i>
-              </label>
-            </fieldset>
-
-            <div class="provider-notice" id="providerNotice" hidden>
-              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 8v5M12 17h.01"/><circle cx="12" cy="12" r="9"/></svg>
-              <span>خدمة إرسال الرموز تحتاج تفعيل مزوّد الرسائل أولًا.</span>
+            <div class="auth-field-group">
+              <label class="field-label" for="accountPin">الرمز السري</label>
+              <input class="auth-field pin-field" id="accountPin" type="password" inputmode="numeric" autocomplete="new-password" minlength="6" maxlength="6" placeholder="6 أرقام" required>
             </div>
-            <button class="primary-button" id="sendCodeButton" type="submit">إرسال رمز التحقق</button>
-          </form>
-          <p class="legal-note">بالمتابعة أنت توافق على استخدام رقمك لتسجيل الدخول والعثور على جهات اتصالك داخل التطبيق.</p>
-        </div>
-
-        <div class="auth-step" id="otpStep">
-          <button class="back-button" id="backToPhone" type="button" aria-label="الرجوع">
-            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 5 7 7-7 7"/></svg>
-          </button>
-          <div class="auth-copy">
-            <h1>أدخل رمز التحقق</h1>
-            <p>أرسلنا الرمز إلى <b id="otpPhone" dir="ltr"></b></p>
-          </div>
-          <form id="otpForm" novalidate>
-            <div class="otp-boxes" id="otpBoxes" dir="ltr" aria-label="رمز التحقق">
-              <input inputmode="numeric" autocomplete="one-time-code" maxlength="1" aria-label="الرقم الأول">
-              <input inputmode="numeric" maxlength="1" aria-label="الرقم الثاني">
-              <input inputmode="numeric" maxlength="1" aria-label="الرقم الثالث">
-              <input inputmode="numeric" maxlength="1" aria-label="الرقم الرابع">
-              <input inputmode="numeric" maxlength="1" aria-label="الرقم الخامس">
-              <input inputmode="numeric" maxlength="1" aria-label="الرقم السادس">
+            <div class="auth-field-group" id="confirmPinGroup">
+              <label class="field-label" for="confirmPin">تأكيد الرمز السري</label>
+              <input class="auth-field pin-field" id="confirmPin" type="password" inputmode="numeric" autocomplete="new-password" minlength="6" maxlength="6" placeholder="أعد كتابة الرمز" required>
             </div>
-            <button class="primary-button" type="submit">تأكيد وفتح التطبيق</button>
+            <div class="free-access-note"><span>✓</span><p><strong>الدخول مجاني بالكامل</strong><small>لا نرسل SMS ولا نخصم رسوم تسجيل.</small></p></div>
+            <button class="primary-button" id="authSubmitButton" type="submit">إنشاء الحساب وفتح التطبيق</button>
           </form>
-          <button class="text-button" id="resendCode" type="button">إعادة إرسال الرمز <span id="resendTimer"></span></button>
+          <p class="legal-note">رقمك يُستخدم داخل VAREX Call للعثور عليك. احفظ الرمز السري لأنه لا توجد رسالة استعادة مدفوعة.</p>
         </div>
       </section>
 
@@ -247,6 +215,6 @@
     <div class="loading-overlay" id="loadingOverlay" hidden><span></span><p id="loadingText">جارٍ التحميل…</p></div>
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
     <noscript>يلزم تفعيل JavaScript لتشغيل التطبيق.</noscript>
-    <script src="/call/app.js?v=20260920-4" defer></script>
+    <script src="/call/app.js?v=20260920-5" defer></script>
   </body>
 </html>

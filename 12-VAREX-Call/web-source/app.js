@@ -5,10 +5,9 @@
   const $$ = selector => Array.from(document.querySelectorAll(selector));
   const views = $$(".view");
   const state = {
-    config: { otpConfigured: false, channels: [] },
+    authMode: "register",
     account: null,
     phone: "",
-    channel: "sms",
     contacts: [],
     conversations: [],
     calls: [],
@@ -20,8 +19,6 @@
     incomingSeen: new Set(),
     pollTimer: 0,
     chatTimer: 0,
-    resendTimer: 0,
-    resendRemaining: 0,
     deferredInstall: null,
     call: null,
     localStream: null,
@@ -48,11 +45,11 @@
 
   const errorText = {
     unauthorized: "انتهت جلسة الدخول. أدخل رقمك من جديد.",
-    otp_provider_not_configured: "خدمة إرسال رمز التحقق لم تُفعّل بعد.",
     invalid_phone: "تأكد من رقم الهاتف ورمز الدولة.",
-    invalid_channel: "اختر طريقة استلام الرمز.",
-    invalid_code: "رمز التحقق غير صحيح أو انتهت صلاحيته.",
-    otp_delivery_failed: "تعذر إرسال الرمز الآن. جرّب طريقة أخرى.",
+    invalid_pin: "اكتب رمزًا سريًا من 6 أرقام.",
+    pin_mismatch: "الرمزان السريان غير متطابقين.",
+    account_exists: "هذا الرقم مسجل. انتقل إلى تسجيل الدخول.",
+    invalid_credentials: "رقم الموبايل أو الرمز السري غير صحيح.",
     rate_limited: "محاولات كثيرة. انتظر قليلًا ثم أعد المحاولة.",
     invalid_name: "اكتب اسمًا صحيحًا من حرفين على الأقل.",
     no_valid_contacts: "لم نجد رقمًا صحيحًا لإضافته.",
@@ -117,7 +114,7 @@
     try { payload = await response.json(); } catch { payload = {}; }
     if (!response.ok || payload.ok === false) {
       const error = new ApiError(payload.error || "service_unavailable", response.status);
-      if (response.status === 401 && path !== "/auth/verify") handleExpiredSession();
+      if (response.status === 401 && !path.startsWith("/auth/")) handleExpiredSession();
       throw error;
     }
     return payload;
@@ -129,8 +126,7 @@
     state.account = null;
     state.activeConversation = null;
     showView($("#authView"));
-    $("#phoneStep").classList.add("active");
-    $("#otpStep").classList.remove("active");
+    setAuthMode("login");
   }
 
   function normalizeWithCountry(value, countryCode) {
@@ -183,85 +179,47 @@
     element.style.background = (contact && contact.avatarColor) || "#3157d5";
   }
 
-  function setAuthStep(step) {
-    $("#phoneStep").classList.toggle("active", step === "phone");
-    $("#otpStep").classList.toggle("active", step === "otp");
+  function setAuthMode(mode) {
+    const registering = mode !== "login";
+    state.authMode = registering ? "register" : "login";
+    $$('[data-auth-mode]').forEach(button => {
+      const active = button.dataset.authMode === state.authMode;
+      button.classList.toggle("active", active);
+      button.setAttribute("aria-selected", String(active));
+    });
+    $("#registerNameGroup").hidden = !registering;
+    $("#confirmPinGroup").hidden = !registering;
+    $("#accountName").required = registering;
+    $("#confirmPin").required = registering;
+    $("#accountPin").autocomplete = registering ? "new-password" : "current-password";
+    $("#authTitle").textContent = registering ? "أنشئ حسابك مجاناً" : "أهلاً بعودتك";
+    $("#authSubtitle").textContent = registering
+      ? "رقم موبايل ورمز سري، من دون رسائل مدفوعة."
+      : "أدخل رقمك والرمز السري لفتح محادثاتك.";
+    $("#authSubmitButton").textContent = registering ? "إنشاء الحساب وفتح التطبيق" : "تسجيل الدخول";
+    $("#confirmPin").value = "";
   }
 
-  async function requestCode(event) {
+  async function submitFreeAuth(event) {
     event.preventDefault();
     const phone = normalizeWithCountry($("#phoneNumber").value, $("#countryCode").value);
     if (!phone) return notify(errorText.invalid_phone, "error");
-    state.channel = $("input[name=otpChannel]:checked").value;
-    if (!state.config.otpConfigured) {
-      $("#providerNotice").hidden = false;
-      return notify(errorText.otp_provider_not_configured, "error");
-    }
-    setLoading(true, "جارٍ إرسال رمز التحقق…");
+    const pin = $("#accountPin").value;
+    if (!/^\d{6}$/.test(pin)) return notify(errorText.invalid_pin, "error");
+    const registering = state.authMode === "register";
+    const displayName = $("#accountName").value.trim();
+    if (registering && displayName.length < 2) return notify(errorText.invalid_name, "error");
+    if (registering && pin !== $("#confirmPin").value) return notify(errorText.pin_mismatch, "error");
+    setLoading(true, registering ? "جارٍ إنشاء حسابك…" : "جارٍ تسجيل الدخول…");
     try {
-      await api("/auth/request", { method: "POST", body: { phone, channel: state.channel } });
+      const path = registering ? "/auth/register" : "/auth/login";
+      const result = await api(path, { method: "POST", body: { phone, pin, displayName, deviceName: deviceName() } });
       state.phone = phone;
-      $("#otpPhone").textContent = phone;
-      setAuthStep("otp");
-      startResendCountdown(60);
-      $("#otpBoxes input").focus();
-      notify("تم إرسال رمز التحقق.", "success");
-    } catch (error) {
-      notify(describeError(error), "error");
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  function otpValue() {
-    return $$("#otpBoxes input").map(input => input.value).join("");
-  }
-
-  async function verifyCode(event) {
-    event.preventDefault();
-    const code = otpValue();
-    if (code.length !== 6) return notify("أدخل رمز التحقق المكوّن من 6 أرقام.", "error");
-    setLoading(true, "جارٍ تأكيد الرقم…");
-    try {
-      const result = await api("/auth/verify", { method: "POST", body: { phone: state.phone, code, deviceName: deviceName() } });
       state.account = result.account;
       await enterMain();
-      if (/^مستخدم \d{4}$/.test(state.account.displayName || "")) window.setTimeout(openProfile, 380);
+      notify(registering ? "تم إنشاء حسابك مجاناً." : "أهلاً بعودتك.", "success");
     } catch (error) {
-      notify(describeError(error), "error");
-      $$("#otpBoxes input").forEach(input => { input.value = ""; });
-      $("#otpBoxes input").focus();
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  function startResendCountdown(seconds) {
-    clearInterval(state.resendTimer);
-    state.resendRemaining = seconds;
-    const button = $("#resendCode");
-    const label = $("#resendTimer");
-    button.disabled = true;
-    const tick = () => {
-      label.textContent = state.resendRemaining > 0 ? `(${state.resendRemaining})` : "";
-      if (state.resendRemaining <= 0) {
-        clearInterval(state.resendTimer);
-        button.disabled = false;
-      }
-      state.resendRemaining -= 1;
-    };
-    tick();
-    state.resendTimer = window.setInterval(tick, 1000);
-  }
-
-  async function resendCode() {
-    if (!state.phone || state.resendRemaining > 0) return;
-    setLoading(true, "جارٍ إعادة إرسال الرمز…");
-    try {
-      await api("/auth/request", { method: "POST", body: { phone: state.phone, channel: state.channel } });
-      startResendCountdown(60);
-      notify("تم إرسال رمز جديد.", "success");
-    } catch (error) {
+      if (error instanceof ApiError && error.code === "account_exists") setAuthMode("login");
       notify(describeError(error), "error");
     } finally {
       setLoading(false);
@@ -385,7 +343,8 @@
     state.calls = [];
     closeSheets();
     showView($("#authView"));
-    setAuthStep("phone");
+    $("#phoneForm").reset();
+    setAuthMode("login");
     setLoading(false);
   }
 
@@ -1005,40 +964,15 @@
     }
   }
 
-  function bindOtpBoxes() {
-    const inputs = $$("#otpBoxes input");
-    inputs.forEach((input, index) => {
-      input.addEventListener("input", event => {
-        const digits = event.target.value.replace(/\D/g, "");
-        if (digits.length > 1) {
-          digits.slice(0, inputs.length).split("").forEach((digit, offset) => { if (inputs[offset]) inputs[offset].value = digit; });
-          inputs[Math.min(digits.length, inputs.length) - 1].focus();
-        } else {
-          event.target.value = digits;
-          if (digits && inputs[index + 1]) inputs[index + 1].focus();
-        }
-      });
-      input.addEventListener("keydown", event => {
-        if (event.key === "Backspace" && !input.value && inputs[index - 1]) inputs[index - 1].focus();
-      });
-      input.addEventListener("paste", event => {
-        const digits = event.clipboardData.getData("text").replace(/\D/g, "").slice(0, 6);
-        if (!digits) return;
-        event.preventDefault();
-        digits.split("").forEach((digit, offset) => { if (inputs[offset]) inputs[offset].value = digit; });
-        inputs[Math.min(digits.length, inputs.length) - 1].focus();
-      });
-    });
+  function bindPinInputs() {
+    $$(".pin-field").forEach(input => input.addEventListener("input", event => {
+      event.target.value = event.target.value.replace(/\D/g, "").slice(0, 6);
+    }));
   }
 
   function bindEvents() {
-    $("#phoneForm").addEventListener("submit", requestCode);
-    $("#otpForm").addEventListener("submit", verifyCode);
-    $("#backToPhone").addEventListener("click", () => setAuthStep("phone"));
-    $("#resendCode").addEventListener("click", resendCode);
-    $$("input[name=otpChannel]").forEach(input => input.addEventListener("change", () => {
-      $$(".delivery-choice").forEach(label => label.classList.toggle("active", label.contains(input)));
-    }));
+    $("#phoneForm").addEventListener("submit", submitFreeAuth);
+    $$('[data-auth-mode]').forEach(button => button.addEventListener("click", () => setAuthMode(button.dataset.authMode)));
     $("#profileButton").addEventListener("click", openProfile);
     $("#newContactButton").addEventListener("click", openContactSheet);
     $$('[data-open-contacts]').forEach(button => button.addEventListener("click", openContactSheet));
@@ -1097,20 +1031,16 @@
 
   async function boot() {
     bindEvents();
-    bindOtpBoxes();
+    bindPinInputs();
+    setAuthMode("register");
     if ("serviceWorker" in navigator) {
-      navigator.serviceWorker.register("/call/sw.js?v=20260920-4", { scope: "/call/", updateViaCache: "none" })
+      navigator.serviceWorker.register("/call/sw.js?v=20260920-5", { scope: "/call/", updateViaCache: "none" })
         .then(registration => registration.update())
         .catch(() => {});
     }
     const started = Date.now();
     try {
-      const [config, me] = await Promise.all([
-        api("/config", { method: "GET" }).catch(() => ({ otpConfigured: false, channels: [] })),
-        api("/me", { method: "GET" }).catch(error => error),
-      ]);
-      state.config = config;
-      $("#providerNotice").hidden = Boolean(config.otpConfigured);
+      const me = await api("/me", { method: "GET" }).catch(error => error);
       const wait = Math.max(0, 750 - (Date.now() - started));
       await new Promise(resolve => window.setTimeout(resolve, wait));
       if (me && !(me instanceof Error) && me.account) {
@@ -1118,11 +1048,11 @@
         await enterMain();
       } else {
         showView($("#authView"));
-        setAuthStep("phone");
+        setAuthMode("register");
       }
     } catch {
       showView($("#authView"));
-      setAuthStep("phone");
+      setAuthMode("register");
       notify("تعذر الاتصال بالخدمة. تحقق من الإنترنت وأعد المحاولة.", "error");
     }
   }

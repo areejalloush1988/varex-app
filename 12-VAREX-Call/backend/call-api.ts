@@ -13,6 +13,8 @@ type SignalKind = "ready" | "offer" | "answer" | "ice" | "hangup";
 type AccountRow = {
   id: string;
   phone: string;
+  pin_salt?: string | null;
+  pin_hash?: string | null;
   display_name: string;
   avatar_color: string;
   discoverable: number;
@@ -43,6 +45,7 @@ const SESSION_LIFETIME_MS = 30 * 24 * 60 * 60 * 1000;
 const ROOM_LIFETIME_MS = 12 * 60 * 60 * 1000;
 const SIGNAL_LIFETIME_MS = 12 * 60 * 60 * 1000;
 const RING_TIMEOUT_MS = 60 * 1000;
+const PIN_HASH_ITERATIONS = 120_000;
 const JSON_HEADERS = { "content-type": "application/json; charset=utf-8", "cache-control": "no-store, max-age=0" };
 const AVATAR_COLORS = ["#3157d5", "#00897b", "#7b4cc2", "#d06038", "#2376a8", "#b64271"];
 
@@ -95,6 +98,21 @@ function randomId(prefix: string): string {
 async function sha256(value: string): Promise<string> {
   const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(value));
   return Array.from(new Uint8Array(digest), byte => byte.toString(16).padStart(2, "0")).join("");
+}
+
+function normalizePin(value: unknown): string {
+  return typeof value === "string" && /^\d{6}$/.test(value) ? value : "";
+}
+
+async function derivePinHash(pin: string, salt: string): Promise<string> {
+  const encoder = new TextEncoder();
+  const material = await crypto.subtle.importKey("raw", encoder.encode(pin), "PBKDF2", false, ["deriveBits"]);
+  const bits = await crypto.subtle.deriveBits(
+    { name: "PBKDF2", hash: "SHA-256", salt: encoder.encode(salt), iterations: PIN_HASH_ITERATIONS },
+    material,
+    256,
+  );
+  return Array.from(new Uint8Array(bits), byte => byte.toString(16).padStart(2, "0")).join("");
 }
 
 function constantTimeEqual(left: string, right: string): boolean {
@@ -155,6 +173,75 @@ function publicAccount(account: AccountRow) {
     createdAt: account.created_at,
     lastSeenAt: account.last_seen_at,
   };
+}
+
+async function createAccountSession(env: CallEnv, account: AccountRow, deviceValue: unknown): Promise<Response> {
+  const now = Date.now();
+  const token = randomToken();
+  const tokenHash = await sha256(token);
+  const deviceName = normalizeName(deviceValue, "هاتف").slice(0, 80);
+  await env.DB.prepare(
+    `INSERT INTO varex_call_session (token_hash, account_id, device_name, created_at, last_seen_at, expires_at)
+     VALUES (?, ?, ?, ?, ?, ?)`,
+  ).bind(tokenHash, account.id, deviceName, now, now, now + SESSION_LIFETIME_MS).run();
+  return json({ ok: true, account: publicAccount(account) }, 200, { "set-cookie": sessionCookie(token, Math.floor(SESSION_LIFETIME_MS / 1000)) });
+}
+
+async function registerWithPin(request: Request, env: CallEnv): Promise<Response> {
+  const body = await readJson(request);
+  const phone = normalizePhone(body?.phone);
+  const pin = normalizePin(body?.pin);
+  const displayName = normalizeName(body?.displayName, "");
+  if (!phone) return json({ ok: false, error: "invalid_phone" }, 400);
+  if (!pin) return json({ ok: false, error: "invalid_pin" }, 400);
+  if (displayName.length < 2) return json({ ok: false, error: "invalid_name" }, 400);
+
+  const [ipHash, phoneHash] = await Promise.all([sha256(requestAddress(request)), sha256(phone)]);
+  if (!(await rateLimit(env, `pin-register-ip:${ipHash}`, 20, 24 * 60 * 60 * 1000)) ||
+      !(await rateLimit(env, `pin-register-phone:${phoneHash}`, 5, 24 * 60 * 60 * 1000))) {
+    return json({ ok: false, error: "rate_limited" }, 429);
+  }
+
+  const existing = await env.DB.prepare("SELECT id FROM varex_call_account WHERE phone_hash = ? LIMIT 1").bind(phoneHash).first<{ id: string }>();
+  if (existing) return json({ ok: false, error: "account_exists" }, 409);
+
+  const id = randomId("usr");
+  const now = Date.now();
+  const salt = randomToken(16);
+  const pinHash = await derivePinHash(pin, salt);
+  const color = AVATAR_COLORS[parseInt(phoneHash.slice(0, 2), 16) % AVATAR_COLORS.length];
+  const inserted = await env.DB.prepare(
+    `INSERT OR IGNORE INTO varex_call_account
+     (id, phone, phone_hash, pin_salt, pin_hash, display_name, avatar_color, discoverable, created_at, updated_at, last_seen_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, 1, ?, ?, ?)`,
+  ).bind(id, phone, phoneHash, salt, pinHash, displayName, color, now, now, now).run();
+  if (Number(inserted.meta?.changes || 0) !== 1) return json({ ok: false, error: "account_exists" }, 409);
+
+  const account: AccountRow = { id, phone, display_name: displayName, avatar_color: color, discoverable: 1, created_at: now, last_seen_at: now };
+  return createAccountSession(env, account, body?.deviceName);
+}
+
+async function loginWithPin(request: Request, env: CallEnv): Promise<Response> {
+  const body = await readJson(request);
+  const phone = normalizePhone(body?.phone);
+  const pin = normalizePin(body?.pin);
+  if (!phone) return json({ ok: false, error: "invalid_phone" }, 400);
+  if (!pin) return json({ ok: false, error: "invalid_pin" }, 400);
+
+  const [ipHash, phoneHash] = await Promise.all([sha256(requestAddress(request)), sha256(phone)]);
+  if (!(await rateLimit(env, `pin-login-ip:${ipHash}`, 60, 60 * 60 * 1000)) ||
+      !(await rateLimit(env, `pin-login-phone:${phoneHash}`, 15, 60 * 60 * 1000))) {
+    return json({ ok: false, error: "rate_limited" }, 429);
+  }
+
+  const account = await env.DB.prepare(
+    `SELECT id, phone, pin_salt, pin_hash, display_name, avatar_color, discoverable, created_at, last_seen_at
+     FROM varex_call_account WHERE phone_hash = ? LIMIT 1`,
+  ).bind(phoneHash).first<AccountRow>();
+  const salt = account?.pin_salt || randomToken(16);
+  const actual = await derivePinHash(pin, salt);
+  if (!account?.pin_hash || !constantTimeEqual(account.pin_hash, actual)) return json({ ok: false, error: "invalid_credentials" }, 401);
+  return createAccountSession(env, account, body?.deviceName);
 }
 
 async function authenticate(request: Request, env: CallEnv): Promise<AuthContext | Response> {
@@ -247,14 +334,7 @@ async function verifyOtp(request: Request, env: CallEnv): Promise<Response> {
     ).bind(id, phone, phoneHash, fallbackName, color, now, now, now).run();
     account = { id, phone, display_name: fallbackName, avatar_color: color, discoverable: 1, created_at: now, last_seen_at: now };
   }
-  const token = randomToken();
-  const tokenHash = await sha256(token);
-  const deviceName = normalizeName(body?.deviceName, "هاتف").slice(0, 80);
-  await env.DB.prepare(
-    `INSERT INTO varex_call_session (token_hash, account_id, device_name, created_at, last_seen_at, expires_at)
-     VALUES (?, ?, ?, ?, ?, ?)`,
-  ).bind(tokenHash, account.id, deviceName, now, now, now + SESSION_LIFETIME_MS).run();
-  return json({ ok: true, account: publicAccount(account) }, 200, { "set-cookie": sessionCookie(token, Math.floor(SESSION_LIFETIME_MS / 1000)) });
+  return createAccountSession(env, account, body?.deviceName);
 }
 
 async function logout(request: Request, env: CallEnv): Promise<Response> {
@@ -686,7 +766,9 @@ export async function callApi(request: Request, env: CallEnv): Promise<Response>
   const conversationMatch = path.match(/^\/call\/api\/conversations\/([a-zA-Z0-9_-]+)\/messages$/);
   const callMatch = path.match(/^\/call\/api\/calls\/([a-zA-Z0-9_-]+)(?:\/(status|accept|decline|signals|hangup))?$/);
   try {
-    if (path === "/call/api/config" && request.method === "GET") return json({ ok: true, otpConfigured: twilioConfigured(env), channels: ["sms", "whatsapp", "call"] });
+    if (path === "/call/api/config" && request.method === "GET") return json({ ok: true, authMode: "pin", free: true, channels: [] });
+    if (path === "/call/api/auth/register" && request.method === "POST") return registerWithPin(request, env);
+    if (path === "/call/api/auth/login" && request.method === "POST") return loginWithPin(request, env);
     if (path === "/call/api/auth/request" && request.method === "POST") return requestOtp(request, env);
     if (path === "/call/api/auth/verify" && request.method === "POST") return verifyOtp(request, env);
     if (path === "/call/api/auth/logout" && request.method === "POST") return logout(request, env);
