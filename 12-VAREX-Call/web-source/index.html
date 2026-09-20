@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+    <meta name="theme-color" content="#071426">
+    <meta name="description" content="VAREX Call — مكالمات صوت وصورة مباشرة من الموبايل بدون حساب.">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="VAREX Call">
+    <title>VAREX Call | فاركس كول</title>
+    <link rel="manifest" href="/call/manifest.webmanifest">
+    <link rel="icon" href="/varex-icon-192.png">
+    <link rel="apple-touch-icon" href="/varex-icon-192.png">
+    <link rel="preload" href="/fonts/noto-kufi-arabic.woff" as="font" type="font/woff" crossorigin>
+    <link rel="stylesheet" href="/call/styles.css">
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="topbar">
+        <a class="brand" href="/call/" aria-label="VAREX Call">
+          <span class="brand-icon"><img src="/varex-icon-192.png" alt=""><i aria-hidden="true"></i></span>
+          <span><strong>VAREX</strong><small>CALL</small></span>
+        </a>
+        <button class="install-button" id="installButton" type="button" aria-label="تثبيت VAREX Call">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m0 0 4-4m-4 4-4-4M5 19h14"/></svg>
+          <span>تثبيت</span>
+        </button>
+      </header>
+
+      <main>
+        <section class="screen home-screen active" id="homeScreen" aria-labelledby="homeTitle">
+          <div class="home-intro">
+            <span class="secure-pill"><i></i> اتصال مباشر ومشفّر</span>
+            <div class="call-emblem" aria-hidden="true">
+              <svg viewBox="0 0 72 72"><path d="M26.7 18.2 21 15.5a4.2 4.2 0 0 0-5 1.2l-3.6 4.5c-1.6 2-1.8 4.8-.6 7.1 6.3 12.1 16.1 21.9 28.2 28.2 2.4 1.2 5.2 1 7.2-.6l4.4-3.6a4.2 4.2 0 0 0 1.2-5l-2.7-5.7a4.2 4.2 0 0 0-4.8-2.3l-6.2 1.8a5.4 5.4 0 0 1-5.3-1.4l-7.7-7.7a5.4 5.4 0 0 1-1.4-5.3l1.8-6.2a4.2 4.2 0 0 0-2.2-4.8Z"/><path d="m49 24 10-5v18l-10-5zM37 20h12v16H37a4 4 0 0 1-4-4v-8a4 4 0 0 1 4-4Z"/></svg>
+            </div>
+            <h1 id="homeTitle">احكي وشوف أحبابك</h1>
+            <p>مكالمات صوت وصورة واضحة من أي مكان، من دون تسجيل أو اشتراك.</p>
+          </div>
+
+          <div class="identity-card">
+            <label for="displayName">اسمك في المكالمة</label>
+            <div class="input-wrap">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4.8 21c.7-5 3.1-7.5 7.2-7.5s6.5 2.5 7.2 7.5"/></svg>
+              <input id="displayName" maxlength="40" autocomplete="name" placeholder="اكتب اسمك" inputmode="text">
+            </div>
+          </div>
+
+          <div class="start-grid" aria-label="بدء مكالمة جديدة">
+            <button class="start-card video" type="button" data-start-call="video">
+              <span class="action-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="6" width="13" height="12" rx="3"/><path d="m16 10 5-3v10l-5-3"/></svg></span>
+              <span><strong>مكالمة فيديو</strong><small>صوت وصورة مباشرة</small></span>
+              <b aria-hidden="true">‹</b>
+            </button>
+            <button class="start-card voice" type="button" data-start-call="voice">
+              <span class="action-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7.3 4.2 5.6 3.4a2 2 0 0 0-2.3.6L2.2 5.4c-.7.9-.8 2.2-.3 3.2a27.1 27.1 0 0 0 13.5 13.5c1 .5 2.3.4 3.2-.3l1.4-1.1a2 2 0 0 0 .6-2.3l-.8-1.7a2 2 0 0 0-2.3-1.1l-2.8.8a2.5 2.5 0 0 1-2.5-.7l-3.9-3.9a2.5 2.5 0 0 1-.7-2.5l.8-2.8a2 2 0 0 0-1.1-2.3Z"/></svg></span>
+              <span><strong>مكالمة صوتية</strong><small>صوت نقي وخفيف</small></span>
+              <b aria-hidden="true">‹</b>
+            </button>
+          </div>
+
+          <div class="join-card">
+            <div class="section-label"><span>عندك رمز مكالمة؟</span><i></i></div>
+            <div class="join-row">
+              <input id="roomCode" maxlength="8" inputmode="text" autocomplete="one-time-code" autocapitalize="characters" spellcheck="false" placeholder="أدخل الرمز">
+              <button id="joinButton" type="button">انضمام</button>
+            </div>
+            <small>اطلب من صاحب المكالمة أن يرسل لك الرمز أو رابط الدعوة.</small>
+          </div>
+
+          <p class="privacy-note"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 10V7a5 5 0 0 1 10 0v3M5 10h14v11H5z"/></svg> الاتصال مشفّر ولا نسجّل أو نخزّن الصوت والفيديو.</p>
+        </section>
+
+        <section class="screen waiting-screen" id="waitingScreen" aria-labelledby="waitingTitle">
+          <div class="waiting-visual">
+            <div class="ring ring-one"></div><div class="ring ring-two"></div>
+            <span class="waiting-icon" id="waitingIcon"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="6" width="13" height="12" rx="3"/><path d="m16 10 5-3v10l-5-3"/></svg></span>
+          </div>
+          <span class="eyebrow" id="waitingType">مكالمة فيديو</span>
+          <h2 id="waitingTitle">بانتظار الطرف الآخر</h2>
+          <p>شارك الرمز أو الرابط. ستبدأ المكالمة فور انضمامه.</p>
+          <div class="room-code-card">
+            <small>رمز المكالمة</small>
+            <strong id="roomCodeDisplay" dir="ltr">— — — — — — — —</strong>
+          </div>
+          <div class="waiting-actions">
+            <button class="primary-action" id="shareButton" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="18" cy="5" r="2.5"/><circle cx="6" cy="12" r="2.5"/><circle cx="18" cy="19" r="2.5"/><path d="m8.2 10.8 7.6-4.5M8.2 13.2l7.6 4.5"/></svg> مشاركة الدعوة</button>
+            <button class="secondary-action" id="copyButton" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="8" width="11" height="12" rx="2"/><path d="M16 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h3"/></svg> نسخ الرمز</button>
+          </div>
+          <button class="cancel-link" id="cancelWaitingButton" type="button">إلغاء المكالمة</button>
+        </section>
+
+        <section class="screen call-screen" id="callScreen" aria-labelledby="callPartnerName">
+          <video id="remoteVideo" autoplay playsinline></video>
+          <div class="audio-stage" id="audioStage">
+            <div class="audio-waves"><i></i><i></i><i></i></div>
+            <div class="avatar" id="partnerAvatar">V</div>
+          </div>
+          <div class="call-shade"></div>
+          <div class="call-statusbar">
+            <div><span class="live-dot"></span><small id="callStatus">جارٍ الاتصال…</small></div>
+            <strong id="callTimer">00:00</strong>
+          </div>
+          <div class="partner-card">
+            <h2 id="callPartnerName">VAREX Call</h2>
+            <p id="callTypeLabel">مكالمة فيديو مشفّرة</p>
+          </div>
+          <video class="local-video" id="localVideo" autoplay muted playsinline></video>
+          <div class="call-controls" aria-label="أدوات المكالمة">
+            <button id="micButton" type="button" aria-label="كتم الميكروفون" aria-pressed="false"><svg class="on-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3M8 21h8"/></svg><svg class="off-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m3 3 18 18M9 5v6a3 3 0 0 0 4.8 2.4M15 10V6a3 3 0 0 0-5.1-2.1M5 11a7 7 0 0 0 11.7 5.2M19 11a7 7 0 0 1-.5 2.6M12 18v3M8 21h8"/></svg><span>الميكروفون</span></button>
+            <button id="hangupButton" class="hangup" type="button" aria-label="إنهاء المكالمة"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 15.2c4.7-3.7 11.3-3.7 16 0l-2.8 3.4-3-1.7v-2.2c-1.5-.3-2.9-.3-4.4 0v2.2l-3 1.7z"/></svg><span>إنهاء</span></button>
+            <button id="cameraButton" type="button" aria-label="إيقاف الكاميرا" aria-pressed="false"><svg class="on-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="6" width="13" height="12" rx="3"/><path d="m16 10 5-3v10l-5-3"/></svg><svg class="off-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m3 3 18 18M10 6h3a3 3 0 0 1 3 3v3m0 4a3 3 0 0 1-3 2H6a3 3 0 0 1-3-3V9c0-1 .5-1.9 1.3-2.4M16 10l5-3v10l-3.2-1.9"/></svg><span>الكاميرا</span></button>
+            <button id="flipButton" type="button" aria-label="تبديل الكاميرا"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11a8 8 0 0 0-14.8-4M4 5v5h5M4 13a8 8 0 0 0 14.8 4M20 19v-5h-5"/><path d="m10 9 2-1 2 1v5l-2 1-2-1z"/></svg><span>تبديل</span></button>
+          </div>
+        </section>
+
+        <section class="screen ended-screen" id="endedScreen" aria-labelledby="endedTitle">
+          <div class="ended-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 15.2c4.7-3.7 11.3-3.7 16 0l-2.8 3.4-3-1.7v-2.2c-1.5-.3-2.9-.3-4.4 0v2.2l-3 1.7z"/></svg></div>
+          <span class="eyebrow">VAREX CALL</span>
+          <h2 id="endedTitle">انتهت المكالمة</h2>
+          <p id="endedDuration">مدة المكالمة 00:00</p>
+          <button class="primary-action" id="newCallButton" type="button">بدء مكالمة جديدة</button>
+        </section>
+      </main>
+
+      <div class="toast" id="toast" role="status" aria-live="polite"></div>
+      <div class="loading-overlay" id="loadingOverlay" hidden><span></span><p id="loadingText">جارٍ التجهيز…</p></div>
+      <div class="modal" id="installModal" hidden>
+        <button class="modal-backdrop" type="button" data-close-modal aria-label="إغلاق"></button>
+        <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="installTitle">
+          <span class="modal-handle"></span>
+          <img src="/varex-icon-192.png" alt="">
+          <h2 id="installTitle">ثبّت VAREX Call</h2>
+          <p>على iPhone اضغط زر المشاركة في Safari، ثم اختر <strong>إضافة إلى الشاشة الرئيسية</strong>.</p>
+          <button type="button" data-close-modal>فهمت</button>
+        </div>
+      </div>
+    </div>
+    <noscript>يلزم تفعيل JavaScript لإجراء المكالمات.</noscript>
+    <script src="/call/app.js" defer></script>
+  </body>
+</html>
+

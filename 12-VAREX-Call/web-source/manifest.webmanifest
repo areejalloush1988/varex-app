@@ -1,0 +1,24 @@
+{
+  "id": "/call/",
+  "name": "VAREX Call | فاركس كول",
+  "short_name": "VAREX Call",
+  "description": "مكالمات صوت وصورة مباشرة من VAREX.",
+  "lang": "ar",
+  "dir": "rtl",
+  "start_url": "/call/?source=installed-app",
+  "scope": "/call/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#071426",
+  "theme_color": "#071426",
+  "categories": ["social", "communication"],
+  "icons": [
+    { "src": "/varex-icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "/varex-icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ],
+  "shortcuts": [
+    { "name": "مكالمة فيديو", "short_name": "فيديو", "url": "/call/?new=video", "icons": [{ "src": "/varex-icon-192.png", "sizes": "192x192" }] },
+    { "name": "مكالمة صوتية", "short_name": "صوت", "url": "/call/?new=voice", "icons": [{ "src": "/varex-icon-192.png", "sizes": "192x192" }] }
+  ]
+}
+
