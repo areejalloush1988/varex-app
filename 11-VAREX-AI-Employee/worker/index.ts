@@ -2,7 +2,7 @@ import { handleImageOptimization, DEFAULT_DEVICE_SIZES, DEFAULT_IMAGE_SIZES } fr
 import handler from "vinext/server/app-router-entry";
 import OpenAI from "openai";
 import { continuePendingIntent, normalizePhoneDigits, parseChatIntent, type ChatActionIntent } from "./chat-command";
-import { askAiProvider, generateGeminiSpeech, verifyAiProviderCredential, GEMINI_TTS_MODEL, GEMINI_MODEL, GEMINI_VOICES, OPENAI_MODEL, type AiProvider } from "./ai-provider";
+import { askAiProvider, verifyAiProviderCredential, GEMINI_TTS_MODEL, GEMINI_MODEL, GEMINI_VOICES, OPENAI_MODEL, type AiProvider } from "./ai-provider";
 
 interface Env {
   ASSETS: Fetcher;
@@ -63,19 +63,15 @@ const payPalPlanPrices: Record<string, { amount: string; currency: "USD"; name: 
   unlimited: { amount: "1905.79", currency: "USD", name: "غير محدود" },
 };
 
-const REALTIME_MODEL = "gpt-realtime-2.1-mini";
+const REALTIME_MODEL = "gpt-realtime-2.1";
 const REALTIME_TRANSCRIBE_MODEL = "gpt-live-transcribe";
+const OPENAI_SPEECH_MODEL = "gpt-4o-mini-tts";
 const REALTIME_VOICE_IDS = ["marin", "cedar", "ash", "ballad", "coral", "echo", "sage", "shimmer", "verse", "alloy"] as const;
 const REALTIME_VOICES = new Set<string>(REALTIME_VOICE_IDS);
 const GEMINI_TO_REALTIME_VOICE: Record<string, string> = {
   Sulafat: "marin", Achird: "cedar", Achernar: "sage", Kore: "coral", Aoede: "shimmer",
   Orus: "echo", Puck: "verse", Alnilam: "ballad", Zephyr: "alloy", Charon: "ash",
 };
-const REALTIME_TO_GEMINI_VOICE: Record<string, string> = {
-  marin: "Sulafat", cedar: "Achird", ash: "Charon", ballad: "Alnilam", coral: "Kore",
-  echo: "Orus", sage: "Achernar", shimmer: "Aoede", verse: "Puck", alloy: "Zephyr",
-};
-
 function realtimeVoiceId(value: unknown) {
   const requested = String(value || "").trim();
   if (REALTIME_VOICES.has(requested)) return requested;
@@ -3004,22 +3000,37 @@ async function chatSpeech(request: Request, env: Env) {
   if (!agent) return error("الموظف المحدد غير موجود", 404);
   const voiceSettings = await env.DB.prepare("SELECT voice_id FROM ai_voice_settings WHERE organization_id=? AND agent_id=? LIMIT 1").bind(organizationId, agentId).first<Row>();
   const savedVoice = String(voiceSettings?.voice_id || "");
-  const savedGeminiVoice = GEMINI_VOICES.has(savedVoice) ? savedVoice : REALTIME_TO_GEMINI_VOICE[realtimeVoiceId(savedVoice)];
-  const requestedGeminiVoice = GEMINI_VOICES.has(requestedVoice) ? requestedVoice : REALTIME_TO_GEMINI_VOICE[realtimeVoiceId(requestedVoice)];
-  const voice = savedGeminiVoice || requestedGeminiVoice || "Sulafat";
+  const voice = realtimeVoiceId(savedVoice || requestedVoice);
   let credential;
-  try { credential = await platformAiProviderKey(env, "gemini"); }
+  try { credential = await platformAiProviderKey(env, "openai"); }
   catch (_) { credential = null; }
   if (!credential?.key) return api({ code: "VOICE_NOT_CONFIGURED", message: "الصوت الطبيعي غير متاح حالياً." }, 409);
   try {
-    const wave = await generateGeminiSpeech(credential.key, text, voice);
-    await setAiProviderHealth(env, organizationId, readyProviderHealth("gemini"));
-    return new Response(wave, { status: 200, headers: { "Content-Type": "audio/wav", "Cache-Control": "private, no-store", "X-Content-Type-Options": "nosniff", "X-VAREX-Voice": voice } });
+    const headers: Record<string, string> = { Authorization: `Bearer ${credential.key}`, "Content-Type": "application/json" };
+    if (env.OPENAI_PROJECT_ID) headers["OpenAI-Project"] = env.OPENAI_PROJECT_ID;
+    const upstream = await fetch("https://api.openai.com/v1/audio/speech", {
+      method: "POST",
+      headers,
+      body: JSON.stringify({
+        model: OPENAI_SPEECH_MODEL,
+        voice,
+        input: text,
+        instructions: "تحدث بصوت طبيعي وواضح وبسرعة محادثة مريحة، من دون إضافة أي كلام غير موجود في النص.",
+        response_format: "mp3",
+      }),
+    });
+    if (!upstream.ok) {
+      const details = await upstream.text();
+      throw new Error(`OPENAI_SPEECH_FAILED_${upstream.status}: ${details.slice(0, 500)}`);
+    }
+    const audio = await upstream.arrayBuffer();
+    await setAiProviderHealth(env, organizationId, readyProviderHealth("openai"));
+    return new Response(audio, { status: 200, headers: { "Content-Type": "audio/mpeg", "Cache-Control": "private, no-store", "X-Content-Type-Options": "nosniff", "X-VAREX-Voice": voice } });
   } catch (caught) {
-    console.error("VAREX Gemini speech failed", caught instanceof Error ? caught.message : caught);
-    const failure = aiProviderFailure("gemini", caught);
+    console.error("VAREX speech generation failed", caught instanceof Error ? caught.message : caught);
+    const failure = aiProviderFailure("openai", caught);
     await setAiProviderHealth(env, organizationId, failure);
-    return api({ code: "VOICE_UNAVAILABLE", message: "تعذر تشغيل الصوت الطبيعي حالياً." }, 502);
+    return api({ code: failure.code, message: failure.code === "NO_CREDITS" ? failure.message : "تعذر تشغيل الصوت الطبيعي حالياً." }, failure.code === "NO_CREDITS" ? 402 : 502);
   }
 }
 
@@ -3127,9 +3138,11 @@ function realtimeEmployeeInstructions(agent: Row, user: Row, history: Row[]) {
 async function employeeLiveSession(request: Request, env: Env) {
   if (request.method !== "POST") return error("الطريقة غير مدعومة", 405);
   const user = await currentUser(request, env); if (!user) return error("يلزم تسجيل الدخول", 401);
-  const body = await request.json<Row>().catch(() => ({}));
-  const organizationId = String(body.organization_id || "").trim(), agentId = String(body.agent_id || "").trim();
-  const sdp = String(body.sdp || "").trim();
+  const url = new URL(request.url);
+  const organizationId = String(url.searchParams.get("organization_id") || "").trim();
+  const agentId = String(url.searchParams.get("agent_id") || "").trim();
+  const requestedVoice = String(url.searchParams.get("voice_id") || "").trim();
+  const sdp = (await request.text()).trim();
   if (!organizationId || !agentId || !sdp) return error("تعذر تجهيز جلسة الصوت؛ أعد المحاولة", 400);
   if (sdp.length > 120000 || !sdp.startsWith("v=0")) return error("بيانات الاتصال الصوتي غير صالحة", 400);
   if (!await authorizeOrg(env, user, organizationId)) return error("ليست لديك صلاحية على مساحة العمل", 403);
@@ -3141,7 +3154,7 @@ async function employeeLiveSession(request: Request, env: Env) {
   ]);
   if (!agent) return error("الموظف المحدد غير موجود", 404);
   if (!credential?.key) return error("المحادثة الصوتية المباشرة غير مفعّلة بعد في حساب VAREX", 409);
-  const voice = realtimeVoiceId(voiceSettings?.voice_id || body.voice_id);
+  const voice = realtimeVoiceId(voiceSettings?.voice_id || requestedVoice);
   const session = {
     type: "realtime",
     model: REALTIME_MODEL,
@@ -3167,24 +3180,51 @@ async function employeeLiveSession(request: Request, env: Env) {
     }],
     tool_choice: "auto",
   };
-  const form = new FormData();
-  form.set("sdp", sdp);
-  form.set("session", JSON.stringify(session));
   const headers: Record<string, string> = {
     Authorization: `Bearer ${credential.key}`,
+    "Content-Type": "application/json",
     "OpenAI-Safety-Identifier": `varex_${(await sha256(`${user.id}:${organizationId}`)).slice(0, 48)}`,
   };
   if (env.OPENAI_PROJECT_ID) headers["OpenAI-Project"] = env.OPENAI_PROJECT_ID;
+  let secretResponse: Response;
+  try {
+    secretResponse = await fetch("https://api.openai.com/v1/realtime/client_secrets", {
+      method: "POST",
+      headers,
+      body: JSON.stringify({ session }),
+    });
+  } catch (caught) {
+    console.error("VAREX realtime token network failure", caught instanceof Error ? caught.message : caught);
+    return error("تعذر بدء المحادثة اللايف حالياً. حاول مرة ثانية بعد قليل.", 502);
+  }
+  const secretPayload = await secretResponse.json<Row>().catch(() => ({}));
+  if (!secretResponse.ok || !secretPayload.value) {
+    console.error("VAREX realtime token rejected", secretResponse.status, JSON.stringify(secretPayload).slice(0, 500));
+    const message = secretResponse.status === 429
+      ? "رصيد أو سعة المحادثة الصوتية غير متاحة حالياً. تحقق من رصيد API ثم أعد المحاولة."
+      : secretResponse.status === 401 || secretResponse.status === 403
+        ? "إعداد مفتاح الذكاء لا يسمح بالمحادثة الصوتية المباشرة بعد."
+        : "تعذر بدء المحادثة اللايف حالياً. حاول مرة ثانية بعد قليل.";
+    return error(message, secretResponse.status === 429 ? 429 : 502);
+  }
   let upstream: Response;
   try {
-    upstream = await fetch("https://api.openai.com/v1/realtime/calls", { method: "POST", headers, body: form });
+    upstream = await fetch("https://api.openai.com/v1/realtime/calls", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${String(secretPayload.value)}`,
+        "Content-Type": "application/sdp",
+        Accept: "application/sdp",
+      },
+      body: sdp,
+    });
   } catch (caught) {
-    console.error("VAREX realtime session network failure", caught instanceof Error ? caught.message : caught);
+    console.error("VAREX realtime SDP network failure", caught instanceof Error ? caught.message : caught);
     return error("تعذر بدء المحادثة اللايف حالياً. حاول مرة ثانية بعد قليل.", 502);
   }
   const answer = await upstream.text();
-  if (!upstream.ok) {
-    console.error("VAREX realtime session rejected", upstream.status, answer.slice(0, 500));
+  if (!upstream.ok || !answer.trim().startsWith("v=0")) {
+    console.error("VAREX realtime SDP rejected", upstream.status, answer.slice(0, 500));
     const message = upstream.status === 429
       ? "رصيد أو سعة المحادثة الصوتية غير متاحة حالياً. تحقق من رصيد API ثم أعد المحاولة."
       : upstream.status === 401 || upstream.status === 403

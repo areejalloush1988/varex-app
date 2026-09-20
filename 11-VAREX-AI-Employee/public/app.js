@@ -570,10 +570,15 @@
   async function authorizedSdpRequest(path, body, retry = true) {
     if (!state.session?.access_token) throw new Error('يلزم تسجيل الدخول');
     if (state.session.expires_at && state.session.expires_at * 1000 < Date.now() + 20000) await refreshSession();
-    const response = await fetch(`${API_URL}/${path}`, {
+    const params = new URLSearchParams({
+      organization_id: String(body.organization_id || ''),
+      agent_id: String(body.agent_id || ''),
+      voice_id: String(body.voice_id || '')
+    });
+    const response = await fetch(`${API_URL}/${path}?${params}`, {
       method: 'POST',
-      headers: { Authorization: `Bearer ${state.session.access_token}`, 'Content-Type': 'application/json' },
-      body: json(body)
+      headers: { Authorization: `Bearer ${state.session.access_token}`, 'Content-Type': 'application/sdp', Accept: 'application/sdp' },
+      body: String(body.sdp || '')
     });
     if (response.status === 401 && retry) { await refreshSession(); return authorizedSdpRequest(path, body, false); }
     if (!response.ok) {
@@ -2202,7 +2207,7 @@
     try { event = typeof raw === 'string' ? JSON.parse(raw) : raw; } catch (_) { return; }
     if (!event?.type) return;
     if (event.type === 'session.created' || event.type === 'session.updated') {
-      renderEmployeeLiveStatus('listening');
+      if (state.employeeLiveStatus === 'connecting') renderEmployeeLiveStatus('listening');
       return;
     }
     if (event.type === 'input_audio_buffer.speech_started') {
@@ -2314,11 +2319,25 @@
         void audio.play().catch(() => renderEmployeeLiveStatus('listening', 'اضغط الشاشة مرة واحدة إذا لم تسمع الصوت'));
       });
       const channel = peer.createDataChannel('oai-events');
-      channel.addEventListener('open', () => renderEmployeeLiveStatus('listening'));
+      let greetingSent = false;
+      channel.addEventListener('open', () => {
+        if (greetingSent) return;
+        greetingSent = true;
+        const agent = state.agents.find(item => item.id === state.employeeChatAgentId);
+        const employeeName = String(agent?.name || 'الموظف الذكي').trim();
+        renderEmployeeLiveStatus('speaking', 'الموظف عم يبدأ الحديث الآن…');
+        channel.send(json({
+          type: 'response.create',
+          response: {
+            output_modalities: ['audio'],
+            instructions: `ابدأ الحديث الآن فوراً، من دون انتظار كلام المستخدم. قل تحية عربية شامية قصيرة وطبيعية باسمك المحفوظ «${employeeName}»، ثم اسأل باختصار كيف تستطيع المساعدة. لا تذكر أي تفاصيل تقنية.`
+          }
+        }));
+      });
       channel.addEventListener('message', event => void handleEmployeeLiveEvent(event.data));
       channel.addEventListener('close', () => { if (state.employeeLiveStatus !== 'closing' && state.employeeLivePeer === peer) cleanupEmployeeLiveTalk('error'); });
       peer.addEventListener('connectionstatechange', () => {
-        if (peer.connectionState === 'connected') renderEmployeeLiveStatus('listening');
+        if (peer.connectionState === 'connected' && state.employeeLiveStatus === 'connecting') renderEmployeeLiveStatus('listening');
         if (['failed', 'disconnected'].includes(peer.connectionState) && state.employeeLivePeer === peer) cleanupEmployeeLiveTalk('error');
       });
       for (const track of stream.getAudioTracks()) peer.addTrack(track, stream);
@@ -2328,10 +2347,11 @@
       state.employeeLiveAudio = audio;
       const offer = await peer.createOffer();
       await peer.setLocalDescription(offer);
-      const localSdp = offer.sdp;
+      const localSdp = peer.localDescription?.sdp || offer.sdp || '';
+      if (!localSdp.trim()) throw new Error('تعذر تجهيز قناة الصوت من المتصفح. أعد المحاولة.');
       const answerSdp = await authorizedSdpRequest('chat/live/session', { organization_id: state.org.id, agent_id: state.employeeChatAgentId, voice_id: state.employeeChatVoiceId, sdp: localSdp });
       await peer.setRemoteDescription({ type: 'answer', sdp: answerSdp });
-      renderEmployeeLiveStatus('listening');
+      if (state.employeeLiveStatus === 'connecting') renderEmployeeLiveStatus('listening');
     } catch (error) {
       cleanupEmployeeLiveTalk('error');
       renderEmployeeLiveStatus('error', error.message || 'تعذر بدء المحادثة الصوتية');

@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 
 const root = new URL('../', import.meta.url);
-const [worker, parser, aiProvider, client, html, serviceWorker, schema, migration, activity, layout] = await Promise.all([
+const [worker, parser, aiProvider, client, html, serviceWorker, schema, migration, nameMigration, activity, layout] = await Promise.all([
   readFile(new URL('worker/index.ts', root), 'utf8'),
   readFile(new URL('worker/chat-command.ts', root), 'utf8'),
   readFile(new URL('worker/ai-provider.ts', root), 'utf8'),
@@ -12,6 +12,7 @@ const [worker, parser, aiProvider, client, html, serviceWorker, schema, migratio
   readFile(new URL('public/sw.js', root), 'utf8'),
   readFile(new URL('db/schema.ts', root), 'utf8'),
   readFile(new URL('drizzle/0011_romantic_centennial.sql', root), 'utf8'),
+  readFile(new URL('drizzle/0013_remove_legacy_lina_names.sql', root), 'utf8'),
   readFile(new URL('android/app/src/main/java/com/varex/ai/ChatActivity.java', root), 'utf8'),
   readFile(new URL('android/app/src/main/res/layout/activity_chat.xml', root), 'utf8'),
 ]);
@@ -52,7 +53,9 @@ test('each employee keeps a selectable saved conversation voice', () => {
   assert.match(client, /authorizedRequest\('chat\/voice'/);
   assert.match(worker, /async function employeeVoicePreference/);
   assert.match(worker, /agent_chat_voice_updated/);
-  assert.match(worker, /GEMINI_VOICES\.has\(savedVoice\)/);
+  assert.match(worker, /https:\/\/api\.openai\.com\/v1\/audio\/speech/);
+  assert.match(worker, /gpt-4o-mini-tts/);
+  assert.doesNotMatch(worker, /generateGeminiSpeech\(credential\.key, text/);
   assert.match(activity, /VOICE_IDS/);
   assert.match(activity, /api\.put\("\/chat\/voice"/);
 });
@@ -107,8 +110,8 @@ test('provider outages are truthful and never fall through to blind automatic ex
 });
 
 test('updated chat assets replace stale installed-app code before using the offline cache', () => {
-  assert.match(html, /app\.js\?v=20260919-68/);
-  assert.match(serviceWorker, /varex-ai-shell-v68/);
+  assert.match(html, /app\.js\?v=20260920-69/);
+  assert.match(serviceWorker, /varex-ai-shell-v69/);
   assert.ok(serviceWorker.indexOf('const response = await fetch(request)') < serviceWorker.indexOf('await cache.match(request)'));
 });
 
@@ -120,7 +123,11 @@ test('live talk is low-latency, interruptible, named by the user, and durable', 
   assert.match(client, /chat\/live\/session/);
   assert.match(client, /chat\/live\/message/);
   assert.match(client, /chat\/identity/);
-  assert.match(worker, /gpt-realtime-2\.1-mini/);
+  assert.match(worker, /gpt-realtime-2\.1/);
+  assert.match(worker, /\/v1\/realtime\/client_secrets/);
+  assert.match(worker, /"Content-Type": "application\/sdp"/);
+  assert.match(client, /type: 'response\.create'/);
+  assert.match(client, /ابدأ الحديث الآن فوراً/);
   assert.match(worker, /type: "semantic_vad", eagerness: "high", create_response: true, interrupt_response: true/);
   assert.match(worker, /save_employee_name/);
   assert.match(worker, /agent_name_updated/);
@@ -128,6 +135,8 @@ test('live talk is low-latency, interruptible, named by the user, and durable', 
   assert.match(worker, /\/api\/chat\/live\/message/);
   assert.match(worker, /\/api\/chat\/identity/);
   assert.doesNotMatch(`${html}\n${client}\n${worker}\n${aiProvider}`, /Lina AI|Lina|لينا|أنا مساعدتك/i);
+  assert.match(nameMigration, /UPDATE `ai_agents`/);
+  assert.match(nameMigration, /'الموظف الذكي'/);
 });
 
 test('the live picker exposes every realtime voice currently supported by the API', () => {
