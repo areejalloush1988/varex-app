@@ -1,5 +1,6 @@
 interface CallEnv {
   DB: D1Database;
+  CALL_MEDIA: R2Bucket;
   TWILIO_ACCOUNT_SID?: string;
   TWILIO_AUTH_TOKEN?: string;
   TWILIO_VERIFY_SERVICE_SID?: string;
@@ -17,6 +18,8 @@ type AccountRow = {
   pin_hash?: string | null;
   display_name: string;
   avatar_color: string;
+  avatar_key?: string | null;
+  about?: string | null;
   discoverable: number;
   created_at: number;
   last_seen_at: number;
@@ -45,6 +48,9 @@ const SESSION_LIFETIME_MS = 30 * 24 * 60 * 60 * 1000;
 const ROOM_LIFETIME_MS = 12 * 60 * 60 * 1000;
 const SIGNAL_LIFETIME_MS = 12 * 60 * 60 * 1000;
 const RING_TIMEOUT_MS = 60 * 1000;
+const STATUS_LIFETIME_MS = 24 * 60 * 60 * 1000;
+const AVATAR_MAX_BYTES = 2_500_000;
+const STATUS_IMAGE_MAX_BYTES = 5_000_000;
 const PIN_HASH_ITERATIONS = 100_000;
 const JSON_HEADERS = { "content-type": "application/json; charset=utf-8", "cache-control": "no-store, max-age=0" };
 const AVATAR_COLORS = ["#3157d5", "#00897b", "#7b4cc2", "#d06038", "#2376a8", "#b64271"];
@@ -82,6 +88,29 @@ function normalizeName(value: unknown, fallback = "مستخدم VAREX"): string 
 function normalizeMessage(value: unknown): string {
   if (typeof value !== "string") return "";
   return value.replace(/\r\n?/g, "\n").replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/g, "").trim().slice(0, 4000);
+}
+
+function normalizeAbout(value: unknown): string {
+  if (typeof value !== "string") return "مرحباً! أستخدم VAREX Call";
+  return value.replace(/[\u0000-\u001f\u007f]/g, "").replace(/\s+/g, " ").trim().slice(0, 139) || "مرحباً! أستخدم VAREX Call";
+}
+
+function normalizeStatusText(value: unknown, max = 700): string {
+  if (typeof value !== "string") return "";
+  return value.replace(/\r\n?/g, "\n").replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/g, "").trim().slice(0, max);
+}
+
+function normalizeStatusColor(value: unknown): string {
+  return typeof value === "string" && /^#[0-9a-f]{6}$/i.test(value) ? value.toLowerCase() : "#3157d5";
+}
+
+function imageContentType(request: Request): "image/jpeg" | "image/png" | "image/webp" | "" {
+  const value = (request.headers.get("content-type") || "").split(";")[0].trim().toLowerCase();
+  return value === "image/jpeg" || value === "image/png" || value === "image/webp" ? value : "";
+}
+
+function mediaUrl(key: string | null | undefined): string | null {
+  return key ? `/call/api/media/${encodeURIComponent(key)}` : null;
 }
 
 function randomToken(bytesLength = 32): string {
@@ -155,11 +184,17 @@ async function rateLimit(env: CallEnv, key: string, limit: number, windowMs: num
 
 async function cleanup(env: CallEnv): Promise<void> {
   const now = Date.now();
+  const expiredStatuses = await env.DB.prepare(
+    "SELECT media_key FROM varex_call_status WHERE expires_at < ? AND media_key IS NOT NULL LIMIT 50",
+  ).bind(now).all<{ media_key: string }>();
+  const expiredKeys = (expiredStatuses.results || []).map(item => item.media_key).filter(Boolean);
+  if (expiredKeys.length) await Promise.all(expiredKeys.map(key => env.CALL_MEDIA.delete(key)));
   await env.DB.batch([
     env.DB.prepare("DELETE FROM varex_call_signal WHERE expires_at < ?").bind(now),
     env.DB.prepare("DELETE FROM varex_call_room WHERE expires_at < ?").bind(now),
     env.DB.prepare("DELETE FROM varex_call_rate_limit WHERE expires_at < ?").bind(now),
     env.DB.prepare("DELETE FROM varex_call_session WHERE expires_at < ?").bind(now),
+    env.DB.prepare("DELETE FROM varex_call_status WHERE expires_at < ?").bind(now),
   ]);
 }
 
@@ -169,6 +204,8 @@ function publicAccount(account: AccountRow) {
     phone: account.phone,
     displayName: account.display_name,
     avatarColor: account.avatar_color,
+    avatarUrl: mediaUrl(account.avatar_key),
+    about: account.about || "مرحباً! أستخدم VAREX Call",
     discoverable: Boolean(account.discoverable),
     createdAt: account.created_at,
     lastSeenAt: account.last_seen_at,
@@ -217,7 +254,10 @@ async function registerWithPin(request: Request, env: CallEnv): Promise<Response
   ).bind(id, phone, phoneHash, salt, pinHash, displayName, color, now, now, now).run();
   if (Number(inserted.meta?.changes || 0) !== 1) return json({ ok: false, error: "account_exists" }, 409);
 
-  const account: AccountRow = { id, phone, display_name: displayName, avatar_color: color, discoverable: 1, created_at: now, last_seen_at: now };
+  const account: AccountRow = {
+    id, phone, display_name: displayName, avatar_color: color, avatar_key: null,
+    about: "مرحباً! أستخدم VAREX Call", discoverable: 1, created_at: now, last_seen_at: now,
+  };
   return createAccountSession(env, account, body?.deviceName);
 }
 
@@ -235,7 +275,7 @@ async function loginWithPin(request: Request, env: CallEnv): Promise<Response> {
   }
 
   const account = await env.DB.prepare(
-    `SELECT id, phone, pin_salt, pin_hash, display_name, avatar_color, discoverable, created_at, last_seen_at
+    `SELECT id, phone, pin_salt, pin_hash, display_name, avatar_color, avatar_key, about, discoverable, created_at, last_seen_at
      FROM varex_call_account WHERE phone_hash = ? LIMIT 1`,
   ).bind(phoneHash).first<AccountRow>();
   const salt = account?.pin_salt || randomToken(16);
@@ -250,7 +290,7 @@ async function authenticate(request: Request, env: CallEnv): Promise<AuthContext
   const tokenHash = await sha256(token);
   const now = Date.now();
   const row = await env.DB.prepare(
-    `SELECT a.id, a.phone, a.display_name, a.avatar_color, a.discoverable, a.created_at, a.last_seen_at,
+    `SELECT a.id, a.phone, a.display_name, a.avatar_color, a.avatar_key, a.about, a.discoverable, a.created_at, a.last_seen_at,
             s.last_seen_at AS session_last_seen_at
      FROM varex_call_session s JOIN varex_call_account a ON a.id = s.account_id
      WHERE s.token_hash = ? AND s.expires_at > ? LIMIT 1`,
@@ -321,7 +361,7 @@ async function verifyOtp(request: Request, env: CallEnv): Promise<Response> {
 
   const now = Date.now();
   let account = await env.DB.prepare(
-    "SELECT id, phone, display_name, avatar_color, discoverable, created_at, last_seen_at FROM varex_call_account WHERE phone_hash = ? LIMIT 1",
+    "SELECT id, phone, display_name, avatar_color, avatar_key, about, discoverable, created_at, last_seen_at FROM varex_call_account WHERE phone_hash = ? LIMIT 1",
   ).bind(phoneHash).first<AccountRow>();
   if (!account) {
     const id = randomId("usr");
@@ -332,7 +372,10 @@ async function verifyOtp(request: Request, env: CallEnv): Promise<Response> {
        (id, phone, phone_hash, display_name, avatar_color, discoverable, created_at, updated_at, last_seen_at)
        VALUES (?, ?, ?, ?, ?, 1, ?, ?, ?)`,
     ).bind(id, phone, phoneHash, fallbackName, color, now, now, now).run();
-    account = { id, phone, display_name: fallbackName, avatar_color: color, discoverable: 1, created_at: now, last_seen_at: now };
+    account = {
+      id, phone, display_name: fallbackName, avatar_color: color, avatar_key: null,
+      about: "مرحباً! أستخدم VAREX Call", discoverable: 1, created_at: now, last_seen_at: now,
+    };
   }
   return createAccountSession(env, account, body?.deviceName);
 }
@@ -356,20 +399,173 @@ async function updateMe(request: Request, env: CallEnv): Promise<Response> {
   if (!body) return json({ ok: false, error: "invalid_body" }, 400);
   const displayName = normalizeName(body.displayName, "");
   if (!displayName || displayName.length < 2) return json({ ok: false, error: "invalid_name" }, 400);
+  const about = normalizeAbout(body.about);
   const discoverable = body.discoverable === false ? 0 : 1;
   const now = Date.now();
-  await env.DB.prepare("UPDATE varex_call_account SET display_name = ?, discoverable = ?, updated_at = ?, last_seen_at = ? WHERE id = ?")
-    .bind(displayName, discoverable, now, now, auth.account.id).run();
+  await env.DB.prepare("UPDATE varex_call_account SET display_name = ?, about = ?, discoverable = ?, updated_at = ?, last_seen_at = ? WHERE id = ?")
+    .bind(displayName, about, discoverable, now, now, auth.account.id).run();
   auth.account.display_name = displayName;
+  auth.account.about = about;
   auth.account.discoverable = discoverable;
   auth.account.last_seen_at = now;
   return json({ ok: true, account: publicAccount(auth.account) });
 }
 
+async function uploadAvatar(request: Request, env: CallEnv): Promise<Response> {
+  const auth = await authenticate(request, env);
+  if (auth instanceof Response) return auth;
+  const contentType = imageContentType(request);
+  const declaredLength = Number(request.headers.get("content-length") || "0");
+  if (!contentType) return json({ ok: false, error: "invalid_image" }, 415);
+  if (declaredLength > AVATAR_MAX_BYTES) return json({ ok: false, error: "image_too_large" }, 413);
+  if (!(await rateLimit(env, `avatar:${auth.account.id}`, 20, 24 * 60 * 60 * 1000))) return json({ ok: false, error: "rate_limited" }, 429);
+  const bytes = await request.arrayBuffer();
+  if (!bytes.byteLength || bytes.byteLength > AVATAR_MAX_BYTES) return json({ ok: false, error: "image_too_large" }, 413);
+  const extension = contentType === "image/png" ? "png" : contentType === "image/webp" ? "webp" : "jpg";
+  const key = `call_avatar_${auth.account.id}_${randomToken(12)}.${extension}`;
+  await env.CALL_MEDIA.put(key, bytes, {
+    httpMetadata: { contentType },
+    customMetadata: { ownerAccountId: auth.account.id, kind: "avatar" },
+  });
+  const previousKey = auth.account.avatar_key || null;
+  const now = Date.now();
+  await env.DB.prepare("UPDATE varex_call_account SET avatar_key = ?, updated_at = ?, last_seen_at = ? WHERE id = ?")
+    .bind(key, now, now, auth.account.id).run();
+  if (previousKey && previousKey !== key) await env.CALL_MEDIA.delete(previousKey).catch(() => {});
+  auth.account.avatar_key = key;
+  auth.account.last_seen_at = now;
+  return json({ ok: true, account: publicAccount(auth.account) });
+}
+
+async function deleteAvatar(request: Request, env: CallEnv): Promise<Response> {
+  const auth = await authenticate(request, env);
+  if (auth instanceof Response) return auth;
+  const previousKey = auth.account.avatar_key || null;
+  const now = Date.now();
+  await env.DB.prepare("UPDATE varex_call_account SET avatar_key = NULL, updated_at = ?, last_seen_at = ? WHERE id = ?")
+    .bind(now, now, auth.account.id).run();
+  if (previousKey) await env.CALL_MEDIA.delete(previousKey).catch(() => {});
+  auth.account.avatar_key = null;
+  auth.account.last_seen_at = now;
+  return json({ ok: true, account: publicAccount(auth.account) });
+}
+
+async function readMedia(request: Request, env: CallEnv, key: string): Promise<Response> {
+  const auth = await authenticate(request, env);
+  if (auth instanceof Response) return auth;
+  if (!/^call_(?:avatar|status)_[a-zA-Z0-9_.-]+$/.test(key)) return json({ ok: false, error: "not_found" }, 404);
+  const object = await env.CALL_MEDIA.get(key);
+  if (!object) return json({ ok: false, error: "not_found" }, 404);
+  const headers = new Headers({
+    "cache-control": "private, max-age=3600",
+    "content-type": object.httpMetadata?.contentType || "application/octet-stream",
+    "x-content-type-options": "nosniff",
+  });
+  headers.set("etag", object.httpEtag);
+  return new Response(object.body, { headers });
+}
+
+function statusPayload(row: Record<string, unknown>, ownerId: string) {
+  return {
+    id: row.id,
+    accountId: row.account_id,
+    displayName: row.display_name,
+    avatarColor: row.avatar_color || "#3157d5",
+    avatarUrl: mediaUrl(row.avatar_key as string | null),
+    about: row.about || "مرحباً! أستخدم VAREX Call",
+    body: row.body || "",
+    mediaType: row.media_type,
+    mediaUrl: mediaUrl(row.media_key as string | null),
+    backgroundColor: row.background_color || "#3157d5",
+    createdAt: row.created_at,
+    expiresAt: row.expires_at,
+    mine: row.account_id === ownerId,
+  };
+}
+
+async function listStatuses(request: Request, env: CallEnv): Promise<Response> {
+  const auth = await authenticate(request, env);
+  if (auth instanceof Response) return auth;
+  const now = Date.now();
+  const result = await env.DB.prepare(
+    `SELECT s.id, s.account_id, s.body, s.media_key, s.media_type, s.background_color, s.created_at, s.expires_at,
+            a.display_name, a.avatar_color, a.avatar_key, a.about
+     FROM varex_call_status s
+     JOIN varex_call_account a ON a.id = s.account_id
+     WHERE s.expires_at > ? AND (
+       s.account_id = ? OR s.account_id IN (
+         SELECT matched_account_id FROM varex_call_contact
+         WHERE owner_account_id = ? AND matched_account_id IS NOT NULL
+       )
+     )
+     ORDER BY CASE WHEN s.account_id = ? THEN 0 ELSE 1 END, s.created_at DESC LIMIT 150`,
+  ).bind(now, auth.account.id, auth.account.id, auth.account.id).all<Record<string, unknown>>();
+  return json({ ok: true, statuses: (result.results || []).map(row => statusPayload(row, auth.account.id)) });
+}
+
+async function createStatus(request: Request, env: CallEnv, url: URL): Promise<Response> {
+  const auth = await authenticate(request, env);
+  if (auth instanceof Response) return auth;
+  if (!(await rateLimit(env, `status:${auth.account.id}`, 30, 24 * 60 * 60 * 1000))) return json({ ok: false, error: "rate_limited" }, 429);
+  const contentType = imageContentType(request);
+  let body = "";
+  let mediaKey: string | null = null;
+  let mediaType: "text" | "image" = "text";
+  let backgroundColor = "#3157d5";
+  if (contentType) {
+    const declaredLength = Number(request.headers.get("content-length") || "0");
+    if (declaredLength > STATUS_IMAGE_MAX_BYTES) return json({ ok: false, error: "image_too_large" }, 413);
+    const bytes = await request.arrayBuffer();
+    if (!bytes.byteLength || bytes.byteLength > STATUS_IMAGE_MAX_BYTES) return json({ ok: false, error: "image_too_large" }, 413);
+    body = normalizeStatusText(url.searchParams.get("caption"), 180);
+    const extension = contentType === "image/png" ? "png" : contentType === "image/webp" ? "webp" : "jpg";
+    mediaKey = `call_status_${auth.account.id}_${randomToken(12)}.${extension}`;
+    mediaType = "image";
+    await env.CALL_MEDIA.put(mediaKey, bytes, {
+      httpMetadata: { contentType },
+      customMetadata: { ownerAccountId: auth.account.id, kind: "status" },
+    });
+  } else {
+    const payload = await readJson(request);
+    body = normalizeStatusText(payload?.body);
+    backgroundColor = normalizeStatusColor(payload?.backgroundColor);
+    if (!body) return json({ ok: false, error: "empty_status" }, 400);
+  }
+  const id = randomId("sts");
+  const now = Date.now();
+  try {
+    await env.DB.prepare(
+      `INSERT INTO varex_call_status
+       (id, account_id, body, media_key, media_type, background_color, created_at, expires_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+    ).bind(id, auth.account.id, body, mediaKey, mediaType, backgroundColor, now, now + STATUS_LIFETIME_MS).run();
+  } catch (error) {
+    if (mediaKey) await env.CALL_MEDIA.delete(mediaKey).catch(() => {});
+    throw error;
+  }
+  return json({ ok: true, status: statusPayload({
+    id, account_id: auth.account.id, display_name: auth.account.display_name,
+    avatar_color: auth.account.avatar_color, avatar_key: auth.account.avatar_key,
+    about: auth.account.about, body, media_key: mediaKey, media_type: mediaType,
+    background_color: backgroundColor, created_at: now, expires_at: now + STATUS_LIFETIME_MS,
+  }, auth.account.id) }, 201);
+}
+
+async function deleteStatus(request: Request, env: CallEnv, id: string): Promise<Response> {
+  const auth = await authenticate(request, env);
+  if (auth instanceof Response) return auth;
+  const status = await env.DB.prepare("SELECT media_key FROM varex_call_status WHERE id = ? AND account_id = ? LIMIT 1")
+    .bind(id, auth.account.id).first<{ media_key: string | null }>();
+  if (!status) return json({ ok: false, error: "status_not_found" }, 404);
+  await env.DB.prepare("DELETE FROM varex_call_status WHERE id = ? AND account_id = ?").bind(id, auth.account.id).run();
+  if (status.media_key) await env.CALL_MEDIA.delete(status.media_key).catch(() => {});
+  return json({ ok: true });
+}
+
 async function contactList(env: CallEnv, ownerId: string): Promise<Response> {
   const result = await env.DB.prepare(
     `SELECT c.id, c.phone, c.local_name, c.matched_account_id, c.updated_at,
-            a.display_name AS account_name, a.avatar_color, a.last_seen_at
+            a.display_name AS account_name, a.avatar_color, a.avatar_key, a.about, a.last_seen_at
      FROM varex_call_contact c
      LEFT JOIN varex_call_account a ON a.id = c.matched_account_id
      WHERE c.owner_account_id = ?
@@ -382,6 +578,8 @@ async function contactList(env: CallEnv, ownerId: string): Promise<Response> {
     accountId: row.matched_account_id,
     displayName: row.account_name || row.local_name,
     avatarColor: row.avatar_color || "#5f7188",
+    avatarUrl: mediaUrl(row.avatar_key as string | null),
+    about: row.about || (row.matched_account_id ? "مرحباً! أستخدم VAREX Call" : "غير مسجل بعد"),
     lastSeenAt: row.last_seen_at || null,
     available: Boolean(row.matched_account_id),
     updatedAt: row.updated_at,
@@ -444,8 +642,8 @@ async function createConversation(request: Request, env: CallEnv): Promise<Respo
   const body = await readJson(request);
   const targetId = typeof body?.accountId === "string" ? body.accountId : "";
   if (!targetId || targetId === auth.account.id) return json({ ok: false, error: "invalid_contact" }, 400);
-  const target = await env.DB.prepare("SELECT id, display_name, avatar_color FROM varex_call_account WHERE id = ? LIMIT 1")
-    .bind(targetId).first<{ id: string; display_name: string; avatar_color: string }>();
+  const target = await env.DB.prepare("SELECT id, display_name, avatar_color, avatar_key, about FROM varex_call_account WHERE id = ? LIMIT 1")
+    .bind(targetId).first<{ id: string; display_name: string; avatar_color: string; avatar_key: string | null; about: string }>();
   if (!target) return json({ ok: false, error: "contact_not_available" }, 404);
   const [low, high] = [auth.account.id, targetId].sort();
   const now = Date.now();
@@ -457,7 +655,10 @@ async function createConversation(request: Request, env: CallEnv): Promise<Respo
   const conversation = await env.DB.prepare(
     "SELECT id, created_at, last_message_at FROM varex_call_conversation WHERE member_low_id = ? AND member_high_id = ? LIMIT 1",
   ).bind(low, high).first<Record<string, unknown>>();
-  return json({ ok: true, conversation: { id: conversation?.id, contact: { id: target.id, displayName: target.display_name, avatarColor: target.avatar_color } } }, 201);
+  return json({ ok: true, conversation: { id: conversation?.id, contact: {
+    id: target.id, displayName: target.display_name, avatarColor: target.avatar_color,
+    avatarUrl: mediaUrl(target.avatar_key), about: target.about,
+  } } }, 201);
 }
 
 async function listConversations(request: Request, env: CallEnv): Promise<Response> {
@@ -466,7 +667,7 @@ async function listConversations(request: Request, env: CallEnv): Promise<Respon
   const id = auth.account.id;
   const result = await env.DB.prepare(
     `SELECT c.id, c.created_at, c.updated_at, c.last_message_at,
-            a.id AS contact_id, a.display_name, a.avatar_color, a.last_seen_at,
+            a.id AS contact_id, a.display_name, a.avatar_color, a.avatar_key, a.about, a.last_seen_at,
             (SELECT body FROM varex_call_message m WHERE m.conversation_id = c.id AND m.deleted_at IS NULL ORDER BY m.created_at DESC, m.id DESC LIMIT 1) AS last_body,
             (SELECT created_at FROM varex_call_message m WHERE m.conversation_id = c.id AND m.deleted_at IS NULL ORDER BY m.created_at DESC, m.id DESC LIMIT 1) AS last_body_at,
             (SELECT COUNT(*) FROM varex_call_message m WHERE m.conversation_id = c.id AND m.sender_account_id != ? AND m.read_at IS NULL AND m.deleted_at IS NULL) AS unread_count
@@ -477,7 +678,10 @@ async function listConversations(request: Request, env: CallEnv): Promise<Respon
   ).bind(id, id, id, id).all<Record<string, unknown>>();
   return json({ ok: true, conversations: (result.results || []).map(row => ({
     id: row.id,
-    contact: { id: row.contact_id, displayName: row.display_name, avatarColor: row.avatar_color, lastSeenAt: row.last_seen_at },
+    contact: {
+      id: row.contact_id, displayName: row.display_name, avatarColor: row.avatar_color,
+      avatarUrl: mediaUrl(row.avatar_key as string | null), about: row.about, lastSeenAt: row.last_seen_at,
+    },
     lastMessage: row.last_body || "",
     lastMessageAt: row.last_body_at || row.last_message_at,
     unreadCount: Number(row.unread_count || 0),
@@ -559,6 +763,7 @@ function roomPayload(room: RoomRow, accountId: string) {
     callType: room.call_type,
     status: room.status,
     role: incoming ? "guest" : "host",
+    partnerId: incoming ? room.caller_account_id : room.callee_account_id,
     partnerName: incoming ? room.host_name : room.guest_name,
     createdAt: room.created_at,
     answeredAt: room.answered_at,
@@ -589,7 +794,10 @@ async function startCall(request: Request, env: CallEnv): Promise<Response> {
       caller_account_id, callee_account_id, created_at, updated_at, expires_at)
      VALUES (?, ?, 'waiting', ?, NULL, ?, ?, ?, ?, ?, ?, ?)`,
   ).bind(roomId, callType, tokenHash, auth.account.display_name, callee.display_name, auth.account.id, callee.id, now, now, now + ROOM_LIFETIME_MS).run();
-  return json({ ok: true, call: { id: roomId, callType, status: "waiting", role: "host", partnerName: callee.display_name, token, createdAt: now, expiresAt: now + ROOM_LIFETIME_MS } }, 201);
+  return json({ ok: true, call: {
+    id: roomId, callType, status: "waiting", role: "host", partnerId: callee.id,
+    partnerName: callee.display_name, token, createdAt: now, expiresAt: now + ROOM_LIFETIME_MS,
+  } }, 201);
 }
 
 async function incomingCalls(request: Request, env: CallEnv): Promise<Response> {
@@ -765,6 +973,8 @@ export async function callApi(request: Request, env: CallEnv): Promise<Response>
   const path = url.pathname.replace(/\/+$/, "");
   const conversationMatch = path.match(/^\/call\/api\/conversations\/([a-zA-Z0-9_-]+)\/messages$/);
   const callMatch = path.match(/^\/call\/api\/calls\/([a-zA-Z0-9_-]+)(?:\/(status|accept|decline|signals|hangup))?$/);
+  const mediaMatch = path.match(/^\/call\/api\/media\/([^/]+)$/);
+  const statusMatch = path.match(/^\/call\/api\/statuses\/([a-zA-Z0-9_-]+)$/);
   try {
     if (path === "/call/api/config" && request.method === "GET") return json({ ok: true, authMode: "pin", free: true, channels: [] });
     if (path === "/call/api/auth/register" && request.method === "POST") return registerWithPin(request, env);
@@ -774,6 +984,12 @@ export async function callApi(request: Request, env: CallEnv): Promise<Response>
     if (path === "/call/api/auth/logout" && request.method === "POST") return logout(request, env);
     if (path === "/call/api/me" && request.method === "GET") return getMe(request, env);
     if (path === "/call/api/me" && request.method === "PATCH") return updateMe(request, env);
+    if (path === "/call/api/me/avatar" && request.method === "POST") return uploadAvatar(request, env);
+    if (path === "/call/api/me/avatar" && request.method === "DELETE") return deleteAvatar(request, env);
+    if (mediaMatch && request.method === "GET") return readMedia(request, env, decodeURIComponent(mediaMatch[1]));
+    if (path === "/call/api/statuses" && request.method === "GET") return listStatuses(request, env);
+    if (path === "/call/api/statuses" && request.method === "POST") return createStatus(request, env, url);
+    if (statusMatch && request.method === "DELETE") return deleteStatus(request, env, statusMatch[1]);
     if (path === "/call/api/contacts" && request.method === "GET") return listContacts(request, env);
     if (path === "/call/api/contacts" && request.method === "POST") return saveContacts(request, env);
     if (path === "/call/api/conversations" && request.method === "GET") return listConversations(request, env);

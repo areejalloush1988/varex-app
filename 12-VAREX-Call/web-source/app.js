@@ -11,6 +11,11 @@
     contacts: [],
     conversations: [],
     calls: [],
+    statuses: [],
+    peopleMode: "chat",
+    activeStatus: null,
+    statusImage: null,
+    statusPreviewUrl: "",
     activeConversation: null,
     messages: [],
     currentTab: "chats",
@@ -60,6 +65,10 @@
     call_not_found: "هذه المكالمة لم تعد متاحة.",
     call_unavailable: "تم الرد على المكالمة أو انتهت.",
     call_ended: "انتهت المكالمة.",
+    invalid_image: "اختر صورة بصيغة JPG أو PNG أو WebP.",
+    image_too_large: "حجم الصورة كبير. اختر صورة أصغر.",
+    empty_status: "اكتب حالة أو اختر صورة أولًا.",
+    status_not_found: "هذه الحالة لم تعد متاحة.",
     service_unavailable: "الخدمة غير متاحة مؤقتًا. أعد المحاولة.",
     not_found: "الطلب غير متاح.",
   };
@@ -100,7 +109,8 @@
 
   async function api(path, options) {
     const init = { credentials: "same-origin", cache: "no-store", ...options };
-    if (init.body && typeof init.body !== "string") {
+    const rawBody = init.body instanceof Blob || init.body instanceof ArrayBuffer || ArrayBuffer.isView(init.body) || init.body instanceof FormData;
+    if (init.body && typeof init.body !== "string" && !rawBody) {
       init.headers = { ...(init.headers || {}), "content-type": "application/json" };
       init.body = JSON.stringify(init.body);
     }
@@ -175,8 +185,38 @@
   }
 
   function setAvatar(element, contact) {
-    element.textContent = initials(contact && (contact.displayName || contact.localName));
+    element.replaceChildren();
     element.style.background = (contact && contact.avatarColor) || "#3157d5";
+    if (contact && contact.avatarUrl) {
+      const image = document.createElement("img");
+      image.src = contact.avatarUrl;
+      image.alt = "";
+      image.loading = "lazy";
+      image.addEventListener("error", () => {
+        element.replaceChildren(document.createTextNode(initials(contact.displayName || contact.localName)));
+      }, { once: true });
+      element.append(image);
+      return;
+    }
+    element.textContent = initials(contact && (contact.displayName || contact.localName));
+  }
+
+  function applyDevicePreferences() {
+    const dark = localStorage.getItem("varex-call-dark") === "1";
+    const sound = localStorage.getItem("varex-call-sound") !== "0";
+    document.body.classList.toggle("dark-mode", dark);
+    $("#darkModeToggle").checked = dark;
+    $("#notificationSoundToggle").checked = sound;
+  }
+
+  function renderAccountUi() {
+    if (!state.account) return;
+    [$("#headerAvatar"), $("#myStatusAvatar"), $("#settingsAvatar"), $("#profileAvatar")].forEach(element => setAvatar(element, state.account));
+    $("#settingsName").textContent = state.account.displayName || "حسابي";
+    $("#settingsAbout").textContent = state.account.about || "مرحباً! أستخدم VAREX Call";
+    $("#settingsPhone").textContent = state.account.phone || state.phone || "";
+    $("#settingsDiscoverableToggle").checked = state.account.discoverable !== false;
+    $("#removeAvatarButton").hidden = !state.account.avatarUrl;
   }
 
   function setAuthMode(mode) {
@@ -228,10 +268,12 @@
 
   async function enterMain() {
     showView($("#mainView"));
+    renderAccountUi();
     setLoading(true, "جارٍ تحميل محادثاتك…");
     try {
       await refreshAll();
-      if (new URLSearchParams(location.search).get("tab") === "contacts") switchTab("contacts");
+      const requestedTab = new URLSearchParams(location.search).get("tab");
+      if (["updates", "calls", "settings"].includes(requestedTab)) switchTab(requestedTab);
       startPolling();
     } catch (error) {
       notify(describeError(error), "error");
@@ -241,17 +283,21 @@
   }
 
   async function refreshAll() {
-    const [contacts, conversations, calls] = await Promise.all([
+    const [contacts, conversations, calls, statuses] = await Promise.all([
       api("/contacts", { method: "GET" }),
       api("/conversations", { method: "GET" }),
       api("/calls/history", { method: "GET" }),
+      api("/statuses", { method: "GET" }),
     ]);
     state.contacts = contacts.contacts || [];
     state.conversations = conversations.conversations || [];
     state.calls = calls.calls || [];
+    state.statuses = statuses.statuses || [];
     renderContacts();
     renderConversations();
     renderCalls();
+    renderStatuses();
+    renderAccountUi();
   }
 
   function startPolling() {
@@ -283,10 +329,15 @@
     state.currentTab = tab;
     $$(".bottom-nav button").forEach(button => button.classList.toggle("active", button.dataset.tab === tab));
     $$(".tab-panel").forEach(panel => panel.classList.toggle("active", panel.dataset.panel === tab));
-    const titles = { chats: "المحادثات", calls: "المكالمات", contacts: "جهات الاتصال" };
+    const titles = { chats: "المحادثات", updates: "التحديثات", calls: "المكالمات", settings: "الإعدادات" };
     $("#sectionTitle").textContent = titles[tab];
-    $("#searchInput").placeholder = tab === "calls" ? "بحث في المكالمات" : "بحث";
+    $("#searchWrap").classList.toggle("is-hidden", tab === "updates" || tab === "settings");
+    $("#newContactButton").hidden = tab === "settings";
+    $("#searchInput").placeholder = tab === "calls" ? "بحث في المكالمات" : "ابحث في المحادثات";
+    $("#newChatFab").hidden = tab !== "chats";
     if (tab === "calls") refreshCalls();
+    if (tab === "updates") refreshStatuses();
+    if (tab === "settings") renderAccountUi();
   }
 
   async function refreshCalls() {
@@ -302,7 +353,17 @@
   function openSheet(sheet) { sheet.hidden = false; }
   function closeSheets() { $$(".sheet").forEach(sheet => { sheet.hidden = true; }); }
 
+  function openPeopleSheet(mode = "chat") {
+    state.peopleMode = mode;
+    $("#peopleSearch").value = "";
+    const titles = { chat: "محادثة جديدة", voice: "اتصال صوتي جديد", video: "فيديو كول جديد" };
+    $("#peopleSheetTitle").textContent = titles[mode] || titles.chat;
+    renderContacts();
+    openSheet($("#peopleSheet"));
+  }
+
   function openContactSheet() {
+    $("#peopleSheet").hidden = true;
     $("#contactForm").reset();
     openSheet($("#contactSheet"));
     window.setTimeout(() => $("#contactName").focus(), 180);
@@ -311,7 +372,11 @@
   function openProfile() {
     if (!state.account) return;
     $("#profileName").value = state.account.displayName || "";
+    $("#profileAbout").value = state.account.about || "مرحباً! أستخدم VAREX Call";
+    $("#profilePhone").value = state.account.phone || state.phone || "";
     $("#discoverableToggle").checked = state.account.discoverable !== false;
+    setAvatar($("#profileAvatar"), state.account);
+    $("#removeAvatarButton").hidden = !state.account.avatarUrl;
     openSheet($("#profileSheet"));
   }
 
@@ -319,16 +384,94 @@
     event.preventDefault();
     const displayName = $("#profileName").value.trim();
     if (displayName.length < 2) return notify(errorText.invalid_name, "error");
+    const about = $("#profileAbout").value.trim();
     setLoading(true, "جارٍ حفظ حسابك…");
     try {
-      const result = await api("/me", { method: "PATCH", body: { displayName, discoverable: $("#discoverableToggle").checked } });
+      const result = await api("/me", { method: "PATCH", body: { displayName, about, discoverable: $("#discoverableToggle").checked } });
       state.account = result.account;
+      renderAccountUi();
       closeSheets();
       notify("تم حفظ حسابك.", "success");
     } catch (error) {
       notify(describeError(error), "error");
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function imageFileToBlob(file, maxDimension, quality) {
+    if (!file || !/^image\/(?:jpeg|png|webp)$/.test(file.type)) throw new ApiError("invalid_image", 415);
+    const objectUrl = URL.createObjectURL(file);
+    try {
+      const image = new Image();
+      image.decoding = "async";
+      image.src = objectUrl;
+      await image.decode();
+      const scale = Math.min(1, maxDimension / Math.max(image.naturalWidth, image.naturalHeight));
+      const width = Math.max(1, Math.round(image.naturalWidth * scale));
+      const height = Math.max(1, Math.round(image.naturalHeight * scale));
+      const canvas = document.createElement("canvas");
+      canvas.width = width;
+      canvas.height = height;
+      const context = canvas.getContext("2d", { alpha: false });
+      context.drawImage(image, 0, 0, width, height);
+      const blob = await new Promise(resolve => canvas.toBlob(resolve, "image/webp", quality));
+      if (!blob) throw new ApiError("invalid_image", 415);
+      return blob;
+    } finally {
+      URL.revokeObjectURL(objectUrl);
+    }
+  }
+
+  async function uploadAvatar(event) {
+    const file = event.target.files && event.target.files[0];
+    event.target.value = "";
+    if (!file) return;
+    setLoading(true, "جارٍ حفظ صورة الملف الشخصي…");
+    try {
+      const blob = await imageFileToBlob(file, 640, .84);
+      const result = await api("/me/avatar", { method: "POST", body: blob });
+      state.account = result.account;
+      renderAccountUi();
+      setAvatar($("#profileAvatar"), state.account);
+      notify("تم تحديث صورة الملف الشخصي.", "success");
+    } catch (error) {
+      notify(describeError(error), "error");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function removeAvatar() {
+    setLoading(true, "جارٍ حذف الصورة…");
+    try {
+      const result = await api("/me/avatar", { method: "DELETE" });
+      state.account = result.account;
+      renderAccountUi();
+      setAvatar($("#profileAvatar"), state.account);
+      notify("تم حذف الصورة.", "success");
+    } catch (error) {
+      notify(describeError(error), "error");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function saveDiscoverableSetting() {
+    if (!state.account) return;
+    const discoverable = $("#settingsDiscoverableToggle").checked;
+    try {
+      const result = await api("/me", { method: "PATCH", body: {
+        displayName: state.account.displayName,
+        about: state.account.about,
+        discoverable,
+      } });
+      state.account = result.account;
+      $("#discoverableToggle").checked = discoverable;
+      notify("تم حفظ إعداد الخصوصية.", "success");
+    } catch (error) {
+      $("#settingsDiscoverableToggle").checked = state.account.discoverable !== false;
+      notify(describeError(error), "error");
     }
   }
 
@@ -341,7 +484,9 @@
     state.conversations = [];
     state.contacts = [];
     state.calls = [];
+    state.statuses = [];
     closeSheets();
+    $("#statusViewer").hidden = true;
     showView($("#authView"));
     $("#phoneForm").reset();
     setAuthMode("login");
@@ -382,19 +527,45 @@
   function renderContacts() {
     const list = $("#contactList");
     list.replaceChildren();
-    const contacts = filtered(state.contacts, item => `${item.displayName} ${item.phone}`);
+    const query = ($("#peopleSearch")?.value || "").trim().toLocaleLowerCase("ar");
+    const contacts = query
+      ? state.contacts.filter(item => `${item.displayName} ${item.phone}`.toLocaleLowerCase("ar").includes(query))
+      : state.contacts;
     contacts.forEach(contact => {
-      const row = createElement("button", "list-item");
-      row.type = "button";
+      const row = createElement("div", "list-item");
       const avatar = createElement("span", "avatar");
       setAvatar(avatar, contact);
       const copy = createElement("span", "list-copy");
-      const status = createElement("p", contact.available ? "availability" : "not-available", contact.available ? "متاح للمحادثة" : "غير مسجل بعد");
+      const status = createElement("p", contact.available ? "availability" : "not-available", contact.available ? (contact.about || "متاح للمحادثة") : "غير مسجل بعد");
       copy.append(createElement("strong", "", contact.displayName), status);
-      const meta = createElement("span", "list-meta");
-      meta.append(createElement("span", "", contact.phone));
-      row.append(avatar, copy, meta);
-      row.addEventListener("click", () => contact.available ? startConversation(contact) : notify("هذا الرقم غير مسجل في التطبيق بعد.", "error"));
+      const actions = createElement("span", "people-actions");
+      if (contact.available) {
+        const chat = createElement("button");
+        chat.type = "button";
+        chat.setAttribute("aria-label", `محادثة مع ${contact.displayName}`);
+        chat.innerHTML = '<svg viewBox="0 0 24 24"><path d="M4 5h16v12H8l-4 3V5Z"/></svg>';
+        chat.addEventListener("click", () => startConversation(contact));
+        const voice = createElement("button");
+        voice.type = "button";
+        voice.setAttribute("aria-label", `اتصال صوتي مع ${contact.displayName}`);
+        voice.innerHTML = '<svg viewBox="0 0 24 24"><path d="m7 4-2-1a2 2 0 0 0-2 .8L2 5.2c-.6.9-.7 2-.2 3A27 27 0 0 0 15.7 22c1 .5 2.2.4 3-.2l1.5-1.2a2 2 0 0 0 .7-2.2l-.9-2a2 2 0 0 0-2.3-1.1l-3 .9a2.5 2.5 0 0 1-2.5-.7l-3.7-3.7a2.5 2.5 0 0 1-.7-2.5l.9-3A2 2 0 0 0 7 4Z"/></svg>';
+        voice.addEventListener("click", () => startCall("voice", contact));
+        const video = createElement("button", "video");
+        video.type = "button";
+        video.setAttribute("aria-label", `فيديو كول مع ${contact.displayName}`);
+        video.innerHTML = '<svg viewBox="0 0 24 24"><rect x="3" y="6" width="13" height="12" rx="3"/><path d="m16 10 5-3v10l-5-3"/></svg>';
+        video.addEventListener("click", () => startCall("video", contact));
+        actions.append(chat, voice, video);
+      } else {
+        actions.append(createElement("span", "list-meta", contact.phone));
+      }
+      row.append(avatar, copy, actions);
+      row.addEventListener("click", event => {
+        if (event.target.closest("button")) return;
+        if (!contact.available) return notify("هذا الرقم غير مسجل في التطبيق بعد.", "error");
+        if (state.peopleMode === "voice" || state.peopleMode === "video") startCall(state.peopleMode, contact);
+        else startConversation(contact);
+      });
       list.append(row);
     });
     $("#contactsEmpty").classList.toggle("visible", !contacts.length);
@@ -413,24 +584,171 @@
     list.replaceChildren();
     const calls = filtered(state.calls, item => item.partnerName);
     calls.forEach(call => {
-      const row = createElement("button", "list-item");
-      row.type = "button";
+      const row = createElement("div", "list-item call-list-item");
+      const contact = state.contacts.find(item => item.accountId === call.partnerId) || {
+        accountId: call.partnerId,
+        displayName: call.partnerName,
+        avatarColor: call.direction === "incoming" ? "#00897b" : "#3157d5",
+        available: Boolean(call.partnerId),
+      };
       const avatar = createElement("span", "avatar");
-      setAvatar(avatar, { displayName: call.partnerName, avatarColor: call.direction === "incoming" ? "#00897b" : "#3157d5" });
+      setAvatar(avatar, contact);
       const copy = createElement("span", "list-copy");
       const detail = createElement("p");
       detail.append(callDirectionIcon(call), document.createTextNode(` ${call.direction === "incoming" ? "واردة" : "صادرة"} · ${formatCallDate(call.createdAt)}`));
       copy.append(createElement("strong", "", call.partnerName || "جهة اتصال"), detail);
-      const meta = createElement("span", "list-meta");
-      const icon = createElement("span");
-      icon.innerHTML = call.callType === "video"
+      const again = createElement("button", "call-again");
+      again.type = "button";
+      again.setAttribute("aria-label", call.callType === "video" ? "إعادة فيديو كول" : "إعادة الاتصال الصوتي");
+      again.innerHTML = call.callType === "video"
         ? '<svg class="call-type-icon" viewBox="0 0 24 24"><rect x="3" y="6" width="13" height="12" rx="3"/><path d="m16 10 5-3v10l-5-3"/></svg>'
         : '<svg class="call-type-icon" viewBox="0 0 24 24"><path d="m7 4-2-1a2 2 0 0 0-2 .8L2 5.2c-.6.9-.7 2-.2 3A27 27 0 0 0 15.7 22c1 .5 2.2.4 3-.2l1.5-1.2a2 2 0 0 0 .7-2.2l-.9-2a2 2 0 0 0-2.3-1.1l-3 .9a2.5 2.5 0 0 1-2.5-.7l-3.7-3.7a2.5 2.5 0 0 1-.7-2.5l.9-3A2 2 0 0 0 7 4Z"/></svg>';
-      meta.append(icon);
-      row.append(avatar, copy, meta);
+      again.addEventListener("click", () => contact.accountId ? startCall(call.callType, contact) : openPeopleSheet(call.callType));
+      row.append(avatar, copy, again);
       list.append(row);
     });
     $("#callsEmpty").classList.toggle("visible", !calls.length);
+  }
+
+  async function refreshStatuses() {
+    try {
+      const result = await api("/statuses", { method: "GET" });
+      state.statuses = result.statuses || [];
+      renderStatuses();
+    } catch (error) {
+      notify(describeError(error), "error");
+    }
+  }
+
+  function relativeTime(value) {
+    const seconds = Math.max(0, Math.floor((Date.now() - Number(value || 0)) / 1000));
+    if (seconds < 60) return "الآن";
+    const minutes = Math.floor(seconds / 60);
+    if (minutes < 60) return `منذ ${minutes} د`;
+    const hours = Math.floor(minutes / 60);
+    return `منذ ${hours} س`;
+  }
+
+  function renderStatuses() {
+    const list = $("#statusList");
+    list.replaceChildren();
+    const mine = state.statuses.filter(item => item.mine);
+    $("#myStatusHint").textContent = mine.length ? `${mine.length} حالة نشطة · اضغط لإضافة المزيد` : "اضغط لإضافة حالة نصية أو صورة";
+    const statuses = state.statuses;
+    statuses.forEach(status => {
+      const row = createElement("button", "status-row");
+      row.type = "button";
+      const ring = createElement("span", "status-ring");
+      const avatar = createElement("span", "avatar");
+      setAvatar(avatar, status);
+      ring.append(avatar);
+      const copy = createElement("span");
+      copy.append(createElement("strong", "", status.mine ? "حالتي" : (status.displayName || "جهة اتصال")), createElement("small", "", status.mediaType === "image" ? "حالة صورة" : (status.body || "حالة جديدة")));
+      row.append(ring, copy, createElement("time", "", relativeTime(status.createdAt)));
+      row.addEventListener("click", () => viewStatus(status));
+      list.append(row);
+    });
+    $("#statusEmpty").classList.toggle("visible", !statuses.length);
+  }
+
+  function openStatusComposer() {
+    state.statusImage = null;
+    if (state.statusPreviewUrl) URL.revokeObjectURL(state.statusPreviewUrl);
+    state.statusPreviewUrl = "";
+    $("#statusForm").reset();
+    $("#statusImagePreview").hidden = true;
+    $("#statusImagePreview").removeAttribute("src");
+    $("#statusComposePreview").classList.remove("has-image");
+    $("#statusComposePreview").style.setProperty("--status-bg", "#3157d5");
+    $$("[data-status-color]").forEach((button, index) => button.classList.toggle("active", index === 0));
+    openSheet($("#statusSheet"));
+    window.setTimeout(() => $("#statusText").focus(), 180);
+  }
+
+  async function selectStatusImage(event) {
+    const file = event.target.files && event.target.files[0];
+    event.target.value = "";
+    if (!file) return;
+    setLoading(true, "جارٍ تجهيز الصورة…");
+    try {
+      state.statusImage = await imageFileToBlob(file, 1440, .82);
+      if (state.statusPreviewUrl) URL.revokeObjectURL(state.statusPreviewUrl);
+      state.statusPreviewUrl = URL.createObjectURL(state.statusImage);
+      $("#statusImagePreview").src = state.statusPreviewUrl;
+      $("#statusImagePreview").hidden = false;
+      $("#statusComposePreview").classList.add("has-image");
+      $("#statusText").placeholder = "اكتب تعليقًا على الصورة...";
+    } catch (error) {
+      notify(describeError(error), "error");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  function chooseStatusColor(button) {
+    if (state.statusImage) return;
+    $$("[data-status-color]").forEach(item => item.classList.toggle("active", item === button));
+    $("#statusComposePreview").style.setProperty("--status-bg", button.dataset.statusColor);
+  }
+
+  async function publishStatus(event) {
+    event.preventDefault();
+    const text = $("#statusText").value.trim();
+    if (!text && !state.statusImage) return notify(errorText.empty_status, "error");
+    setLoading(true, "جارٍ نشر الحالة…");
+    try {
+      const result = state.statusImage
+        ? await api(`/statuses?caption=${encodeURIComponent(text)}`, { method: "POST", body: state.statusImage })
+        : await api("/statuses", { method: "POST", body: {
+          body: text,
+          backgroundColor: $("[data-status-color].active")?.dataset.statusColor || "#3157d5",
+        } });
+      state.statuses.unshift(result.status);
+      closeSheets();
+      renderStatuses();
+      notify("تم نشر الحالة لمدة 24 ساعة.", "success");
+    } catch (error) {
+      notify(describeError(error), "error");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  function viewStatus(status) {
+    state.activeStatus = status;
+    setAvatar($("#viewerAvatar"), status);
+    $("#viewerName").textContent = status.displayName || "حالتي";
+    $("#viewerTime").textContent = relativeTime(status.createdAt);
+    const content = $("#statusViewerContent");
+    content.style.setProperty("--viewer-bg", status.backgroundColor || "#3157d5");
+    content.classList.toggle("has-image", status.mediaType === "image");
+    $("#viewerImage").hidden = status.mediaType !== "image";
+    $("#viewerImage").src = status.mediaType === "image" ? status.mediaUrl : "";
+    $("#viewerText").textContent = status.body || "";
+    $("#deleteStatusButton").hidden = !status.mine;
+    $("#statusViewer").hidden = false;
+  }
+
+  function closeStatusViewer() {
+    $("#statusViewer").hidden = true;
+    $("#viewerImage").removeAttribute("src");
+    state.activeStatus = null;
+  }
+
+  async function deleteActiveStatus() {
+    if (!state.activeStatus?.mine) return;
+    setLoading(true, "جارٍ حذف الحالة…");
+    try {
+      await api(`/statuses/${encodeURIComponent(state.activeStatus.id)}`, { method: "DELETE" });
+      state.statuses = state.statuses.filter(item => item.id !== state.activeStatus.id);
+      closeStatusViewer();
+      renderStatuses();
+      notify("تم حذف الحالة.", "success");
+    } catch (error) {
+      notify(describeError(error), "error");
+    } finally {
+      setLoading(false);
+    }
   }
 
   async function saveContact(event) {
@@ -451,7 +769,7 @@
         await startConversation(contact);
       } else {
         notify("تم حفظ الرقم، لكنه غير مسجل في التطبيق بعد.", "success");
-        switchTab("contacts");
+        openPeopleSheet("chat");
       }
     } catch (error) {
       notify(describeError(error), "error");
@@ -493,6 +811,7 @@
 
   async function startConversation(contact) {
     if (!contact.accountId) return notify(errorText.contact_not_available, "error");
+    closeSheets();
     setLoading(true, "جارٍ فتح المحادثة…");
     try {
       const result = await api("/conversations", { method: "POST", body: { accountId: contact.accountId } });
@@ -502,6 +821,8 @@
           id: contact.accountId,
           displayName: contact.displayName,
           avatarColor: contact.avatarColor,
+          avatarUrl: contact.avatarUrl,
+          about: contact.about,
           lastSeenAt: contact.lastSeenAt,
         },
         lastMessage: "",
@@ -810,13 +1131,15 @@
     showView($("#callView"));
   }
 
-  async function startCall(callType) {
-    const contact = state.activeConversation && state.activeConversation.contact;
-    if (!contact || !contact.id) return notify(errorText.invalid_contact, "error");
+  async function startCall(callType, directContact) {
+    const contact = directContact || (state.activeConversation && state.activeConversation.contact);
+    const accountId = contact && (contact.accountId || contact.id);
+    if (!contact || !accountId) return notify(errorText.invalid_contact, "error");
+    closeSheets();
     setLoading(true, callType === "video" ? "جارٍ تشغيل الكاميرا…" : "جارٍ تشغيل المايكروفون…");
     try {
       await openMedia(callType);
-      const result = await api("/calls", { method: "POST", body: { accountId: contact.id, callType } });
+      const result = await api("/calls", { method: "POST", body: { accountId, callType } });
       state.call = result.call;
       state.endingCall = false;
       state.signalCursor = 0;
@@ -973,19 +1296,40 @@
   function bindEvents() {
     $("#phoneForm").addEventListener("submit", submitFreeAuth);
     $$('[data-auth-mode]').forEach(button => button.addEventListener("click", () => setAuthMode(button.dataset.authMode)));
-    $("#profileButton").addEventListener("click", openProfile);
-    $("#newContactButton").addEventListener("click", openContactSheet);
-    $$('[data-open-contacts]').forEach(button => button.addEventListener("click", openContactSheet));
+    $("#profileButton").addEventListener("click", () => switchTab("settings"));
+    $("#newContactButton").addEventListener("click", () => openPeopleSheet("chat"));
+    $("#newChatFab").addEventListener("click", () => openPeopleSheet("chat"));
+    $$('[data-open-people]').forEach(button => button.addEventListener("click", () => openPeopleSheet(button.dataset.openPeople || "chat")));
+    $("#openManualContact").addEventListener("click", openContactSheet);
     $$('[data-close-sheet]').forEach(button => button.addEventListener("click", closeSheets));
     $("#contactForm").addEventListener("submit", saveContact);
     $("#profileForm").addEventListener("submit", saveProfile);
+    $("#profileAvatarButton").addEventListener("click", () => $("#avatarInput").click());
+    $("#avatarInput").addEventListener("change", uploadAvatar);
+    $("#removeAvatarButton").addEventListener("click", removeAvatar);
+    $("#editProfileButton").addEventListener("click", openProfile);
+    $("#editProfileRow").addEventListener("click", openProfile);
     $("#importContactsButton").addEventListener("click", importContacts);
     $("#logoutButton").addEventListener("click", logout);
     $$(".bottom-nav button").forEach(button => button.addEventListener("click", () => switchTab(button.dataset.tab)));
+    $("#peopleSearch").addEventListener("input", renderContacts);
+    $("#startVoiceCallButton").addEventListener("click", () => openPeopleSheet("voice"));
+    $("#startVideoCallButton").addEventListener("click", () => openPeopleSheet("video"));
+    $("#openStatusComposer").addEventListener("click", openStatusComposer);
+    $("#statusImageInput").addEventListener("change", selectStatusImage);
+    $("#statusForm").addEventListener("submit", publishStatus);
+    $$("[data-status-color]").forEach(button => button.addEventListener("click", () => chooseStatusColor(button)));
+    $("#closeStatusViewer").addEventListener("click", closeStatusViewer);
+    $("#deleteStatusButton").addEventListener("click", deleteActiveStatus);
+    $("#settingsDiscoverableToggle").addEventListener("change", saveDiscoverableSetting);
+    $("#notificationSoundToggle").addEventListener("change", event => localStorage.setItem("varex-call-sound", event.target.checked ? "1" : "0"));
+    $("#darkModeToggle").addEventListener("change", event => {
+      localStorage.setItem("varex-call-dark", event.target.checked ? "1" : "0");
+      document.body.classList.toggle("dark-mode", event.target.checked);
+    });
     $("#searchInput").addEventListener("input", event => {
       state.search = event.target.value;
       renderConversations();
-      renderContacts();
       renderCalls();
     });
     $("#backToMain").addEventListener("click", closeConversation);
@@ -1032,9 +1376,10 @@
   async function boot() {
     bindEvents();
     bindPinInputs();
+    applyDevicePreferences();
     setAuthMode("register");
     if ("serviceWorker" in navigator) {
-      navigator.serviceWorker.register("/call/sw.js?v=20260920-5", { scope: "/call/", updateViaCache: "none" })
+      navigator.serviceWorker.register("/call/sw.js?v=20260920-7", { scope: "/call/", updateViaCache: "none" })
         .then(registration => registration.update())
         .catch(() => {});
     }

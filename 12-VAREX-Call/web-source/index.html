@@ -10,7 +10,7 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="VAREX Call">
     <title>VAREX Call | فاركس كول</title>
-    <link rel="manifest" href="/call/manifest.webmanifest?v=20260920-5">
+    <link rel="manifest" href="/call/manifest.webmanifest?v=20260920-7">
     <link rel="icon" href="/varex-icon-192.png">
     <link rel="apple-touch-icon" href="/varex-icon-192.png">
     <link rel="preload" href="/fonts/noto-kufi-arabic.woff" as="font" type="font/woff" crossorigin>
@@ -23,7 +23,7 @@
       .auth-step{display:none!important}
       .auth-step.active{display:block!important}
     </style>
-    <link rel="stylesheet" href="/call/styles.css?v=20260920-5">
+    <link rel="stylesheet" href="/call/styles.css?v=20260920-7">
   </head>
   <body>
     <div class="phone-shell">
@@ -84,18 +84,18 @@
         </div>
       </section>
 
-      <section class="main-view view" id="mainView" aria-label="المحادثات">
+      <section class="main-view view" id="mainView" aria-label="VAREX Call">
         <header class="app-header">
-          <button class="logo-button" id="profileButton" type="button" aria-label="الحساب والإعدادات"><img class="official-v" src="/varex-icon-192.png" alt=""></button>
+          <button class="logo-button" id="profileButton" type="button" aria-label="فتح الإعدادات"><span class="avatar header-avatar" id="headerAvatar">V</span></button>
           <div class="header-title"><h1 id="sectionTitle">المحادثات</h1><small id="connectionState">متصل</small></div>
-          <button class="header-action" id="newContactButton" type="button" aria-label="إضافة جهة اتصال">
-            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M3.5 19c.5-4 2.4-6 5.5-6 2 0 3.5.8 4.5 2.4M18 7v6M15 10h6"/></svg>
+          <button class="header-action" id="newContactButton" type="button" aria-label="محادثة جديدة">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v12H8l-4 3V5Z"/><path d="M12 8v6M9 11h6"/></svg>
           </button>
         </header>
 
         <div class="search-wrap" id="searchWrap">
           <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.8"/><path d="m16 16 4.5 4.5"/></svg>
-          <input id="searchInput" type="search" autocomplete="off" placeholder="بحث">
+          <input id="searchInput" type="search" autocomplete="off" placeholder="ابحث في المحادثات">
         </div>
 
         <main class="content-area">
@@ -104,34 +104,56 @@
             <div class="empty-state" id="chatsEmpty">
               <span class="empty-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v12H8l-4 3V5Z"/><path d="M8 9h8M8 13h5"/></svg></span>
               <h2>ابدأ أول محادثة</h2>
-              <p>أضف رقم موبايل أو اختر شخصًا من جهات الاتصال.</p>
-              <button type="button" data-open-contacts>إضافة جهة اتصال</button>
+              <p>اختر شخصًا من جهات الاتصال أو أضف رقم موبايل.</p>
+              <button type="button" data-open-people="chat">محادثة جديدة</button>
             </div>
+            <button class="floating-action" id="newChatFab" type="button" aria-label="محادثة جديدة"><svg viewBox="0 0 24 24"><path d="M4 5h16v12H8l-4 3V5Z"/><path d="M12 8v6M9 11h6"/></svg></button>
+          </section>
+
+          <section class="tab-panel" id="updatesPanel" data-panel="updates">
+            <button class="my-status-card" id="openStatusComposer" type="button">
+              <span class="status-avatar-wrap"><span class="avatar status-avatar" id="myStatusAvatar">V</span><i>+</i></span>
+              <span><strong>حالتي</strong><small id="myStatusHint">اضغط لإضافة حالة نصية أو صورة</small></span>
+            </button>
+            <h2 class="panel-heading">آخر التحديثات</h2>
+            <div class="status-list" id="statusList"></div>
+            <div class="empty-state compact visible" id="statusEmpty"><p>ستظهر هنا حالات جهات اتصالك لمدة 24 ساعة.</p></div>
           </section>
 
           <section class="tab-panel" id="callsPanel" data-panel="calls">
-            <div class="call-history" id="callHistory"></div>
-            <div class="empty-state" id="callsEmpty">
-              <span class="empty-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m7 4-2-1a2 2 0 0 0-2 .8L2 5.2c-.6.9-.7 2-.2 3A27 27 0 0 0 15.7 22c1 .5 2.2.4 3-.2l1.5-1.2a2 2 0 0 0 .7-2.2l-.9-2a2 2 0 0 0-2.3-1.1l-3 .9a2.5 2.5 0 0 1-2.5-.7l-3.7-3.7a2.5 2.5 0 0 1-.7-2.5l.9-3A2 2 0 0 0 7 4Z"/></svg></span>
-              <h2>لا توجد مكالمات بعد</h2>
-              <p>ابدأ اتصالًا صوتيًا أو فيديو من داخل أي محادثة.</p>
+            <div class="call-quick-actions">
+              <button id="startVoiceCallButton" type="button"><svg viewBox="0 0 24 24"><path d="m7 4-2-1a2 2 0 0 0-2 .8L2 5.2c-.6.9-.7 2-.2 3A27 27 0 0 0 15.7 22c1 .5 2.2.4 3-.2l1.5-1.2a2 2 0 0 0 .7-2.2l-.9-2a2 2 0 0 0-2.3-1.1l-3 .9a2.5 2.5 0 0 1-2.5-.7l-3.7-3.7a2.5 2.5 0 0 1-.7-2.5l.9-3A2 2 0 0 0 7 4Z"/></svg><span><strong>اتصال صوتي</strong><small>اختر جهة اتصال</small></span></button>
+              <button id="startVideoCallButton" type="button"><svg viewBox="0 0 24 24"><rect x="3" y="6" width="13" height="12" rx="3"/><path d="m16 10 5-3v10l-5-3"/></svg><span><strong>فيديو كول</strong><small>افتح الكاميرا</small></span></button>
             </div>
+            <h2 class="panel-heading">المكالمات الأخيرة</h2>
+            <div class="call-history" id="callHistory"></div>
+            <div class="empty-state compact" id="callsEmpty"><p>لا توجد مكالمات بعد. ابدأ اتصالًا صوتيًا أو فيديو.</p></div>
           </section>
 
-          <section class="tab-panel" id="contactsPanel" data-panel="contacts">
-            <div class="contact-toolbar">
-              <button id="importContactsButton" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3h10v18H7z"/><path d="M10 6h4M10 18h4"/></svg><span><strong>اختيار من الهاتف</strong><small>تختار بنفسك من دفتر الأرقام</small></span></button>
-              <button type="button" data-open-contacts><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M3.5 19c.5-4 2.4-6 5.5-6 2 0 3.5.8 4.5 2.4M18 7v6M15 10h6"/></svg><span><strong>إضافة رقم</strong><small>أدخل رقم الموبايل يدويًا</small></span></button>
+          <section class="tab-panel settings-panel" id="settingsPanel" data-panel="settings">
+            <button class="profile-summary" id="editProfileButton" type="button">
+              <span class="avatar settings-avatar" id="settingsAvatar">V</span>
+              <span><strong id="settingsName">حسابي</strong><small id="settingsAbout">مرحباً! أستخدم VAREX Call</small><em id="settingsPhone"></em></span>
+              <svg viewBox="0 0 24 24"><path d="m9 5 7 7-7 7"/></svg>
+            </button>
+            <div class="settings-group">
+              <button type="button" id="editProfileRow"><span class="setting-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c.6-5 3.2-7.5 8-7.5s7.4 2.5 8 7.5"/></svg></span><span><strong>الملف الشخصي</strong><small>الصورة والاسم والنبذة</small></span><b>‹</b></button>
+              <label><span class="setting-icon"><svg viewBox="0 0 24 24"><path d="M12 3 5 6v5c0 4.8 2.7 8.2 7 10 4.3-1.8 7-5.2 7-10V6l-7-3Z"/></svg></span><span><strong>الخصوصية</strong><small>السماح بالعثور عليّ برقم الهاتف</small></span><span class="switch"><input id="settingsDiscoverableToggle" type="checkbox" checked><i></i></span></label>
+              <label><span class="setting-icon"><svg viewBox="0 0 24 24"><path d="M6 9a6 6 0 0 1 12 0v5l2 3H4l2-3V9Z"/><path d="M9 20h6"/></svg></span><span><strong>صوت الإشعارات</strong><small>تشغيل تنبيه الرسائل والمكالمات</small></span><span class="switch"><input id="notificationSoundToggle" type="checkbox" checked><i></i></span></label>
+              <label><span class="setting-icon"><svg viewBox="0 0 24 24"><path d="M20 15.5A8.5 8.5 0 0 1 8.5 4 8.5 8.5 0 1 0 20 15.5Z"/></svg></span><span><strong>الوضع الداكن</strong><small>تغيير مظهر التطبيق على هذا الجهاز</small></span><span class="switch"><input id="darkModeToggle" type="checkbox"><i></i></span></label>
             </div>
-            <div class="contact-list" id="contactList"></div>
-            <div class="empty-state compact" id="contactsEmpty"><p>جهات الاتصال التي تضيفها ستظهر هنا.</p></div>
+            <div class="settings-group secondary-settings">
+              <button id="installButton" type="button"><span class="setting-icon"><svg viewBox="0 0 24 24"><path d="M12 3v12M7 10l5 5 5-5M4 21h16"/></svg></span><span><strong>تثبيت التطبيق</strong><small>إضافته إلى شاشة الموبايل</small></span><b>‹</b></button>
+              <button class="logout-setting" id="logoutButton" type="button"><span class="setting-icon"><svg viewBox="0 0 24 24"><path d="M10 4H5v16h5M14 8l4 4-4 4M8 12h10"/></svg></span><span><strong>تسجيل الخروج</strong><small>الخروج من هذا الجهاز</small></span><b>‹</b></button>
+            </div>
           </section>
         </main>
 
         <nav class="bottom-nav" aria-label="التنقل الرئيسي">
           <button class="active" type="button" data-tab="chats"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v12H8l-4 3V5Z"/></svg><span>المحادثات</span><b id="chatBadge" hidden>0</b></button>
+          <button type="button" data-tab="updates"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8"/><path d="M12 8v4l3 2M5.5 5.5 4 4M18.5 5.5 20 4"/></svg><span>التحديثات</span></button>
           <button type="button" data-tab="calls"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m7 4-2-1a2 2 0 0 0-2 .8L2 5.2c-.6.9-.7 2-.2 3A27 27 0 0 0 15.7 22c1 .5 2.2.4 3-.2l1.5-1.2a2 2 0 0 0 .7-2.2l-.9-2a2 2 0 0 0-2.3-1.1l-3 .9a2.5 2.5 0 0 1-2.5-.7l-3.7-3.7a2.5 2.5 0 0 1-.7-2.5l.9-3A2 2 0 0 0 7 4Z"/></svg><span>المكالمات</span></button>
-          <button type="button" data-tab="contacts"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="8" cy="8" r="3.5"/><circle cx="17" cy="9" r="2.5"/><path d="M2.5 20c.4-4.4 2.3-6.6 5.5-6.6s5.1 2.2 5.5 6.6M14 14.5c3.9-.8 6.3 1 7 5.5"/></svg><span>جهات الاتصال</span></button>
+          <button type="button" data-tab="settings"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19 13.5v-3l-2-.7-.7-1.7.9-1.9-2.1-2.1-1.9.9-1.7-.7L10.5 2h-3l-.7 2-1.7.7-1.9-.9-2.1 2.1.9 1.9-.7 1.7-2 .7v3l2 .7.7 1.7-.9 1.9 2.1 2.1 1.9-.9 1.7.7.7 2h3l.7-2 1.7-.7 1.9.9 2.1-2.1-.9-1.9.7-1.7 2-.4Z"/></svg><span>الإعدادات</span></button>
         </nav>
       </section>
 
@@ -166,6 +188,21 @@
       </section>
     </div>
 
+    <div class="sheet" id="peopleSheet" hidden>
+      <button class="sheet-backdrop" type="button" data-close-sheet aria-label="إغلاق"></button>
+      <div class="sheet-card people-card">
+        <span class="sheet-handle"></span>
+        <h2 id="peopleSheetTitle">محادثة جديدة</h2>
+        <div class="contact-toolbar">
+          <button id="importContactsButton" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3h10v18H7z"/><path d="M10 6h4M10 18h4"/></svg><span><strong>اختيار من الهاتف</strong><small>اختر أرقامًا من جهات اتصالك</small></span></button>
+          <button id="openManualContact" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M3.5 19c.5-4 2.4-6 5.5-6 2 0 3.5.8 4.5 2.4M18 7v6M15 10h6"/></svg><span><strong>إضافة رقم</strong><small>أدخل رقم الموبايل يدويًا</small></span></button>
+        </div>
+        <div class="sheet-search"><svg viewBox="0 0 24 24"><circle cx="10.8" cy="10.8" r="6.8"/><path d="m16 16 4.5 4.5"/></svg><input id="peopleSearch" type="search" placeholder="ابحث عن جهة اتصال"></div>
+        <div class="contact-list people-list" id="contactList"></div>
+        <div class="empty-state compact" id="contactsEmpty"><p>أضف رقمًا أو اختر جهة اتصال من هاتفك.</p></div>
+      </div>
+    </div>
+
     <div class="sheet" id="contactSheet" hidden>
       <button class="sheet-backdrop" type="button" data-close-sheet aria-label="إغلاق"></button>
       <div class="sheet-card">
@@ -188,16 +225,56 @@
       <button class="sheet-backdrop" type="button" data-close-sheet aria-label="إغلاق"></button>
       <div class="sheet-card profile-card">
         <span class="sheet-handle"></span>
-        <img class="official-v profile-logo" src="/varex-icon-192.png" alt="VAREX">
+        <h2>الملف الشخصي</h2>
+        <div class="profile-photo-editor">
+          <button id="profileAvatarButton" type="button" aria-label="تغيير صورة الملف الشخصي"><span class="avatar profile-avatar" id="profileAvatar">V</span><i><svg viewBox="0 0 24 24"><path d="M4 8h4l2-3h4l2 3h4v11H4V8Z"/><circle cx="12" cy="13" r="3.5"/></svg></i></button>
+          <input id="avatarInput" type="file" accept="image/jpeg,image/png,image/webp" hidden>
+          <button class="remove-photo" id="removeAvatarButton" type="button" hidden>حذف الصورة</button>
+        </div>
         <form id="profileForm">
           <label class="field-label" for="profileName">اسمك الظاهر</label>
           <input class="text-field" id="profileName" maxlength="48" autocomplete="name" required>
+          <label class="field-label" for="profileAbout">النبذة</label>
+          <input class="text-field" id="profileAbout" maxlength="139" placeholder="مرحباً! أستخدم VAREX Call">
+          <label class="field-label" for="profilePhone">رقم الموبايل</label>
+          <input class="text-field readonly-field" id="profilePhone" dir="ltr" readonly>
           <div class="setting-row"><span><strong>العثور عليّ برقم الهاتف</strong><small>يسمح لجهات اتصالك بإضافتك</small></span><label class="switch"><input id="discoverableToggle" type="checkbox" checked><i></i></label></div>
           <button class="primary-button" type="submit">حفظ التغييرات</button>
         </form>
-        <button class="danger-link" id="logoutButton" type="button">تسجيل الخروج</button>
-        <button class="install-link" id="installButton" type="button">تثبيت التطبيق على الموبايل</button>
       </div>
+    </div>
+
+    <div class="sheet" id="statusSheet" hidden>
+      <button class="sheet-backdrop" type="button" data-close-sheet aria-label="إغلاق"></button>
+      <div class="sheet-card status-composer-card">
+        <span class="sheet-handle"></span>
+        <h2>إضافة حالة</h2>
+        <form id="statusForm">
+          <div class="status-compose-preview" id="statusComposePreview" style="--status-bg:#3157d5">
+            <img id="statusImagePreview" alt="" hidden>
+            <textarea id="statusText" maxlength="700" placeholder="اكتب حالة..."></textarea>
+          </div>
+          <div class="status-tools">
+            <label class="status-photo-button" for="statusImageInput"><svg viewBox="0 0 24 24"><path d="M4 8h4l2-3h4l2 3h4v11H4V8Z"/><circle cx="12" cy="13" r="3.5"/></svg><span>صورة</span></label>
+            <input id="statusImageInput" type="file" accept="image/jpeg,image/png,image/webp" hidden>
+            <div class="status-colors" aria-label="لون الحالة">
+              <button class="active" type="button" data-status-color="#3157d5" style="--color:#3157d5" aria-label="أزرق"></button>
+              <button type="button" data-status-color="#087f5b" style="--color:#087f5b" aria-label="أخضر"></button>
+              <button type="button" data-status-color="#7b2cbf" style="--color:#7b2cbf" aria-label="بنفسجي"></button>
+              <button type="button" data-status-color="#c24155" style="--color:#c24155" aria-label="وردي"></button>
+              <button type="button" data-status-color="#b45309" style="--color:#b45309" aria-label="برتقالي"></button>
+            </div>
+          </div>
+          <button class="primary-button" type="submit">نشر الحالة لمدة 24 ساعة</button>
+        </form>
+      </div>
+    </div>
+
+    <div class="status-viewer" id="statusViewer" hidden>
+      <div class="status-viewer-top"><span class="avatar" id="viewerAvatar">V</span><span><strong id="viewerName"></strong><small id="viewerTime"></small></span><button id="closeStatusViewer" type="button" aria-label="إغلاق">×</button></div>
+      <div class="status-viewer-progress"><i></i></div>
+      <div class="status-viewer-content" id="statusViewerContent"><img id="viewerImage" alt="" hidden><p id="viewerText"></p></div>
+      <button class="delete-status" id="deleteStatusButton" type="button" hidden>حذف الحالة</button>
     </div>
 
     <div class="incoming-call" id="incomingCall" hidden>
@@ -215,6 +292,6 @@
     <div class="loading-overlay" id="loadingOverlay" hidden><span></span><p id="loadingText">جارٍ التحميل…</p></div>
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
     <noscript>يلزم تفعيل JavaScript لتشغيل التطبيق.</noscript>
-    <script src="/call/app.js?v=20260920-5" defer></script>
+    <script src="/call/app.js?v=20260920-7" defer></script>
   </body>
 </html>

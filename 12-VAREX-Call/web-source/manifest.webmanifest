@@ -18,6 +18,7 @@
   ],
   "shortcuts": [
     { "name": "المحادثات", "short_name": "المحادثات", "url": "/call/", "icons": [{ "src": "/varex-icon-192.png", "sizes": "192x192" }] },
-    { "name": "جهات الاتصال", "short_name": "جهات الاتصال", "url": "/call/?tab=contacts", "icons": [{ "src": "/varex-icon-192.png", "sizes": "192x192" }] }
+    { "name": "التحديثات", "short_name": "الحالة", "url": "/call/?tab=updates", "icons": [{ "src": "/varex-icon-192.png", "sizes": "192x192" }] },
+    { "name": "المكالمات", "short_name": "المكالمات", "url": "/call/?tab=calls", "icons": [{ "src": "/varex-icon-192.png", "sizes": "192x192" }] }
   ]
 }

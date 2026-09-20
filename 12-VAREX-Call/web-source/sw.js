@@ -1,10 +1,10 @@
-const CACHE = "varex-call-shell-v5";
+const CACHE = "varex-call-shell-v7";
 const SHELL = [
   "/call/",
   "/call/index.html",
-  "/call/styles.css?v=20260920-5",
-  "/call/app.js?v=20260920-5",
-  "/call/manifest.webmanifest?v=20260920-5",
+  "/call/styles.css?v=20260920-7",
+  "/call/app.js?v=20260920-7",
+  "/call/manifest.webmanifest?v=20260920-7",
   "/varex-icon-192.png",
   "/varex-icon-512.png",
   "/fonts/noto-kufi-arabic.woff"
