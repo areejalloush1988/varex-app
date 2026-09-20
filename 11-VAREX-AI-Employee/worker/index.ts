@@ -3138,13 +3138,11 @@ function realtimeEmployeeInstructions(agent: Row, user: Row, history: Row[]) {
 async function employeeLiveSession(request: Request, env: Env) {
   if (request.method !== "POST") return error("الطريقة غير مدعومة", 405);
   const user = await currentUser(request, env); if (!user) return error("يلزم تسجيل الدخول", 401);
-  const url = new URL(request.url);
-  const organizationId = String(url.searchParams.get("organization_id") || "").trim();
-  const agentId = String(url.searchParams.get("agent_id") || "").trim();
-  const requestedVoice = String(url.searchParams.get("voice_id") || "").trim();
-  const sdp = (await request.text()).trim();
-  if (!organizationId || !agentId || !sdp) return error("تعذر تجهيز جلسة الصوت؛ أعد المحاولة", 400);
-  if (sdp.length > 120000 || !sdp.startsWith("v=0")) return error("بيانات الاتصال الصوتي غير صالحة", 400);
+  const body = await request.json<Row>().catch(() => ({}));
+  const organizationId = String(body.organization_id || "").trim();
+  const agentId = String(body.agent_id || "").trim();
+  const requestedVoice = String(body.voice_id || "").trim();
+  if (!organizationId || !agentId) return error("تعذر تجهيز جلسة الصوت؛ أعد المحاولة", 400);
   if (!await authorizeOrg(env, user, organizationId)) return error("ليست لديك صلاحية على مساحة العمل", 403);
   const [agent, voiceSettings, history, credential] = await Promise.all([
     env.DB.prepare("SELECT id,name,role,objective,instructions,language,tone,status FROM ai_agents WHERE id=? AND organization_id=? LIMIT 1").bind(agentId, organizationId).first<Row>(),
@@ -3207,35 +3205,11 @@ async function employeeLiveSession(request: Request, env: Env) {
         : "تعذر بدء المحادثة اللايف حالياً. حاول مرة ثانية بعد قليل.";
     return error(message, secretResponse.status === 429 ? 429 : 502);
   }
-  let upstream: Response;
-  try {
-    upstream = await fetch("https://api.openai.com/v1/realtime/calls", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${String(secretPayload.value)}`,
-        "Content-Type": "application/sdp",
-        Accept: "application/sdp",
-      },
-      body: sdp,
-    });
-  } catch (caught) {
-    console.error("VAREX realtime SDP network failure", caught instanceof Error ? caught.message : caught);
-    return error("تعذر بدء المحادثة اللايف حالياً. حاول مرة ثانية بعد قليل.", 502);
-  }
-  const answer = await upstream.text();
-  if (!upstream.ok || !answer.trim().startsWith("v=0")) {
-    console.error("VAREX realtime SDP rejected", upstream.status, answer.slice(0, 500));
-    const message = upstream.status === 429
-      ? "رصيد أو سعة المحادثة الصوتية غير متاحة حالياً. تحقق من رصيد API ثم أعد المحاولة."
-      : upstream.status === 401 || upstream.status === 403
-        ? "إعداد مفتاح الذكاء لا يسمح بالمحادثة الصوتية المباشرة بعد."
-        : "تعذر بدء المحادثة اللايف حالياً. حاول مرة ثانية بعد قليل.";
-    return error(message, upstream.status === 429 ? 429 : 502);
-  }
-  return new Response(answer, {
-    status: 201,
-    headers: { "Content-Type": "application/sdp", "Cache-Control": "private, no-store", "X-Content-Type-Options": "nosniff", "X-VAREX-Voice": voice },
-  });
+  return api({
+    value: String(secretPayload.value),
+    expires_at: Number(secretPayload.expires_at || 0) || null,
+    voice,
+  }, 201);
 }
 
 function chatMetadata(value: unknown) {

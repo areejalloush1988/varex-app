@@ -99,6 +99,13 @@
       "when": 1789864005879,
       "tag": "0013_remove_legacy_lina_names",
       "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "6",
+      "when": 1789865391092,
+      "tag": "0014_remove_legacy_lina_messages",
+      "breakpoints": true
     }
   ]
 }

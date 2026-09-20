@@ -34,39 +34,31 @@ function voiceDatabase() {
   };
 }
 
-test('live session sends the exact SDP through an ephemeral realtime token', async () => {
+test('live session returns a configured ephemeral realtime token to the browser', async () => {
   const worker = await loadWorker('live-realtime-runtime');
   const originalFetch = globalThis.fetch;
-  const offer = 'v=0\r\no=- 1 2 IN IP4 127.0.0.1\r\ns=-\r\nt=0 0\r\n';
-  const answer = 'v=0\r\no=- 2 3 IN IP4 127.0.0.1\r\ns=-\r\nt=0 0\r\n';
   let calls = 0;
   globalThis.fetch = async (url, init) => {
     calls += 1;
-    if (calls === 1) {
-      assert.equal(url, 'https://api.openai.com/v1/realtime/client_secrets');
-      const payload = JSON.parse(init.body);
-      assert.equal(payload.session.model, 'gpt-realtime-2.1');
-      assert.equal(payload.session.audio.output.voice, 'cedar');
-      assert.equal(payload.session.audio.input.transcription.model, 'gpt-live-transcribe');
-      assert.equal(payload.session.audio.input.turn_detection.eagerness, 'high');
-      return Response.json({ value: 'ek_test_ephemeral', expires_at: Math.floor(Date.now() / 1000) + 60 });
-    }
-    assert.equal(url, 'https://api.openai.com/v1/realtime/calls');
-    assert.equal(init.headers.Authorization, 'Bearer ek_test_ephemeral');
-    assert.equal(init.headers['Content-Type'], 'application/sdp');
-    assert.equal(init.body, offer.trim());
-    return new Response(answer, { status: 200, headers: { 'content-type': 'application/sdp' } });
+    assert.equal(url, 'https://api.openai.com/v1/realtime/client_secrets');
+    const payload = JSON.parse(init.body);
+    assert.equal(payload.session.model, 'gpt-realtime-2.1');
+    assert.equal(payload.session.audio.output.voice, 'cedar');
+    assert.equal(payload.session.audio.input.transcription.model, 'gpt-live-transcribe');
+    assert.equal(payload.session.audio.input.turn_detection.eagerness, 'high');
+    return Response.json({ value: 'ek_test_ephemeral', expires_at: Math.floor(Date.now() / 1000) + 60 });
   };
   try {
-    const response = await worker.fetch(new Request('https://varex.test/api/chat/live/session?organization_id=org-1&agent_id=agent-1&voice_id=cedar', {
+    const response = await worker.fetch(new Request('https://varex.test/api/chat/live/session', {
       method: 'POST',
-      headers: { authorization: 'Bearer live-session-token', 'content-type': 'application/sdp' },
-      body: offer,
+      headers: { authorization: 'Bearer live-session-token', 'content-type': 'application/json' },
+      body: JSON.stringify({ organization_id: 'org-1', agent_id: 'agent-1', voice_id: 'cedar' }),
     }), { DB: voiceDatabase(), OPENAI_API_KEY: 'sk-test' }, { waitUntil() {}, passThroughOnException() {} });
     assert.equal(response.status, 201);
-    assert.equal(response.headers.get('content-type'), 'application/sdp');
-    assert.equal(await response.text(), answer);
-    assert.equal(calls, 2);
+    const payload = await response.json();
+    assert.equal(payload.value, 'ek_test_ephemeral');
+    assert.equal(payload.voice, 'cedar');
+    assert.equal(calls, 1);
   } finally {
     globalThis.fetch = originalFetch;
   }

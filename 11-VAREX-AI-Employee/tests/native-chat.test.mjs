@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 
 const root = new URL('../', import.meta.url);
-const [worker, parser, aiProvider, client, html, serviceWorker, schema, migration, nameMigration, activity, layout] = await Promise.all([
+const [worker, parser, aiProvider, client, html, serviceWorker, schema, migration, nameMigration, messageNameMigration, activity, layout] = await Promise.all([
   readFile(new URL('worker/index.ts', root), 'utf8'),
   readFile(new URL('worker/chat-command.ts', root), 'utf8'),
   readFile(new URL('worker/ai-provider.ts', root), 'utf8'),
@@ -13,6 +13,7 @@ const [worker, parser, aiProvider, client, html, serviceWorker, schema, migratio
   readFile(new URL('db/schema.ts', root), 'utf8'),
   readFile(new URL('drizzle/0011_romantic_centennial.sql', root), 'utf8'),
   readFile(new URL('drizzle/0013_remove_legacy_lina_names.sql', root), 'utf8'),
+  readFile(new URL('drizzle/0014_remove_legacy_lina_messages.sql', root), 'utf8'),
   readFile(new URL('android/app/src/main/java/com/varex/ai/ChatActivity.java', root), 'utf8'),
   readFile(new URL('android/app/src/main/res/layout/activity_chat.xml', root), 'utf8'),
 ]);
@@ -110,8 +111,8 @@ test('provider outages are truthful and never fall through to blind automatic ex
 });
 
 test('updated chat assets replace stale installed-app code before using the offline cache', () => {
-  assert.match(html, /app\.js\?v=20260920-69/);
-  assert.match(serviceWorker, /varex-ai-shell-v69/);
+  assert.match(html, /app\.js\?v=20260920-70/);
+  assert.match(serviceWorker, /varex-ai-shell-v70/);
   assert.ok(serviceWorker.indexOf('const response = await fetch(request)') < serviceWorker.indexOf('await cache.match(request)'));
 });
 
@@ -125,7 +126,9 @@ test('live talk is low-latency, interruptible, named by the user, and durable', 
   assert.match(client, /chat\/identity/);
   assert.match(worker, /gpt-realtime-2\.1/);
   assert.match(worker, /\/v1\/realtime\/client_secrets/);
-  assert.match(worker, /"Content-Type": "application\/sdp"/);
+  assert.match(client, /https:\/\/api\.openai\.com\/v1\/realtime\/calls/);
+  assert.match(client, /waitForIceGathering/);
+  assert.match(client, /'Content-Type': 'application\/sdp'/);
   assert.match(client, /type: 'response\.create'/);
   assert.match(client, /ابدأ الحديث الآن فوراً/);
   assert.match(worker, /type: "semantic_vad", eagerness: "high", create_response: true, interrupt_response: true/);
@@ -137,6 +140,9 @@ test('live talk is low-latency, interruptible, named by the user, and durable', 
   assert.doesNotMatch(`${html}\n${client}\n${worker}\n${aiProvider}`, /Lina AI|Lina|لينا|أنا مساعدتك/i);
   assert.match(nameMigration, /UPDATE `ai_agents`/);
   assert.match(nameMigration, /'الموظف الذكي'/);
+  assert.match(messageNameMigration, /UPDATE `ai_chat_messages`/);
+  assert.match(messageNameMigration, /`role` = 'assistant'/);
+  assert.match(messageNameMigration, /'لينا'/);
 });
 
 test('the live picker exposes every realtime voice currently supported by the API', () => {

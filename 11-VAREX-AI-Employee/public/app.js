@@ -567,25 +567,38 @@
     return response.blob();
   }
 
-  async function authorizedSdpRequest(path, body, retry = true) {
-    if (!state.session?.access_token) throw new Error('يلزم تسجيل الدخول');
-    if (state.session.expires_at && state.session.expires_at * 1000 < Date.now() + 20000) await refreshSession();
-    const params = new URLSearchParams({
-      organization_id: String(body.organization_id || ''),
-      agent_id: String(body.agent_id || ''),
-      voice_id: String(body.voice_id || '')
+  async function waitForIceGathering(peer, timeoutMs = 2500) {
+    if (peer.iceGatheringState === 'complete') return;
+    await new Promise(resolve => {
+      const timer = setTimeout(() => {
+        peer.removeEventListener('icegatheringstatechange', onState);
+        resolve();
+      }, timeoutMs);
+      function onState() {
+        if (peer.iceGatheringState !== 'complete') return;
+        clearTimeout(timer);
+        peer.removeEventListener('icegatheringstatechange', onState);
+        resolve();
+      }
+      peer.addEventListener('icegatheringstatechange', onState);
+      onState();
     });
-    const response = await fetch(`${API_URL}/${path}?${params}`, {
+  }
+
+  async function connectRealtimePeer(sdp, ephemeralKey) {
+    const response = await fetch('https://api.openai.com/v1/realtime/calls', {
       method: 'POST',
-      headers: { Authorization: `Bearer ${state.session.access_token}`, 'Content-Type': 'application/sdp', Accept: 'application/sdp' },
-      body: String(body.sdp || '')
+      headers: { Authorization: `Bearer ${ephemeralKey}`, 'Content-Type': 'application/sdp', Accept: 'application/sdp' },
+      body: sdp
     });
-    if (response.status === 401 && retry) { await refreshSession(); return authorizedSdpRequest(path, body, false); }
-    if (!response.ok) {
-      const data = await response.json().catch(() => ({}));
-      throw new Error(data.message || 'تعذر بدء المحادثة الصوتية المباشرة');
+    const answer = await response.text();
+    if (!response.ok || !answer.trim().startsWith('v=0')) {
+      const message = response.status === 429
+        ? 'رصيد أو سعة المحادثة الصوتية غير متاحة حالياً. تحقق من رصيد API ثم أعد المحاولة.'
+        : 'تعذر بدء المحادثة اللايف حالياً. حاول مرة ثانية بعد قليل.';
+      throw new Error(message);
     }
-    return response.text();
+    return answer;
   }
 
   async function refreshMetaAdminStatus() {
@@ -2347,9 +2360,15 @@
       state.employeeLiveAudio = audio;
       const offer = await peer.createOffer();
       await peer.setLocalDescription(offer);
+      await waitForIceGathering(peer);
       const localSdp = peer.localDescription?.sdp || offer.sdp || '';
       if (!localSdp.trim()) throw new Error('تعذر تجهيز قناة الصوت من المتصفح. أعد المحاولة.');
-      const answerSdp = await authorizedSdpRequest('chat/live/session', { organization_id: state.org.id, agent_id: state.employeeChatAgentId, voice_id: state.employeeChatVoiceId, sdp: localSdp });
+      const liveSession = await authorizedRequest('chat/live/session', {
+        method: 'POST',
+        body: { organization_id: state.org.id, agent_id: state.employeeChatAgentId, voice_id: state.employeeChatVoiceId }
+      });
+      if (!liveSession?.value) throw new Error('تعذر تجهيز مفتاح المحادثة الصوتية. أعد المحاولة.');
+      const answerSdp = await connectRealtimePeer(localSdp, liveSession.value);
       await peer.setRemoteDescription({ type: 'answer', sdp: answerSdp });
       if (state.employeeLiveStatus === 'connecting') renderEmployeeLiveStatus('listening');
     } catch (error) {
