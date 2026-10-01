@@ -4,19 +4,19 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="robots" content="noindex,follow">
-  <meta http-equiv="refresh" content="0;url=https://app.varexapp.com/rental-car">
-  <link rel="canonical" href="https://app.varexapp.com/rental-car">
+  <meta http-equiv="refresh" content="0;url=/preview/?app=car-rental&amp;lang=ar">
+  <link rel="canonical" href="https://app.varexapp.com/car-rental/">
   <title>VAREX Car Rental</title>
   <script>
     (function(){
-      var target = new URL("https://app.varexapp.com/rental-car");
-      target.search = location.search;
-      target.hash = location.hash;
-      location.replace(target.href);
+      var q = new URLSearchParams(location.search);
+      var lang = q.get("lang") || "ar";
+      var target = "/preview/?app=car-rental&lang=" + encodeURIComponent(lang);
+      location.replace(target);
     })();
   </script>
 </head>
 <body>
-  <p><a href="https://app.varexapp.com/rental-car">فتح نظام تأجير السيارات</a></p>
+  <p><a href="/preview/?app=car-rental&amp;lang=ar">فتح معاينة نظام تأجير السيارات</a></p>
 </body>
 </html>
