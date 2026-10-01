@@ -1,7 +1,16 @@
 <!doctype html>
 <html lang="en" dir="ltr">
 <head>
-  <base href="/rental-car/">
+  <base id="rentalCarBase" href="./">
+  <script>
+    (function(){
+      var base = new URL(location.href);
+      base.pathname = base.pathname.replace(/\/rental-car(?:\/index\.html)?\/?$/, "/rental-car/");
+      base.search = "";
+      base.hash = "";
+      document.getElementById("rentalCarBase").href = base.href;
+    })();
+  </script>
   <link rel="canonical" href="https://app.varexapp.com/rental-car">
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -73,7 +82,7 @@
     const rootStyle=document.documentElement.style;rootStyle.setProperty("--accent",theme.primary);rootStyle.setProperty("--accent-deep",theme.deep);rootStyle.setProperty("--accent-dark",theme.dark);rootStyle.setProperty("--accent-soft",theme.soft);rootStyle.setProperty("--accent-pale",theme.pale);rootStyle.setProperty("--accent-line",theme.line);document.getElementById("themeColor").content=theme.primary;document.getElementById("entryIcon").textContent=app.icon;
     let lang=VAREXLocale.persist(VAREXLocale.readLanguage(qs)),pack=await VAREXLocale.load(lang),toastTimer,started=false;
     const $=id=>document.getElementById(id),source={pill:"ORIGINAL SYSTEM PREVIEW",lead:"Open the real VAREX system and explore its original pages and modules before subscribing.",title:"Enter Preview Only",body:"The original system opens unchanged, while account creation, saving, deletion and payments stay disabled.",account:"No account or sign-in",pages:"Browse every original system page",writes:"Saving, deletion and payments are disabled",exitRule:"Exit directly to subscription plans",enter:"Enter Preview Only",note:"Preview mode is isolated and never uses a real customer's data.",caption:"YOU ARE PREVIEWING THE ORIGINAL SYSTEM",readonly:"Preview only — changes and payments disabled",exit:"Exit & Choose a Plan",loading:"Opening the original system…",preparing:"Preparing secure preview mode",blocked:"This action is disabled in preview. Browse the pages, then exit to choose a plan.",missing:"The original preview for this system has not been published yet. A different system will not be shown in its place."},t=()=>Object.fromEntries(Object.entries(source).map(([key,value])=>[key,pack.t(value)]));
-    function safeReturn(){const fallback=new URL(`../plans/?app=${encodeURIComponent(slug)}&lang=${encodeURIComponent(lang)}&color=${encodeURIComponent(theme.primary)}`,location.href).href;try{const u=new URL(qs.get("return")||fallback,location.href);if(u.protocol!=="https:")throw 0;const h=u.hostname.toLowerCase();if(h==="varexapp.com"||h.endsWith(".varexapp.com")||h.endsWith(".myshopify.com")||h==="areejalloush1988.github.io"){u.searchParams.set("app",slug);u.searchParams.set("lang",lang);u.searchParams.set("color",theme.primary);return u.href}}catch(_){ }return fallback}
+    function safeReturn(){const fallback=new URL(`../plans/?app=${encodeURIComponent(slug)}&lang=${encodeURIComponent(lang)}&color=${encodeURIComponent(theme.primary)}`,document.baseURI).href;try{const u=new URL(qs.get("return")||fallback,location.href);if(u.protocol!=="https:")throw 0;const h=u.hostname.toLowerCase();if(h==="varexapp.com"||h.endsWith(".varexapp.com")||h.endsWith(".myshopify.com")||h==="areejalloush1988.github.io"){u.searchParams.set("app",slug);u.searchParams.set("lang",lang);u.searchParams.set("color",theme.primary);return u.href}}catch(_){ }return fallback}
     function fillLanguages(select){VAREXLocale.fillSelect(select,lang)}
     function appName(){return lang==="ar"?app.name.ar:pack.t(app.name.en)}
     function applyCopy(){const c=t();VAREXLocale.applyDocument(pack);$("previewPill").textContent=c.pill;$("entryApp").textContent=appName();$("entryLead").textContent=c.lead;$("entryTitle").textContent=c.title;$("entryBody").textContent=c.body;$("ruleAccount").textContent=c.account;$("rulePages").textContent=c.pages;$("ruleWrites").textContent=c.writes;$("ruleExit").textContent=c.exitRule;$("start").textContent=c.enter;$("entryNote").textContent=c.note;$("barCaption").textContent=c.caption;$("barApp").textContent=appName();$("readonly").textContent=c.readonly;$("exit").textContent=c.exit;$("loadingTitle").textContent=c.loading;$("loadingText").textContent=c.preparing;$("entryLanguage").value=lang;$("barLanguage").value=lang;document.title=`VAREX | ${appName()}`;if(!app.path){$("start").disabled=true;$("unavailable").hidden=false;$("unavailable").textContent=c.missing}}
