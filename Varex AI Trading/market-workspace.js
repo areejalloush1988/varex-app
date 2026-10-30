@@ -96,7 +96,7 @@
     if (type === "chart") return {
       autosize: true, symbol: item.tvSymbol, interval: period.id, timezone: "Asia/Dubai",
       theme: appearance, style: "1", locale: "ar_AE", allow_symbol_change: false,
-      hide_top_toolbar: true, hide_side_toolbar: false, withdateranges: false,
+      hide_top_toolbar: true, hide_side_toolbar: false, hide_legend: true, withdateranges: false,
       save_image: false, calendar: false, support_host: "https://www.tradingview.com",
       backgroundColor: appearance === "light" ? "#FFFFFF" : "#081D36",
       gridColor: appearance === "light" ? "rgba(8,29,54,0.07)" : "rgba(255,255,255,0.06)",

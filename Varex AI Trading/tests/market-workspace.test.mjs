@@ -44,6 +44,7 @@ test("chart and technical configurations share exact instrument/timeframe and pr
     assert.equal(technical.interval, interval.technical);
     assert.equal(chart.allow_symbol_change, false);
     assert.equal(chart.hide_top_toolbar, true);
+    assert.equal(chart.hide_legend, true);
     assert.equal(chart.withdateranges, false);
     assert.equal(technical.showIntervalTabs, false);
     assert.equal(chart.theme, theme);
