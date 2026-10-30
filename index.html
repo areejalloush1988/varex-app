@@ -7,9 +7,20 @@
   <link rel="manifest" href="./manifest.json">
   <meta name="theme-color" content="#172554">
   <link rel="icon" type="image/png" sizes="192x192" href="./varex-icon-192.png">
-  <script>location.replace("./systems.html");</script>
 </head>
 <body>
-  <p><a href="./systems.html">فتح أنظمة VAREX</a></p>
+  <p><a id="applicationEntry" href="./systems.html">فتح أنظمة VAREX</a></p>
+  <script>
+    const isTradingDomain = location.hostname === "app.varexapp.com";
+    const destination = isTradingDomain
+      ? "/trading/" + location.search + location.hash
+      : "./systems.html";
+    if (isTradingDomain) {
+      const entry = document.getElementById("applicationEntry");
+      entry.href = destination;
+      entry.textContent = "فتح VAREX AI Trading";
+    }
+    location.replace(destination);
+  </script>
 </body>
 </html>
