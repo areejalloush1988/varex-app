@@ -115,7 +115,19 @@
     return left > right ? 1 : -1;
   }
 
-  function normalizeCandles(input, intervalSeconds, now) {
+  function calendarBoundary(time, period, offset = 0) {
+    const date = new Date(time * 1000);
+    date.setUTCHours(0, 0, 0, 0);
+    if (period === "week") date.setUTCDate(date.getUTCDate() - (date.getUTCDay() + 6) % 7 + offset * 7);
+    else { date.setUTCDate(1); date.setUTCMonth(date.getUTCMonth() + offset); }
+    return date.getTime() / 1000;
+  }
+
+  function nextCandleTime(time, intervalSeconds, calendarPeriod) {
+    return calendarPeriod ? calendarBoundary(time, calendarPeriod, 1) : time + intervalSeconds;
+  }
+
+  function normalizeCandles(input, intervalSeconds, calendarPeriod, now) {
     const quality = {
       inputCount: Array.isArray(input) ? input.length : 0,
       invalidRows: 0, duplicateRows: 0, conflictingTimestamps: 0,
@@ -129,7 +141,12 @@
       }
       const timestamp = candle.time * 1000;
       if (timestamp > now) { quality.futureRows += 1; continue; }
-      if ((candle.time + intervalSeconds) * 1000 > now) { quality.incompleteRows += 1; continue; }
+      const end = nextCandleTime(candle.time, intervalSeconds, calendarPeriod);
+      if (!Number.isFinite(end) || (calendarPeriod && calendarBoundary(candle.time, calendarPeriod) !== candle.time)) {
+        quality.invalidRows += 1;
+        continue;
+      }
+      if (end * 1000 > now) { quality.incompleteRows += 1; continue; }
       if (conflicts.has(candle.time)) { quality.duplicateRows += 1; continue; }
       const previous = rows.get(candle.time);
       if (previous) {
@@ -149,7 +166,7 @@
     }
     const candles = [...rows.values()].sort((a, b) => a.time - b.time);
     for (let index = 1; index < candles.length; index += 1) {
-      if (candles[index].time - candles[index - 1].time !== intervalSeconds) quality.gaps += 1;
+      if (candles[index].time !== nextCandleTime(candles[index - 1].time, intervalSeconds, calendarPeriod)) quality.gaps += 1;
     }
     return { candles, quality };
   }
@@ -243,15 +260,22 @@
 
   function analyzeCandles(options = {}) {
     const input = options !== null && typeof options === "object" ? options : {};
-    const intervalSeconds = input.intervalSeconds === undefined ? 3600 : input.intervalSeconds;
+    const calendarPeriod = input.calendarPeriod === undefined ? null : input.calendarPeriod;
+    const calendar = calendarPeriod === "week" || calendarPeriod === "month";
+    const intervalSeconds = input.intervalSeconds === undefined ? (calendar ? null : 3600) : input.intervalSeconds;
     const now = input.now === undefined ? Date.now() : input.now;
-    const validOptions = periodValid(intervalSeconds) && finite(now) && now >= 0 && now <= 8.64e15;
-    const normalized = normalizeCandles(validOptions ? input.candles : [], validOptions ? intervalSeconds : 3600, validOptions ? now : 0);
+    const validOptions = (calendar ? intervalSeconds === null : calendarPeriod === null && periodValid(intervalSeconds))
+      && finite(now) && now >= 0 && now <= 8.64e15;
+    const normalized = normalizeCandles(validOptions ? input.candles : [], validOptions ? intervalSeconds : 3600,
+      validOptions ? calendarPeriod : null, validOptions ? now : 0);
     const candles = normalized.candles, quality = normalized.quality;
     const indicators = buildIndicators(candles), closing = last(candles);
-    const closeTime = closing ? (closing.time + intervalSeconds) * 1000 : null;
+    const closeTime = closing ? nextCandleTime(closing.time, intervalSeconds, calendarPeriod) * 1000 : null;
     const ageSeconds = closeTime === null ? null : (now - closeTime) / 1000;
-    const stale = closing !== null && ageSeconds >= intervalSeconds * STALE_INTERVALS;
+    const staleTime = closing && calendar ? calendarBoundary(closing.time, calendarPeriod, 1 + STALE_INTERVALS) * 1000 : null;
+    const staleAfterSeconds = !validOptions ? null : !calendar ? intervalSeconds * STALE_INTERVALS
+      : closing && finite(staleTime) ? (staleTime - closeTime) / 1000 : null;
+    const stale = closing !== null && staleAfterSeconds !== null && ageSeconds >= staleAfterSeconds;
     const missingIndicatorDetails = REQUIREMENTS.filter((item) => !indicators[item.key].available)
       .map((item) => ({ key: item.key, label: item.label, requiredBars: item.bars, availableBars: candles.length,
         reason: candles.length < item.bars ? "insufficient_history" : "invalid_calculation" }));
@@ -261,12 +285,16 @@
       : agreement.total > 0 && agreement.bearish > agreement.total / 2 ? "bearish" : "neutral";
     const reasons = describe(indicators, agreement, status, missingIndicatorDetails, quality);
     if (!validOptions) reasons.unshift("الإطار الزمني أو وقت التقييم غير صالح.");
+    else if (calendar) reasons.unshift(calendarPeriod === "week"
+      ? "الشموع أسابيع تقويمية مكتملة تبدأ الإثنين 00:00 بتوقيت UTC؛ أي أسبوع ينقصه يوم مستبعد."
+      : "الشموع أشهر تقويمية مكتملة بتوقيت UTC، بطول الشهر الفعلي؛ أي شهر ينقصه يوم مستبعد.");
     return {
       version: VERSION,
       symbol: typeof input.symbol === "string" ? input.symbol.trim() : "",
       source: typeof input.source === "string" ? input.source.trim() : "",
       status, direction, isCurrent: closing !== null && !stale,
       intervalSeconds: validOptions ? intervalSeconds : null,
+      calendarPeriod: validOptions ? calendarPeriod : null,
       asOf: closeTime === null ? null : new Date(closeTime).toISOString(),
       lastCandleTime: closing?.time ?? null,
       lastClose: closing?.close ?? null,
@@ -274,7 +302,7 @@
       indicators, agreement,
       missingIndicators: missingIndicatorDetails.map((item) => item.key),
       missingIndicatorDetails,
-      dataQuality: { ...quality, ageSeconds, staleAfterSeconds: validOptions ? intervalSeconds * STALE_INTERVALS : null },
+      dataQuality: { ...quality, ageSeconds, staleAfterSeconds },
       reasons,
       explanation: "قراءة فنية وصفية من الشموع المغلقة. المؤشرات مترابطة، واتفاقها ليس احتمال ربح ولا توصية بتنفيذ صفقة.",
     };

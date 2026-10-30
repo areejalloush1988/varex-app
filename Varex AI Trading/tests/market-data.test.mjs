@@ -55,6 +55,7 @@ test("browser and CommonJS loading expose only the public candle client and aggr
   const browser = harness(() => response(coinbase(candles(60))), { browser: true });
   assert.equal(typeof browser.api.loadCandles, "function");
   assert.equal(typeof browser.api.aggregateFourHourCandles, "function");
+  assert.equal(typeof browser.api.aggregateCalendarCandles, "function");
   assert.equal(Object.isFrozen(browser.api), true);
   assert.equal(browser.calls.length, 0);
 });
@@ -104,7 +105,7 @@ test("unknown or injected symbols and unsupported intervals fail before any fetc
   for (const symbol of ["EURUSD", "BTC-USDT", "btc-usd", "__proto__", "BTC-USD?token=bad", "", null]) {
     await assert.rejects(h.api.loadCandles({ symbol }), (error) => error.code === "unsupported_symbol");
   }
-  for (const interval of ["1", "4h", "1440", "__proto__", "toString", 60, null]) {
+  for (const interval of ["0", "4h", "1440", "30D", "__proto__", "toString", 60, null]) {
     await assert.rejects(h.api.loadCandles({ symbol: "BTC-USD", interval }), (error) => error.code === "unsupported_interval");
   }
   assert.equal(h.calls.length, 0);
@@ -112,11 +113,128 @@ test("unknown or injected symbols and unsupported intervals fail before any fetc
 });
 
 test("the exact interval allowlist produces the intended public endpoint parameters", async () => {
-  for (const [interval, granularity, seconds] of [["5", 300, 300], ["15", 900, 900], ["60", 3600, 3600], ["240", 3600, 14400], ["D", 86400, 86400]]) {
+  for (const [interval, granularity, seconds] of [["1", 60, 60], ["5", 300, 300], ["15", 900, 900], ["60", 3600, 3600], ["240", 3600, 14400], ["D", 86400, 86400]]) {
     const h = harness(() => response(coinbase(candles(320, { interval: granularity }))));
     const result = await h.api.loadCandles({ symbol: "ETH-USD", interval });
     assert.equal(result.intervalSeconds, seconds);
+    assert.equal(result.calendarPeriod, null);
     assert.equal(h.calls[0].url, "https://api.exchange.coinbase.com/products/ETH-USD/candles?granularity=" + granularity);
+  }
+});
+
+test("one-minute fallback requests Kraken's native one-minute interval", async () => {
+  const h = harness((url) => url.includes("coinbase") ? response({}, 503) : response(kraken(candles(60, { interval: 60 }))));
+  const result = await h.api.loadCandles({ symbol: "BTC-USD", interval: "1" });
+  assert.equal(result.intervalSeconds, 60);
+  assert.equal(result.source, "Kraken");
+  assert.equal(h.calls[1].url, "https://api.kraken.com/0/public/OHLC?pair=XBTUSD&interval=1");
+});
+
+test("weekly aggregation requires every closed UTC day and starts on Monday", () => {
+  const { api } = harness(() => { throw new Error("No request needed"); });
+  const day = 86400, rows = candles(16, { start: START + 2 * day, interval: day });
+  const result = api.aggregateCalendarCandles([...rows].reverse(), "week", (START + 20 * day) * 1000);
+  assert.equal(result.length, 1, "Partial leading and trailing weeks must be discarded");
+  assert.equal(result[0].time, START + 7 * day);
+  assert.equal(result[0].open, rows[5].open);
+  assert.equal(result[0].close, rows[11].close);
+  assert.equal(result[0].high, rows[11].high);
+  assert.equal(result[0].low, rows[5].low);
+  assert.equal(result[0].volume, 63);
+  const complete = candles(14, { interval: day });
+  assert.equal(api.aggregateCalendarCandles(complete, "week", (START + 14 * day) * 1000 - 1).length, 1);
+  assert.equal(api.aggregateCalendarCandles(complete, "week", (START + 14 * day) * 1000).length, 2);
+});
+
+test("calendar months respect leap February and real month boundaries, with no synthetic 30-day bars", () => {
+  const { api } = harness(() => { throw new Error("No request needed"); });
+  const rows = candles(92, { interval: 86400 }); // Jan, leap Feb, Mar, then the open April day.
+  const before = structuredClone(rows);
+  const result = api.aggregateCalendarCandles(rows, "month", Date.UTC(2024, 3, 1, 12));
+  assert.deepEqual(Array.from(result, (row) => row.time), [0, 1, 2].map((month) => Date.UTC(2024, month, 1) / 1000));
+  assert.equal(result[0].close, rows[30].close);
+  assert.equal(result[1].open, rows[31].open);
+  assert.equal(result[1].close, rows[59].close);
+  assert.equal(result[1].volume, rows.slice(31, 60).reduce((sum, row) => sum + row.volume, 0));
+  assert.equal(result[2].close, rows[90].close);
+  assert.deepEqual(rows, before);
+});
+
+test("calendar aggregation rejects missing, conflicting, unaligned and unfinished daily components", () => {
+  const { api } = harness(() => { throw new Error("No request needed"); });
+  const rows = candles(60, { interval: 86400 }), end = Date.UTC(2024, 2, 1);
+  const missing = api.aggregateCalendarCandles(rows.filter((_, index) => index !== 10), "month", end);
+  assert.deepEqual(Array.from(missing, (row) => row.time), [Date.UTC(2024, 1, 1) / 1000]);
+  assert.equal(api.aggregateCalendarCandles([...rows, { ...rows[10] }], "month", end).length, 2);
+  assert.equal(api.aggregateCalendarCandles([...rows, { ...rows[10], close: rows[10].close + .25 }], "month", end).length, 1);
+  assert.equal(api.aggregateCalendarCandles(rows.map((row) => ({ ...row, time: row.time + 1 })), "month", end).length, 0);
+  assert.equal(api.aggregateCalendarCandles(rows, "month", end - 1).length, 1);
+  for (const [period, now] of [["30D", end], ["month", NaN], ["week", -1]]) {
+    assert.equal(api.aggregateCalendarCandles(rows, period, now).length, 0);
+  }
+});
+
+test("calendar periods aggregate the bounded 720-day Kraken history before trimming", async () => {
+  const rows = candles(720, { interval: 86400 });
+  for (const [interval, period, expected] of [["W", "week", 102], ["M", "month", 23]]) {
+    const h = harness(() => response(kraken(rows)));
+    const result = await h.api.loadCandles({ symbol: "BTC-USD", interval });
+    assert.equal(result.source, "Kraken");
+    assert.equal(result.interval, interval);
+    assert.equal(result.calendarPeriod, period);
+    assert.equal(result.intervalSeconds, null, "Calendar duration must not be represented by a guessed seconds count");
+    assert.equal(result.candles.length, expected);
+    assert.equal(h.calls.length, 1, "No historical pagination or second successful provider request");
+    assert.equal(h.calls[0].url, "https://api.kraken.com/0/public/OHLC?pair=XBTUSD&interval=1440");
+    assert.equal(h.timers.size, 0);
+    result.candles[0].close = 99999;
+    result.calendarPeriod = "bad";
+    const cached = await h.api.loadCandles({ symbol: "BTC-USD", interval });
+    assert.equal(cached.calendarPeriod, period);
+    assert.notEqual(cached.candles[0].close, 99999);
+    assert.equal(h.calls.length, 1);
+  }
+});
+
+test("calendar fallback uses one Coinbase daily request and keeps the actual shorter history", async () => {
+  const h = harness((url) => url.includes("kraken") ? response({}, 503) : response(coinbase(candles(300, { interval: 86400 }))));
+  const result = await h.api.loadCandles({ symbol: "BTC-USD", interval: "M" });
+  assert.equal(result.source, "Coinbase Exchange");
+  assert.equal(result.candles.length, 9);
+  assert.equal(result.calendarPeriod, "month");
+  assert.equal(h.calls.length, 2);
+  assert.equal(h.calls[1].url, "https://api.exchange.coinbase.com/products/BTC-USD/candles?granularity=86400");
+});
+
+test("providers with only partial calendar periods report period unavailable without fabricated candles", async () => {
+  const rows = candles(6, { interval: 86400 });
+  const h = harness((url) => response(url.includes("kraken") ? kraken(rows) : coinbase(rows)));
+  await assert.rejects(h.api.loadCandles({ symbol: "BTC-USD", interval: "W" }), (error) =>
+    error.code === "period_unavailable" && /غير متاح لهذه الفترة/.test(error.message) && error.attempts.length === 2);
+  assert.equal(h.calls.length, 2);
+  assert.equal(h.timers.size, 0);
+});
+
+test("public one-minute and calendar loader results pass directly into analysis with the correct close time", async () => {
+  const context = { module: { exports: {} } };
+  vm.runInNewContext(fs.readFileSync(new URL("../market-analysis.js", import.meta.url), "utf8"), context);
+  for (const [interval, period, step, count, expectedClose] of [
+    ["1", null, 60, 300, "2026-10-30T12:00:00.000Z"],
+    ["W", "week", 86400, 720, "2026-10-26T00:00:00.000Z"],
+    ["M", "month", 86400, 720, "2026-10-01T00:00:00.000Z"],
+  ]) {
+    const end = Math.floor(NOW / 1000 / step) * step;
+    const rows = candles(count, { start: end - (count - 1) * step, interval: step });
+    const h = harness((url) => response(url.includes("kraken") ? kraken(rows) : coinbase(rows)));
+    const data = await h.api.loadCandles({ symbol: "BTC-USD", interval });
+    const result = context.module.exports.analyzeCandles({ ...data, now: NOW });
+    assert.equal(result.calendarPeriod, period);
+    assert.equal(result.asOf, expectedClose);
+    assert.equal(result.isCurrent, true);
+    assert.equal(result.dataQuality.gaps, 0);
+    assert.equal(result.status, interval === "M" ? "insufficient" : "ready");
+    assert.equal(result.indicators.ema50.available, interval !== "M");
+    assert.equal(h.calls.length, 1);
   }
 });
 

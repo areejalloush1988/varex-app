@@ -9,6 +9,7 @@
   const MAX_CANDLES = 350;
   const PROVIDER_TIMEOUT_MS = 8_000;
   const CACHE_TTL_MS = 15_000;
+  const DAY_SECONDS = 86400;
   const MARKETS = Object.freeze({
     "BTC-USD": { krakenPair: "XBTUSD", krakenKeys: ["XXBTZUSD", "XBTUSD"] },
     "ETH-USD": { krakenPair: "ETHUSD", krakenKeys: ["XETHZUSD", "ETHUSD"] },
@@ -16,11 +17,14 @@
     "ADA-USD": { krakenPair: "ADAUSD", krakenKeys: ["ADAUSD"] },
   });
   const INTERVALS = Object.freeze({
+    "1": { seconds: 60, coinbase: 60, kraken: 1 },
     "5": { seconds: 300, coinbase: 300, kraken: 5 },
     "15": { seconds: 900, coinbase: 900, kraken: 15 },
     "60": { seconds: 3600, coinbase: 3600, kraken: 60 },
     "240": { seconds: 14400, coinbase: 3600, kraken: 240 },
     "D": { seconds: 86400, coinbase: 86400, kraken: 1440 },
+    "W": { seconds: null, calendarPeriod: "week", coinbase: 86400, kraken: 1440 },
+    "M": { seconds: null, calendarPeriod: "month", coinbase: 86400, kraken: 1440 },
   });
   const cache = new Map();
   const fetchPublic = typeof fetch === "function" ? fetch.bind(globalThis) : null;
@@ -98,6 +102,48 @@
     return result.sort((a, b) => a.time - b.time);
   }
 
+  function calendarStart(time, period) {
+    const date = new Date(time * 1000);
+    date.setUTCHours(0, 0, 0, 0);
+    if (period === "week") date.setUTCDate(date.getUTCDate() - (date.getUTCDay() + 6) % 7);
+    else date.setUTCDate(1);
+    return date.getTime() / 1000;
+  }
+
+  function calendarEnd(time, period) {
+    const date = new Date(time * 1000);
+    if (period === "week") date.setUTCDate(date.getUTCDate() + 7);
+    else date.setUTCMonth(date.getUTCMonth() + 1);
+    return date.getTime() / 1000;
+  }
+
+  // Calendar bars use complete UTC days, Monday weeks and real calendar months.
+  // A missing day, a partial leading period or the open current period is excluded.
+  function aggregateCalendarCandles(input, period, now = Date.now()) {
+    if (!["week", "month"].includes(period) || !Number.isFinite(now) || now < 0 || now > 8.64e15) return [];
+    const groups = new Map();
+    for (const candle of normalizeRecords(Array.isArray(input) ? input : [])) {
+      if (candle.time % DAY_SECONDS !== 0 || (candle.time + DAY_SECONDS) * 1000 > now) continue;
+      const start = calendarStart(candle.time, period);
+      if (!Number.isSafeInteger(start) || start < 0) continue;
+      if (!groups.has(start)) groups.set(start, []);
+      groups.get(start).push(candle);
+    }
+    const result = [];
+    for (const [time, rows] of groups) {
+      const end = calendarEnd(time, period), days = (end - time) / DAY_SECONDS;
+      if (!Number.isSafeInteger(days) || end * 1000 > now || rows.length !== days
+        || rows.some((candle, index) => candle.time !== time + index * DAY_SECONDS)) continue;
+      const volume = rows.reduce((sum, candle) => sum + candle.volume, 0);
+      if (!Number.isFinite(volume)) continue;
+      result.push({
+        time, open: rows[0].open, high: Math.max(...rows.map((candle) => candle.high)),
+        low: Math.min(...rows.map((candle) => candle.low)), close: rows.at(-1).close, volume,
+      });
+    }
+    return result.sort((a, b) => a.time - b.time);
+  }
+
   async function requestJson(url, callerSignal) {
     throwIfAborted(callerSignal);
     const controller = new AbortController();
@@ -141,12 +187,14 @@
       time: row[0], low: row[1], high: row[2], open: row[3], close: row[4], volume: row[5],
     }));
     const normalized = normalizeRecords(records);
-    const candles = interval === "240" ? aggregateFourHourCandles(normalized) : normalized;
-    if (!candles.length) throw new MarketDataError("invalid_data", "لا تتوفر شموع صالحة للإطار الزمني المطلوب.");
+    const period = INTERVALS[interval].calendarPeriod;
+    const candles = period ? aggregateCalendarCandles(normalized.slice(-300), period)
+      : interval === "240" ? aggregateFourHourCandles(normalized) : normalized;
+    if (!candles.length) throw new MarketDataError(period ? "period_unavailable" : "invalid_data", "لا تتوفر شموع مكتملة للإطار الزمني المطلوب.");
     return candles.slice(-MAX_CANDLES);
   }
 
-  function krakenCandles(payload, symbol) {
+  function krakenCandles(payload, symbol, interval) {
     if (!payload || !Array.isArray(payload.error) || payload.error.length
       || !payload.result || typeof payload.result !== "object" || Array.isArray(payload.result)) {
       throw new MarketDataError("invalid_data", "أعاد المصدر بيانات شموع غير صالحة.");
@@ -158,9 +206,10 @@
     const records = arrays[0][1].filter((row) => Array.isArray(row) && row.length >= 7).map((row) => ({
       time: row[0], open: row[1], high: row[2], low: row[3], close: row[4], volume: row[6],
     }));
-    const candles = normalizeRecords(records).slice(-MAX_CANDLES);
-    if (!candles.length) throw new MarketDataError("invalid_data", "لا تتوفر شموع صالحة للإطار الزمني المطلوب.");
-    return candles;
+    const normalized = normalizeRecords(records), period = INTERVALS[interval].calendarPeriod;
+    const candles = period ? aggregateCalendarCandles(normalized.slice(-720), period) : normalized;
+    if (!candles.length) throw new MarketDataError(period ? "period_unavailable" : "invalid_data", "لا تتوفر شموع مكتملة للإطار الزمني المطلوب.");
+    return candles.slice(-MAX_CANDLES);
   }
 
   function cloneResult(value) {
@@ -196,9 +245,12 @@
       {
         name: "Kraken",
         url: "https://api.kraken.com/0/public/OHLC?pair=" + MARKETS[symbol].krakenPair + "&interval=" + settings.kraken,
-        parse: (payload) => krakenCandles(payload, symbol),
+        parse: (payload) => krakenCandles(payload, symbol, interval),
       },
     ];
+    // One daily request gives up to 720 Kraken bars, versus 300 at Coinbase.
+    // Prefer that bounded history for calendar periods; never paginate for years.
+    if (settings.calendarPeriod) providers.reverse();
     const attempts = [];
     for (const provider of providers) {
       throwIfAborted(signal);
@@ -207,7 +259,8 @@
         throwIfAborted(signal);
         const candles = provider.parse(payload), receivedAt = Date.now();
         const result = {
-          symbol, intervalSeconds: settings.seconds, candles, source: provider.name,
+          symbol, interval, intervalSeconds: settings.seconds, calendarPeriod: settings.calendarPeriod || null,
+          candles, source: provider.name,
           receivedAt: new Date(receivedAt).toISOString(),
         };
         throwIfAborted(signal);
@@ -220,10 +273,12 @@
     }
     // Failed refreshes must not silently revive an earlier cached response.
     cache.delete(key);
-    const error = new MarketDataError("sources_unavailable", "تعذر جلب شموع السوق من المصادر المتاحة. حاول مجدداً.");
+    const periodUnavailable = settings.calendarPeriod && attempts.some((attempt) => attempt.code === "period_unavailable");
+    const error = new MarketDataError(periodUnavailable ? "period_unavailable" : "sources_unavailable",
+      periodUnavailable ? "غير متاح لهذه الفترة: لا تتوفر شموع تقويمية مكتملة من المصادر الحالية." : "تعذر جلب شموع السوق من المصادر المتاحة. حاول مجدداً.");
     error.attempts = attempts;
     throw error;
   }
 
-  return Object.freeze({ loadCandles, aggregateFourHourCandles });
+  return Object.freeze({ loadCandles, aggregateFourHourCandles, aggregateCalendarCandles });
 });

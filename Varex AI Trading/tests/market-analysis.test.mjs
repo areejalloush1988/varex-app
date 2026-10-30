@@ -202,6 +202,99 @@ test("freshness is based on candle close and interval, including stale partial h
   assert.equal(analyze(partial, { now: clock(partial, 2 * INTERVAL) }).status, "stale");
 });
 
+test("one-minute analysis closes on the exact minute and excludes the open candle", () => {
+  const start = Date.UTC(2026, 9, 30, 10) / 1000;
+  const candles = bars(Array.from({ length: 61 }, (_, index) => 100 + index), { start, interval: 60 });
+  const result = analyzeCandles({ candles, intervalSeconds: 60, now: (start + 60 * 60 + 30) * 1000 });
+  assert.equal(result.status, "ready");
+  assert.equal(result.candleCount, 60);
+  assert.equal(result.lastClose, 159);
+  assert.equal(result.asOf, "2026-10-30T11:00:00.000Z");
+  assert.equal(result.dataQuality.incompleteRows, 1);
+  assert.equal(result.dataQuality.ageSeconds, 30);
+  assert.equal(result.dataQuality.staleAfterSeconds, 120);
+});
+
+function monthBars(count, { year = 2024, month = 0 } = {}) {
+  return bars(Array.from({ length: count }, (_, index) => 100 + index))
+    .map((row, index) => ({ ...row, time: Date.UTC(year, month + index, 1) / 1000 }));
+}
+
+test("calendar analysis uses actual month ends, including leap February, without false gaps", () => {
+  for (const year of [2023, 2024]) {
+    const candles = monthBars(4, { year });
+    const result = analyzeCandles({ candles, intervalSeconds: null, calendarPeriod: "month", now: Date.UTC(year, 3, 1) - 1 });
+    assert.equal(result.calendarPeriod, "month");
+    assert.equal(result.intervalSeconds, null);
+    assert.equal(result.candleCount, 2);
+    assert.equal(result.lastCandleTime, Date.UTC(year, 1, 1) / 1000);
+    assert.equal(result.asOf, new Date(Date.UTC(year, 2, 1)).toISOString());
+    assert.equal(result.dataQuality.gaps, 0);
+    assert.equal(result.dataQuality.incompleteRows, 1);
+    assert.equal(result.dataQuality.futureRows, 1);
+    const boundary = analyzeCandles({ candles, calendarPeriod: "month", now: Date.UTC(year, 3, 1) });
+    assert.equal(boundary.candleCount, 3);
+    assert.equal(boundary.asOf, new Date(Date.UTC(year, 3, 1)).toISOString());
+    assert.ok(boundary.reasons.some((reason) => reason.includes("أشهر تقويمية") && reason.includes("UTC")));
+  }
+});
+
+test("a 23-month public history exposes real RSI/ATR/EMA20 and reports absent EMA50 and MACD", () => {
+  const candles = monthBars(23);
+  const result = analyzeCandles({ candles, calendarPeriod: "month", now: Date.UTC(2025, 11, 1) });
+  assert.equal(result.status, "insufficient");
+  assert.equal(result.isCurrent, true);
+  assert.equal(result.candleCount, 23);
+  assert.equal(result.indicators.ema20.available, true);
+  assert.equal(result.indicators.ema50.available, false);
+  assert.equal(result.indicators.rsi14.available, true);
+  assert.equal(result.indicators.atr14.available, true);
+  assert.equal(result.indicators.macd.available, false);
+  assert.equal(result.indicators.supportResistance.available, true);
+  assert.deepEqual(Array.from(result.missingIndicators), ["ema50", "macd"]);
+  assert.equal(result.missingIndicatorDetails.find((item) => item.key === "ema50").availableBars, 23);
+  assert.equal(result.missingIndicatorDetails.find((item) => item.key === "macd").requiredBars, 34);
+});
+
+test("calendar freshness advances by two calendar periods, not a fixed 60-day month approximation", () => {
+  const candles = monthBars(1, { year: 2025 }); // January closes on February 1.
+  const before = analyzeCandles({ candles, calendarPeriod: "month", now: Date.UTC(2025, 3, 1) - 1 });
+  const boundary = analyzeCandles({ candles, calendarPeriod: "month", now: Date.UTC(2025, 3, 1) });
+  assert.equal(before.isCurrent, true);
+  assert.equal(boundary.status, "stale");
+  assert.equal(boundary.isCurrent, false);
+  assert.equal(boundary.asOf, "2025-02-01T00:00:00.000Z");
+  assert.equal(boundary.dataQuality.staleAfterSeconds, (28 + 31) * 86400);
+  assert.equal(boundary.dataQuality.ageSeconds, (28 + 31) * 86400);
+});
+
+test("weekly analysis requires UTC Monday alignment and handles a year boundary", () => {
+  const monday = Date.UTC(2024, 11, 30) / 1000, week = 7 * 86400;
+  const candles = bars([100, 101, 102, 103], { start: monday, interval: week });
+  const sunday = { ...candles[0], time: monday - 86400 };
+  const result = analyzeCandles({ candles: [...candles, sunday], calendarPeriod: "week", now: (monday + 2 * week + 86400) * 1000 });
+  assert.equal(result.candleCount, 2);
+  assert.equal(result.asOf, "2025-01-13T00:00:00.000Z");
+  assert.equal(result.dataQuality.gaps, 0);
+  assert.equal(result.dataQuality.invalidRows, 1);
+  assert.equal(result.dataQuality.incompleteRows, 1);
+  assert.equal(result.dataQuality.futureRows, 1);
+  assert.equal(result.dataQuality.staleAfterSeconds, 14 * 86400);
+  assert.ok(result.reasons.some((reason) => reason.includes("الإثنين") && reason.includes("UTC")));
+});
+
+test("calendar gap detection rejects misaligned bars and counts missing calendar periods", () => {
+  const candles = monthBars(4).filter((_, index) => index !== 1);
+  const misaligned = { ...candles[0], time: Date.UTC(2024, 0, 2) / 1000 };
+  const result = analyzeCandles({ candles: [...candles, misaligned], calendarPeriod: "month", now: Date.UTC(2024, 4, 1) });
+  assert.equal(result.candleCount, 3);
+  assert.equal(result.dataQuality.invalidRows, 1);
+  assert.equal(result.dataQuality.gaps, 1);
+  for (const invalid of [{ calendarPeriod: "30D" }, { calendarPeriod: "month", intervalSeconds: 30 * 86400 }, { calendarPeriod: "week", intervalSeconds: 604800 }]) {
+    assert.equal(analyzeCandles({ candles, now: Date.UTC(2024, 4, 1), ...invalid }).status, "unavailable");
+  }
+});
+
 test("zero/empty data and invalid options return unavailable instead of fabricated numbers", () => {
   for (const input of [{}, null, { candles: [] }, { candles: "bad" }, { intervalSeconds: 0 }, { now: NaN }]) {
     const result = analyzeCandles(input);

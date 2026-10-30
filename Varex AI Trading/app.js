@@ -21,8 +21,18 @@
     userRoleDrafts: {},
     exploreSymbol: "",
     exploreInterval: "60",
+    accountChoice: "demo",
+    brokerProvider: "capital",
+    brokerQuery: "",
+    brokerFormOpen: false,
+    automation: null,
+    automationLoading: false,
+    automationError: "",
   };
   let marketWorkspace = null;
+  let entryDestination = null;
+  let automationRequest = null;
+  let automationMutationPending = false;
   let pendingAuth = { purpose: "", email: "", password: "", displayName: "", otp: "" };
   let toastTimer = 0;
   let confirmResolve = null;
@@ -37,6 +47,7 @@
     settingsForm: ["timezone"],
     profileForm: ["displayName"],
     watchlistForm: ["symbols"],
+    automationForm: ["symbol", "interval", "riskPercent", "maxDailyTrades", "enableAutomation"],
   };
 
   function formDraft(id, defaults = {}) {
@@ -50,7 +61,7 @@
       return;
     }
     const key = form.id === "tradeForm" && field.name === "amount" ? `${app.executionMode}Amount` : field.name;
-    app.formDrafts[form.id] = { ...app.formDrafts[form.id], [key]: field.value };
+    app.formDrafts[form.id] = { ...app.formDrafts[form.id], [key]: field.type === "checkbox" ? field.checked === true : field.value };
   }
   async function handleFormChange(event) {
     rememberFormField(event);
@@ -125,6 +136,51 @@
   }
   function roleLabel(role) {
     return ({ developer: "إدارة النظام", trader: "صلاحية تداول", viewer: "عرض فقط" })[role] || "حساب";
+  }
+  function providerLabel(broker = app.broker) {
+    return window.VarexAccounts?.getProvider(broker?.provider)?.label || broker?.providerLabel || "منصة التداول";
+  }
+  function binanceConnected() {
+    return app.broker?.connected === true && app.broker.provider === "binance" && app.broker.executionSupported !== false;
+  }
+  function liveExecutionReady() {
+    return app.profile?.canConnectBroker === true && binanceConnected() && app.broker.liveTradingEnabled === true;
+  }
+  function accountMoney(value, currency = "USD") {
+    if (typeof value !== "number" || !Number.isFinite(value)) return "—";
+    const unit = /^[A-Z]{3}$/.test(currency) ? currency : "USD";
+    return new Intl.NumberFormat("en-US", { style: "currency", currency: unit, maximumFractionDigits: 2 }).format(value);
+  }
+  function readEntryDestination(search = window.location?.search || "") {
+    const params = new URLSearchParams(search), workspace = window.VarexMarketWorkspace;
+    const provider = window.VarexAccounts?.getProvider(params.get("provider"));
+    const market = workspace?.getMarket(params.get("symbol"));
+    const interval = workspace?.intervals?.some((item) => item.id === params.get("interval")) ? params.get("interval") : "60";
+    return {
+      account: ["demo", "connect"].includes(params.get("account")) ? params.get("account") : "demo",
+      provider: provider?.id || "capital",
+      next: params.get("next") === "markets" ? "markets" : "",
+      symbol: market?.id || "EURUSD",
+      interval,
+      authPane: params.get("auth") === "login" ? "loginForm" : "registerPane",
+    };
+  }
+  function renderAuthChoices() {
+    const target = $("#authAccountChoices");
+    if (target && window.VarexAccounts) target.innerHTML = window.VarexAccounts.renderChoices({ active: entryDestination?.account === "connect" ? "linked" : "demo" });
+  }
+  function applyEntryDestination() {
+    const destination = entryDestination || readEntryDestination();
+    app.executionMode = "paper";
+    app.accountChoice = destination.account === "connect" ? "linked" : "demo";
+    app.brokerProvider = destination.account === "connect" ? destination.provider : (window.VarexAccounts?.getProvider(app.broker?.provider)?.id || "capital");
+    app.brokerQuery = "";
+    app.brokerFormOpen = false;
+    app.view = destination.next === "markets" ? "markets" : destination.account === "connect" ? "broker" : "dashboard";
+    if (destination.next === "markets") {
+      app.exploreSymbol = destination.symbol;
+      app.exploreInterval = destination.interval;
+    }
   }
   function directionLabel(direction) {
     return ({ buy: "شراء", sell: "بيع", wait: "انتظار" })[direction] || "انتظار";
@@ -260,6 +316,7 @@
   }
 
   async function init() {
+    entryDestination = readEntryDestination();
     bindAuth();
     bindShell();
     try {
@@ -276,7 +333,9 @@
     $("#loadingScreen").classList.add("hidden");
     $("#appShell").classList.add("hidden");
     $("#authScreen").classList.remove("hidden");
-    showAuthPane("loginForm");
+    entryDestination ||= readEntryDestination();
+    renderAuthChoices();
+    showAuthPane(entryDestination.authPane);
     if (message) showAuthMessage(message);
   }
   async function enterApp() {
@@ -291,7 +350,9 @@
       app.supportedMarkets = bootstrap.supportedMarkets || [];
       app.formDrafts = {};
       app.userRoleDrafts = {};
-      app.view = "dashboard";
+      app.automation = null;
+      app.automationError = "";
+      applyEntryDestination();
       $("#authScreen").classList.add("hidden");
       $("#appShell").classList.remove("hidden");
       applyIdentity();
@@ -310,7 +371,7 @@
     $("#topUserRole").textContent = roleLabel(profile.role);
     $("#avatar").textContent = initials(profile.displayName);
     $("#usersNav").classList.toggle("hidden", !profile.canManageUsers);
-    $("#brokerNav").classList.toggle("hidden", !profile.canConnectBroker);
+    $("#brokerNav").classList.remove("hidden");
     $$(".nav-item[data-view]").forEach((item) => item.classList.toggle("active", item.dataset.view === app.view));
     updateExecutionUi();
     $("#dateLabel").textContent = new Date().toLocaleDateString("ar-AE", { timeZone: displayTimeZone(), weekday: "long", year: "numeric", month: "long", day: "numeric" });
@@ -319,19 +380,22 @@
 
   function updateExecutionUi() {
     const connected = app.broker?.connected === true;
-    const liveReady = connected && app.broker?.liveTradingEnabled === true;
-    $("#brokerLabel").textContent = app.broker?.label || "حساب التداول غير مربوط";
-    $("#executionStatus").textContent = liveReady ? "LIVE READY" : "PAPER TRADING";
+    const liveReady = liveExecutionReady(), label = providerLabel();
+    $("#brokerLabel").textContent = connected ? `${label} · ${app.broker.accountLabel || "حساب مربوط"}` : "حساب التداول غير مربوط";
+    $("#executionStatus").textContent = liveReady ? "LIVE READY" : "DEMO TRADING";
     $("#executionStatus").classList.toggle("live-ready", liveReady);
     $("#executionBanner").classList.toggle("live-ready", liveReady);
     if (liveReady) {
       $("#executionBannerTitle").textContent = "حساب Binance مربوط — كل صفقة حقيقية تحتاج تأكيداً يدوياً";
       $("#executionBannerText").textContent = "الإيداع والسحب يتمان من Binance فقط. VAREX لا يحتفظ بالأموال ولا يملك صلاحية نقلها.";
+    } else if (connected && app.broker.provider === "capital") {
+      $("#executionBannerTitle").textContent = "حساب Capital.com مربوط لعرض الأرصدة والمراكز";
+      $("#executionBannerText").textContent = "التنفيذ داخل Capital.com غير متاح في VAREX حالياً. صفقات VAREX والبوت التجريبي تستخدم الرصيد التجريبي فقط.";
     } else if (connected) {
-      $("#executionBannerTitle").textContent = "حساب Binance مربوط — التداول الحقيقي متوقف";
-      $("#executionBannerText").textContent = "يمكن الاستمرار بالتداول الورقي أو تفعيل التنفيذ الحقيقي من شاشة حساب التداول.";
+      $("#executionBannerTitle").textContent = `حساب ${label} مربوط — التداول الحقيقي متوقف`;
+      $("#executionBannerText").textContent = "التداول التجريبي متاح. يمكن مراجعة قدرات الربط من شاشة ربط حساب منصة تداول.";
     } else {
-      $("#executionBannerTitle").textContent = "التجربة الحالية ورقية وآمنة للتعلّم";
+      $("#executionBannerTitle").textContent = "التجربة الحالية تجريبية وآمنة للتعلّم";
       $("#executionBannerText").textContent = "لا حاجة إلى ربط حساب تداول أو إيداع مال. الأسعار حية، لكن كل الصفقات تجريبية فقط.";
     }
   }
@@ -340,6 +404,15 @@
     document.addEventListener("click", (event) => {
       const passwordToggle = event.target.closest("[data-password-toggle]");
       if (passwordToggle) return togglePassword(passwordToggle);
+      const accountChoice = event.target.closest("[data-account-choice]");
+      if (accountChoice && !app.profile) {
+        event.preventDefault?.();
+        entryDestination ||= readEntryDestination();
+        entryDestination.account = accountChoice.dataset.accountChoice === "connect" ? "connect" : "demo";
+        entryDestination.next = "";
+        renderAuthChoices();
+        return showAuthMessage(entryDestination.account === "connect" ? "بعد إنشاء حساب VAREX أو تسجيل الدخول، تظهر منصات التداول وخيارات الربط المتاحة." : "بعد إنشاء حساب VAREX أو تسجيل الدخول، يُفتح الحساب التجريبي المحفوظ.", "success");
+      }
       const switcher = event.target.closest("[data-auth-pane]");
       if (switcher) showAuthPane(switcher.dataset.authPane);
     });
@@ -399,7 +472,7 @@
         registerPassword.value = "";
         $('#registerPane [name="confirmPassword"]').value = "";
         updatePasswordRules("");
-        showAuthMessage("لا يمكن إكمال إنشاء حساب جديد بهذا البريد. إذا كان لديك حساب VAREX، سجّل الدخول بكلمة مروره أو استخدم استعادة كلمة المرور.");
+        showAuthMessage("لا يمكن إكمال إنشاء حساب جديد بهذا البريد. إذا كان لديك حساب VAREX، يمكن تسجيل الدخول بكلمة مروره أو استخدام استعادة كلمة المرور.");
         $("#existingAccountActions")?.classList.remove("hidden");
       }
     });
@@ -477,18 +550,20 @@
     $("#viewRoot").addEventListener("click", handleActionClick);
     $("#viewRoot").addEventListener("submit", handleSubmit);
     $("#viewRoot").addEventListener("input", rememberFormField);
+    $("#viewRoot").addEventListener("input", handleBrokerSearch);
     $("#viewRoot").addEventListener("change", handleFormChange);
     document.addEventListener("visibilitychange", scheduleMarketRefresh);
     $("#confirmCancel").addEventListener("click", () => resolveConfirm(false));
     $("#confirmAccept").addEventListener("click", () => resolveConfirm(true));
   }
   function goTo(view) {
+    if (!app.profile) return;
     if (view === "users" && !app.profile.canManageUsers) return;
-    if (view === "broker" && !app.profile.canConnectBroker) return;
     app.view = view;
     $$(".nav-item[data-view]").forEach((item) => item.classList.toggle("active", item.dataset.view === view));
     closeMenu();
     if (view === "users" && !app.users.length) loadUsers();
+    else if (view === "automation") { render(); loadAutomation(); }
     else render();
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
@@ -575,12 +650,13 @@
 
   function headerForView() {
     const map = {
-      dashboard: [`${greeting()}، ${app.profile.displayName}`, "اختيار عملة، تشغيل تحليل VAREX، ثم تجربة صفقة ورقية."],
+      dashboard: [`${greeting()}، ${app.profile.displayName}`, "اختيار عملة، تشغيل تحليل VAREX، ثم تجربة صفقة تجريبية."],
       markets: ["الأسواق", "الفوركس والمؤشرات والسلع والمعادن والأسهم والعملات الرقمية في مساحة واحدة."],
       intelligence: ["تحليل الأسواق", "الاتجاه والزخم والتذبذب ومستويات السعر، مع مصدر البيانات والفترة الزمنية."],
-      trades: ["الصفقات", "فتح وإغلاق صفقات ورقية أو تنفيذ أمر Spot حقيقي بعد تأكيد واضح."],
-      risk: ["مركز المخاطر", "حدود حقيقية يطبقها الخادم قبل السماح بأي صفقة ورقية."],
-      broker: ["حساب التداول", "ربط Binance Spot ومراجعة الرصيد والصلاحيات دون إتاحة السحب عبر VAREX."],
+      trades: ["الصفقات", "فتح وإغلاق صفقات تجريبية أو تنفيذ أمر Spot حقيقي بعد تأكيد واضح."],
+      risk: ["مركز المخاطر", "حدود حقيقية يطبقها الخادم قبل السماح بأي صفقة تجريبية."],
+      broker: ["ربط حساب منصة تداول", "اختيار المنصة ومعرفة قدرات الربط المتاحة قبل إضافة بيانات الحساب."],
+      automation: ["التداول الآلي", "بوت تجريبي يعمل على الخادم بعد تفعيله، مع حدود للمخاطر وسجل واضح للعمليات."],
       watchlist: ["قائمة المراقبة", "اختيار الأسواق المطلوبة للمتابعة وحفظها في الحساب."],
       reports: ["التقارير", "نتائج محسوبة من صفقات حسابك المحفوظة فقط."],
       users: ["الحسابات", "إضافة الحسابات وتحديد صلاحية التداول أو العرض فقط."],
@@ -594,7 +670,8 @@
       markets: '<button class="small-button" data-action="refresh-technical">↻ تحديث العرض</button>',
       intelligence: '<button class="primary-button" data-action="refresh-technical">↻ تحديث التحليل</button>',
       reports: '<button class="primary-button" data-action="export-report">⇩ تصدير CSV</button>',
-      broker: app.broker?.connected ? '<button class="primary-button" data-action="refresh-broker">↻ فحص الاتصال والرصيد</button>' : "",
+      broker: app.broker?.connected && app.profile.canConnectBroker ? '<button class="primary-button" data-action="refresh-broker">↻ فحص الاتصال والرصيد</button>' : "",
+      automation: '<button class="small-button" data-action="refresh-automation">↻ تحديث حالة البوت</button>',
     };
     $("#pageActions").innerHTML = actions[app.view] || "";
     $("#executionBanner")?.classList.toggle("hidden", ["markets", "intelligence"].includes(app.view));
@@ -605,7 +682,7 @@
     headerForView();
     marketWorkspace?.destroy();
     marketWorkspace = null;
-    const renderers = { dashboard: renderDashboard, markets: renderMarkets, intelligence: renderIntelligence, trades: renderTrades, risk: renderRisk, broker: renderBroker, watchlist: renderWatchlist, reports: renderReports, users: renderUsers, settings: renderSettings };
+    const renderers = { dashboard: renderDashboard, markets: renderMarkets, intelligence: renderIntelligence, trades: renderTrades, risk: renderRisk, broker: renderBroker, automation: renderAutomation, watchlist: renderWatchlist, reports: renderReports, users: renderUsers, settings: renderSettings };
     $("#viewRoot").innerHTML = (renderers[app.view] || renderDashboard)();
     if (["markets", "intelligence"].includes(app.view)) mountMarketWorkspace();
     pendingForms.forEach((id) => {
@@ -620,7 +697,7 @@
     const target = $("#marketWorkspace"), workspace = window.VarexMarketWorkspace;
     if (!target) return;
     if (!workspace) {
-      target.innerHTML = '<div class="mw-empty"><p>تعذر تحميل أدوات الأسواق. أعد تحميل الصفحة أو افتح المساحة المستقلة.</p><a href="/trading/markets.html">فتح الأسواق والتحليل</a></div>';
+      target.innerHTML = '<div class="mw-empty"><p>تعذر تحميل أدوات الأسواق. يمكن إعادة تحميل الصفحة أو فتح مساحة الأسواق.</p><a href="/trading/markets.html">فتح الأسواق والتحليل</a></div>';
       return;
     }
     marketWorkspace = workspace.mount(target, {
@@ -677,21 +754,21 @@
   }
   function renderRecentTrades(limit = 5) {
     const trades = app.state.trades.slice(0, limit);
-    if (!trades.length) return '<div class="empty"><span>▣</span><p>لا توجد صفقات بعد. يمكن فتح أول صفقة ورقية من بطاقة التنفيذ.</p></div>';
+    if (!trades.length) return '<div class="empty"><span>▣</span><p>لا توجد صفقات بعد. يمكن فتح أول صفقة تجريبية من بطاقة التنفيذ.</p></div>';
     return `<div class="list">${trades.map((trade) => `<div class="list-row"><span><strong>${escapeHtml(trade.symbol)}</strong><small class="muted"> · ${localDate(trade.openedAt, true)}</small></span><span class="badge ${trade.side}">${directionLabel(trade.side)}</span><span class="${trade.status === "closed" ? (trade.pnl >= 0 ? "positive" : "negative") : "muted"}">${trade.status === "closed" ? money(trade.pnl) : "مفتوحة"}</span><button class="small-button" data-view="trades">التفاصيل</button></div>`).join("")}</div>`;
   }
   function tradeTicket() {
     const draft = formDraft("tradeForm", { symbol: app.state.selectedSymbol });
     const canTrade = app.profile.canTrade, marketOptions = app.markets.map((market) => `<option value="${escapeHtml(market.symbol)}" ${market.symbol === draft.symbol ? "selected" : ""}>${escapeHtml(market.label)}</option>`).join("");
     const selected = getMarket(draft.symbol);
-    const liveReady = app.profile.canConnectBroker && app.broker?.connected && app.broker?.liveTradingEnabled;
+    const liveReady = liveExecutionReady();
     if (!liveReady && app.executionMode === "live") app.executionMode = "paper";
     const liveMode = liveReady && app.executionMode === "live";
     const maxAmount = liveMode ? Number(app.broker.maxLiveOrderUsd || 100) : Number(app.state.balanceCents) / 400;
     const defaultAmount = liveMode ? Math.min(100, maxAmount) : Math.max(25, Math.min(500, Math.floor(maxAmount / 25) * 25));
     const amount = draft[liveMode ? "liveAmount" : "paperAmount"] ?? defaultAmount;
-    const modePicker = app.profile.canConnectBroker ? `<div class="execution-picker"><button type="button" class="${!liveMode ? "active" : ""}" data-execution-mode="paper">تداول ورقي</button>${liveReady ? `<button type="button" class="${liveMode ? "active live" : ""}" data-execution-mode="live">تداول حقيقي</button>` : '<button type="button" data-view="broker">إعداد التداول الحقيقي</button>'}</div>` : "";
-    return `<article class="panel ${liveMode ? "live-ticket" : ""}"><header class="panel-head"><div><h2>${liveMode ? "تنفيذ صفقة حقيقية" : "فتح صفقة ورقية"}</h2><p>${liveMode ? "يُرسل أمر MARKET إلى Binance Spot بعد تأكيد مستقل." : "السعر يؤخذ من السوق عند تأكيد الطلب."}</p></div><span class="badge ${liveMode ? "live" : "pending"}">${liveMode ? "LIVE" : "PAPER"}</span></header>
+    const modePicker = app.profile.canConnectBroker ? `<div class="execution-picker"><button type="button" class="${!liveMode ? "active" : ""}" data-execution-mode="paper">تداول تجريبي</button>${liveReady ? `<button type="button" class="${liveMode ? "active live" : ""}" data-execution-mode="live">تداول حقيقي</button>` : '<button type="button" data-view="broker">ربط حساب منصة تداول</button>'}</div>` : "";
+    return `<article class="panel ${liveMode ? "live-ticket" : ""}"><header class="panel-head"><div><h2>${liveMode ? "تنفيذ صفقة حقيقية" : "فتح صفقة تجريبية"}</h2><p>${liveMode ? "يُرسل أمر MARKET إلى Binance Spot بعد تأكيد مستقل." : "السعر يؤخذ من السوق عند تأكيد الطلب."}</p></div><span class="badge ${liveMode ? "live" : "pending"}">${liveMode ? "LIVE" : "DEMO"}</span></header>
       ${canTrade ? `<form class="trade-ticket" id="tradeForm">
         ${modePicker}
         <label class="control">السوق<select name="symbol">${marketOptions}</select></label>
@@ -699,21 +776,21 @@
         <label class="control">${liveMode ? "قيمة الأمر بـ USDT" : "حجم الصفقة بالدولار"}<input name="amount" type="number" min="25" max="${maxAmount}" step="25" value="${escapeHtml(amount)}" required></label>
         <div class="trade-summary"><p><span>السعر المعروض</span><b>${selected ? money(selected.price) : "يؤخذ عند التنفيذ"}</b></p>${liveMode ? `<p><span>حد الأمر الحقيقي</span><b>${money(app.broker.maxLiveOrderUsd)}</b></p><p><span>رصيد USDT المتاح</span><b>${money(app.broker.availableUsdt)}</b></p>` : `<p><span>حد الصفقات المفتوحة</span><b>${app.state.risk.maxOpenTrades}</b></p><p><span>المخاطرة لكل صفقة</span><b>${app.state.risk.riskPerTradePct}%</b></p>`}</div>
         ${liveMode ? '<div class="live-warning">صفقة حقيقية بأموال موجودة في Binance. لا يوجد ضمان للربح، ولا يمكن لـ VAREX سحب الأموال.</div>' : ""}
-        <button class="primary-button" type="submit">${liveMode ? `مراجعة أمر ${app.tradeSide === "buy" ? "شراء" : "بيع"} حقيقي` : `فتح صفقة ${app.tradeSide === "buy" ? "شراء" : "بيع"} ورقية`}</button>
+        <button class="primary-button" type="submit">${liveMode ? `مراجعة أمر ${app.tradeSide === "buy" ? "شراء" : "بيع"} حقيقي` : `فتح صفقة ${app.tradeSide === "buy" ? "شراء" : "بيع"} تجريبية`}</button>
       </form>` : '<div class="notice">صلاحية هذا الحساب للعرض فقط. يمكن لإدارة النظام تغييرها من شاشة الحسابات.</div>'}
     </article>`;
   }
   function renderDashboard() {
     const metrics = accountMetrics(), dailyRisk = metrics.todayPnl < 0 && metrics.balance ? Math.abs(metrics.todayPnl) / metrics.balance * 100 : 0;
-    return `<section class="trial-guide"><div><span class="eyebrow">تجربة بدون أموال حقيقية</span><h2>بدء أول تجربة تداول</h2><p>لا حاجة إلى وسيط في هذه المرحلة. يقرأ VAREX السوق الحي ويعرض قراراً احتمالياً، ثم يتم تأكيد الصفقة الورقية يدوياً.</p></div><ol class="trial-steps"><li><b>1</b><span>اختيار عملة</span></li><li><b>2</b><span>تشغيل تحليل VAREX</span></li><li><b>3</b><span>فتح صفقة ورقية</span></li></ol><button class="primary-button" data-action="guided-analysis">✦ تحليل ${escapeHtml(app.selectedMarket?.label || "BTC / USD")} الآن</button></section>
+    return `${window.VarexAccounts?.renderChoices({ active: app.accountChoice, canConnect: app.profile.canConnectBroker }) || ""}<section class="va-automation-entry"><div><span class="va-eyebrow">حساب تجريبي فقط</span><h2>تداول آلي تجريبي 24 ساعة</h2><p>تشغيل البوت من الخادم بعد التفعيل، حتى عند إغلاق المتصفح. الإعدادات والحالة وسجل النتائج متاحة من صفحة التداول الآلي.</p></div><button class="va-button va-button-primary" data-view="automation">إعداد البوت التجريبي</button></section><section class="trial-guide"><div><span class="eyebrow">تجربة بدون أموال حقيقية</span><h2>بدء أول تجربة تداول</h2><p>لا حاجة إلى وسيط في هذه المرحلة. يقرأ VAREX السوق الحي ويعرض مؤشرات فنية، ثم يتم تأكيد الصفقة التجريبية يدوياً.</p></div><ol class="trial-steps"><li><b>1</b><span>اختيار عملة</span></li><li><b>2</b><span>تشغيل تحليل VAREX</span></li><li><b>3</b><span>فتح صفقة تجريبية</span></li></ol><button class="primary-button" data-action="guided-analysis">✦ تحليل ${escapeHtml(app.selectedMarket?.label || "BTC / USD")} الآن</button></section>
     <section class="stats-grid">
-      ${statCard("▣", "الرصيد الورقي", money(metrics.balance), "الرصيد المحفوظ في حسابك")}
+      ${statCard("▣", "الرصيد التجريبي", money(metrics.balance), "الرصيد المحفوظ في حسابك")}
       ${statCard("$", "صافي اليوم (UTC)", money(metrics.todayPnl), "من الصفقات المغلقة منذ 00:00 UTC", metrics.todayPnl >= 0 ? "positive" : "negative")}
       ${statCard("⌁", "صفقات مفتوحة", String(metrics.open.length), `الحد المسموح ${app.state.risk.maxOpenTrades}`)}
       ${statCard("◇", "استخدام حد الخسارة", `${dailyRisk.toFixed(2)}%`, `من حد يومي ${app.state.risk.maxDailyLossPct}% · UTC`, dailyRisk >= app.state.risk.maxDailyLossPct ? "negative" : "")}
     </section>
     <section class="content-grid">${marketPanel()}${tradeTicket()}</section>
-    <section class="panel"><header class="panel-head"><div><h2>آخر الصفقات</h2><p>بيانات فعلية من سجل حسابك الورقي.</p></div><button class="small-button" data-view="trades">عرض الكل</button></header>${renderRecentTrades()}</section>`;
+    <section class="panel"><header class="panel-head"><div><h2>آخر الصفقات</h2><p>بيانات فعلية من سجل حسابك التجريبي.</p></div><button class="small-button" data-view="trades">عرض الكل</button></header>${renderRecentTrades()}</section>`;
   }
 
   function analysisCard(analysis) {
@@ -723,7 +800,7 @@
       <ul class="reasons">${(analysis.reasons || []).map((reason) => `<li>${escapeHtml(reason)}</li>`).join("")}</ul>
       <div class="level-grid"><span><small>سعر التحليل</small><b>${money(analysis.price)}</b></span><span><small>الهدف الاحتمالي</small><b class="positive">${money(analysis.target)}</b></span><span><small>وقف مقترح</small><b class="negative">${money(analysis.stop)}</b></span></div>
       <p class="notice">${escapeHtml(analysis.disclaimer || "التحليل احتمالي وليس ضماناً للربح.")}</p>
-      ${analysis.direction === "wait" ? '<div class="analysis-next wait"><div><b>قرار VAREX الآن: الانتظار</b><small>لا يفتح النظام صفقة عندما لا يرى إشارة دخول كافية. يمكن اختيار عملة ثانية وتشغيل تحليل جديد.</small></div><button class="secondary-button" data-view="dashboard">اختيار عملة أخرى</button></div>' : `<div class="analysis-next"><div><b>الخطوة التالية</b><small>يمكن استخدام نتيجة التحليل لتهيئة صفقة ورقية؛ لن يُخصم أي مال حقيقي.</small></div><button class="primary-button" data-use-analysis="${escapeHtml(analysis.symbol)}" data-side="${analysis.direction}">استخدام النتيجة وفتح صفقة ${directionLabel(analysis.direction)} تجريبية</button></div>`}`;
+      ${analysis.direction === "wait" ? '<div class="analysis-next wait"><div><b>قرار VAREX الآن: الانتظار</b><small>لا يفتح النظام صفقة عندما لا يرى إشارة دخول كافية. يمكن اختيار عملة ثانية وتشغيل تحليل جديد.</small></div><button class="secondary-button" data-view="dashboard">اختيار عملة أخرى</button></div>' : `<div class="analysis-next"><div><b>الخطوة التالية</b><small>يمكن استخدام نتيجة التحليل لتهيئة صفقة تجريبية؛ لن يُخصم أي مال حقيقي.</small></div><button class="primary-button" data-use-analysis="${escapeHtml(analysis.symbol)}" data-side="${analysis.direction}">استخدام النتيجة وفتح صفقة ${directionLabel(analysis.direction)} تجريبية</button></div>`}`;
   }
   function renderIntelligence() {
     const history = app.state.analyses.slice(0, 8);
@@ -736,7 +813,7 @@
       const currentPnl = trade.status === "open" ? unrealizedFor(trade) : trade.pnl;
       return `<tr><td dir="ltr"><b>${escapeHtml(trade.symbol)}</b></td><td><span class="badge ${trade.side}">${directionLabel(trade.side)}</span></td><td dir="ltr">${money(trade.amount)}</td><td dir="ltr">${money(trade.entryPrice)}</td><td dir="ltr">${trade.exitPrice ? money(trade.exitPrice) : getMarket(trade.symbol) ? money(getMarket(trade.symbol).price) : "—"}</td><td class="${currentPnl >= 0 ? "positive" : "negative"}" dir="ltr">${money(currentPnl)}</td><td>${trade.status === "open" ? '<span class="badge active">مفتوحة</span>' : '<span class="badge pending">مغلقة</span>'}</td><td>${trade.status === "open" && app.profile.canTrade ? `<button class="small-button danger" data-close-trade="${trade.id}">إغلاق</button>` : "—"}</td></tr>`;
     }).join("");
-    return `<section class="content-grid">${tradeTicket()}<article class="panel"><header class="panel-head"><div><h2>قواعد التنفيذ</h2><p>تُطبق على الخادم قبل فتح الصفقة.</p></div></header><div class="toggle-row"><p><b>الحد الأقصى المفتوح</b><small>لا يمكن تجاوزه</small></p><strong>${app.state.risk.maxOpenTrades}</strong></div><div class="toggle-row"><p><b>حجم الصفقة</b><small>حتى 25% من الرصيد</small></p><strong>25%</strong></div><div class="toggle-row"><p><b>وقف ورقي عند تحديث الأسعار</b><small>تتم المتابعة أثناء فتح التطبيق وظهور التبويب</small></p><span class="badge ${app.state.risk.autoStop ? "active" : "inactive"}">${app.state.risk.autoStop ? "مفعّل" : "متوقف"}</span></div></article></section>
+    return `<section class="content-grid">${tradeTicket()}<article class="panel"><header class="panel-head"><div><h2>قواعد التنفيذ</h2><p>تُطبق على الخادم قبل فتح الصفقة.</p></div></header><div class="toggle-row"><p><b>الحد الأقصى المفتوح</b><small>لا يمكن تجاوزه</small></p><strong>${app.state.risk.maxOpenTrades}</strong></div><div class="toggle-row"><p><b>حجم الصفقة</b><small>حتى 25% من الرصيد</small></p><strong>25%</strong></div><div class="toggle-row"><p><b>وقف تجريبي عند تحديث الأسعار</b><small>تتم المتابعة أثناء فتح التطبيق وظهور التبويب</small></p><span class="badge ${app.state.risk.autoStop ? "active" : "inactive"}">${app.state.risk.autoStop ? "مفعّل" : "متوقف"}</span></div></article></section>
       <section class="panel"><header class="panel-head"><div><h2>سجل الصفقات</h2><p>${trades.length} صفقة محفوظة.</p></div></header><div class="table-wrap">${trades.length ? `<table class="data-table"><thead><tr><th>السوق</th><th>الاتجاه</th><th>الحجم</th><th>الدخول</th><th>الخروج / الحالي</th><th>النتيجة</th><th>الحالة</th><th>الإجراء</th></tr></thead><tbody>${rows}</tbody></table>` : '<div class="empty"><span>▣</span><p>لا توجد صفقات بعد.</p></div>'}</div></section>`;
   }
 
@@ -747,17 +824,18 @@
       ${statCard("◇", "حد الخسارة اليومي (UTC)", `${app.state.risk.maxDailyLossPct}%`, "يمنع فتح صفقة بعد بلوغه")}
       ${statCard("⌁", "استهلاك الحد اليومي", `${used.toFixed(2)}%`, `منذ 00:00 UTC · ${lossToday ? money(lossToday) : "لا توجد خسارة محققة"}`, used >= app.state.risk.maxDailyLossPct ? "negative" : "positive")}
       ${statCard("▣", "حد الصفقات", String(app.state.risk.maxOpenTrades), `${metrics.open.length} مفتوحة حالياً`)}
-      ${statCard("%", "مخاطرة الصفقة", `${app.state.risk.riskPerTradePct}%`, "من الرصيد الورقي")}
+      ${statCard("%", "مخاطرة الصفقة", `${app.state.risk.riskPerTradePct}%`, "من الرصيد التجريبي")}
     </section>
     <section class="content-grid equal-grid"><form class="panel" id="riskForm"><header class="panel-head"><div><h2>حدود المخاطر</h2><p>تُحفظ وتُطبق فوراً.</p></div></header><div class="form-grid">
       <label class="control">حد الخسارة اليومي %<input name="maxDailyLossPct" type="number" min=".5" max="20" step=".5" value="${escapeHtml(risk.maxDailyLossPct)}" required></label>
       <label class="control">أقصى صفقات مفتوحة<input name="maxOpenTrades" type="number" min="1" max="10" step="1" value="${escapeHtml(risk.maxOpenTrades)}" required></label>
       <label class="control">مخاطرة الصفقة %<input name="riskPerTradePct" type="number" min=".25" max="5" step=".25" value="${escapeHtml(risk.riskPerTradePct)}" required></label>
-    </div><div class="toggle-row"><p><b>تحديد وقف خسارة</b><small>يغلق الصفقة الورقية عند بلوغ الحد أثناء تحديث الأسعار؛ تتوقف المتابعة عند إغلاق التطبيق</small></p><button type="button" class="switch ${risk.autoStop ? "on" : ""}" data-toggle-risk="autoStop"><i></i></button></div><button class="primary-button" type="submit">حفظ حدود المخاطر</button></form>
-      <article class="panel"><header class="panel-head"><div><h2>حالة الحماية</h2><p>ملخص القرارات الحالية.</p></div></header><div class="notice">حد الخسارة وعدد الصفقات وحجم الصفقة تُفحص على الخادم في التداول الورقي. التداول الحقيقي يطبق حد الأمر المضبوط في شاشة حساب التداول.</div><div class="toggle-row"><p><b>القدرة على التداول</b><small>حسب صلاحية الحساب</small></p><span class="badge ${app.profile.canTrade ? "active" : "inactive"}">${app.profile.canTrade ? "مسموح" : "عرض فقط"}</span></div><div class="toggle-row"><p><b>حساب Binance</b><small>الربط متاح لحساب الإدارة فقط</small></p><span class="badge ${app.broker?.connected ? "active" : "pending"}">${app.broker?.connected ? "مربوط" : "غير مربوط"}</span></div></article></section>`;
+    </div><div class="toggle-row"><p><b>تحديد وقف خسارة</b><small>يغلق الصفقة التجريبية عند بلوغ الحد أثناء تحديث الأسعار؛ تتوقف المتابعة عند إغلاق التطبيق</small></p><button type="button" class="switch ${risk.autoStop ? "on" : ""}" data-toggle-risk="autoStop"><i></i></button></div><button class="primary-button" type="submit">حفظ حدود المخاطر</button></form>
+      <article class="panel"><header class="panel-head"><div><h2>حالة الحماية</h2><p>ملخص القرارات الحالية.</p></div></header><div class="notice">حد الخسارة وعدد الصفقات وحجم الصفقة تُفحص على الخادم في التداول التجريبي. التداول الحقيقي يطبق حد الأمر المضبوط في شاشة حساب التداول.</div><div class="toggle-row"><p><b>القدرة على التداول</b><small>حسب صلاحية الحساب</small></p><span class="badge ${app.profile.canTrade ? "active" : "inactive"}">${app.profile.canTrade ? "مسموح" : "عرض فقط"}</span></div><div class="toggle-row"><p><b>حساب Binance</b><small>الربط متاح لحساب الإدارة فقط</small></p><span class="badge ${app.broker?.connected ? "active" : "pending"}">${app.broker?.connected ? "مربوط" : "غير مربوط"}</span></div></article></section>`;
   }
 
   function balanceAmount(value) {
+    if (value === null || value === undefined || value === "") return "—";
     const number = Number(value);
     if (!Number.isFinite(number)) return "—";
     return new Intl.NumberFormat("en-US", { maximumFractionDigits: 8 }).format(number);
@@ -773,9 +851,50 @@
   }
 
   function renderBroker() {
-    if (!app.profile.canConnectBroker) return '<div class="notice">ربط حساب التداول الحقيقي متاح لحساب الإدارة الأساسي فقط. بقية الحسابات تعمل بالتداول الورقي.</div>';
+    const provider = window.VarexAccounts?.getProvider(app.brokerProvider);
+    const directory = `<div id="brokerDirectory">${renderBrokerDirectory()}</div>`;
+    if (!app.profile.canConnectBroker) return `${directory}<div class="va-connection-panel notice">دليل المنصات متاح للعرض. إضافة بيانات الربط تتطلب صلاحية تداول في حساب VAREX.</div>`;
+    if (!provider || provider.capability === "unavailable") return directory;
+    return `${directory}<div class="va-connection-panel">${provider.id === "capital" ? renderCapitalBroker() : renderBinanceBroker()}</div>`;
+  }
+  function renderBrokerDirectory() {
+    return window.VarexAccounts?.renderDirectory({ selectedId: app.brokerProvider, query: app.brokerQuery, currentProvider: app.broker?.connected ? app.broker.provider : "" }) || '<div class="notice">تعذر تحميل دليل المنصات. يرجى إعادة تحميل الصفحة.</div>';
+  }
+  function handleBrokerSearch(event) {
+    if (!event.target.matches?.("[data-broker-search]")) return;
+    const field = event.target, selection = [field.selectionStart, field.selectionEnd];
+    app.brokerQuery = field.value;
+    const directory = $("#brokerDirectory");
+    if (!directory) return;
+    // Replace only the directory; unsubmitted broker credentials stay in their existing form.
+    directory.innerHTML = renderBrokerDirectory();
+    const nextField = $("[data-broker-search]", directory);
+    nextField?.focus({ preventScroll: true });
+    if (Number.isInteger(selection[0])) nextField?.setSelectionRange?.(...selection);
+  }
+  function renderCapitalBroker() {
+    const broker = app.broker;
+    if (!broker?.connected || broker.provider !== "capital" || app.brokerFormOpen) {
+      return `<section class="content-grid equal-grid"><form class="panel broker-form" id="capitalConnectForm"><header class="panel-head"><div><span class="eyebrow">عرض الحساب والمراكز</span><h2>ربط Capital.com</h2><p>يبدأ الاختيار ببيئة Demo. لا يرسل هذا الربط أوامر تداول.</p></div><span class="provider-logo">C</span></header>
+        <label class="control">بيئة حساب Capital.com<select name="environment"><option value="demo" selected>Demo — حساب تجريبي لدى Capital.com</option><option value="live">Live — عرض حساب حقيقي لدى Capital.com</option></select></label>
+        <label class="control">اسم الحساب داخل VAREX<input name="accountLabel" maxlength="80" value="حساب Capital.com" required></label>
+        <label class="control">البريد أو معرّف حساب Capital.com<input name="identifier" type="text" autocomplete="off" spellcheck="false" dir="ltr" required></label>
+        <label class="control">API Key<span class="password-field"><input name="apiKey" type="password" autocomplete="off" spellcheck="false" dir="ltr" required><button class="password-toggle" type="button" data-password-toggle aria-label="إظهار API Key" aria-pressed="false">إظهار</button></span></label>
+        <label class="control">كلمة مرور API المخصّصة<span class="password-field"><input name="apiPassword" type="password" autocomplete="off" spellcheck="false" dir="ltr" required><button class="password-toggle" type="button" data-password-toggle aria-label="إظهار كلمة مرور API" aria-pressed="false">إظهار</button></span></label>
+        <div class="notice">هذه كلمة المرور المخصّصة لمفتاح API في Capital.com، وليست كلمة مرور تسجيل الدخول إلى VAREX أو إلى المنصة.</div>
+        <label class="check security-check"><input name="fundsAtProvider" type="checkbox" required><span>تأكيد بقاء الأموال والإيداع والسحب داخل Capital.com، وأن الربط داخل VAREX لعرض الحساب فقط.</span></label>
+        <button class="primary-button" type="submit">اختبار الاتصال وربط الحساب</button>
+      </form><article class="panel"><header class="panel-head"><div><h2>ما الذي يظهر بعد الربط؟</h2><p>بيانات الحساب الفعلية من Capital.com.</p></div></header><div class="permission-list"><p><span>الرصيد والمتاح</span><b>عرض</b></p><p><span>المراكز المفتوحة</span><b>عرض</b></p><p><span>فتح وإغلاق CFD</span><b>غير متاح في VAREX</b></p><p><span>بوت VAREX</span><b>الرصيد التجريبي الداخلي فقط</b></p></div><div class="notice">مفاتيح API لدى Capital.com قد تسمح بالتداول لدى المزود؛ موصل VAREX ينفذ طلبات قراءة الحساب والمراكز فقط. كلمة مرور API مطلوبة بصورة مستقلة، وتحفظ بيانات الربط مشفرة على الخادم.</div><div class="external-links"><a class="secondary-button" href="https://open-api.capital.com/" target="_blank" rel="noopener noreferrer">دليل Capital.com الرسمي ↗</a></div>${broker?.connected ? `<div class="live-warning">الحساب المرتبط حالياً: ${escapeHtml(providerLabel(broker))}. استبداله يحتاج تأكيداً مستقلاً قبل حفظ الربط الجديد.</div>` : ""}</article></section>`;
+    }
+    const balance = broker.accountBalance || {}, currency = broker.currency || "USD";
+    const positions = (Array.isArray(broker.positions) ? broker.positions : []).map((position) => `<tr><td><b>${escapeHtml(position.instrumentName || position.epic)}</b><small class="muted" dir="ltr"> ${escapeHtml(position.epic)}</small></td><td>${directionLabel(String(position.direction).toLowerCase())}</td><td dir="ltr">${balanceAmount(position.size)}</td><td dir="ltr">${balanceAmount(position.level)}</td><td dir="ltr">${accountMoney(position.profitLoss, position.currency || currency)}</td><td>${localDate(position.createdAt, true)}</td></tr>`).join("");
+    return `<section class="stats-grid">${statCard("C", "بيئة Capital.com", broker.environment === "live" ? "حقيقي — عرض فقط" : "Demo — عرض فقط", broker.accountName || broker.accountLabel || "حساب Capital.com")}${statCard("$", "الرصيد لدى Capital.com", accountMoney(balance.balance, currency), "كما ورد من المنصة")}${statCard("◇", "المتاح لدى Capital.com", accountMoney(balance.available, currency), "ليس رصيد VAREX التجريبي")}${statCard("⌁", "الربح والخسارة لدى المنصة", accountMoney(balance.profitLoss, currency), "حسب بيانات الحساب لدى Capital.com")}</section>
+      <article class="panel"><header class="panel-head"><div><h2>حساب Capital.com المرتبط</h2><p>${escapeHtml(broker.accountLabel)} · ${escapeHtml(broker.accountId || "—")} · ${escapeHtml(currency)}</p></div><span class="badge ${broker.status === "connected" ? "active" : "inactive"}">${broker.status === "connected" ? "متصل — عرض فقط" : "يحتاج فحصاً"}</span></header><div class="notice">وقت بيانات الرصيد والمراكز: ${localDate(broker.snapshotAt, true)}. آخر محاولة فحص: ${localDate(broker.lastCheckedAt, true)}. هذا الربط يعرض الحساب والمراكز فقط. التداول الآلي في VAREX يعمل على رصيد تجريبي داخلي مستقل.</div>${broker.lastError ? `<div class="live-warning">${escapeHtml(broker.lastError)}</div>` : ""}<div class="panel-actions broker-actions"><button class="secondary-button" data-action="refresh-broker">تحديث الحساب والمراكز</button><button class="secondary-button" data-broker-connect="capital">تغيير بيانات الربط</button><button class="danger-button" data-action="disconnect-broker">فصل الحساب</button></div></article>
+      <section class="panel"><header class="panel-head"><div><h2>المراكز المفتوحة لدى Capital.com</h2><p>عرض مباشر من الحساب المرتبط؛ لا توجد أزرار تنفيذ أو إغلاق داخل VAREX.</p></div></header><div class="table-wrap">${positions ? `<table class="data-table"><thead><tr><th>السوق</th><th>الاتجاه</th><th>الحجم</th><th>سعر الفتح</th><th>الربح والخسارة</th><th>وقت الفتح</th></tr></thead><tbody>${positions}</tbody></table>` : '<div class="empty"><p>لا توجد مراكز مفتوحة في الحساب المرتبط حالياً.</p></div>'}</div></section>`;
+  }
+  function renderBinanceBroker() {
     const flow = `<section class="money-flow"><article><span>1</span><div><b>الإيداع</b><small>داخل Binance من حساب موثّق</small></div></article><i>←</i><article><span>2</span><div><b>التداول</b><small>VAREX يرسل أوامر Spot فقط</small></div></article><i>←</i><article><span>3</span><div><b>السحب</b><small>داخل Binance فقط</small></div></article></section>`;
-    if (!app.broker?.connected) {
+    if (!app.broker?.connected || app.broker.provider !== "binance" || app.brokerFormOpen) {
       return `${flow}<section class="content-grid equal-grid"><form class="panel broker-form" id="brokerConnectForm"><header class="panel-head"><div><span class="eyebrow">الموصل الأول</span><h2>ربط Binance Spot</h2><p>اختبار الصلاحيات أولاً ثم حفظ المفتاح مشفراً على الخادم.</p></div><span class="provider-logo">B</span></header>
         <label class="control">اسم الحساب داخل VAREX<input name="accountLabel" maxlength="80" value="حساب Binance Spot" required></label>
         <label class="control">API Key<span class="password-field"><input name="apiKey" type="password" autocomplete="off" spellcheck="false" dir="ltr" required><button class="password-toggle" type="button" data-password-toggle aria-label="إظهار API Key" aria-pressed="false">إظهار</button></span></label>
@@ -807,6 +926,86 @@
       <section class="panel"><header class="panel-head"><div><h2>سجل الأوامر الحقيقية</h2><p>سجل تدقيق لأوامر Binance المرسلة من VAREX.</p></div></header><div class="table-wrap">${orders ? `<table class="data-table"><thead><tr><th>السوق</th><th>الاتجاه</th><th>القيمة</th><th>الحالة</th><th>رقم Binance</th><th>الوقت</th></tr></thead><tbody>${orders}</tbody></table>` : '<div class="empty"><p>لا توجد أوامر حقيقية بعد.</p></div>'}</div></section>`;
   }
 
+  function renderAutomation() {
+    const automation = app.automation;
+    if (!automation) return `<section class="panel"><div class="empty"><span>${app.automationLoading ? "⌛" : "◇"}</span><h2>تداول آلي تجريبي 24 ساعة</h2><p>${escapeHtml(app.automationError || "جاري قراءة حالة البوت من الخادم…")}</p>${app.automationLoading ? "" : '<button class="small-button" data-action="refresh-automation">إعادة تحميل الحالة</button>'}</div></section>`;
+    const running = automation.enabled === true && automation.schedulerReady === true;
+    const status = !automation.schedulerReady ? "الجدولة غير متاحة" : running ? "يعمل على الحساب التجريبي" : "متوقف";
+    const draft = formDraft("automationForm", { symbol: automation.symbol || "BTC-USD", interval: automation.interval || "15", riskPercent: automation.riskPercent ?? 1, maxDailyTrades: automation.maxDailyTrades ?? 5, enableAutomation: automation.enabled === true });
+    const symbols = ["BTC-USD", "ETH-USD", "SOL-USD", "ADA-USD"];
+    const events = (Array.isArray(automation.events) ? automation.events : []).slice(0, 50).map((event) => `<tr><td>${localDate(event.at, true)}</td><td dir="ltr">${escapeHtml(event.symbol || "—")}</td><td>${escapeHtml(({ buy: "شراء تجريبي", sell: "بيع تجريبي", open: "فتح تجريبي", close: "إغلاق تجريبي", wait: "انتظار", error: "تعذر التنفيذ", enabled: "تفعيل", stopped: "إيقاف", configured: "تحديث الإعدادات" })[event.action] || event.action)}</td><td>${escapeHtml(event.message || "—")}</td></tr>`).join("");
+    const model = automation.lastModel;
+    const measuredRate = (value) => typeof value === "number" && value >= 0 && value <= 1 ? `${(value * 100).toFixed(1)}%` : "—";
+    return `<section class="va-automation-entry"><div><span class="va-eyebrow">رصيد VAREX التجريبي فقط</span><h2>تداول آلي تجريبي 24 ساعة</h2><p>بعد التفعيل، يفحص الخادم السوق دورياً حتى عند إغلاق الكمبيوتر أو المتصفح. قد يبقى القرار «انتظار» لفترات طويلة بحسب البيانات والشروط.</p></div><span class="badge ${running ? "active" : "pending"}">${status}</span></section>
+      ${app.automationError ? `<div class="live-warning">${escapeHtml(app.automationError)}</div>` : ""}
+      <section class="stats-grid">${statCard("◷", "حالة الجدولة", automation.schedulerReady ? "متاحة" : "غير متاحة", running ? "مفعّل على الخادم" : "لا يُعرض تشغيل دون تأكيد الخادم")}${statCard("⌁", "آخر إشارة", directionLabel(automation.lastSignal), "إشارة تحليل وليست ضماناً للتنفيذ")}${statCard("◇", "آخر فحص", localDate(automation.lastRunAt, true), "الوقت الذي أبلغ عنه الخادم")}${statCard("▣", "الحد اليومي", String(automation.maxDailyTrades ?? 5), "الحد الأقصى لصفقات البوت في اليوم")}</section>
+      <section class="content-grid equal-grid"><form class="panel" id="automationForm"><header class="panel-head"><div><h2>إعداد البوت التجريبي</h2><p>التداول الآلي على الحسابات الحقيقية غير متاح حالياً.</p></div><span class="badge pending">DEMO</span></header>
+        <div class="form-grid"><label class="control">السوق<select name="symbol">${symbols.map((symbol) => `<option value="${symbol}" ${draft.symbol === symbol ? "selected" : ""}>${symbol}</option>`).join("")}</select></label><label class="control">فترة الشموع<select name="interval">${[["5", "5 دقائق"], ["15", "15 دقيقة"], ["60", "ساعة"]].map(([id, label]) => `<option value="${id}" ${draft.interval === id ? "selected" : ""}>${label}</option>`).join("")}</select></label><label class="control">المخاطرة لكل صفقة %<input name="riskPercent" type="number" min="0.25" max="2" step="0.25" value="${escapeHtml(draft.riskPercent)}" required></label><label class="control">الحد اليومي لصفقات البوت<input name="maxDailyTrades" type="number" min="1" max="20" step="1" value="${escapeHtml(draft.maxDailyTrades)}" required></label></div>
+        <label class="check security-check"><input name="enableAutomation" type="checkbox" ${draft.enableAutomation ? "checked" : ""} ${!app.profile.canTrade || !automation.available || !automation.schedulerReady ? "disabled" : ""}><span>تفعيل فتح وإغلاق صفقات البوت على الرصيد التجريبي الداخلي فقط.</span></label>
+        ${!automation.available || !automation.schedulerReady ? '<div class="notice">التشغيل غير متاح حالياً. حالة الخادم وسجل الفحص أدناه يوضحان السبب عند توفره.</div>' : ""}
+        ${app.profile.canTrade ? `<div class="panel-actions"><button class="primary-button" type="submit" ${automationMutationPending ? "disabled" : ""}>حفظ إعدادات البوت</button>${automation.enabled ? `<button class="danger-button" type="button" data-action="stop-automation" ${automationMutationPending ? "disabled" : ""}>إيقاف البوت</button>` : ""}</div>` : '<div class="notice">التفعيل وتعديل الإعدادات يتطلبان صلاحية تداول.</div>'}
+      </form><article class="panel"><header class="panel-head"><div><h2>كيف يتخذ البوت القرار؟</h2><p>نموذج إحصائي صغير مع مؤشرات فنية.</p></div></header><div class="notice">يستخدم شموعاً مغلقة ومؤشرات EMA وRSI وMACD وATR، مع اختبار النموذج على بيانات سابقة لم تدخل في تدريبه. دقة هذا الاختبار ليست احتمال ربح الصفقة ولا وعداً بالربح.</div><div class="permission-list"><p><span>دقة التحقق على بيانات سابقة</span><b dir="ltr">${measuredRate(model?.accuracy)}</b></p><p><span>خط أساس للمقارنة</span><b dir="ltr">${measuredRate(model?.baseline)}</b></p><p><span>عدد عينات التحقق</span><b>${Number.isInteger(model?.samples) && model.samples >= 0 ? model.samples : "—"}</b></p></div><div class="notice">آخر رسالة من الخادم: ${escapeHtml(automation.lastMessage || "لا توجد نتيجة فحص محفوظة بعد.")}</div><div class="va-help-note">الإيقاف يمنع فتح الصفقات وإدارة صفقات البوت لاحقاً. تبقى الصفقات التجريبية المفتوحة في شاشة «الصفقات» ويمكن إغلاقها يدوياً.</div><button class="secondary-button" data-view="trades">عرض الصفقات التجريبية</button></article></section>
+      <section class="panel"><header class="panel-head"><div><h2>سجل البوت التجريبي</h2><p>إشارات الانتظار والعمليات والأخطاء التي سجلها الخادم.</p></div></header><div class="table-wrap">${events ? `<table class="data-table"><thead><tr><th>الوقت</th><th>السوق</th><th>الحالة</th><th>التفاصيل</th></tr></thead><tbody>${events}</tbody></table>` : '<div class="empty"><p>لا يوجد سجل للبوت بعد.</p></div>'}</div></section>`;
+  }
+  function validateAutomation(value) {
+    if (!isRecord(value) || value.mode !== "demo" || typeof value.enabled !== "boolean" || typeof value.schedulerReady !== "boolean" || typeof value.available !== "boolean" || !Number.isInteger(value.revision) || value.revision < 0) throw new Error("تعذر التحقق من حالة البوت التجريبي.");
+    return value;
+  }
+  async function loadAutomation() {
+    if (!app.profile) return;
+    if (automationRequest) return automationRequest;
+    const userId = app.profile.id;
+    app.automationLoading = true;
+    app.automationError = "";
+    if (app.view === "automation") render();
+    const pending = request("/api/trading-automation").then((result) => {
+      const value = validateAutomation(result.automation);
+      if (app.profile?.id !== userId) return;
+      if (!app.automation || value.revision >= app.automation.revision) app.automation = value;
+    }).catch((error) => {
+      if (app.profile?.id === userId) app.automationError = error.message;
+    }).finally(() => {
+      if (automationRequest === pending) automationRequest = null;
+      if (app.profile?.id !== userId) return;
+      app.automationLoading = false;
+      if (app.view === "automation") render();
+    });
+    automationRequest = pending;
+    return pending;
+  }
+  async function configureAutomation(config, { preserveDrafts = false } = {}) {
+    if (automationMutationPending) return;
+    if (!app.profile?.canTrade || !app.automation) throw new Error("يلزم تحميل حالة البوت وحساب يملك صلاحية التداول.");
+    const current = app.automation, userId = app.profile.id;
+    if (!["BTC-USD", "ETH-USD", "SOL-USD", "ADA-USD"].includes(config.symbol) || !["5", "15", "60"].includes(config.interval) || !Number.isFinite(config.riskPercent) || config.riskPercent < 0.25 || config.riskPercent > 2 || !Number.isInteger(config.maxDailyTrades) || config.maxDailyTrades < 1 || config.maxDailyTrades > 20) throw new Error("إعدادات البوت خارج الحدود المسموحة.");
+    if (config.enabled && (!current.available || !current.schedulerReady)) throw new Error("الجدولة غير متاحة. لا يمكن عرض البوت كأنه يعمل.");
+    automationMutationPending = true;
+    try {
+      if (config.enabled) {
+        const accepted = await confirmAction("تفعيل التداول الآلي التجريبي", "سيفتح البوت ويغلق صفقاته على رصيد VAREX التجريبي، حتى عند إغلاق المتصفح. لا يستخدم أي رصيد حقيقي في Binance أو Capital.com، ولا يضمن تحقيق ربح.");
+        if (!accepted) return;
+      }
+      if (app.profile?.id !== userId || app.automation?.revision !== current.revision) throw new Error("تغيّرت حالة البوت. يلزم مراجعة الإعدادات قبل إعادة المحاولة.");
+      const result = await request("/api/trading-automation", { method: "POST", body: JSON.stringify({ action: "configure", mode: "demo", ...config, expectedRevision: current.revision, confirmation: config.enabled ? "ENABLE_DEMO_AUTOMATION" : "STOP_DEMO_AUTOMATION" }) });
+      const value = validateAutomation(result.automation);
+      if (app.profile?.id !== userId) return;
+      app.automation = value;
+      app.automationError = "";
+      if (preserveDrafts) app.formDrafts.automationForm = { ...app.formDrafts.automationForm, enableAutomation: false };
+      else delete app.formDrafts.automationForm;
+      showToast(value.enabled && value.schedulerReady ? "تم تفعيل البوت على الحساب التجريبي." : "تم حفظ الحالة. البوت التجريبي متوقف.");
+    } finally {
+      automationMutationPending = false;
+      if (app.profile?.id === userId && app.view === "automation") render();
+    }
+  }
+  async function stopAutomation() {
+    if (!app.automation?.enabled) return;
+    const { symbol, interval, riskPercent, maxDailyTrades } = app.automation;
+    try { await configureAutomation({ enabled: false, symbol, interval, riskPercent, maxDailyTrades }, { preserveDrafts: true }); }
+    catch (error) { showToast(error.message, "error"); }
+  }
+
   function renderWatchlist() {
     const symbols = formDraft("watchlistForm", { symbols: app.state.watchlist }).symbols;
     const cards = app.supportedMarkets.map((item) => {
@@ -823,8 +1022,8 @@
     const maxAbs = Math.max(1, ...Object.values(bySymbol).map((value) => Math.abs(value)));
     const bars = Object.entries(bySymbol).map(([symbol, value]) => `<div class="bar-row"><b>${escapeHtml(symbol)}</b><span class="bar-track"><i style="width:${Math.max(4, Math.abs(value) / maxAbs * 100)}%;background:${value >= 0 ? "" : "var(--red)"}"></i></span><strong class="${value >= 0 ? "positive" : "negative"}">${money(value)}</strong></div>`).join("");
     const rows = metrics.closed.map((trade) => `<tr><td dir="ltr">${escapeHtml(trade.symbol)}</td><td>${directionLabel(trade.side)}</td><td dir="ltr">${money(trade.amount)}</td><td dir="ltr">${money(trade.pnl)}</td><td>${localDate(trade.closedAt, true)}</td></tr>`).join("");
-    return `<section class="stats-grid">${statCard("$", "الربح والخسارة المحققة", money(metrics.realized), "من كل الصفقات المغلقة", metrics.realized >= 0 ? "positive" : "negative")}${statCard("%", "نسبة النجاح", `${metrics.winRate.toFixed(1)}%`, `${metrics.wins} رابحة · ${metrics.losses} خاسرة`)}${statCard("▣", "صفقات مغلقة", String(metrics.closed.length), "ضمن الحساب الحالي")}${statCard("⌁", "القيمة الورقية", money(metrics.equity), "الرصيد مع النتائج غير المحققة")}</section>
-      <section class="content-grid equal-grid"><article class="panel"><header class="panel-head"><div><h2>النتيجة حسب السوق</h2><p>صفقات مغلقة فقط.</p></div></header><div class="report-bars">${bars || '<div class="empty"><p>لا توجد بيانات كافية للرسم.</p></div>'}</div></article><article class="panel"><header class="panel-head"><div><h2>ملاحظات التقرير</h2><p>طريقة احتساب واضحة.</p></div></header><div class="notice">النتائج محسوبة من فرق سعر الدخول والخروج الفعلي الذي سجله الخادم عند إغلاق الصفقة الورقية. لا تتضمن عمولات وسيط أو انزلاقاً سعرياً.</div></article></section>
+    return `<section class="stats-grid">${statCard("$", "الربح والخسارة المحققة", money(metrics.realized), "من كل الصفقات المغلقة", metrics.realized >= 0 ? "positive" : "negative")}${statCard("%", "نسبة النجاح", `${metrics.winRate.toFixed(1)}%`, `${metrics.wins} رابحة · ${metrics.losses} خاسرة`)}${statCard("▣", "صفقات مغلقة", String(metrics.closed.length), "ضمن الحساب الحالي")}${statCard("⌁", "القيمة التجريبية", money(metrics.equity), "الرصيد مع النتائج غير المحققة")}</section>
+      <section class="content-grid equal-grid"><article class="panel"><header class="panel-head"><div><h2>النتيجة حسب السوق</h2><p>صفقات مغلقة فقط.</p></div></header><div class="report-bars">${bars || '<div class="empty"><p>لا توجد بيانات كافية للرسم.</p></div>'}</div></article><article class="panel"><header class="panel-head"><div><h2>ملاحظات التقرير</h2><p>طريقة احتساب واضحة.</p></div></header><div class="notice">النتائج محسوبة من فرق سعر الدخول والخروج الفعلي الذي سجله الخادم عند إغلاق الصفقة التجريبية. لا تتضمن عمولات وسيط أو انزلاقاً سعرياً.</div></article></section>
       <section class="panel"><header class="panel-head"><div><h2>تفاصيل الصفقات المغلقة</h2><p>يمكن تصديرها بصيغة CSV.</p></div></header><div class="table-wrap">${rows ? `<table class="data-table"><thead><tr><th>السوق</th><th>الاتجاه</th><th>الحجم</th><th>النتيجة</th><th>الإغلاق</th></tr></thead><tbody>${rows}</tbody></table>` : '<div class="empty"><p>لا توجد صفقات مغلقة بعد.</p></div>'}</div></section>`;
   }
 
@@ -836,18 +1035,40 @@
       const status = inactive ? "inactive" : user.pending ? "pending" : user.status, role = app.userRoleDrafts[user.email] || user.role;
       return `<div class="user-card" data-user-row="${escapeHtml(user.email)}"><p><b>${escapeHtml(user.displayName)}</b><small dir="ltr">${escapeHtml(user.email)}</small></p><aside><span class="badge ${status}">${status === "pending" ? "بانتظار التسجيل" : status === "active" ? "نشط" : "متوقف"}</span>${developer ? '<span class="badge active">إدارة</span>' : `<select class="small-button user-role" aria-label="صلاحية ${escapeHtml(user.displayName)}"><option value="trader" ${role === "trader" ? "selected" : ""}>صلاحية تداول</option><option value="viewer" ${role === "viewer" ? "selected" : ""}>عرض فقط</option></select><button class="small-button" data-user-save="${escapeHtml(user.email)}">حفظ الصلاحية</button><button class="small-button" data-user-toggle="${escapeHtml(user.email)}" data-status="${inactive ? "active" : "inactive"}">${inactive ? "تفعيل" : "إيقاف"}</button>`}</aside></div>`;
     }).join("");
-    return `<section class="content-grid"><form class="panel" id="inviteForm"><header class="panel-head"><div><h2>تحديد صلاحية مسبقاً — اختياري</h2><p>التسجيل مفتوح للجميع. تستخدم هذه الخانة فقط لتحديد صلاحية خاصة قبل التسجيل.</p></div></header><div class="form-grid"><label class="control">اسم المستخدم<input name="displayName" required maxlength="80" placeholder="مثال: إدارة الاستثمار"></label><label class="control">البريد الإلكتروني<input name="email" type="email" required placeholder="user@example.com"></label><label class="control">الصلاحية<select name="role"><option value="trader">صلاحية تداول — فتح وإغلاق صفقات وربط حساب تداول مستقل</option><option value="viewer">عرض فقط — قراءة فقط</option></select></label></div><button class="primary-button" type="submit">حفظ الصلاحية المسبقة</button></form><article class="panel"><header class="panel-head"><div><h2>التسجيل المباشر</h2><p>لا حاجة إلى إضافة البريد من حساب المطور.</p></div></header><div class="notice">يُنشأ الحساب مباشرة من صفحة التسجيل، ثم يصل رمز OTP إلى البريد. لكل حساب ملف ورصيد ورقي وصفقات وربط تداول منفصل تماماً عن بقية الحسابات.</div></article></section><section class="panel"><header class="panel-head"><div><h2>قائمة الحسابات</h2><p>${app.users.length} حساباً أو إعداد صلاحية.</p></div><button class="small-button" data-action="reload-users">تحديث</button></header>${cards || '<div class="empty"><p>لا توجد حسابات بعد.</p></div>'}</section>`;
+    return `<section class="content-grid"><form class="panel" id="inviteForm"><header class="panel-head"><div><h2>تحديد صلاحية مسبقاً — اختياري</h2><p>التسجيل مفتوح للجميع. تستخدم هذه الخانة فقط لتحديد صلاحية خاصة قبل التسجيل.</p></div></header><div class="form-grid"><label class="control">اسم المستخدم<input name="displayName" required maxlength="80" placeholder="مثال: إدارة الاستثمار"></label><label class="control">البريد الإلكتروني<input name="email" type="email" required placeholder="user@example.com"></label><label class="control">الصلاحية<select name="role"><option value="trader">صلاحية تداول — فتح وإغلاق صفقات وربط حساب تداول مستقل</option><option value="viewer">عرض فقط — قراءة فقط</option></select></label></div><button class="primary-button" type="submit">حفظ الصلاحية المسبقة</button></form><article class="panel"><header class="panel-head"><div><h2>التسجيل المباشر</h2><p>لا حاجة إلى إضافة البريد من حساب المطور.</p></div></header><div class="notice">يُنشأ الحساب مباشرة من صفحة التسجيل، ثم يصل رمز OTP إلى البريد. لكل حساب ملف ورصيد تجريبي وصفقات وربط تداول منفصل تماماً عن بقية الحسابات.</div></article></section><section class="panel"><header class="panel-head"><div><h2>قائمة الحسابات</h2><p>${app.users.length} حساباً أو إعداد صلاحية.</p></div><button class="small-button" data-action="reload-users">تحديث</button></header>${cards || '<div class="empty"><p>لا توجد حسابات بعد.</p></div>'}</section>`;
   }
 
   function renderSettings() {
     const settings = formDraft("settingsForm", app.state.settings), profile = formDraft("profileForm", app.profile);
     return `<section class="settings-stack"><form class="panel" id="profileForm"><header class="panel-head"><div><h2>بيانات الحساب</h2><p>يظهر اسم المستخدم في التحية والقائمة.</p></div></header><div class="form-grid"><label class="control">اسم المستخدم<input name="displayName" value="${escapeHtml(profile.displayName)}" maxlength="80" required></label><label class="control">البريد الإلكتروني<input value="${escapeHtml(app.profile.email)}" disabled dir="ltr"></label></div><button class="primary-button" type="submit">حفظ اسم المستخدم</button></form>
       <form class="panel" id="settingsForm"><header class="panel-head"><div><h2>تفضيلات الواجهة</h2><p>محفوظة في حسابك على قاعدة البيانات.</p></div></header><div class="form-grid"><label class="control">المنطقة الزمنية<select name="timezone"><option value="Asia/Dubai" ${settings.timezone === "Asia/Dubai" ? "selected" : ""}>الإمارات — دبي</option><option value="Asia/Riyadh" ${settings.timezone === "Asia/Riyadh" ? "selected" : ""}>السعودية — الرياض</option><option value="UTC" ${settings.timezone === "UTC" ? "selected" : ""}>UTC</option></select></label></div><div class="toggle-row"><p><b>إشعارات داخل التطبيق</b><small>إظهار تنبيهات نجاح العمليات وأخطاء السوق</small></p><button type="button" class="switch ${settings.notifications ? "on" : ""}" data-toggle-setting="notifications"><i></i></button></div><div class="toggle-row"><p><b>الوضع المضغوط</b><small>تقليل المسافات داخل البطاقات والجداول</small></p><button type="button" class="switch ${settings.compactMode ? "on" : ""}" data-toggle-setting="compactMode"><i></i></button></div><button class="primary-button" type="submit">حفظ التفضيلات</button></form>
-      ${app.profile.canTrade ? '<article class="panel danger-zone"><header class="panel-head"><div><h2>إعادة ضبط التداول الورقي</h2><p>يحذف الصفقات والتحليلات ويعيد الرصيد إلى 25,000 دولار. لا يحذف الحساب أو الحسابات المضافة.</p></div></header><button class="danger-button" data-action="reset-paper">إعادة الضبط</button></article>' : ""}
+      ${app.profile.canTrade ? '<article class="panel danger-zone"><header class="panel-head"><div><h2>إعادة ضبط التداول التجريبي</h2><p>يحذف الصفقات والتحليلات ويعيد الرصيد إلى 25,000 دولار. لا يحذف الحساب أو الحسابات المضافة.</p></div></header><button class="danger-button" data-action="reset-paper">إعادة الضبط</button></article>' : ""}
     </section>`;
   }
 
   async function handleActionClick(event) {
+    const accountChoice = event.target.closest("[data-account-choice]");
+    if (accountChoice) {
+      event.preventDefault?.();
+      if (!app.profile) return;
+      app.executionMode = "paper";
+      app.accountChoice = accountChoice.dataset.accountChoice === "connect" ? "linked" : "demo";
+      updateExecutionUi();
+      return goTo(app.accountChoice === "linked" ? "broker" : "trades");
+    }
+    const brokerChoice = event.target.closest("[data-broker-provider]");
+    const brokerConnect = event.target.closest("[data-broker-connect]");
+    if (brokerChoice || brokerConnect) {
+      event.preventDefault?.();
+      const id = brokerChoice?.dataset.brokerProvider || brokerConnect?.dataset.brokerConnect;
+      const provider = window.VarexAccounts?.getProvider(id);
+      if (!provider || !app.profile) return;
+      app.brokerProvider = provider.id;
+      app.brokerFormOpen = Boolean(brokerConnect && app.profile.canConnectBroker && provider.capability !== "unavailable");
+      app.accountChoice = "linked";
+      render();
+      return;
+    }
     const viewButton = event.target.closest("[data-view]");
     if (viewButton) return goTo(viewButton.dataset.view);
     const marketButton = event.target.closest("[data-market]");
@@ -868,7 +1089,10 @@
       return goTo("trades");
     }
     const executionMode = event.target.closest("[data-execution-mode]");
-    if (executionMode) { app.executionMode = executionMode.dataset.executionMode === "live" ? "live" : "paper"; render(); return; }
+    if (executionMode) {
+      app.executionMode = executionMode.dataset.executionMode === "live" && liveExecutionReady() ? "live" : "paper";
+      render(); return;
+    }
     const sideButton = event.target.closest("[data-side]");
     if (sideButton) { app.tradeSide = sideButton.dataset.side; render(); return; }
     const toggleRisk = event.target.closest("[data-toggle-risk]");
@@ -915,6 +1139,8 @@
     if (action === "reload-users") return loadUsers();
     if (action === "refresh-broker") return refreshBroker();
     if (action === "disconnect-broker") return disconnectBroker();
+    if (action === "refresh-automation") return loadAutomation();
+    if (action === "stop-automation") return stopAutomation();
     if (action === "logout") return logout();
     if (action === "reset-paper") return resetPaper();
   }
@@ -929,6 +1155,7 @@
       if (form.id === "tradeForm") {
         const symbol = String(data.get("symbol")), amount = Number(data.get("amount")), side = app.tradeSide;
         if (app.executionMode === "live") {
+          if (!liveExecutionReady()) throw new Error("التنفيذ الحقيقي متاح فقط لاتصال Binance مُفعّل وبعد تأكيد يدوي.");
           const accepted = await confirmAction("تأكيد صفقة حقيقية", `سيتم إرسال أمر ${side === "buy" ? "شراء" : "بيع"} MARKET حقيقي بقيمة ${money(amount)} على ${symbol} إلى Binance Spot. التداول قد يحقق خسارة، ولا توجد إعادة تلقائية عند انقطاع الاتصال.`);
           if (!accepted) return;
           const result = await tradingPost("place_live_order", { symbol, side, amount, clientRequestId: crypto.randomUUID(), confirmation: "LIVE_ORDER_CONFIRMED" });
@@ -940,7 +1167,7 @@
           const result = await tradingPost("open_trade", { symbol, side, amount });
           app.state = result.state; app.version = result.version;
           await loadMarkets(app.state.selectedSymbol, true);
-          showToast("تم فتح الصفقة الورقية. لم يُخصم أي مال حقيقي.");
+          showToast("تم فتح الصفقة التجريبية. لم يُخصم أي مال حقيقي.");
           goTo("trades");
         }
       } else if (form.id === "riskForm") {
@@ -979,21 +1206,40 @@
         applyIdentity();
         showToast("تم حفظ التفضيلات.");
         render();
-      } else if (form.id === "brokerConnectForm") {
-        const result = await tradingPost("connect_broker", {
-          provider: "binance",
-          accountLabel: String(data.get("accountLabel")),
-          apiKey: String(data.get("apiKey")),
-          apiSecret: String(data.get("apiSecret")),
-          fundsAtProvider: Boolean(data.get("fundsAtProvider")),
-        });
+      } else if (form.id === "brokerConnectForm" || form.id === "capitalConnectForm") {
+        if (!app.profile?.canConnectBroker) throw new Error("صلاحية الحساب لا تسمح بربط منصة تداول.");
+        const provider = form.id === "capitalConnectForm" ? "capital" : "binance";
+        const replacement = {};
+        if (app.broker?.connected) {
+          const revision = app.broker.connectionRevision;
+          const accepted = await confirmAction("استبدال حساب منصة التداول", `سيُستبدل اتصال ${providerLabel()} الحالي ببيانات ${window.VarexAccounts?.getProvider(provider)?.label || provider} الجديدة. يبقى الرصيد والمراكز لدى المنصة؛ يتوقف التنفيذ الحقيقي داخل VAREX إلى حين تفعيله صراحةً لاتصال يدعم التنفيذ.`);
+          if (!accepted) return;
+          if (revision == null || app.broker?.connectionRevision !== revision) throw new Error("تغيّر اتصال الحساب. يلزم تحديث بيانات الربط قبل إعادة المحاولة.");
+          replacement.replacementConfirmation = "REPLACE_BROKER";
+          replacement.expectedConnectionRevision = revision;
+        }
+        const payload = {
+          provider, accountLabel: String(data.get("accountLabel") || ""),
+          apiKey: String(data.get("apiKey") || ""), fundsAtProvider: Boolean(data.get("fundsAtProvider")),
+          ...replacement,
+        };
+        if (provider === "capital") {
+          const environment = String(data.get("environment"));
+          if (!["demo", "live"].includes(environment)) throw new Error("بيئة Capital.com غير صالحة.");
+          Object.assign(payload, { environment, identifier: String(data.get("identifier") || ""), apiPassword: String(data.get("apiPassword") || "") });
+        } else payload.apiSecret = String(data.get("apiSecret") || "");
+        const result = await tradingPost("connect_broker", payload);
         app.broker = result.broker;
         app.executionMode = "paper";
+        app.brokerProvider = provider;
+        app.brokerFormOpen = false;
+        app.accountChoice = "linked";
         form.reset();
         updateExecutionUi();
-        showToast("تم اختبار الصلاحيات وربط حساب Binance. التداول الحقيقي ما زال متوقفاً.");
+        showToast(provider === "capital" ? "تم ربط Capital.com لعرض الحساب والمراكز فقط." : "تم اختبار الصلاحيات وربط حساب Binance. التداول الحقيقي ما زال متوقفاً.");
         render();
       } else if (form.id === "liveConfigForm") {
+        if (!app.profile?.canConnectBroker || !binanceConnected()) throw new Error("هذا الاتصال لا يدعم تفعيل التنفيذ الحقيقي.");
         const enabled = Boolean(data.get("enableLive"));
         if (enabled && !app.broker.liveTradingEnabled) {
           const accepted = await confirmAction("تفعيل التداول الحقيقي", "سيصبح إرسال أوامر Spot حقيقية متاحاً، مع بقاء تأكيد مستقل مطلوب لكل صفقة. الإيداع والسحب يبقيان داخل Binance.");
@@ -1009,6 +1255,9 @@
         updateExecutionUi();
         showToast(enabled ? "تم تفعيل التداول الحقيقي مع تأكيد يدوي لكل صفقة." : "تم إيقاف التداول الحقيقي.");
         render();
+      } else if (form.id === "automationForm") {
+        const enabled = Boolean(data.get("enableAutomation"));
+        await configureAutomation({ enabled, symbol: String(data.get("symbol")), interval: String(data.get("interval")), riskPercent: Number(data.get("riskPercent")), maxDailyTrades: Number(data.get("maxDailyTrades")) });
       }
     } catch (error) {
       showToast(error.message, "error");
@@ -1035,7 +1284,7 @@
     finally { buttons.forEach((button) => { button.disabled = false; }); }
   }
   async function closeTrade(tradeId) {
-    const accepted = await confirmAction("إغلاق الصفقة الورقية", "سيُستخدم سعر السوق الحي عند الإغلاق وتُحفظ النتيجة في التقرير.");
+    const accepted = await confirmAction("إغلاق الصفقة التجريبية", "سيُستخدم سعر السوق الحي عند الإغلاق وتُحفظ النتيجة في التقرير.");
     if (!accepted) return;
     try {
       const result = await tradingPost("close_trade", { tradeId });
@@ -1046,13 +1295,14 @@
     } catch (error) { showToast(error.message, "error"); }
   }
   async function refreshBroker() {
+    if (!app.profile?.canConnectBroker) return;
     const buttons = $$('[data-action="refresh-broker"]');
     buttons.forEach((button) => { button.disabled = true; });
     try {
       const result = await tradingPost("refresh_broker");
       app.broker = result.broker;
       updateExecutionUi();
-      showToast("تم فحص صلاحيات Binance وتحديث الأرصدة.");
+      showToast(`تم فحص اتصال ${providerLabel()} وتحديث بيانات الحساب.`);
       render();
     } catch (error) {
       showToast(error.message, "error");
@@ -1065,14 +1315,17 @@
     } finally { buttons.forEach((button) => { button.disabled = false; }); }
   }
   async function disconnectBroker() {
-    const accepted = await confirmAction("فصل حساب Binance", "سيتم حذف مفاتيح الربط المشفرة من VAREX وإيقاف التداول الحقيقي. الأموال والأوامر السابقة تبقى داخل Binance.");
+    if (!app.profile?.canConnectBroker || !app.broker?.connected) return;
+    const label = providerLabel();
+    const accepted = await confirmAction(`فصل حساب ${label}`, `سيتم حذف بيانات الربط المشفرة من VAREX وإيقاف التنفيذ الحقيقي عبره. تبقى الأموال والمراكز والأوامر لدى ${label}.`);
     if (!accepted) return;
     try {
       const result = await tradingPost("disconnect_broker", { confirmation: "DISCONNECT_BROKER" });
       app.broker = result.broker;
       app.executionMode = "paper";
       updateExecutionUi();
-      showToast("تم فصل حساب Binance وحذف بيانات الربط المشفرة.");
+      app.brokerFormOpen = false;
+      showToast(`تم فصل حساب ${label} وحذف بيانات الربط المشفرة.`);
       render();
     } catch (error) { showToast(error.message, "error"); }
   }
@@ -1096,7 +1349,7 @@
     } catch (error) { showToast(error.message, "error"); }
   }
   async function resetPaper() {
-    const accepted = await confirmAction("إعادة ضبط التداول الورقي", "سيتم حذف كل الصفقات والتحليلات الورقية وإعادة الرصيد إلى 25,000 دولار. لا يمكن التراجع.");
+    const accepted = await confirmAction("إعادة ضبط التداول التجريبي", "سيتم حذف كل الصفقات والتحليلات التجريبية وإعادة الرصيد إلى 25,000 دولار. لا يمكن التراجع.");
     if (!accepted) return;
     try {
       const result = await tradingPost("reset_paper");
@@ -1104,7 +1357,7 @@
       delete app.formDrafts.tradeForm;
       delete app.formDrafts.riskForm;
       await loadMarkets(app.state.selectedSymbol, true);
-      showToast("تمت إعادة ضبط حساب التداول الورقي.");
+      showToast("تمت إعادة ضبط حساب التداول التجريبي.");
       render();
     } catch (error) { showToast(error.message, "error"); }
   }
@@ -1115,6 +1368,9 @@
     app.formDrafts = {}; app.userRoleDrafts = {}; app.view = "dashboard"; app.tradeSide = "buy";
     app.markets = []; app.selectedMarket = null; app.supportedMarkets = []; app.marketError = "";
     app.exploreSymbol = ""; app.exploreInterval = "60";
+    app.accountChoice = "demo"; app.brokerProvider = "capital"; app.brokerQuery = ""; app.brokerFormOpen = false;
+    app.automation = null; app.automationError = ""; app.automationLoading = false;
+    entryDestination = null;
     stopMarketRefresh();
     marketRequestId += 1;
     pendingAuth = { purpose: "", email: "", password: "", displayName: "", otp: "" };

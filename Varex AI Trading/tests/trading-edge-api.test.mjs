@@ -139,6 +139,7 @@ test("real PostgreSQL migration and Edge API integration (offline)", async (t) =
   const db = new PGlite();
   await db.exec("create role anon; create role authenticated; create role service_role bypassrls; create schema auth; create table auth.users (id uuid primary key, email text not null); grant usage on schema public to service_role, anon, authenticated;");
   await db.exec(readFileSync(resolve(repo, "supabase/migrations/20261030053731_varex_trading_standalone.sql"), "utf8"));
+  await db.exec(readFileSync(resolve(repo, "supabase/migrations/20261030200032_varex_trading_capital_monitoring.sql"), "utf8"));
   t.after(() => db.close());
 
   const id = (value) => {
@@ -153,7 +154,8 @@ test("real PostgreSQL migration and Edge API integration (offline)", async (t) =
   }
 
   function harness(options = {}) {
-    const metrics = { auth: 0, validation: 0, orders: 0, rpc: [], writes: [], lastClientKey: null };
+    const metrics = { auth: 0, validation: 0, capitalValidation: 0, decryptions: 0, markets: 0, orders: 0, rpc: [], writes: [], reads: [], lastClientKey: null };
+    const encryptedFixtures = new Map();
     const users = { owner: user(ownerId, ownerEmail), alice: user(), bob: user(bobId, "bob@example.test"), ...(options.users || {}) };
     const environment = { ...baseEnvironment, ...options.environment };
     let currentPrice = 100;
@@ -172,6 +174,7 @@ test("real PostgreSQL migration and Edge API integration (offline)", async (t) =
       maybeSingle() { this.single = true; return this.run(); }
       then(resolve, reject) { return this.run().then(resolve, reject); }
       async run() {
+        if (this.operation === "select") metrics.reads.push(this.table);
         if (this.operation !== "select") metrics.writes.push({ table: this.table, values: this.values, filters: this.filters });
         const failure = await options.queryFailure?.(this);
         if (failure) return { data: null, error: { message: "injected database error" } };
@@ -216,11 +219,28 @@ test("real PostgreSQL migration and Edge API integration (offline)", async (t) =
       env: (name) => environment[name],
       createClient: (_url, key) => { metrics.lastClientKey = key; return client; },
       now: () => fixedNow,
-      getMarketSnapshot: async (symbol) => snapshot(symbol),
-      getMarketBoard: async () => ({ selected: "BTC-USD", markets: [snapshot("BTC-USD"), snapshot("ETH-USD"), snapshot("SOL-USD"), snapshot("ADA-USD")], source: "offline fixture", live: true }),
+      getMarketSnapshot: async (symbol) => { metrics.markets += 1; return snapshot(symbol); },
+      getMarketBoard: async () => { metrics.markets += 1; return { selected: "BTC-USD", markets: [snapshot("BTC-USD"), snapshot("ETH-USD"), snapshot("SOL-USD"), snapshot("ADA-USD")], source: "offline fixture", live: true }; },
       validateBinanceConnection: async () => { metrics.validation += 1; return summary; },
-      encryptTradingSecret: async (value) => ({ ciphertext: `encrypted-fixture-${value.slice(-4)}`, iv: "fixture-iv" }),
-      decryptTradingSecret: async () => "mocked-broker-credential",
+      validateCapitalConnection: async (credentials) => {
+        metrics.capitalValidation += 1;
+        if (options.validateCapital) return await options.validateCapital(credentials);
+        return { provider: "capital", readOnly: true, executionSupported: false, canTrade: false,
+          environment: credentials.environment, accountId: "capital-account-123", accountName: "USD demo", accountType: "CFD", currency: "USD",
+          accountBalance: { balance: 1000, deposit: 990, profitLoss: 10, available: 900 },
+          positions: [{ dealId: "fixture-deal", epic: "EURUSD", instrumentName: "EUR/USD", direction: "BUY", size: 100, level: 1.1, currency: "USD", profitLoss: 10, createdAt: "2026-10-30T10:00:00Z" }] };
+      },
+      encryptTradingSecret: async (value, key) => {
+        if (options.realEncryption) return await encryptTradingSecret(value, key);
+        const ciphertext = "encrypted-fixture-" + crypto.randomUUID();
+        encryptedFixtures.set(ciphertext, value);
+        return { ciphertext, iv: "fixture-iv" };
+      },
+      decryptTradingSecret: async (value, key) => {
+        metrics.decryptions += 1;
+        if (options.realEncryption) return await decryptTradingSecret(value, key);
+        return encryptedFixtures.get(value.ciphertext) || "mocked-broker-credential";
+      },
       placeBinanceMarketOrder: async (_credentials, input) => {
         metrics.orders += 1;
         if (options.placeOrder) return await options.placeOrder(input);
@@ -422,6 +442,138 @@ test("real PostgreSQL migration and Edge API integration (offline)", async (t) =
     assert.equal(app.metrics.orders, 0);
   });
 
+  const capitalBody = { provider: "capital", fundsAtProvider: true, identifier: "trader@example.test", apiKey: "capital-api-key-fixture-1234", apiPassword: "custom API password fixture" };
+
+  await t.test("access probe verifies the account without paper state, markets, or broker reads", async () => {
+    await reset();
+    const app = harness();
+    const response = await app.call("access", {}, "alice", "GET");
+    assert.equal(response.status, 200);
+    assert.equal(response.body.profile.email, "alice@example.test");
+    assert.deepEqual(Object.keys(response.body), ["profile"]);
+    assert.equal(app.metrics.markets, 0);
+    assert.equal(app.metrics.validation, 0);
+    assert.equal(app.metrics.capitalValidation, 0);
+    assert.ok(!app.metrics.reads.some((table) => /state|broker|live_order/.test(table)));
+    assert.equal((await db.query("select count(*)::int as count from public.varex_trading_state")).rows[0].count, 0);
+  });
+
+  await t.test("Capital defaults to demo, encrypts the pinned identity, and exposes only monitoring data", async () => {
+    await reset();
+    const app = harness({ realEncryption: true });
+    const response = await app.call("connect_broker", capitalBody);
+    assert.equal(response.status, 200);
+    assert.equal(response.body.broker.provider, "capital");
+    assert.equal(response.body.broker.environment, "demo");
+    assert.equal(response.body.broker.liveTradingEnabled, false);
+    assert.equal(response.body.broker.executionSupported, false);
+    assert.equal(response.body.broker.readOnly, true);
+    assert.equal(response.body.broker.canTrade, false);
+    assert.equal(response.body.broker.permissions, null);
+    assert.equal(response.body.broker.accountBalance.available, 900);
+    assert.equal(response.body.broker.positions[0].epic, "EURUSD");
+    const row = (await db.query("select * from public.varex_trading_broker_connection where user_id=$1", [aliceId])).rows[0];
+    const key = await decryptTradingSecret({ ciphertext: row.api_key_ciphertext, iv: row.api_key_iv }, fixtureKey);
+    const secret = JSON.parse(await decryptTradingSecret({ ciphertext: row.api_secret_ciphertext, iv: row.api_secret_iv }, fixtureKey));
+    assert.equal(key, capitalBody.apiKey);
+    assert.deepEqual(secret, { v: 1, provider: "capital", identifier: capitalBody.identifier, apiPassword: capitalBody.apiPassword, environment: "demo", accountId: "capital-account-123" });
+    for (const hidden of [capitalBody.apiKey, capitalBody.apiPassword, capitalBody.identifier, row.api_key_ciphertext, row.api_secret_ciphertext]) assert.ok(!JSON.stringify(response.body).includes(hidden));
+    assert.equal(app.metrics.validation, 0);
+    assert.equal(app.metrics.orders, 0);
+  });
+
+  await t.test("Capital refuses live configuration and orders before decryption, reservation, or broker calls", async () => {
+    await reset();
+    const app = harness();
+    assert.equal((await app.call("connect_broker", capitalBody)).status, 200);
+    app.metrics.rpc.length = 0;
+    app.metrics.writes.length = 0;
+    for (const enabled of [true, false]) assert.equal((await app.call("configure_live_trading", { enabled, maxLiveOrderUsd: 100, confirmation: "ENABLE_LIVE_SPOT" })).status, 409);
+    assert.equal((await app.call("place_live_order", liveBody)).status, 409);
+    assert.equal(app.metrics.decryptions, 0);
+    assert.equal(app.metrics.validation, 0);
+    assert.equal(app.metrics.capitalValidation, 1);
+    assert.equal(app.metrics.orders, 0);
+    assert.equal(app.metrics.writes.length, 0);
+    assert.ok(!app.metrics.rpc.some((call) => /enable_live|reserve_live_order/.test(call.name)));
+    assert.equal((await db.query("select count(*)::int as count from public.varex_trading_live_order")).rows[0].count, 0);
+    const revision = (await db.query("select revision from public.varex_trading_broker_connection where user_id=$1", [aliceId])).rows[0].revision;
+    assert.equal((await app.client.rpc("varex_trading_enable_live", { p_user_id: aliceId, p_connection_revision: revision, p_max_live_order_cents: 10000, p_now: fixedNow })).data.saved, false);
+    const reservation = await app.client.rpc("varex_trading_reserve_live_order", {
+      p_user_id: aliceId, p_id: crypto.randomUUID(), p_client_request_id: "b".repeat(32), p_client_order_id: "vx" + "b".repeat(32),
+      p_connection_revision: revision, p_symbol: "BTC-USD", p_side: "buy", p_quote_amount_cents: 5000, p_now: fixedNow,
+    });
+    assert.equal(reservation.data.reason, "disabled");
+    assert.equal(reservation.data.order, undefined);
+    await assert.rejects(db.query("update public.varex_trading_broker_connection set live_trading_enabled=true where user_id=$1", [aliceId]), /check constraint/);
+  });
+
+  await t.test("Capital refresh uses the encrypted account and environment, failing closed on identity mismatch", async () => {
+    await reset();
+    let seen;
+    const app = harness({ validateCapital: async (credentials) => {
+      seen = credentials;
+      if (credentials.accountId) throw new TradingBrokerError(409, "Pinned account mismatch fixture");
+      return { provider: "capital", environment: credentials.environment, accountId: "capital-account-123", accountName: "Demo", accountType: "CFD", currency: "USD", accountBalance: { balance: 10, deposit: 10, profitLoss: 0, available: 10 }, positions: [], readOnly: true, executionSupported: false, canTrade: false };
+    } });
+    assert.equal((await app.call("connect_broker", capitalBody)).status, 200);
+    const refreshed = await app.call("refresh_broker", { environment: "live", accountId: "attacker-selected", identifier: "other@example.test" });
+    assert.equal(refreshed.status, 409);
+    assert.equal(seen.environment, "demo");
+    assert.equal(seen.accountId, "capital-account-123");
+    assert.equal(seen.identifier, capitalBody.identifier);
+    assert.equal(seen.apiPassword, capitalBody.apiPassword);
+    const row = (await db.query("select status,live_trading_enabled,permission_snapshot from public.varex_trading_broker_connection where user_id=$1", [aliceId])).rows[0];
+    assert.equal(row.status, "error");
+    assert.equal(row.live_trading_enabled, false);
+    assert.equal(row.permission_snapshot.accountId, "capital-account-123");
+    assert.equal(app.metrics.validation, 0);
+  });
+
+  await t.test("replacing either provider needs explicit confirmation and the current connection revision", async () => {
+    await reset();
+    const app = harness();
+    await app.connect();
+    const old = await app.call("bootstrap", {}, "alice", "GET");
+    assert.equal((await app.call("connect_broker", capitalBody)).status, 409);
+    assert.equal((await app.call("connect_broker", { ...capitalBody, replacementConfirmation: "REPLACE_BROKER", expectedConnectionRevision: "stale" })).status, 409);
+    assert.equal(app.metrics.capitalValidation, 0);
+    const replaced = await app.call("connect_broker", { ...capitalBody, replacementConfirmation: "REPLACE_BROKER", expectedConnectionRevision: old.body.broker.connectionRevision });
+    assert.equal(replaced.status, 200);
+    assert.equal(replaced.body.broker.provider, "capital");
+    assert.equal(replaced.body.broker.liveTradingEnabled, false);
+    assert.notEqual(replaced.body.broker.connectionRevision, old.body.broker.connectionRevision);
+    assert.equal((await app.call("connect_broker", { fundsAtProvider: true, apiKey: "test-api-key-not-real-1234", apiSecret: "test-secret-not-real-5678" })).status, 409);
+  });
+
+  await t.test("unknown broker and Capital environment are rejected without provider requests", async () => {
+    await reset();
+    const app = harness();
+    for (const change of [{ provider: "pocket-option" }, { environment: "https://untrusted.example" }, { environment: "" }]) assert.equal((await app.call("connect_broker", { ...capitalBody, ...change })).status, 400);
+    assert.equal(app.metrics.validation, 0);
+    assert.equal(app.metrics.capitalValidation, 0);
+    assert.equal(app.metrics.writes.length, 0);
+  });
+
+  await t.test("a connection replaced during Capital validation cannot overwrite the newer revision", async () => {
+    await reset();
+    const concurrentRevision = crypto.randomUUID();
+    const app = harness({ validateCapital: async (credentials) => {
+      await db.query("update public.varex_trading_broker_connection set revision=$1 where user_id=$2", [concurrentRevision, aliceId]);
+      return { provider: "capital", environment: credentials.environment, accountId: "capital-account-123", accountName: "Demo",
+        accountType: "CFD", currency: "USD", accountBalance: { balance: 10, deposit: 10, profitLoss: 0, available: 10 }, positions: [] };
+    } });
+    await app.connect();
+    const old = (await db.query("select revision from public.varex_trading_broker_connection where user_id=$1", [aliceId])).rows[0];
+    const result = await app.call("connect_broker", { ...capitalBody, replacementConfirmation: "REPLACE_BROKER", expectedConnectionRevision: old.revision });
+    assert.equal(result.status, 409);
+    const current = (await db.query("select revision,provider,live_trading_enabled from public.varex_trading_broker_connection where user_id=$1", [aliceId])).rows[0];
+    assert.equal(current.revision, concurrentRevision);
+    assert.equal(current.provider, "binance");
+    assert.equal(current.live_trading_enabled, true);
+    assert.equal(app.metrics.orders, 0);
+  });
+
   await t.test("broker connection starts disabled, hides encrypted material, and requires manual confirmation", async () => {
     await reset();
     const app = harness();
@@ -431,7 +583,7 @@ test("real PostgreSQL migration and Edge API integration (offline)", async (t) =
     assert.equal(JSON.stringify(connected.body).includes("encrypted-fixture"), false);
     assert.equal((await app.call("place_live_order", liveBody)).status, 409);
     assert.equal((await app.call("configure_live_trading", { enabled: true, maxLiveOrderUsd: 100 })).status, 400);
-    await app.connect();
+    assert.equal((await app.call("configure_live_trading", { enabled: true, maxLiveOrderUsd: 100, confirmation: "ENABLE_LIVE_SPOT" })).status, 200);
     assert.equal((await app.call("place_live_order", { ...liveBody, confirmation: "" })).status, 400);
     assert.equal(app.metrics.orders, 0);
   });

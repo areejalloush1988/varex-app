@@ -16,6 +16,7 @@
   const PUBLISHABLE_KEY = "sb_publishable__xRe4q10zwB2coiWu7wVrQ_9CimA336";
   const AUTH_URL = `${PROJECT_URL}/auth/v1`;
   const TRADING_URL = `${PROJECT_URL}/functions/v1/varex-trading-api`;
+  const AUTOMATION_URL = `${PROJECT_URL}/functions/v1/varex-trading-automation`;
   const STORAGE_KEY = "varex.trading.supabase.session.v1.eibadfdqzpeigccfdipt";
   const REFRESH_MARGIN = 45;
   const SIGNUP_MARKER_TTL = 10 * 60 * 1000;
@@ -404,7 +405,8 @@
     try { url = new URL(path, window.location.href); }
     catch { return fetchRequest(path, options); }
     const isLocal = url.origin === window.location.origin;
-    const isTrading = isLocal && url.pathname === "/api/trading";
+    const isAutomation = isLocal && url.pathname === "/api/trading-automation";
+    const isTrading = isLocal && (url.pathname === "/api/trading" || isAutomation);
     if (!isTrading && !(isLocal && authPaths.has(url.pathname))) return fetchRequest(path, options);
     const method = (options.method || "GET").toUpperCase();
     let tradingDispatched = false;
@@ -421,7 +423,7 @@
       if (!headers.has("Content-Type")) headers.set("Content-Type", "application/json");
       const epoch = authEpoch;
       tradingDispatched = true;
-      const response = await fetchRequest(`${TRADING_URL}${url.search}`, {
+      const response = await fetchRequest(`${isAutomation ? AUTOMATION_URL : TRADING_URL}${url.search}`, {
         ...options, headers, credentials: "omit", cache: "no-store", redirect: "error", mode: "cors",
       });
       if (response.status === 401 && epoch === authEpoch) clearSession();

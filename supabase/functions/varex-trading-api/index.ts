@@ -17,6 +17,10 @@ import {
   type BinanceAccountSummary,
   type BinanceCredentials,
 } from "./trading-broker.ts";
+import {
+  capitalCredentials, capitalCredentialsFromSecret, capitalSecret, validateCapitalConnection,
+  type CapitalAccountSummary,
+} from "./trading-capital.ts";
 
 export const TRADING_DEVELOPER_EMAIL = "areejalloush1988@gmail.com";
 const TABLE_PREFIX = "varex_trading_";
@@ -26,7 +30,7 @@ const ALLOWED_ORIGINS = new Set([
   "https://app.varexapp.com",
   "https://areejalloush1988.github.io",
 ]);
-const BROKER_UNAVAILABLE = "ربط Binance غير متاح حالياً: يلزم تجهيز مفتاح حماية بيانات التداول في الخادم.";
+const BROKER_UNAVAILABLE = "ربط حساب الوسيط غير متاح حالياً: يلزم تجهيز مفتاح حماية بيانات التداول في الخادم.";
 
 type TradingRole = "developer" | "trader" | "viewer";
 type RecordValue = Record<string, unknown>;
@@ -74,7 +78,7 @@ type StateRow = { user_id: string; state_json: TradingState; version: number };
 type BrokerConnection = {
   user_id: string;
   revision: string;
-  provider: "binance";
+  provider: "binance" | "capital";
   account_label: string;
   api_key_ciphertext: string;
   api_key_iv: string;
@@ -84,7 +88,7 @@ type BrokerConnection = {
   status: "connected" | "error";
   live_trading_enabled: boolean;
   max_live_order_cents: number;
-  permission_snapshot: BinanceAccountSummary | null;
+  permission_snapshot: BinanceAccountSummary | CapitalAccountSummary | null;
   last_error: string | null;
   last_checked_at: number | null;
   created_at: number;
@@ -218,6 +222,7 @@ type Dependencies = {
   getMarketBoard: typeof getMarketBoard;
   analyzeSnapshot: typeof analyzeSnapshot;
   validateBinanceConnection: typeof validateBinanceConnection;
+  validateCapitalConnection: typeof validateCapitalConnection;
   placeBinanceMarketOrder: typeof placeBinanceMarketOrder;
   encryptTradingSecret: typeof encryptTradingSecret;
   decryptTradingSecret: typeof decryptTradingSecret;
@@ -232,6 +237,7 @@ const defaults: Dependencies = {
   getMarketBoard,
   analyzeSnapshot,
   validateBinanceConnection,
+  validateCapitalConnection,
   placeBinanceMarketOrder,
   encryptTradingSecret,
   decryptTradingSecret,
@@ -311,14 +317,28 @@ function orderJson(order: LiveOrder) {
   };
 }
 function brokerPayload(connection: BrokerConnection | null, orders: LiveOrder[], available: boolean, viewer = false) {
-  const summary = connection?.permission_snapshot;
-  const liveTradingEnabled = available && !viewer && connection?.status === "connected" && connection.live_trading_enabled === true;
+  const summary = connection?.permission_snapshot?.provider === connection?.provider ? connection?.permission_snapshot : null;
+  const binance = summary?.provider === "binance" ? summary : null;
+  const capital = summary?.provider === "capital" ? summary : null;
+  const provider = connection?.provider || "binance";
+  const liveTradingEnabled = provider === "binance" && available && !viewer && connection?.status === "connected" && connection.live_trading_enabled === true;
   return {
     available: available && !viewer,
     connected: Boolean(connection),
     mode: liveTradingEnabled ? "live-ready" : "paper",
-    provider: "binance",
-    providerLabel: "Binance Spot",
+    provider,
+    providerLabel: provider === "capital" ? "Capital.com" : "Binance Spot",
+    connectionRevision: connection?.revision || null,
+    readOnly: provider === "capital",
+    executionSupported: provider === "binance",
+    canTrade: provider === "binance" && binance?.canTrade === true,
+    environment: capital?.environment || null,
+    accountId: capital?.accountId || null,
+    accountName: capital?.accountName || "",
+    currency: capital?.currency || null,
+    accountBalance: capital?.accountBalance || null,
+    snapshotAt: capital?.asOf || null,
+    positions: viewer ? [] : capital?.positions || [],
     accountLabel: connection?.account_label || "",
     keyFingerprint: connection?.key_fingerprint || "",
     status: connection?.status,
@@ -327,14 +347,15 @@ function brokerPayload(connection: BrokerConnection | null, orders: LiveOrder[],
     lastCheckedAt: connection?.last_checked_at || null,
     lastError: !available ? BROKER_UNAVAILABLE : connection?.last_error || null,
     error: !available ? BROKER_UNAVAILABLE : undefined,
-    permissions: summary?.permissions || null,
-    balances: viewer ? [] : summary?.balances || [],
-    availableUsdt: viewer ? 0 : summary?.availableUsdt || 0,
+    permissions: binance?.permissions || null,
+    balances: viewer ? [] : binance?.balances || [],
+    availableUsdt: viewer ? 0 : binance?.availableUsdt || 0,
     accountType: summary?.accountType || "SPOT",
     label: viewer ? "التداول الورقي فقط لهذا الحساب" : !available ? BROKER_UNAVAILABLE
+      : provider === "capital" ? "Capital.com مربوط · متابعة الرصيد والمراكز فقط"
       : liveTradingEnabled ? "Binance مربوط · التداول الحقيقي بتأكيد يدوي"
       : connection ? "Binance مربوط · التداول الحقيقي متوقف" : "حساب التداول غير مربوط",
-    orders: viewer ? [] : orders.map(orderJson),
+    orders: viewer ? [] : orders.map((order) => ({ ...orderJson(order), provider: "binance" })),
   };
 }
 
@@ -465,6 +486,7 @@ export function createTradingHandler(overrides: Partial<Dependencies> = {}) {
         return brokerPayload(connection, orders, brokerAvailable);
       }
       async function credentialsFor(connection: BrokerConnection): Promise<BinanceCredentials> {
+        if (connection.provider !== "binance") throw new TradingAccessError(409, "هذا الربط للمتابعة فقط ولا يدعم أوامر Binance.");
         const key = await credentialKey(dependencies);
         const [apiKey, apiSecret] = await Promise.all([
           dependencies.decryptTradingSecret({ ciphertext: connection.api_key_ciphertext, iv: connection.api_key_iv }, key),
@@ -472,17 +494,29 @@ export function createTradingHandler(overrides: Partial<Dependencies> = {}) {
         ]);
         return { apiKey, apiSecret };
       }
+      async function capitalCredentialsFor(connection: BrokerConnection) {
+        if (connection.provider !== "capital") throw new TradingAccessError(409, "نوع ربط الحساب لا يطابق Capital.com.");
+        const key = await credentialKey(dependencies);
+        const [apiKey, secret] = await Promise.all([
+          dependencies.decryptTradingSecret({ ciphertext: connection.api_key_ciphertext, iv: connection.api_key_iv }, key),
+          dependencies.decryptTradingSecret({ ciphertext: connection.api_secret_ciphertext, iv: connection.api_secret_iv }, key),
+        ]);
+        return capitalCredentialsFromSecret(apiKey, secret);
+      }
       async function updateConnection(connection: BrokerConnection, values: RecordValue) {
         const updated = await store.update<BrokerConnection>("broker_connection", values, { user_id: user.id, revision: connection.revision });
         if (!updated) throw new TradingAccessError(409, "تغير ربط الحساب أثناء الطلب. يرجى تحديث الصفحة.");
         return updated;
       }
-      async function refreshConnection() {
+      async function refreshConnection(requiredProvider?: "binance") {
         await credentialKey(dependencies);
         const connection = await connectionFor();
         if (!connection) throw new TradingAccessError(404, "حساب التداول غير مربوط.");
+        if (requiredProvider && connection.provider !== requiredProvider) throw new TradingAccessError(409, "ربط Capital.com مخصص لمتابعة الحساب فقط؛ تنفيذ الأوامر غير مفعّل.");
         try {
-          const summary = await dependencies.validateBinanceConnection(await credentialsFor(connection));
+          const summary = connection.provider === "capital"
+            ? await dependencies.validateCapitalConnection(await capitalCredentialsFor(connection))
+            : await dependencies.validateBinanceConnection(await credentialsFor(connection));
           const now = dependencies.now();
           const updated = await updateConnection(connection, {
             status: "connected", permission_snapshot: summary, last_error: null, last_checked_at: now, updated_at: now,
@@ -558,6 +592,7 @@ export function createTradingHandler(overrides: Partial<Dependencies> = {}) {
       if (request.method === "GET") {
         const url = new URL(request.url);
         const action = url.searchParams.get("action") || "bootstrap";
+        if (action === "access") return json({ profile: profileJson(profile, brokerAvailable) });
         if (action === "markets") {
           const board = await dependencies.getMarketBoard(url.searchParams.get("symbol"));
           return json({ ...board, ...await settlePaperStops(board.markets) });
@@ -668,23 +703,44 @@ export function createTradingHandler(overrides: Partial<Dependencies> = {}) {
       if (action === "connect_broker") {
         const key = await credentialKey(dependencies);
         if (body.fundsAtProvider !== true) throw new TradingAccessError(400, "يلزم تأكيد بقاء الإيداع والسحب داخل منصة التداول.");
-        if (String(body.provider || "binance") !== "binance") throw new TradingAccessError(400, "المزود غير مدعوم حالياً.");
-        const apiKey = String(body.apiKey || "").trim();
-        const apiSecret = String(body.apiSecret || "").trim();
-        if ([apiKey, apiSecret].some((value) => value.length < 16 || value.length > 256 || /\s/.test(value))) throw new TradingAccessError(400, "مفاتيح ربط Binance غير صالحة.");
-        const summary = await dependencies.validateBinanceConnection({ apiKey, apiSecret });
+        const provider = body.provider === undefined ? "binance" : body.provider;
+        if (provider !== "binance" && provider !== "capital") throw new TradingAccessError(400, "المزود غير مدعوم حالياً.");
+        const previous = await connectionFor();
+        if (previous ? body.replacementConfirmation !== "REPLACE_BROKER" || body.expectedConnectionRevision !== previous.revision
+          : body.expectedConnectionRevision != null && body.expectedConnectionRevision !== "") {
+          throw new TradingAccessError(409, "يوجد ربط سابق أو تغير الحساب. حدّث الصفحة وأكد استبدال الربط الحالي.");
+        }
+        let apiKey: string, secret: string;
+        let summary: BinanceAccountSummary | CapitalAccountSummary;
+        if (provider === "capital") {
+          const credentials = capitalCredentials(body);
+          summary = await dependencies.validateCapitalConnection(credentials);
+          apiKey = credentials.apiKey;
+          secret = capitalSecret(credentials, summary.accountId);
+        } else {
+          apiKey = typeof body.apiKey === "string" ? body.apiKey.trim() : "";
+          secret = typeof body.apiSecret === "string" ? body.apiSecret.trim() : "";
+          if ([apiKey, secret].some((value) => value.length < 16 || value.length > 256 || /\s/.test(value))) throw new TradingAccessError(400, "مفاتيح ربط Binance غير صالحة.");
+          summary = await dependencies.validateBinanceConnection({ apiKey, apiSecret: secret });
+        }
         const [encryptedKey, encryptedSecret] = await Promise.all([
-          dependencies.encryptTradingSecret(apiKey, key), dependencies.encryptTradingSecret(apiSecret, key),
+          dependencies.encryptTradingSecret(apiKey, key), dependencies.encryptTradingSecret(secret, key),
         ]);
-        const now = dependencies.now();
-        await store.upsert("broker_connection", {
-          user_id: user.id, revision: dependencies.uuid(), provider: "binance", account_label: cleanName(body.accountLabel, "حساب Binance Spot"),
+        const now = dependencies.now(), revision = dependencies.uuid();
+        const row = {
+          user_id: user.id, revision, provider, account_label: cleanName(body.accountLabel, provider === "capital" ? "حساب Capital.com" : "حساب Binance Spot"),
           api_key_ciphertext: encryptedKey.ciphertext, api_key_iv: encryptedKey.iv,
           api_secret_ciphertext: encryptedSecret.ciphertext, api_secret_iv: encryptedSecret.iv,
           key_fingerprint: apiKey.slice(-4), status: "connected", live_trading_enabled: false,
           max_live_order_cents: 10_000, permission_snapshot: summary, last_error: null,
-          last_checked_at: now, created_at: now, updated_at: now,
-        });
+          last_checked_at: now, created_at: previous?.created_at || now, updated_at: now,
+        };
+        if (previous) await updateConnection(previous, row);
+        else {
+          // Insert only: a concurrent first connection must never be overwritten.
+          await store.upsert("broker_connection", row, true);
+          if ((await connectionFor())?.revision !== revision) throw new TradingAccessError(409, "تغير ربط الحساب أثناء الطلب. حدّث الصفحة قبل إعادة المحاولة.");
+        }
         return json({ connected: true, broker: await brokerState() });
       }
       if (action === "refresh_broker") {
@@ -692,15 +748,17 @@ export function createTradingHandler(overrides: Partial<Dependencies> = {}) {
         return json({ refreshed: true, broker: await brokerState() });
       }
       if (action === "configure_live_trading") {
+        const existingConnection = await connectionFor();
+        if (existingConnection && existingConnection.provider !== "binance") throw new TradingAccessError(409, "ربط Capital.com مخصص لمتابعة الحساب فقط؛ تنفيذ الأوامر غير مفعّل.");
         if (body.enabled !== true) {
-          await store.update("broker_connection", { live_trading_enabled: false, updated_at: dependencies.now() }, { user_id: user.id });
+          await store.update("broker_connection", { live_trading_enabled: false, updated_at: dependencies.now() }, { user_id: user.id, provider: "binance" });
           return json({ saved: true, broker: await brokerState() });
         }
         await credentialKey(dependencies);
         if (body.confirmation !== "ENABLE_LIVE_SPOT") throw new TradingAccessError(400, "يلزم تأكيد تفعيل التداول الحقيقي.");
         const maxLiveOrderUsd = Number(body.maxLiveOrderUsd);
         if (!Number.isFinite(maxLiveOrderUsd) || maxLiveOrderUsd < 25 || maxLiveOrderUsd > 10_000) throw new TradingAccessError(400, "حد الصفقة الحقيقية يجب أن يكون بين 25 و10,000 دولار.");
-        const { connection } = await refreshConnection();
+        const { connection } = await refreshConnection("binance");
         const enabled = await store.rpc<{ saved: boolean; reason?: string }>("enable_live", {
           p_user_id: user.id, p_connection_revision: connection.revision,
           p_max_live_order_cents: Math.round(maxLiveOrderUsd * 100), p_now: dependencies.now(),
@@ -728,6 +786,7 @@ export function createTradingHandler(overrides: Partial<Dependencies> = {}) {
         const hash = new Uint8Array(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(`${user.id}:${requestId}`)));
         const clientOrderId = "vx" + [...hash].map((byte) => byte.toString(16).padStart(2, "0")).join("").slice(0, 32);
         const connection = await connectionFor();
+        if (connection && connection.provider !== "binance") throw new TradingAccessError(409, "ربط Capital.com مخصص لمتابعة الحساب فقط؛ تنفيذ الأوامر غير مفعّل.");
         const reservation = await store.rpc<{ created?: boolean; order?: LiveOrder; reason?: string }>("reserve_live_order", {
           p_user_id: user.id, p_id: dependencies.uuid(), p_client_request_id: requestId,
           p_client_order_id: clientOrderId, p_connection_revision: connection?.revision || null,
@@ -759,7 +818,7 @@ export function createTradingHandler(overrides: Partial<Dependencies> = {}) {
           await updateConnection(connection, { status: "connected", permission_snapshot: summary, last_error: null, last_checked_at: dependencies.now(), updated_at: dependencies.now() });
           if (side === "buy" && amountCents / 100 > summary.availableUsdt) throw new TradingBrokerError(400, "رصيد USDT المتاح لا يكفي لتنفيذ أمر الشراء.");
           const currentConnection = await connectionFor();
-          if (!currentConnection || currentConnection.revision !== connection.revision || currentConnection.live_trading_enabled !== true) throw new TradingAccessError(409, "تغيّر تفعيل التداول الحقيقي قبل إرسال الأمر.");
+          if (!currentConnection || currentConnection.provider !== "binance" || currentConnection.revision !== connection.revision || currentConnection.live_trading_enabled !== true) throw new TradingAccessError(409, "تغيّر تفعيل التداول الحقيقي قبل إرسال الأمر.");
         } catch (error) {
           await store.update("live_order", { status: "rejected", updated_at: dependencies.now() }, { id: order.id, user_id: user.id, status: "pending" }).catch(() => undefined);
           await updateConnection(connection, { status: "error", live_trading_enabled: false, last_error: "تعذر التحقق من صلاحيات أو رصيد حساب التداول.", updated_at: dependencies.now() }).catch(() => undefined);

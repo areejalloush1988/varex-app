@@ -84,7 +84,7 @@ test("keeps user-facing Arabic instructions gender neutral", () => {
   const visibleCopy = [html, client, access, broker].join("\n");
   assert.doesNotMatch(visibleCopy, /ابدئي|اختاري|شغّلي|افتحي|حلّلي|دعي|جرّبي|تحتاجين|تؤكدين|استخدمي|راجعي/);
   assert.doesNotMatch(visibleCopy, /(?:^|[\s،.!؟>"'])(?:ادخل|أدخل|اختر|سجّل|أكد|اطلب|أعد|ابدأ|افتح|احفظ|راجع|أضف|حدّد|استخدم)(?=[\s،.!؟<"'])/);
-  assert.match(client, /اختيار عملة، تشغيل تحليل VAREX، ثم تجربة صفقة ورقية/);
+  assert.match(client, /اختيار عملة، تشغيل تحليل VAREX، ثم تجربة صفقة تجريبية/);
 });
 
 test("persists profiles, invites and trading state in D1", () => {
@@ -112,7 +112,7 @@ test("isolates each user's portfolio, balance, broker, and live orders", () => {
   assert.match(access, /UPDATE trading_state SET state_json = \?, version = version \+ 1, updated_at = \? WHERE user_id = \?/);
   assert.match(access, /FROM trading_broker_connection WHERE user_id = \?/);
   assert.match(access, /FROM trading_live_order WHERE user_id = \?/);
-  assert.match(access, /return requireAccess\(request, \["developer", "trader"\]\)/);
+  assert.match(access, /return requireAccess\(request, \["developer", "trader"\], validateInput\)/);
   assert.match(access, /canConnectBroker: profile\.role !== "viewer"/);
   assert.match(migration, /`user_id` text PRIMARY KEY NOT NULL/);
   assert.match(brokerMigration, /`user_id` text PRIMARY KEY NOT NULL/);

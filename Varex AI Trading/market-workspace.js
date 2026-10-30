@@ -60,11 +60,14 @@
   ].map(([id, label, name, category, tvSymbol, provider, kind, icon, executionSymbol]) =>
     Object.freeze({ id, label, name, category, tvSymbol, provider, kind, icon, executionSymbol: executionSymbol || null })));
   const intervals = Object.freeze([
+    { id: "1", label: "1 دقيقة", technical: "1m", seconds: 60 },
     { id: "5", label: "5 د", technical: "5m", seconds: 300 },
     { id: "15", label: "15 د", technical: "15m", seconds: 900 },
     { id: "60", label: "ساعة", technical: "1h", seconds: 3600 },
     { id: "240", label: "4 ساعات", technical: "4h", seconds: 14400 },
     { id: "D", label: "يوم", technical: "1D", seconds: 86400 },
+    { id: "W", label: "أسبوع", technical: "1W", seconds: null, calendarPeriod: "week" },
+    { id: "M", label: "شهر", technical: "1M", seconds: null, calendarPeriod: "month" },
   ].map(Object.freeze));
   const STORAGE_KEY = "varex.trading.researchWatchlist.v1";
   const DEFAULT_FAVORITES = ["EURUSD", "XAUUSD", "SPX500", "AAPL", "BTC-USD"];
@@ -120,6 +123,10 @@
     return `<div class="mw-indicator"><label>${esc(label)}</label><strong dir="ltr">${esc(value)}</strong><small>${esc(detail)}</small></div>`;
   }
   function analysisHtml(result) {
+    const calendar = result?.calendarPeriod === "week" || result?.calendarPeriod === "month";
+    if (calendar && (result.status === "unavailable" || !Object.values(result.indicators).some((indicator) => indicator.available))) {
+      return `<div class="mw-empty"><b>غير متاح لهذه الفترة</b><p>المصدر الحالي يوفر ${esc(result.candleCount || 0)} شمعة تقويمية مكتملة؛ لا تكفي لحساب المؤشرات. يظل شارت وملخص TradingView متاحين بحسب بيانات المزوّد.</p><p>المصدر: ${esc(result.source)} · حدود الفترات بتوقيت UTC.</p></div>`;
+    }
     if (!result || result.status === "unavailable") return '<div class="mw-empty"><b>البيانات غير متاحة حالياً</b><p>أعد المحاولة لتحميل شموع فعلية وحساب المؤشرات.</p></div>';
     const i = result.indicators, a = result.agreement;
     const stateLabel = { ready: "شموع مكتملة", insufficient: "تاريخ جزئي", stale: "بيانات قديمة" }[result.status];
@@ -140,6 +147,7 @@
       ${indicatorCard("ATR 14", available(i.atr14, i.atr14.value), i.atr14.available ? `${number(i.atr14.percentOfClose, 2)}% من الإغلاق · قياس التذبذب` : "قياس التذبذب")}
       ${indicatorCard("إغلاق الشمعة", number(result.lastClose), `${result.candleCount} شمعة مكتملة`)}
     </div>
+    ${result.missingIndicatorDetails?.length ? `<p class="mw-footnote">غير متاح لهذه الفترة من السجل الحالي: ${result.missingIndicatorDetails.map((missing) => `${esc(missing.label)} (${esc(missing.availableBars)} / ${esc(missing.requiredBars)} شمعة${missing.reason === "invalid_calculation" ? "؛ تعذر الحساب" : ""})`).join(" · ")}.</p>` : ""}
     <div class="mw-support-levels">
       <span><small>دعم مُقاس</small><b dir="ltr">${available(i.supportResistance, i.supportResistance.support)}</b></span>
       <span><small>مقاومة مُقاسة</small><b dir="ltr">${available(i.supportResistance, i.supportResistance.resistance)}</b></span>
@@ -287,7 +295,9 @@
         if (state.destroyed || requestId !== state.requestId || controller.signal.aborted) return;
         // Never leave an earlier reading on screen as though a refresh succeeded.
         state.result = null; state.resultKey = "";
-        container.querySelector("[data-mw-analysis]").innerHTML = '<div class="mw-empty"><b>تعذر جلب الشموع الحالية</b><p>لم يُنشأ تحليل بديل. اضغط «تحديث التحليل» للمحاولة مجدداً.</p></div>';
+        container.querySelector("[data-mw-analysis]").innerHTML = error?.code === "period_unavailable"
+          ? '<div class="mw-empty"><b>غير متاح لهذه الفترة</b><p>لا تتوفر شموع تقويمية مكتملة في السجل الحالي. يظل شارت وملخص TradingView متاحين بحسب بيانات المزوّد.</p></div>'
+          : '<div class="mw-empty"><b>تعذر جلب الشموع الحالية</b><p>لم يُنشأ تحليل بديل. اضغط «تحديث التحليل» للمحاولة مجدداً.</p></div>';
       } finally {
         if (!state.destroyed && requestId === state.requestId) {
           const currentButton = container.querySelector("[data-mw-refresh]");

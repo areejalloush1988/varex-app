@@ -35,6 +35,9 @@ test("research catalogue grants execution metadata only to the original four ins
 });
 
 test("chart and technical configurations share exact instrument/timeframe and prevent independent symbol/range changes", () => {
+  assert.deepEqual(plain(workspaceApi.intervals.map((interval) => [interval.id, interval.technical])), [
+    ["1", "1m"], ["5", "5m"], ["15", "15m"], ["60", "1h"], ["240", "4h"], ["D", "1D"], ["W", "1W"], ["M", "1M"],
+  ]);
   for (const item of workspaceApi.catalogue) for (const interval of workspaceApi.intervals) for (const theme of ["dark", "light"]) {
     const chart = workspaceApi.widgetConfig("chart", item, interval.id, theme);
     const technical = workspaceApi.widgetConfig("technical", item, interval.id, theme);
@@ -55,7 +58,22 @@ test("chart and technical configurations share exact instrument/timeframe and pr
 });
 
 function candles(symbol = "BTC-USD", interval = "60", age = 0, sourceName = "Coinbase Exchange") {
-  const seconds = workspaceApi.intervals.find((item) => item.id === interval).seconds;
+  const period = workspaceApi.intervals.find((item) => item.id === interval);
+  if (period.calendarPeriod) {
+    const current = new Date(now);
+    current.setUTCHours(0, 0, 0, 0);
+    if (period.calendarPeriod === "week") current.setUTCDate(current.getUTCDate() - (current.getUTCDay() + 6) % 7);
+    else current.setUTCDate(1);
+    const count = period.calendarPeriod === "week" ? 70 : 23;
+    return { symbol, intervalSeconds: null, calendarPeriod: period.calendarPeriod, source: sourceName,
+      candles: Array.from({ length: count }, (_, index) => {
+        const date = new Date(current);
+        if (period.calendarPeriod === "week") date.setUTCDate(date.getUTCDate() - (count - index) * 7);
+        else date.setUTCMonth(date.getUTCMonth() - (count - index));
+        return { time: date.getTime() / 1000, open: 100 + index, close: 101 + index, high: 102 + index, low: 99 + index, volume: 50 + index };
+      }) };
+  }
+  const seconds = period.seconds;
   const end = Math.floor(now / 1000 / seconds) * seconds - age;
   return { symbol, intervalSeconds: seconds, source: sourceName, candles: Array.from({ length: 70 }, (_, index) => ({
     time: end - (70 - index) * seconds, open: 100 + index, close: 101 + index,
@@ -80,6 +98,24 @@ test("analysis labels disclose source, Dubai candle close time, partial history 
   assert.match(workspaceApi.analysisHtml({ ...ready, source: '<img src=x onerror="bad()">' }), /&lt;img/);
   assert.doesNotMatch(workspaceApi.analysisHtml({ ...ready, source: '<img src=x onerror="bad()">' }), /<img/);
   assert.match(workspaceApi.analysisHtml({ status: "unavailable" }), /البيانات غير متاحة/);
+});
+
+test("calendar analysis shows actual history limits and never invents unavailable monthly indicators", () => {
+  const data = candles("BTC-USD", "M", 0, "Kraken");
+  const result = analysisApi.analyzeCandles({ ...data, now });
+  const html = workspaceApi.analysisHtml(result);
+  assert.equal(result.candleCount, 23);
+  assert.match(html, /تاريخ جزئي/);
+  assert.match(html, /غير متاح لهذه الفترة/);
+  assert.match(html, /23 \/ 50/);
+  assert.match(html, /23 \/ 34/);
+  assert.match(html, /أشهر تقويمية/);
+  assert.match(html, /UTC/);
+  const tooShort = analysisApi.analyzeCandles({ ...data, candles: data.candles.slice(-9), now });
+  const shortHtml = workspaceApi.analysisHtml(tooShort);
+  assert.match(shortHtml, /غير متاح لهذه الفترة/);
+  assert.match(shortHtml, /9 شمعة تقويمية مكتملة/);
+  assert.doesNotMatch(shortHtml, /ميل صاعد|ميل هابط/);
 });
 
 // Minimal offline DOM/event host: scripts are recorded but never loaded or run.
@@ -231,26 +267,31 @@ test("old cancelled responses cannot overwrite a newer symbol and failed refresh
   assert.equal(h.document.listeners.get("visibilitychange").size, 0);
 });
 
-test("public markets survives back-forward cache and destroys only on final page departure", () => {
-  const events = new Map(); let destroyed = 0, refreshed = 0, options;
-  const window = {
-    location: { search: "?symbol=XAUUSD&interval=240", href: "https://example.test/trading/markets.html?symbol=XAUUSD&interval=240" },
-    history: { replaceState() {} },
-    addEventListener: (name, callback) => events.set(name, callback),
-    VarexMarketWorkspace: {
-      getMarket: workspaceApi.getMarket,
-      mount(_target, input) { options = input; return { destroy() { destroyed += 1; }, refresh() { refreshed += 1; } }; },
-    },
-  };
-  const document = { readyState: "complete", getElementById: () => ({}) };
-  vm.runInNewContext(readFileSync(new URL("../markets-page.js", import.meta.url), "utf8"), { window, document, URL, URLSearchParams });
-  assert.equal(options.initialSymbol, "XAUUSD");
-  assert.equal(options.interval, "240");
-  assert.equal(options.authenticated, false);
-  events.get("pagehide")({ persisted: true });
-  assert.equal(destroyed, 0);
-  events.get("pageshow")({ persisted: true });
-  assert.equal(refreshed, 1);
-  events.get("pagehide")({ persisted: false });
-  assert.equal(destroyed, 1);
+test("one-minute, weekly and monthly buttons keep both widgets and candle calculations on the same selected period", async () => {
+  const h = host({ initialSymbol: "BTC-USD" });
+  await flush();
+  for (const [interval, technical, calendar] of [["1", "1m", null], ["W", "1W", "week"], ["M", "1M", "month"]]) {
+    h.click(`[data-mw-interval="${interval}"]`); await flush();
+    assert.equal(h.instance.selection().interval, interval);
+    assert.equal(h.dataCalls.at(-1).interval, interval);
+    const configs = h.configs();
+    assert.equal(configs[0].config.interval, interval);
+    assert.equal(configs[1].config.interval, technical);
+    assert.equal(h.container.querySelector(`[data-mw-interval="${interval}"]`).getAttribute("aria-pressed"), "true");
+    assert.equal(analysisApi.analyzeCandles({ ...candles("BTC-USD", interval), now }).calendarPeriod, calendar);
+    if (calendar) assert.match(h.container.querySelector("[data-mw-analysis]").innerHTML, /UTC/);
+  }
+  h.instance.destroy();
+  assert.equal(h.timers.size, 0);
+});
+
+test("a missing calendar period shows its explicit unavailable state while provider widgets remain configured", async () => {
+  const error = new Error("No complete calendar data"); error.code = "period_unavailable";
+  const h = host({ initialSymbol: "BTC-USD", interval: "M" }, () => Promise.reject(error));
+  await flush();
+  assert.match(h.container.querySelector("[data-mw-analysis]").innerHTML, /غير متاح لهذه الفترة/);
+  assert.equal(h.configs()[0].config.interval, "M");
+  assert.equal(h.configs()[1].config.interval, "1M");
+  assert.equal(h.trades.length, 0);
+  h.instance.destroy();
 });

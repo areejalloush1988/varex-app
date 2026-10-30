@@ -6,6 +6,8 @@ const client = fs.readFileSync(new URL("../app.js", import.meta.url), "utf8");
 const access = fs.readFileSync(new URL("../backend/lib/trading-access.ts", import.meta.url), "utf8");
 const apiSource = client.slice(client.indexOf("  function isRecord("), client.indexOf("  function authRequest("));
 const enterSource = client.slice(client.indexOf("  async function enterApp("), client.indexOf("  function applyIdentity("));
+const entrySource = client.slice(client.indexOf("  function readEntryDestination("), client.indexOf("  function renderAuthChoices("));
+const applyEntrySource = client.slice(client.indexOf("  function applyEntryDestination("), client.indexOf("  function directionLabel("));
 const handlerSource = access.slice(access.indexOf("export async function tradingRequest("))
   .replace("export async function tradingRequest(request: Request)", "async function tradingRequest(request)");
 
@@ -93,10 +95,10 @@ function workspaceFor(bootstrap) {
     remove: (name) => events.push([selector, "remove", name]),
   } });
   const { validateBootstrap } = apiWith(() => assert.fail("No network calls expected"));
-  const enterApp = new Function("$", "app", "request", "validateBootstrap", "applyIdentity", "loadMarkets", "render", "showLoggedOut", `${enterSource}\nreturn enterApp;`)(
+  const enterApp = new Function("$", "app", "request", "validateBootstrap", "applyIdentity", "loadMarkets", "render", "showLoggedOut", "window", `let entryDestination = null;\n${entrySource}\n${applyEntrySource}\n${enterSource}\nreturn enterApp;`)(
     $, app, async () => bootstrap, validateBootstrap,
     () => events.push(["identity"]), async () => events.push(["markets"]),
-    () => events.push(["render"]), (message) => events.push(["logged-out", message]),
+    () => events.push(["render"]), (message) => events.push(["logged-out", message]), { location: { search: "" } },
   );
   return { enterApp, events, app };
 }
@@ -118,6 +120,7 @@ test("allows a complete bootstrap to enter the existing workspace", async () => 
   assert.equal(workspace.app.state, bootstrap.state);
   assert.equal(workspace.events.some(([target, action]) => target === "#appShell" && action === "remove"), true);
   assert.equal(workspace.events.some(([target]) => target === "render"), true);
+  assert.equal(workspace.app.executionMode, "paper");
 });
 
 test("catches asynchronously rejected POST operations and returns structured errors", async () => {

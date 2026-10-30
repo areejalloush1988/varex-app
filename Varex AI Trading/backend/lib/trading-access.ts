@@ -8,6 +8,10 @@ import {
   type BinanceAccountSummary,
   type BinanceCredentials,
 } from "@/lib/trading-broker";
+import {
+  capitalCredentials, capitalCredentialsFromSecret, capitalSecret, validateCapitalConnection,
+  type CapitalAccountSummary,
+} from "@/lib/trading-capital";
 import { analyzeSnapshot, getMarketBoard, getMarketSnapshot, normalizeTradingSymbol, TRADING_MARKETS, TradingMarketError } from "@/lib/trading-market";
 
 type AccountUser = { id: string; name: string; email: string; emailVerified?: boolean };
@@ -45,7 +49,7 @@ type TradingStateData = {
 };
 type BrokerConnectionRow = {
   userId: string;
-  provider: "binance";
+  provider: "binance" | "capital";
   accountLabel: string;
   apiKeyCiphertext: string;
   apiKeyIv: string;
@@ -236,6 +240,7 @@ async function brokerConnection(environment: CashierAuthEnv, userId: string) {
 }
 
 async function brokerCredentials(environment: CashierAuthEnv, connection: BrokerConnectionRow): Promise<BinanceCredentials> {
+  if (connection.provider !== "binance") throw new TradingAccessError(409, "هذا الربط للمتابعة فقط ولا يدعم أوامر Binance.");
   const masterKey = credentialKey(environment);
   const [apiKey, apiSecret] = await Promise.all([
     decryptTradingSecret({ ciphertext: connection.apiKeyCiphertext, iv: connection.apiKeyIv }, masterKey),
@@ -244,10 +249,29 @@ async function brokerCredentials(environment: CashierAuthEnv, connection: Broker
   return { apiKey, apiSecret };
 }
 
-function parseAccountSummary(value: string): BinanceAccountSummary | null {
+async function capitalBrokerCredentials(environment: CashierAuthEnv, connection: BrokerConnectionRow) {
+  if (connection.provider !== "capital") throw new TradingAccessError(409, "نوع ربط الحساب لا يطابق Capital.com.");
+  const key = credentialKey(environment);
+  const [apiKey, secret] = await Promise.all([
+    decryptTradingSecret({ ciphertext: connection.apiKeyCiphertext, iv: connection.apiKeyIv }, key),
+    decryptTradingSecret({ ciphertext: connection.apiSecretCiphertext, iv: connection.apiSecretIv }, key),
+  ]);
+  return capitalCredentialsFromSecret(apiKey, secret);
+}
+
+async function connectionRevision(connection: BrokerConnectionRow) {
+  // D1 predates the Supabase revision column. A hash of the encrypted envelope
+  // supplies the same opaque replacement token without a table rewrite.
+  const value = JSON.stringify([connection.provider, connection.apiKeyCiphertext, connection.apiKeyIv, connection.apiSecretCiphertext, connection.apiSecretIv]);
+  const hash = new Uint8Array(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(value)));
+  return [...hash].map((byte) => byte.toString(16).padStart(2, "0")).join("");
+}
+
+function parseAccountSummary(value: string): BinanceAccountSummary | CapitalAccountSummary | null {
   try {
-    const parsed = JSON.parse(value) as BinanceAccountSummary;
-    return parsed?.provider === "binance" && Array.isArray(parsed.balances) ? parsed : null;
+    const parsed = JSON.parse(value) as BinanceAccountSummary | CapitalAccountSummary;
+    return parsed?.provider === "binance" && Array.isArray(parsed.balances) ? parsed
+      : parsed?.provider === "capital" && Array.isArray(parsed.positions) && parsed.accountBalance ? parsed : null;
   } catch { return null; }
 }
 
@@ -259,12 +283,15 @@ async function liveOrders(environment: CashierAuthEnv, userId: string) {
   return rows.results || [];
 }
 
-function brokerPayload(connection: BrokerConnectionRow | null, orders: LiveOrderRow[] = []) {
+async function brokerPayload(connection: BrokerConnectionRow | null, orders: LiveOrderRow[] = []) {
   if (!connection) return {
     available: true,
     connected: false,
     mode: "paper",
     provider: "binance",
+    connectionRevision: null,
+    readOnly: false,
+    executionSupported: true,
     label: "حساب التداول غير مربوط",
     liveTradingEnabled: false,
     maxLiveOrderUsd: 100,
@@ -272,13 +299,26 @@ function brokerPayload(connection: BrokerConnectionRow | null, orders: LiveOrder
     orders,
   };
   const summary = parseAccountSummary(connection.permissionSnapshot);
-  const liveTradingEnabled = Boolean(connection.liveTradingEnabled) && connection.status === "connected";
+  const binance = connection.provider === "binance" && summary?.provider === "binance" ? summary : null;
+  const capital = connection.provider === "capital" && summary?.provider === "capital" ? summary : null;
+  const liveTradingEnabled = connection.provider === "binance" && Boolean(connection.liveTradingEnabled) && connection.status === "connected";
   return {
     available: true,
     connected: true,
     mode: liveTradingEnabled ? "live-ready" : "paper",
     provider: connection.provider,
-    providerLabel: "Binance Spot",
+    providerLabel: connection.provider === "capital" ? "Capital.com" : "Binance Spot",
+    connectionRevision: await connectionRevision(connection),
+    readOnly: connection.provider === "capital",
+    executionSupported: connection.provider === "binance",
+    canTrade: connection.provider === "binance" && binance?.canTrade === true,
+    environment: capital?.environment || null,
+    accountId: capital?.accountId || null,
+    accountName: capital?.accountName || "",
+    currency: capital?.currency || null,
+    accountBalance: capital?.accountBalance || null,
+    snapshotAt: capital?.asOf || null,
+    positions: capital?.positions || [],
     accountLabel: connection.accountLabel,
     keyFingerprint: connection.keyFingerprint,
     status: connection.status,
@@ -286,12 +326,13 @@ function brokerPayload(connection: BrokerConnectionRow | null, orders: LiveOrder
     maxLiveOrderUsd: connection.maxLiveOrderCents / 100,
     lastCheckedAt: connection.lastCheckedAt,
     lastError: connection.lastError,
-    permissions: summary?.permissions || null,
-    balances: summary?.balances || [],
-    availableUsdt: summary?.availableUsdt || 0,
+    permissions: binance?.permissions || null,
+    balances: binance?.balances || [],
+    availableUsdt: binance?.availableUsdt || 0,
     accountType: summary?.accountType || "SPOT",
-    label: liveTradingEnabled ? "Binance مربوط · التداول الحقيقي بتأكيد يدوي" : "Binance مربوط · التداول الحقيقي متوقف",
-    orders,
+    label: connection.provider === "capital" ? "Capital.com مربوط · متابعة الرصيد والمراكز فقط"
+      : liveTradingEnabled ? "Binance مربوط · التداول الحقيقي بتأكيد يدوي" : "Binance مربوط · التداول الحقيقي متوقف",
+    orders: orders.map((order) => ({ ...order, provider: "binance" })),
   };
 }
 
@@ -309,18 +350,21 @@ async function brokerState(environment: CashierAuthEnv, profile: ProfileRow) {
   return brokerPayload(connection, await liveOrders(environment, profile.userId));
 }
 
-async function saveConnectionSnapshot(environment: CashierAuthEnv, userId: string, summary: BinanceAccountSummary) {
+async function saveConnectionSnapshot(environment: CashierAuthEnv, userId: string, summary: BinanceAccountSummary | CapitalAccountSummary, connection: BrokerConnectionRow) {
   const now = Date.now();
-  await environment.DB.prepare(`UPDATE trading_broker_connection SET status = 'connected', permission_snapshot = ?,
-    last_error = NULL, last_checked_at = ?, updated_at = ? WHERE user_id = ?`)
-    .bind(JSON.stringify(summary), now, now, userId).run();
+  const saved = await environment.DB.prepare(`UPDATE trading_broker_connection SET status = 'connected', permission_snapshot = ?,
+    last_error = NULL, last_checked_at = ?, updated_at = ?
+    WHERE user_id = ? AND provider = ? AND api_key_ciphertext = ? AND api_secret_ciphertext = ?`)
+    .bind(JSON.stringify(summary), now, now, userId, connection.provider, connection.apiKeyCiphertext, connection.apiSecretCiphertext).run();
+  if (saved.meta.changes !== 1) throw new TradingAccessError(409, "تغير ربط الحساب أثناء الطلب.");
 }
 
-async function markConnectionError(environment: CashierAuthEnv, userId: string, message: string) {
+async function markConnectionError(environment: CashierAuthEnv, userId: string, message: string, connection: BrokerConnectionRow) {
   const now = Date.now();
   await environment.DB.prepare(`UPDATE trading_broker_connection SET status = 'error', live_trading_enabled = 0,
-    last_error = ?, last_checked_at = ?, updated_at = ? WHERE user_id = ?`)
-    .bind(message.slice(0, 240), now, now, userId).run();
+    last_error = ?, last_checked_at = ?, updated_at = ?
+    WHERE user_id = ? AND provider = ? AND api_key_ciphertext = ? AND api_secret_ciphertext = ?`)
+    .bind(message.slice(0, 240), now, now, userId, connection.provider, connection.apiKeyCiphertext, connection.apiSecretCiphertext).run();
 }
 
 function cleanCredential(value: unknown, label: string) {
@@ -400,42 +444,63 @@ function realizedToday(state: TradingStateData) {
 async function connectBroker(request: Request, body: Record<string, unknown>) {
   const { profile, environment } = await requireBrokerAccess(request);
   if (body.fundsAtProvider !== true) throw new TradingAccessError(400, "يلزم تأكيد بقاء الإيداع والسحب داخل منصة التداول.");
-  if (String(body.provider || "binance") !== "binance") throw new TradingAccessError(400, "المزود غير مدعوم حالياً.");
-  const apiKey = cleanCredential(body.apiKey, "API Key"), apiSecret = cleanCredential(body.apiSecret, "Secret Key");
-  const accountLabel = cleanName(body.accountLabel, "حساب Binance Spot");
-  const summary = await validateBinanceConnection({ apiKey, apiSecret });
+  const provider = body.provider === undefined ? "binance" : body.provider;
+  if (provider !== "binance" && provider !== "capital") throw new TradingAccessError(400, "المزود غير مدعوم حالياً.");
+  const previous = await brokerConnection(environment, profile.userId);
+  if (previous ? body.replacementConfirmation !== "REPLACE_BROKER" || body.expectedConnectionRevision !== await connectionRevision(previous)
+    : body.expectedConnectionRevision != null && body.expectedConnectionRevision !== "") {
+    throw new TradingAccessError(409, "يوجد ربط سابق أو تغير الحساب. حدّث الصفحة وأكد استبدال الربط الحالي.");
+  }
+  let apiKey: string, secret: string;
+  let summary: BinanceAccountSummary | CapitalAccountSummary;
+  if (provider === "capital") {
+    const credentials = capitalCredentials(body);
+    summary = await validateCapitalConnection(credentials);
+    apiKey = credentials.apiKey;
+    secret = capitalSecret(credentials, summary.accountId);
+  } else {
+    apiKey = cleanCredential(body.apiKey, "API Key");
+    secret = cleanCredential(body.apiSecret, "Secret Key");
+    summary = await validateBinanceConnection({ apiKey, apiSecret: secret });
+  }
+  const accountLabel = cleanName(body.accountLabel, provider === "capital" ? "حساب Capital.com" : "حساب Binance Spot");
   const masterKey = credentialKey(environment);
   const [encryptedKey, encryptedSecret] = await Promise.all([
-    encryptTradingSecret(apiKey, masterKey),
-    encryptTradingSecret(apiSecret, masterKey),
+    encryptTradingSecret(apiKey, masterKey), encryptTradingSecret(secret, masterKey),
   ]);
   const now = Date.now();
-  await environment.DB.prepare(`INSERT INTO trading_broker_connection
-    (user_id, provider, account_label, api_key_ciphertext, api_key_iv, api_secret_ciphertext, api_secret_iv,
-      key_fingerprint, status, live_trading_enabled, max_live_order_cents, permission_snapshot,
-      last_error, last_checked_at, created_at, updated_at)
-    VALUES (?, 'binance', ?, ?, ?, ?, ?, ?, 'connected', 0, 10000, ?, NULL, ?, ?, ?)
-    ON CONFLICT(user_id) DO UPDATE SET provider = 'binance', account_label = excluded.account_label,
-      api_key_ciphertext = excluded.api_key_ciphertext, api_key_iv = excluded.api_key_iv,
-      api_secret_ciphertext = excluded.api_secret_ciphertext, api_secret_iv = excluded.api_secret_iv,
-      key_fingerprint = excluded.key_fingerprint, status = 'connected', live_trading_enabled = 0,
-      permission_snapshot = excluded.permission_snapshot, last_error = NULL,
-      last_checked_at = excluded.last_checked_at, updated_at = excluded.updated_at`)
-    .bind(profile.userId, accountLabel, encryptedKey.ciphertext, encryptedKey.iv, encryptedSecret.ciphertext,
-      encryptedSecret.iv, apiKey.slice(-4), JSON.stringify(summary), now, now, now).run();
+  const values = [provider, accountLabel, encryptedKey.ciphertext, encryptedKey.iv, encryptedSecret.ciphertext,
+    encryptedSecret.iv, apiKey.slice(-4), JSON.stringify(summary), now, now];
+  const result = previous
+    ? await environment.DB.prepare(`UPDATE trading_broker_connection SET provider = ?, account_label = ?,
+        api_key_ciphertext = ?, api_key_iv = ?, api_secret_ciphertext = ?, api_secret_iv = ?, key_fingerprint = ?,
+        status = 'connected', live_trading_enabled = 0, max_live_order_cents = 10000, permission_snapshot = ?,
+        last_error = NULL, last_checked_at = ?, updated_at = ?
+        WHERE user_id = ? AND api_key_ciphertext = ? AND api_key_iv = ? AND api_secret_ciphertext = ? AND api_secret_iv = ?`)
+      .bind(...values, profile.userId, previous.apiKeyCiphertext, previous.apiKeyIv, previous.apiSecretCiphertext, previous.apiSecretIv).run()
+    : await environment.DB.prepare(`INSERT INTO trading_broker_connection
+        (provider, account_label, api_key_ciphertext, api_key_iv, api_secret_ciphertext, api_secret_iv,
+         key_fingerprint, permission_snapshot, last_checked_at, updated_at, user_id, created_at,
+         status, live_trading_enabled, max_live_order_cents)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'connected', 0, 10000) ON CONFLICT(user_id) DO NOTHING`)
+      .bind(...values, profile.userId, now).run();
+  if (result.meta.changes !== 1) throw new TradingAccessError(409, "تغير ربط الحساب أثناء الطلب. حدّث الصفحة قبل إعادة المحاولة.");
   return json({ connected: true, broker: await brokerState(environment, profile) });
 }
 
-async function refreshBrokerConnection(environment: CashierAuthEnv, profile: ProfileRow) {
+async function refreshBrokerConnection(environment: CashierAuthEnv, profile: ProfileRow, requiredProvider?: "binance") {
   const connection = await brokerConnection(environment, profile.userId);
   if (!connection) throw new TradingAccessError(404, "حساب التداول غير مربوط.");
+  if (requiredProvider && connection.provider !== requiredProvider) throw new TradingAccessError(409, "ربط Capital.com مخصص لمتابعة الحساب فقط؛ تنفيذ الأوامر غير مفعّل.");
   try {
-    const summary = await validateBinanceConnection(await brokerCredentials(environment, connection));
-    await saveConnectionSnapshot(environment, profile.userId, summary);
+    const summary = connection.provider === "capital"
+      ? await validateCapitalConnection(await capitalBrokerCredentials(environment, connection))
+      : await validateBinanceConnection(await brokerCredentials(environment, connection));
+    await saveConnectionSnapshot(environment, profile.userId, summary, connection);
     return { connection: await brokerConnection(environment, profile.userId) as BrokerConnectionRow, summary };
   } catch (error) {
     const message = error instanceof Error ? error.message : "تعذر التحقق من حساب التداول.";
-    await markConnectionError(environment, profile.userId, message);
+    await markConnectionError(environment, profile.userId, message, connection);
     throw error;
   }
 }
@@ -448,9 +513,11 @@ async function refreshBroker(request: Request) {
 
 async function configureLiveTrading(request: Request, body: Record<string, unknown>) {
   const { profile, environment } = await requireBrokerAccess(request);
+  const existingConnection = await brokerConnection(environment, profile.userId);
+  if (existingConnection && existingConnection.provider !== "binance") throw new TradingAccessError(409, "ربط Capital.com مخصص لمتابعة الحساب فقط؛ تنفيذ الأوامر غير مفعّل.");
   const enabled = body.enabled === true;
   if (!enabled) {
-    await environment.DB.prepare("UPDATE trading_broker_connection SET live_trading_enabled = 0, updated_at = ? WHERE user_id = ?")
+    await environment.DB.prepare("UPDATE trading_broker_connection SET live_trading_enabled = 0, updated_at = ? WHERE user_id = ? AND provider = 'binance'")
       .bind(Date.now(), profile.userId).run();
     return json({ saved: true, broker: await brokerState(environment, profile) });
   }
@@ -459,11 +526,13 @@ async function configureLiveTrading(request: Request, body: Record<string, unkno
   if (!Number.isFinite(maxLiveOrderUsd) || maxLiveOrderUsd < 25 || maxLiveOrderUsd > 10_000) {
     throw new TradingAccessError(400, "حد الصفقة الحقيقية يجب أن يكون بين 25 و10,000 دولار.");
   }
-  await refreshBrokerConnection(environment, profile);
+  const { connection } = await refreshBrokerConnection(environment, profile, "binance");
   const now = Date.now();
-  await environment.DB.prepare(`UPDATE trading_broker_connection SET live_trading_enabled = 1,
-    max_live_order_cents = ?, status = 'connected', last_error = NULL, updated_at = ? WHERE user_id = ?`)
-    .bind(Math.round(maxLiveOrderUsd * 100), now, profile.userId).run();
+  const enabledRow = await environment.DB.prepare(`UPDATE trading_broker_connection SET live_trading_enabled = 1,
+    max_live_order_cents = ?, status = 'connected', last_error = NULL, updated_at = ?
+    WHERE user_id = ? AND provider = 'binance' AND api_key_ciphertext = ? AND api_secret_ciphertext = ?`)
+    .bind(Math.round(maxLiveOrderUsd * 100), now, profile.userId, connection.apiKeyCiphertext, connection.apiSecretCiphertext).run();
+  if (enabledRow.meta.changes !== 1) throw new TradingAccessError(409, "تغير ربط الحساب أثناء الطلب.");
   return json({ saved: true, broker: await brokerState(environment, profile) });
 }
 
@@ -480,6 +549,7 @@ async function placeLiveOrder(request: Request, body: Record<string, unknown>) {
   });
   if (body.confirmation !== "LIVE_ORDER_CONFIRMED") throw new TradingAccessError(400, "يلزم تأكيد الصفقة الحقيقية قبل التنفيذ.");
   const connection = await brokerConnection(environment, profile.userId);
+  if (connection && connection.provider !== "binance") throw new TradingAccessError(409, "ربط Capital.com مخصص لمتابعة الحساب فقط؛ تنفيذ الأوامر غير مفعّل.");
   if (!connection || connection.status !== "connected" || !Boolean(connection.liveTradingEnabled)) {
     throw new TradingAccessError(409, "التداول الحقيقي غير مفعّل لهذا الحساب.");
   }
@@ -509,7 +579,7 @@ async function placeLiveOrder(request: Request, body: Record<string, unknown>) {
   try {
     credentials = await brokerCredentials(environment, connection);
     const summary = await validateBinanceConnection(credentials);
-    await saveConnectionSnapshot(environment, profile.userId, summary);
+    await saveConnectionSnapshot(environment, profile.userId, summary, connection);
     if (side === "buy" && amount > summary.availableUsdt) {
       throw new TradingBrokerError(400, "رصيد USDT المتاح لا يكفي لتنفيذ أمر الشراء.");
     }
@@ -524,6 +594,11 @@ async function placeLiveOrder(request: Request, body: Record<string, unknown>) {
   }
 
   try {
+    const currentConnection = await brokerConnection(environment, profile.userId);
+    if (!currentConnection || currentConnection.provider !== "binance" || !currentConnection.liveTradingEnabled
+        || await connectionRevision(currentConnection) !== await connectionRevision(connection)) {
+      throw new TradingAccessError(409, "تغير ربط الحساب قبل إرسال الأمر.");
+    }
     const result = await placeBinanceMarketOrder(credentials, { symbol, side, quoteAmount: amount, clientOrderId });
     const status = result.status === "FILLED" ? "filled" : "submitted", updatedAt = Date.now();
     await environment.DB.prepare(`UPDATE trading_live_order SET provider_order_id = ?, executed_quote_amount = ?,
@@ -667,6 +742,10 @@ export async function tradingRequest(request: Request) {
         return json(await getMarketBoard(url.searchParams.get("symbol")));
       }
       if (action === "users") return json({ users: await listUsers(request) });
+      if (action === "access") {
+        const { user, profile } = await requireAccess(request);
+        return json({ profile: profileJson(user, profile) });
+      }
       const { user, profile, environment } = await requireAccess(request), state = await stateFor(profile);
       return json({
         profile: profileJson(user, profile),

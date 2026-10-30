@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="theme-color" content="#081D36">
-  <meta name="description" content="VAREX AI Trading — تحليل سوق وتداول ورقي وربط آمن بحساب Binance Spot.">
+  <meta name="description" content="VAREX AI Trading — تحليل الأسواق وتداول تجريبي وربط حسابات منصات التداول المدعومة.">
   <meta name="robots" content="noindex">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -18,6 +18,7 @@
   <link rel="stylesheet" href="../Varex%20AI%20Trading/styles.css?v=7">
   <link rel="stylesheet" href="../Varex%20AI%20Trading/themes.css?v=2">
   <link rel="stylesheet" href="../Varex%20AI%20Trading/markets.css?v=2">
+  <link rel="stylesheet" href="../Varex%20AI%20Trading/accounts.css?v=1">
   <script defer src="../Varex%20AI%20Trading/install.js?v=1"></script>
   <title>VAREX AI Trading</title>
 </head>
@@ -25,17 +26,18 @@
   <section class="auth-screen" id="authScreen">
     <div class="auth-visual">
       <div class="visual-brand"><span class="brand-mark">↗</span><span><b>VAREX</b><small>AI TRADING</small></span></div>
-      <div class="visual-copy"><span class="eyebrow">منصة تداول ذكية</span><h1>مراقبة السوق، اختبار القرارات، وربط حساب Spot.</h1><p>بيانات سوق حية، تحليل احتمالي، تداول ورقي، وربط مشفر بحساب Binance. الأموال تبقى دائماً داخل منصة التداول.</p></div>
+      <div class="visual-copy"><span class="eyebrow">منصة تداول ذكية</span><h1>حساب واحد للأسواق، التجربة، وربط المنصات.</h1><p>إنشاء حساب VAREX أولاً، ثم تجربة التداول برصيد يبدأ من 25,000 دولار تجريبي أو ربط منصة تداول مدعومة. الأموال الحقيقية تبقى لدى المنصة.</p></div>
       <div class="visual-points"><span>✓ مفاتيح مشفرة</span><span>✓ السحب غير مسموح</span><span>✓ تأكيد يدوي لكل أمر حقيقي</span></div>
     </div>
     <div class="auth-card">
       <button class="theme-toggle auth-theme-toggle" type="button" data-theme-toggle aria-label="تفعيل الوضع النهاري"><span data-theme-icon aria-hidden="true">☀</span><span data-theme-label>النهاري</span></button>
       <div class="mobile-auth-brand"><span class="brand-mark">↗</span><b>VAREX AI TRADING</b></div>
+      <div id="authAccountChoices" class="va-auth-choices" aria-label="اختيار نوع الحساب بعد تسجيل الدخول"></div>
       <div class="auth-message" id="authMessage" role="alert"></div>
       <div id="existingAccountActions" class="auth-account-actions hidden"><button type="button" class="secondary-button" data-auth-pane="loginForm">تسجيل الدخول</button><button type="button" class="secondary-button" data-auth-pane="recoverPane">استعادة كلمة المرور</button></div>
 
-      <form class="auth-pane" id="loginForm">
-        <header><span class="eyebrow">مرحباً من جديد</span><h2>تسجيل الدخول</h2><p>الدخول إلى مساحة التداول الخاصة بالحساب.</p></header>
+      <form class="auth-pane hidden" id="loginForm">
+        <header><span class="eyebrow">مرحباً من جديد</span><h2>تسجيل الدخول إلى VAREX</h2><p>الدخول إلى مساحة التداول الخاصة بالحساب.</p></header>
         <label>البريد الإلكتروني<input name="email" type="email" autocomplete="email" required placeholder="name@example.com"></label>
         <label>كلمة المرور<span class="password-field"><input name="password" type="password" autocomplete="current-password" required minlength="8" placeholder="••••••••"><button class="password-toggle" type="button" data-password-toggle aria-label="إظهار كلمة المرور" aria-pressed="false">إظهار</button></span></label>
         <div class="form-row"><label class="check"><input name="remember" type="checkbox" checked><span>حفظ بيانات الدخول</span></label><button class="text-button" type="button" data-auth-pane="recoverPane">استعادة كلمة المرور</button></div>
@@ -43,8 +45,8 @@
         <p class="auth-switch">حساب جديد؟ <button type="button" data-auth-pane="registerPane">إنشاء حساب</button></p>
       </form>
 
-      <form class="auth-pane hidden" id="registerPane">
-        <header><span class="eyebrow">حساب جديد</span><h2>إنشاء حساب جديد</h2><p>التسجيل مفتوح مباشرة. سيصل رمز OTP إلى البريد لتأكيد الحساب.</p></header>
+      <form class="auth-pane" id="registerPane">
+        <header><span class="eyebrow">حساب جديد</span><h2>إنشاء حساب VAREX</h2><p>التسجيل مفتوح مباشرة. هذا حساب VAREX لحفظ الرصيد التجريبي والإعدادات؛ سيصل رمز OTP لتأكيد البريد.</p></header>
         <label>اسم المستخدم<input name="displayName" maxlength="80" required placeholder="مثال: إدارة التداول"></label>
         <label>البريد الإلكتروني<input name="email" type="email" autocomplete="email" required placeholder="name@example.com"></label>
         <label>كلمة المرور<span class="password-field"><input name="password" type="password" autocomplete="new-password" required minlength="8" placeholder="8 أحرف على الأقل"><button class="password-toggle" type="button" data-password-toggle aria-label="إظهار كلمة المرور" aria-pressed="false">إظهار</button></span></label>
@@ -77,7 +79,7 @@
         <button class="main-button" type="submit">حفظ كلمة المرور</button>
         <p class="auth-switch"><button type="button" data-auth-pane="otpPane">تصحيح رمز التحقق</button> · <button type="button" data-auth-pane="recoverPane">طلب رمز جديد</button></p>
       </form>
-      <a class="auth-install-link" href="/trading/markets.html">⌁ تصفّح الأسواق والتحليل</a>
+      <a class="auth-install-link" href="/trading/?auth=signup&amp;next=markets">⌁ الأسواق والتحليل بعد تسجيل الدخول</a>
       <a class="auth-install-link" data-install-link href="/trading/install.html">↓ تثبيت التطبيق على ويندوز وآيفون</a>
     </div>
   </section>
@@ -85,7 +87,7 @@
   <div class="app-shell hidden" id="appShell">
     <header class="topbar">
       <div class="brand"><button class="icon-button mobile-menu" id="menuButton" aria-label="فتح القائمة">☰</button><span class="brand-mark">↗</span><span class="brand-copy"><b>VAREX</b><small>AI TRADING</small></span></div>
-      <div class="top-status"><span class="status-chip live" id="marketStatus"><i></i> بيانات سوق حية</span><span class="status-chip paper" id="executionStatus">PAPER TRADING</span></div>
+      <div class="top-status"><span class="status-chip live" id="marketStatus"><i></i> بيانات سوق حية</span><span class="status-chip paper" id="executionStatus">DEMO TRADING</span></div>
       <div class="topbar-actions"><button class="icon-button theme-toggle" type="button" data-theme-toggle aria-label="تفعيل الوضع النهاري"><span data-theme-icon aria-hidden="true">☀</span><span data-theme-label>النهاري</span></button><button class="user-menu" id="userMenuButton"><span class="avatar" id="avatar">U</span><span><b id="topUserName">اسم المستخدم</b><small id="topUserRole">حساب</small></span></button></div>
     </header>
 
@@ -98,8 +100,9 @@
         <button class="nav-item" data-view="markets"><span>⌁</span> الأسواق</button>
         <button class="nav-item" data-view="intelligence"><span>✦</span> تحليل الأسواق</button>
         <button class="nav-item" data-view="trades"><span>▣</span> الصفقات</button>
+        <button class="nav-item" data-view="automation"><span>◷</span> التداول الآلي</button>
         <button class="nav-item" data-view="risk"><span>◇</span> مركز المخاطر</button>
-        <button class="nav-item hidden" data-view="broker" id="brokerNav"><span>⇄</span> حساب التداول</button>
+        <button class="nav-item" data-view="broker" id="brokerNav"><span>⇄</span> ربط حساب منصة تداول</button>
         <button class="nav-item" data-view="watchlist"><span>◉</span> قائمة المراقبة</button>
         <button class="nav-item" data-view="reports"><span>▤</span> التقارير</button>
         <button class="nav-item hidden" data-view="users" id="usersNav"><span>♙</span> الحسابات</button>
@@ -114,7 +117,7 @@
 
     <main class="workspace">
       <section class="page-header"><div><small id="dateLabel"></small><h1 id="pageTitle">صباح الخير، اسم المستخدم</h1><p id="pageSubtitle">بيانات حسابك الفعلية محفوظة وآمنة.</p></div><div id="pageActions"></div></section>
-      <section class="paper-banner" id="executionBanner"><span>◇</span><p><b id="executionBannerTitle">التجربة الحالية ورقية وآمنة للتعلّم</b><small id="executionBannerText">لا حاجة إلى ربط حساب تداول أو إيداع مال. الأسعار حية، لكن كل الصفقات تجريبية فقط.</small></p><strong id="brokerLabel">حساب التداول غير مربوط</strong></section>
+      <section class="paper-banner" id="executionBanner"><span>◇</span><p><b id="executionBannerTitle">التجربة الحالية تجريبية وآمنة للتعلّم</b><small id="executionBannerText">لا حاجة إلى ربط حساب تداول أو إيداع مال. الأسعار حية، لكن كل الصفقات تجريبية فقط.</small></p><strong id="brokerLabel">حساب التداول غير مربوط</strong></section>
       <div id="viewRoot" aria-live="polite"></div>
       <footer class="app-footer"><span>VAREX AI Trading</span><span>التحليل احتمالي وليس ضماناً للربح أو توصية استثمارية.</span></footer>
     </main>
@@ -123,10 +126,11 @@
   <div class="loading-screen" id="loadingScreen"><span class="loader"></span><b>جاري تجهيز مساحة التداول…</b></div>
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
   <div class="modal hidden" id="confirmModal" role="dialog" aria-modal="true"><div><h3 id="confirmTitle">تأكيد الإجراء</h3><p id="confirmText"></p><footer><button class="secondary-button" id="confirmCancel">إلغاء</button><button class="danger-button" id="confirmAccept">تأكيد</button></footer></div></div>
-  <script src="../Varex%20AI%20Trading/supabase-api.js?v=1"></script>
-  <script src="../Varex%20AI%20Trading/market-analysis.js?v=1"></script>
-  <script src="../Varex%20AI%20Trading/market-data.js?v=1"></script>
-  <script src="../Varex%20AI%20Trading/market-workspace.js?v=2"></script>
-  <script src="../Varex%20AI%20Trading/app.js?v=11"></script>
+  <script src="../Varex%20AI%20Trading/supabase-api.js?v=2"></script>
+  <script src="../Varex%20AI%20Trading/market-analysis.js?v=2"></script>
+  <script src="../Varex%20AI%20Trading/market-data.js?v=2"></script>
+  <script src="../Varex%20AI%20Trading/market-workspace.js?v=3"></script>
+  <script src="../Varex%20AI%20Trading/broker-directory.js?v=1"></script>
+  <script src="../Varex%20AI%20Trading/app.js?v=12"></script>
 </body>
 </html>

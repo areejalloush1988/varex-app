@@ -75,7 +75,7 @@ test("loading is explicit, can be disabled, and never overrides global fetch", (
 test("unrelated and foreign requests retain their original transport without auth injection", async () => {
   const response = new Response("original");
   const h = harness({ network: async () => response });
-  for (const path of ["/api/unrelated", "https://foreign.example/api/trading", "https://foreign.example/api/auth/sign-in/email"]) {
+  for (const path of ["/api/unrelated", "https://foreign.example/api/trading", "https://foreign.example/api/trading-automation", "https://foreign.example/api/auth/sign-in/email"]) {
     const options = { method: "GET", credentials: "include", headers: { "X-Example": "keep" } };
     assert.equal(await h.request(path, options), response);
     assert.equal(h.calls.at(-1).url, path);
@@ -412,6 +412,20 @@ test("a trading 401 clears the local session without replaying a request", async
   assert.equal(h.calls.length, 1);
   assert.equal(await (await h.request("/api/auth/get-session")).json(), null);
   assert.equal(h.sessionStorage.getItem(KEY), null);
+});
+
+test("automation uses its separate authenticated endpoint and never dispatches without a session", async () => {
+  const anonymous = harness();
+  assert.equal((await anonymous.request('/api/trading-automation')).status, 401);
+  assert.equal(anonymous.calls.length, 0);
+  const h = harness({ sessionStorage: memoryStorage({ [KEY]: saved(tokenSession()) }), network: async () => ok({ automation: { enabled: false } }) });
+  const body = { action: 'configure', mode: 'demo', enabled: false };
+  assert.equal((await h.request('/api/trading-automation', post(body))).status, 200);
+  assert.equal(h.calls.length, 1);
+  assert.equal(h.calls[0].url, `${PROJECT}/functions/v1/varex-trading-automation`);
+  assert.equal(new Headers(h.calls[0].options.headers).get('authorization'), 'Bearer test-access-one');
+  assert.equal(h.calls[0].options.credentials, 'omit');
+  assert.deepEqual(JSON.parse(h.calls[0].options.body), body);
 });
 
 test("trading transport failures are not retried and flag mutation execution as uncertain", async () => {

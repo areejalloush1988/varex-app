@@ -7,10 +7,14 @@ import test from "node:test";
 const client = fs.readFileSync(new URL("../app.js", import.meta.url), "utf8");
 const workspaceModule = { exports: {} };
 vm.runInNewContext(fs.readFileSync(new URL("../market-workspace.js", import.meta.url), "utf8"), { module: workspaceModule });
+const accountsModule = { exports: {} };
+vm.runInNewContext(fs.readFileSync(new URL("../broker-directory.js", import.meta.url), "utf8"), { module: accountsModule });
 const testClient = client.replace(/  init\(\);\s*\}\)\(\);\s*$/, `  globalThis.controls = {
     app, rememberFormField, handleFormChange, handleActionClick, handleSubmit,
     render, tradeTicket, renderUsers, localDate, resolveConfirm, logout, accountMetrics,
     request, loadMarkets, scheduleMarketRefresh, bindShell, bindAuth, openResearchTrade,
+    init, enterApp, showLoggedOut, readEntryDestination, renderBroker, updateExecutionUi,
+    renderAutomation, loadAutomation, configureAutomation, stopAutomation, goTo, handleBrokerSearch,
     pendingAuth: () => ({ ...pendingAuth })
   };
 })();`);
@@ -27,6 +31,7 @@ function element() {
       contains: (value) => classes.has(value),
     },
     addEventListener: (name, listener) => listeners.set(name, listener),
+    focus() {}, setSelectionRange() {},
   };
 }
 
@@ -74,13 +79,13 @@ function harness(respond = () => { throw new Error("Unexpected API request in a 
     calls.push(call);
     return respond(call);
   };
-  const window = { scrollTo() {}, fetch: fetchMock };
+  const window = { scrollTo() {}, fetch: fetchMock, location: { search: "" }, VarexAccounts: accountsModule.exports };
   const ClockDate = fixedNow === null ? Date : class extends Date {
     constructor(...args) { super(...(args.length ? args : [fixedNow])); }
     static now() { return new Date(fixedNow).getTime(); }
   };
   const context = vm.createContext({
-    document, window, Intl, Date: ClockDate, URL, Blob, Response,
+    document, window, Intl, Date: ClockDate, URL, URLSearchParams, Blob, Response,
     crypto: { randomUUID },
     setTimeout: (callback, delay) => { const id = ++nextTimer; timers.set(id, { callback, delay }); return id; },
     clearTimeout: (id) => timers.delete(id),
@@ -101,7 +106,7 @@ function harness(respond = () => { throw new Error("Unexpected API request in a 
       settings: { notifications: true, timezone: "Asia/Dubai", compactMode: false },
     },
     version: 1,
-    broker: { connected: false, liveTradingEnabled: false, maxLiveOrderUsd: 100, availableUsdt: 1000, balances: [], orders: [] },
+    broker: { provider: "binance", connected: false, executionSupported: true, connectionRevision: 1, liveTradingEnabled: false, maxLiveOrderUsd: 100, availableUsdt: 1000, balances: [], orders: [] },
     markets: markets(), supportedMarkets: markets(), selectedMarket: markets()[0],
   });
   return {
@@ -187,7 +192,7 @@ test("using an analysis explicitly prepares its symbol and side in paper mode wi
   assert.equal(h.app.tradeSide, "sell");
   assert.equal(h.app.view, "trades");
   assert.match(h.html(), /value="ETH-USD" selected/);
-  assert.match(h.html(), /فتح صفقة بيع ورقية/);
+  assert.match(h.html(), /فتح صفقة بيع تجريبية/);
   assert.equal(h.calls.length, 0);
 });
 
@@ -348,6 +353,8 @@ test("live orders still require confirmation, cannot double-submit, and use the 
 
 test("cancelling the live confirmation sends no request", async () => {
   const h = harness();
+  h.app.broker.connected = true;
+  h.app.broker.liveTradingEnabled = true;
   h.app.executionMode = "live";
   const pending = h.handleSubmit(submitEvent(form("tradeForm", { symbol: "BTC-USD", amount: "100" })));
   h.resolveConfirm(false);
@@ -359,6 +366,8 @@ test("draft storage excludes broker credentials", () => {
   const h = harness(), connection = form("brokerConnectForm");
   h.rememberFormField(fieldEvent(connection, "apiKey", "test-key-not-a-real-credential"));
   h.rememberFormField(fieldEvent(connection, "apiSecret", "test-secret-not-a-real-credential"));
+  h.rememberFormField(fieldEvent(form("capitalConnectForm"), "apiPassword", "test-api-password-not-a-real-credential"));
+  h.rememberFormField(fieldEvent(form("capitalConnectForm"), "apiKey", "test-capital-key-not-a-real-credential"));
   assert.equal(Object.keys(h.app.formDrafts).length, 0);
 });
 
@@ -565,4 +574,248 @@ test("daily paper PnL and risk use the server's UTC boundary even when the brows
     if (originalTimezone === undefined) delete process.env.TZ;
     else process.env.TZ = originalTimezone;
   }
+});
+
+function bootstrapFor(h) {
+  return { profile: h.app.profile, state: h.app.state, version: h.app.version, broker: h.app.broker, supportedMarkets: h.app.supportedMarkets };
+}
+
+function marketWorkspaceForEntry() {
+  return { getMarket: workspaceModule.exports.getMarket, intervals: workspaceModule.exports.intervals, mount() { return { destroy() {} }; } };
+}
+
+function automation(overrides = {}) {
+  return { mode: "demo", enabled: false, available: true, schedulerReady: true, revision: 1, symbol: "BTC-USD", interval: "15", riskPercent: 1, maxDailyTrades: 5, strategy: "technical_ml_v1", lastRunAt: null, lastSignal: "wait", lastMessage: "No prior run", lastModel: null, events: [], ...overrides };
+}
+
+test("a visitor starts at VAREX signup and account choices never create or bypass a session", async () => {
+  const h = harness(() => Response.json(null));
+  h.app.profile = null; h.app.state = null;
+  await h.init();
+  assert.equal(h.calls.length, 1);
+  assert.equal(h.calls[0].path, "/api/auth/get-session");
+  assert.equal(h.getElement("#registerPane").classList.contains("hidden"), false);
+  assert.equal(h.getElement("#loginForm").classList.contains("hidden"), true);
+  assert.equal(h.getElement("#appShell").classList.contains("hidden"), true);
+  assert.match(h.getElement("#authAccountChoices").innerHTML, /حساب تجريبي/);
+  h.documentClick(buttonEvent("[data-account-choice]", { accountChoice: "connect" }));
+  assert.equal(h.calls.length, 1);
+  assert.equal(h.app.profile, null);
+  assert.match(h.getElement("#authMessage").textContent, /إنشاء حساب VAREX أو تسجيل الدخول/);
+  assert.equal(h.getElement("#appShell").classList.contains("hidden"), true);
+  h.documentClick(buttonEvent("[data-auth-pane]", { authPane: "loginForm" }));
+  assert.equal(h.getElement("#loginForm").classList.contains("hidden"), false);
+});
+
+test("valid remembered sessions are verified with bootstrap and always enter demo execution", async () => {
+  let bootstrap;
+  const h = harness(({ path }) => {
+    if (path === "/api/auth/get-session") return Response.json({ user: { id: "user-1" } });
+    if (path === "/api/trading") return Response.json(bootstrap);
+    return Response.json({ selected: "BTC-USD", markets: markets() });
+  });
+  h.app.broker.connected = true; h.app.broker.liveTradingEnabled = true;
+  bootstrap = bootstrapFor(h);
+  h.app.executionMode = "live";
+  await h.init();
+  assert.equal(h.calls[0].path, "/api/auth/get-session");
+  assert.equal(h.calls[1].path, "/api/trading");
+  assert.equal(h.app.executionMode, "paper");
+  assert.equal(h.app.view, "dashboard");
+  assert.equal(h.getElement("#authScreen").classList.contains("hidden"), true);
+  assert.equal(h.getElement("#appShell").classList.contains("hidden"), false);
+  assert.equal(h.calls.some((call) => call.body), false);
+});
+
+test("a session-shaped response alone cannot open the app when server bootstrap is invalid", async () => {
+  const h = harness(({ path }) => path === "/api/auth/get-session" ? Response.json({ user: { id: "user-1" } }) : Response.json({ profile: { id: "user-1" } }));
+  h.app.profile = null; h.app.state = null;
+  await h.init();
+  assert.equal(h.calls.length, 2);
+  assert.equal(h.app.profile, null);
+  assert.equal(h.getElement("#appShell").classList.contains("hidden"), true);
+  assert.equal(h.getElement("#registerPane").classList.contains("hidden"), false);
+  assert.match(h.getElement("#authMessage").textContent, /تعذر تحميل بيانات الحساب/);
+});
+
+test("post-auth destinations accept only known accounts, market symbols, intervals and internal views", async () => {
+  let bootstrap;
+  const h = harness(({ path }) => path === "/api/trading" ? Response.json(bootstrap) : Response.json({ selected: "BTC-USD", markets: markets() }));
+  h.window.VarexMarketWorkspace = marketWorkspaceForEntry();
+  assert.equal(h.readEntryDestination("?account=connect&provider=capital").provider, "capital");
+  const hostile = h.readEntryDestination("?account=https://outside.example&provider=evil&next=https://outside.example&symbol=<script>&interval=999");
+  assert.equal(hostile.account, "demo"); assert.equal(hostile.provider, "capital");
+  assert.equal(hostile.next, ""); assert.equal(hostile.symbol, "EURUSD"); assert.equal(hostile.interval, "60");
+  h.window.location.search = "?auth=signup&next=markets&symbol=XAUUSD&interval=W";
+  bootstrap = bootstrapFor(h);
+  await h.enterApp();
+  assert.equal(h.app.view, "markets");
+  assert.equal(h.app.exploreSymbol, "XAUUSD");
+  assert.equal(h.app.exploreInterval, "W");
+  assert.equal(h.app.executionMode, "paper");
+  assert.equal(h.calls.every((call) => call.path.startsWith("/api/trading")), true);
+});
+
+test("connect entry resolves after authentication to a known provider without placing an order", async () => {
+  let bootstrap;
+  const h = harness(({ path }) => path === "/api/trading" ? Response.json(bootstrap) : Response.json({ selected: "BTC-USD", markets: markets() }));
+  h.window.location.search = "?account=connect&provider=capital";
+  bootstrap = bootstrapFor(h);
+  await h.enterApp();
+  assert.equal(h.app.view, "broker"); assert.equal(h.app.brokerProvider, "capital");
+  assert.match(h.html(), /id="capitalConnectForm"/);
+  assert.match(h.html(), /value="demo" selected/);
+  assert.equal(h.calls.some((call) => call.body), false);
+});
+
+test("viewers can browse all providers but never receive credential forms", async () => {
+  const h = harness();
+  h.app.profile.canConnectBroker = false; h.app.profile.canTrade = false;
+  h.app.profile.role = "viewer"; h.app.view = "broker";
+  for (const provider of accountsModule.exports.catalogue) {
+    h.app.brokerProvider = provider.id;
+    const html = h.renderBroker();
+    assert.match(html, /data-broker-provider="capital"/);
+    assert.doesNotMatch(html, /<form|name="(?:apiKey|apiPassword|apiSecret|identifier)"/);
+  }
+  await h.handleActionClick(buttonEvent("[data-broker-connect]", { brokerConnect: "capital" }));
+  assert.equal(h.app.brokerFormOpen, false);
+  assert.equal(h.calls.length, 0);
+});
+
+test("unavailable provider selection has no credential form or connect action", () => {
+  const h = harness();
+  for (const provider of accountsModule.exports.catalogue.filter((item) => item.capability === "unavailable")) {
+    h.app.brokerProvider = provider.id;
+    const html = h.renderBroker();
+    assert.match(html, /غير متاح داخل VAREX حالياً/);
+    assert.doesNotMatch(html, /<form|data-broker-connect=/);
+  }
+  assert.equal(h.calls.length, 0);
+});
+
+test("Capital viewing never unlocks live tickets, configuration or Binance order history", async () => {
+  const h = harness();
+  Object.assign(h.app.broker, { provider: "capital", connected: true, readOnly: true, executionSupported: false, liveTradingEnabled: true, environment: "demo", accountBalance: { balance: 503.25, available: 410, profitLoss: null }, currency: "EUR", positions: [] });
+  h.app.brokerProvider = "capital";
+  const html = h.renderBroker();
+  assert.match(html, /503\.25/);
+  assert.match(html, /عرض فقط/);
+  assert.doesNotMatch(html, /id="liveConfigForm"|سجل الأوامر الحقيقية|USDT المتاح/);
+  assert.doesNotMatch(h.tradeTicket(), /data-execution-mode="live"/);
+  await h.handleActionClick(buttonEvent("[data-execution-mode]", { executionMode: "live" }));
+  assert.equal(h.app.executionMode, "paper");
+  h.app.executionMode = "live";
+  await h.handleSubmit(submitEvent(form("tradeForm", { symbol: "BTC-USD", amount: "100" })));
+  await h.handleSubmit(submitEvent(form("liveConfigForm", { enableLive: "on", maxLiveOrderUsd: "100" })));
+  assert.equal(h.calls.length, 0);
+});
+
+test("new Capital connection sends its explicit demo environment and API password without changing trading mode", async () => {
+  const h = harness(() => Response.json({ broker: { provider: "capital", connected: true, environment: "demo", readOnly: true, executionSupported: false, connectionRevision: 2 } }));
+  const connection = form("capitalConnectForm", { accountLabel: "Demo", identifier: "test@example.test", apiKey: "fake-test-key", apiPassword: "fake-api-password", environment: "demo", fundsAtProvider: "on" });
+  await h.handleSubmit(submitEvent(connection));
+  assert.equal(h.calls.length, 1);
+  assert.deepEqual(h.calls[0].body, { action: "connect_broker", provider: "capital", accountLabel: "Demo", identifier: "test@example.test", apiKey: "fake-test-key", apiPassword: "fake-api-password", environment: "demo", fundsAtProvider: true });
+  assert.equal(h.app.executionMode, "paper");
+  assert.equal(h.app.brokerProvider, "capital");
+  assert.deepEqual(connection.values, {});
+  assert.equal(Object.keys(h.app.formDrafts).length, 0);
+});
+
+test("every connected replacement requires confirmation and sends the reviewed connection revision", async () => {
+  const h = harness(() => Response.json({ broker: { provider: "capital", connected: true, environment: "demo", readOnly: true, executionSupported: false, connectionRevision: 9 } }));
+  Object.assign(h.app.broker, { connected: true, connectionRevision: 8 });
+  const connection = form("capitalConnectForm", { accountLabel: "Demo", identifier: "test@example.test", apiKey: "fake-test-key", apiPassword: "fake-api-password", environment: "demo", fundsAtProvider: "on" });
+  let pending = h.handleSubmit(submitEvent(connection));
+  assert.equal(h.calls.length, 0);
+  h.resolveConfirm(false); await pending;
+  assert.equal(h.calls.length, 0);
+  pending = h.handleSubmit(submitEvent(connection));
+  assert.equal(h.calls.length, 0);
+  h.resolveConfirm(true); await pending;
+  assert.equal(h.calls.length, 1);
+  assert.equal(h.calls[0].body.replacementConfirmation, "REPLACE_BROKER");
+  assert.equal(h.calls[0].body.expectedConnectionRevision, 8);
+});
+
+test("a changed connection revision cancels replacement before sending credentials", async () => {
+  const h = harness();
+  Object.assign(h.app.broker, { connected: true, connectionRevision: 3 });
+  const pending = h.handleSubmit(submitEvent(form("brokerConnectForm", { apiKey: "fake-test-key", apiSecret: "fake-test-secret", accountLabel: "Test", fundsAtProvider: "on" })));
+  h.app.broker.connectionRevision = 4;
+  h.resolveConfirm(true); await pending;
+  assert.equal(h.calls.length, 0);
+  assert.match(h.getElement("#toast").textContent, /تغيّر اتصال الحساب/);
+});
+
+test("automation GET keeps unsaved settings, shows unavailable scheduling honestly and starts no trade timer", async () => {
+  const h = harness(() => Response.json({ automation: automation({ enabled: true, schedulerReady: false }) }));
+  h.app.view = "automation";
+  h.rememberFormField(fieldEvent(form("automationForm"), "riskPercent", "0.75"));
+  await h.loadAutomation();
+  assert.equal(inputValue(h.html(), "riskPercent"), "0.75");
+  assert.match(h.html(), /الجدولة غير متاحة/);
+  assert.doesNotMatch(h.html(), /يعمل على الحساب التجريبي/);
+  assert.equal(h.calls.length, 1);
+  assert.equal(h.calls[0].path, "/api/trading-automation");
+  assert.equal(h.calls[0].body, undefined);
+  assert.equal(h.timers.size, 0);
+});
+
+test("enabling demo automation requires confirmation and posts only the explicit demo configuration", async () => {
+  const h = harness(({ body }) => Response.json({ automation: automation({ ...body, enabled: true, revision: 2 }) }));
+  h.app.view = "automation"; h.app.automation = automation();
+  const settings = form("automationForm", { symbol: "ETH-USD", interval: "15", riskPercent: "0.5", maxDailyTrades: "3", enableAutomation: "on" });
+  const pending = h.handleSubmit(submitEvent(settings));
+  assert.equal(h.calls.length, 0);
+  assert.match(h.getElement("#confirmText").textContent, /رصيد VAREX التجريبي/);
+  await h.handleSubmit(submitEvent(settings));
+  h.resolveConfirm(true); await pending;
+  assert.equal(h.calls.length, 1);
+  assert.equal(h.calls[0].path, "/api/trading-automation");
+  assert.deepEqual(h.calls[0].body, { action: "configure", mode: "demo", enabled: true, symbol: "ETH-USD", interval: "15", riskPercent: 0.5, maxDailyTrades: 3, expectedRevision: 1, confirmation: "ENABLE_DEMO_AUTOMATION" });
+  assert.equal(h.app.executionMode, "paper");
+  assert.equal(h.app.automation.enabled, true);
+});
+
+test("stopping automation uses saved configuration, preserves draft fields, and never closes positions locally", async () => {
+  const h = harness(() => Response.json({ automation: automation({ enabled: false, revision: 4 }) }));
+  h.app.view = "automation"; h.app.automation = automation({ enabled: true, revision: 3 });
+  h.app.formDrafts.automationForm = { symbol: "ETH-USD", riskPercent: "0.75", enableAutomation: true };
+  const before = JSON.stringify(h.app.state.trades);
+  await h.stopAutomation();
+  assert.equal(h.calls.length, 1);
+  assert.equal(h.calls[0].body.enabled, false);
+  assert.equal(h.calls[0].body.symbol, "BTC-USD");
+  assert.equal(h.calls[0].body.confirmation, "STOP_DEMO_AUTOMATION");
+  assert.equal(h.calls[0].body.expectedRevision, 3);
+  assert.equal(h.app.formDrafts.automationForm.riskPercent, "0.75");
+  assert.equal(h.app.formDrafts.automationForm.enableAutomation, false);
+  assert.equal(JSON.stringify(h.app.state.trades), before);
+});
+
+test("automation refuses unknown symbols, unsafe limits, unavailable schedulers and viewer activation", async () => {
+  const h = harness(); h.app.automation = automation();
+  const valid = { enabled: true, symbol: "BTC-USD", interval: "15", riskPercent: 1, maxDailyTrades: 5 };
+  for (const changes of [{ symbol: "XAUUSD" }, { interval: "240" }, { riskPercent: 0 }, { riskPercent: Infinity }, { maxDailyTrades: 21 }, { maxDailyTrades: 1.5 }]) await assert.rejects(h.configureAutomation({ ...valid, ...changes }));
+  h.app.automation.schedulerReady = false;
+  await assert.rejects(h.configureAutomation(valid), /الجدولة غير متاحة/);
+  h.app.automation.schedulerReady = true; h.app.profile.canTrade = false;
+  await assert.rejects(h.configureAutomation(valid), /صلاحية التداول/);
+  assert.equal(h.calls.length, 0);
+});
+
+test("automation refuses non-demo server state and escapes server messages in its history", async () => {
+  const h = harness(() => Response.json({ automation: automation({ mode: "live" }) }));
+  h.app.view = "automation";
+  await h.loadAutomation();
+  assert.equal(h.app.automation, null);
+  assert.match(h.app.automationError, /تعذر التحقق/);
+  h.app.automation = automation({ lastMessage: "<script>alert(1)</script>", events: [{ at: "2026-10-30T12:00:00Z", symbol: "BTC-USD", action: "wait", message: '<img src=x onerror="x">' }], lastModel: { accuracy: 0.6, baseline: 0.5, samples: 40 } });
+  const html = h.renderAutomation();
+  assert.doesNotMatch(html, /<script>|<img/);
+  assert.match(html, /60\.0%/);
+  assert.match(html, /دقة التحقق على بيانات سابقة/);
+  assert.match(html, /ليست احتمال ربح الصفقة/);
 });
