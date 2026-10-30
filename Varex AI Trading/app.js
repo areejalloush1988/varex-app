@@ -17,10 +17,84 @@
     executionMode: "paper",
     marketError: "",
     usersLoading: false,
+    formDrafts: {},
+    userRoleDrafts: {},
   };
   let pendingAuth = { purpose: "", email: "", password: "", displayName: "", otp: "" };
   let toastTimer = 0;
   let confirmResolve = null;
+  let marketRequestId = 0;
+  let marketRequest = null;
+  let marketRefreshTimer = 0;
+  const MARKET_REFRESH_MS = 30_000;
+  const pendingForms = new Set();
+  const draftFields = {
+    tradeForm: ["symbol", "amount"],
+    riskForm: ["maxDailyLossPct", "maxOpenTrades", "riskPerTradePct"],
+    settingsForm: ["timezone"],
+    profileForm: ["displayName"],
+    watchlistForm: ["symbols"],
+  };
+
+  function formDraft(id, defaults = {}) {
+    return { ...defaults, ...app.formDrafts[id] };
+  }
+  function rememberFormField(event) {
+    const field = event.target, form = field.closest("form");
+    if (!form || !draftFields[form.id]?.includes(field.name)) return;
+    if (form.id === "watchlistForm") {
+      app.formDrafts.watchlistForm = { symbols: new FormData(form).getAll("symbols").map(String) };
+      return;
+    }
+    const key = form.id === "tradeForm" && field.name === "amount" ? `${app.executionMode}Amount` : field.name;
+    app.formDrafts[form.id] = { ...app.formDrafts[form.id], [key]: field.value };
+  }
+  async function handleFormChange(event) {
+    rememberFormField(event);
+    const field = event.target, form = field.closest("form");
+    if (field.matches?.(".user-role")) {
+      const email = field.closest("[data-user-row]")?.dataset.userRow;
+      if (email) app.userRoleDrafts[email] = field.value;
+    }
+    if (form?.id !== "tradeForm" || field.name !== "symbol") return;
+    const symbol = field.value;
+    render();
+    await loadMarkets(symbol);
+    if (app.profile && formDraft("tradeForm", { symbol: app.state.selectedSymbol }).symbol === symbol) render();
+  }
+  function currentSymbol() {
+    return formDraft("tradeForm", { symbol: app.state?.selectedSymbol }).symbol || app.selectedMarket?.symbol || "BTC-USD";
+  }
+  function displayTimeZone() {
+    const timezone = app.state?.settings?.timezone;
+    return ["Asia/Dubai", "Asia/Riyadh", "UTC"].includes(timezone) ? timezone : "Asia/Dubai";
+  }
+  function stopMarketRefresh() {
+    clearTimeout(marketRefreshTimer);
+    marketRefreshTimer = 0;
+  }
+  function scheduleMarketRefresh() {
+    stopMarketRefresh();
+    if (!app.profile || !app.state || document.visibilityState === "hidden" || marketRequest) return;
+    marketRefreshTimer = setTimeout(async () => {
+      marketRefreshTimer = 0;
+      if (!app.profile || !app.state || document.visibilityState === "hidden") return;
+      await loadMarkets(currentSymbol(), true);
+      if (!app.profile || document.visibilityState === "hidden") return;
+      // These views contain market data. Other pages may contain unsubmitted broker credentials.
+      if (!["dashboard", "intelligence", "trades", "risk", "watchlist", "reports"].includes(app.view)) return;
+      const focused = document.activeElement;
+      const formId = focused?.closest?.("form")?.id;
+      const fieldName = focused?.name;
+      const selection = typeof focused?.selectionStart === "number" ? [focused.selectionStart, focused.selectionEnd] : null;
+      render();
+      if (draftFields[formId]?.includes(fieldName)) {
+        const replacement = $(`#${formId} [name="${fieldName}"]`);
+        replacement?.focus({ preventScroll: true });
+        if (selection && replacement?.setSelectionRange) replacement.setSelectionRange(...selection);
+      }
+    }, MARKET_REFRESH_MS);
+  }
 
   function escapeHtml(value) {
     return String(value ?? "").replace(/[&<>"']/g, (character) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;" }[character]));
@@ -44,7 +118,7 @@
     if (!value) return "—";
     const date = new Date(value);
     if (Number.isNaN(date.getTime())) return "—";
-    return date.toLocaleString("ar-AE", withTime ? { dateStyle: "medium", timeStyle: "short" } : { dateStyle: "medium" });
+    return date.toLocaleString("ar-AE", { timeZone: displayTimeZone(), dateStyle: "medium", ...(withTime ? { timeStyle: "short" } : {}) });
   }
   function roleLabel(role) {
     return ({ developer: "إدارة النظام", trader: "صلاحية تداول", viewer: "عرض فقط" })[role] || "حساب";
@@ -89,7 +163,7 @@
   }
   async function request(path, options = {}) {
     const init = { credentials: "include", ...options, headers: { "Content-Type": "application/json", "X-Client-Info": "varex-ai-trading/2.0", ...(options.headers || {}) } };
-    const response = await fetch(path, init);
+    const response = await (typeof window === "undefined" ? fetch : (window.varexTradingRequest || window.fetch))(path, init);
     const invalidResponse = () => {
       const error = new Error("خدمة التطبيق غير متاحة حالياً. يرجى إعادة المحاولة لاحقاً.");
       error.status = response.ok ? 502 : response.status;
@@ -188,8 +262,8 @@
       const session = await authRequest("/api/auth/get-session", undefined, "GET");
       if (session?.user) await enterApp();
       else showLoggedOut();
-    } catch {
-      showLoggedOut();
+    } catch (error) {
+      showLoggedOut(error.message || "تعذر الاتصال بخدمة تسجيل الدخول.");
     }
   }
   function showLoggedOut(message = "") {
@@ -209,6 +283,9 @@
       app.version = bootstrap.version;
       app.broker = bootstrap.broker;
       app.supportedMarkets = bootstrap.supportedMarkets || [];
+      app.formDrafts = {};
+      app.userRoleDrafts = {};
+      app.view = "dashboard";
       $("#authScreen").classList.add("hidden");
       $("#appShell").classList.remove("hidden");
       applyIdentity();
@@ -228,8 +305,9 @@
     $("#avatar").textContent = initials(profile.displayName);
     $("#usersNav").classList.toggle("hidden", !profile.canManageUsers);
     $("#brokerNav").classList.toggle("hidden", !profile.canConnectBroker);
+    $$(".nav-item[data-view]").forEach((item) => item.classList.toggle("active", item.dataset.view === app.view));
     updateExecutionUi();
-    $("#dateLabel").textContent = new Date().toLocaleDateString("ar-AE", { weekday: "long", year: "numeric", month: "long", day: "numeric" });
+    $("#dateLabel").textContent = new Date().toLocaleDateString("ar-AE", { timeZone: displayTimeZone(), weekday: "long", year: "numeric", month: "long", day: "numeric" });
     document.documentElement.classList.toggle("compact-mode", app.state?.settings?.compactMode === true);
   }
 
@@ -265,12 +343,20 @@
     $("#loginForm").addEventListener("submit", async (event) => {
       event.preventDefault();
       const form = event.currentTarget, data = new FormData(form);
+      const email = String(data.get("email") || "").trim().toLowerCase(), password = String(data.get("password") || "");
       try {
         await runForm(form, async () => {
-          await authRequest("/api/auth/sign-in/email", { email: String(data.get("email")).trim().toLowerCase(), password: String(data.get("password")), rememberMe: Boolean(data.get("remember")) });
+          await authRequest("/api/auth/sign-in/email", { email, password, rememberMe: Boolean(data.get("remember")) });
           await enterApp();
         }, "جاري تسجيل الدخول…");
-      } catch {}
+      } catch (error) {
+        if (error.status === 403 && error.payload?.code === "email_not_confirmed" && error.payload.emailVerificationRequired === true) {
+          pendingAuth = { purpose: "signup", email, password, displayName: "", otp: "" };
+          $("#otpEmail").textContent = email;
+          showAuthPane("otpPane");
+          showAuthMessage("يلزم تأكيد البريد. يمكن إدخال الرمز الموجود في الرسالة، أو الضغط على «إرسال رمز جديد» إذا انتهت صلاحيته.", "success");
+        }
+      }
     });
     $("#registerPane").addEventListener("submit", async (event) => {
       event.preventDefault();
@@ -373,6 +459,9 @@
     $("#pageActions").addEventListener("click", handleActionClick);
     $("#viewRoot").addEventListener("click", handleActionClick);
     $("#viewRoot").addEventListener("submit", handleSubmit);
+    $("#viewRoot").addEventListener("input", rememberFormField);
+    $("#viewRoot").addEventListener("change", handleFormChange);
+    document.addEventListener("visibilitychange", scheduleMarketRefresh);
     $("#confirmCancel").addEventListener("click", () => resolveConfirm(false));
     $("#confirmAccept").addEventListener("click", () => resolveConfirm(true));
   }
@@ -399,23 +488,48 @@
   }
 
   async function loadMarkets(symbol = "BTC-USD", initial = false) {
+    const requestId = ++marketRequestId;
+    stopMarketRefresh();
+    // Serialize requests and discard superseded selections before starting another fetch.
+    if (marketRequest) {
+      try { await marketRequest; } catch {}
+      if (requestId !== marketRequestId || !app.profile) return;
+    }
+    const pending = request(`/api/trading?action=markets&symbol=${encodeURIComponent(symbol)}`);
+    marketRequest = pending;
     try {
-      const board = await request(`/api/trading?action=markets&symbol=${encodeURIComponent(symbol)}`);
+      const board = await pending;
+      if (requestId !== marketRequestId) return;
+      if ("state" in board || "version" in board) {
+        validateBootstrap({ profile: app.profile, state: board.state, version: board.version });
+        if (board.version >= app.version) {
+          app.state = board.state;
+          app.version = board.version;
+        }
+      }
       app.markets = board.markets || [];
       app.selectedMarket = app.markets.find((market) => market.symbol === board.selected) || app.markets[0] || null;
       app.marketError = "";
       $("#marketStatus").classList.add("live");
       $("#marketStatus").innerHTML = "<i></i> بيانات سوق حية";
     } catch (error) {
+      if (requestId !== marketRequestId) return;
       app.marketError = error.message;
       app.markets = [];
       app.selectedMarket = null;
       $("#marketStatus").classList.remove("live");
       $("#marketStatus").textContent = "السوق غير متاح";
+      if (error.status === 401) {
+        app.profile = null;
+        showLoggedOut("انتهت جلسة الحساب. يرجى تسجيل الدخول مجدداً.");
+      }
       if (!initial) showToast(error.message, "error");
+    } finally {
+      if (marketRequest === pending) marketRequest = null;
+      if (requestId === marketRequestId) scheduleMarketRefresh();
     }
   }
-  async function refreshMarkets(symbol = app.state.selectedSymbol) {
+  async function refreshMarkets(symbol = currentSymbol()) {
     const button = $('[data-action="refresh-markets"]');
     if (button) button.disabled = true;
     await loadMarkets(symbol);
@@ -434,7 +548,7 @@
     const trades = app.state.trades || [], closed = trades.filter((trade) => trade.status === "closed"), open = trades.filter((trade) => trade.status === "open");
     const realized = closed.reduce((sum, trade) => sum + Number(trade.pnl || 0), 0);
     const unrealized = open.reduce((sum, trade) => sum + unrealizedFor(trade), 0);
-    const todayStart = new Date(); todayStart.setHours(0, 0, 0, 0);
+    const now = new Date(), todayStart = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate());
     const todayPnl = closed.filter((trade) => trade.closedAt && new Date(trade.closedAt) >= todayStart).reduce((sum, trade) => sum + Number(trade.pnl || 0), 0);
     const wins = closed.filter((trade) => trade.pnl > 0).length;
     const losses = closed.filter((trade) => trade.pnl < 0).length;
@@ -471,6 +585,10 @@
     headerForView();
     const renderers = { dashboard: renderDashboard, intelligence: renderIntelligence, trades: renderTrades, risk: renderRisk, broker: renderBroker, watchlist: renderWatchlist, reports: renderReports, users: renderUsers, settings: renderSettings };
     $("#viewRoot").innerHTML = (renderers[app.view] || renderDashboard)();
+    pendingForms.forEach((id) => {
+      const submit = $(`#${id} button[type="submit"]`);
+      if (submit) submit.disabled = true;
+    });
   }
   function statCard(icon, label, value, note, valueClass = "") {
     return `<article class="stat-card"><header><span>${escapeHtml(label)}</span><span class="stat-icon">${icon}</span></header><strong class="${valueClass}">${escapeHtml(value)}</strong><small>${escapeHtml(note)}</small></article>`;
@@ -509,18 +627,22 @@
     return `<div class="list">${trades.map((trade) => `<div class="list-row"><span><strong>${escapeHtml(trade.symbol)}</strong><small class="muted"> · ${localDate(trade.openedAt, true)}</small></span><span class="badge ${trade.side}">${directionLabel(trade.side)}</span><span class="${trade.status === "closed" ? (trade.pnl >= 0 ? "positive" : "negative") : "muted"}">${trade.status === "closed" ? money(trade.pnl) : "مفتوحة"}</span><button class="small-button" data-view="trades">التفاصيل</button></div>`).join("")}</div>`;
   }
   function tradeTicket() {
-    const canTrade = app.profile.canTrade, marketOptions = app.markets.map((market) => `<option value="${market.symbol}" ${market.symbol === app.state.selectedSymbol ? "selected" : ""}>${market.label}</option>`).join("");
-    const selected = getMarket(app.state.selectedSymbol) || app.selectedMarket;
+    const draft = formDraft("tradeForm", { symbol: app.state.selectedSymbol });
+    const canTrade = app.profile.canTrade, marketOptions = app.markets.map((market) => `<option value="${escapeHtml(market.symbol)}" ${market.symbol === draft.symbol ? "selected" : ""}>${escapeHtml(market.label)}</option>`).join("");
+    const selected = getMarket(draft.symbol);
     const liveReady = app.profile.canConnectBroker && app.broker?.connected && app.broker?.liveTradingEnabled;
     if (!liveReady && app.executionMode === "live") app.executionMode = "paper";
     const liveMode = liveReady && app.executionMode === "live";
+    const maxAmount = liveMode ? Number(app.broker.maxLiveOrderUsd || 100) : Number(app.state.balanceCents) / 400;
+    const defaultAmount = liveMode ? Math.min(100, maxAmount) : Math.max(25, Math.min(500, Math.floor(maxAmount / 25) * 25));
+    const amount = draft[liveMode ? "liveAmount" : "paperAmount"] ?? defaultAmount;
     const modePicker = app.profile.canConnectBroker ? `<div class="execution-picker"><button type="button" class="${!liveMode ? "active" : ""}" data-execution-mode="paper">تداول ورقي</button>${liveReady ? `<button type="button" class="${liveMode ? "active live" : ""}" data-execution-mode="live">تداول حقيقي</button>` : '<button type="button" data-view="broker">إعداد التداول الحقيقي</button>'}</div>` : "";
     return `<article class="panel ${liveMode ? "live-ticket" : ""}"><header class="panel-head"><div><h2>${liveMode ? "تنفيذ صفقة حقيقية" : "فتح صفقة ورقية"}</h2><p>${liveMode ? "يُرسل أمر MARKET إلى Binance Spot بعد تأكيد مستقل." : "السعر يؤخذ من السوق عند تأكيد الطلب."}</p></div><span class="badge ${liveMode ? "live" : "pending"}">${liveMode ? "LIVE" : "PAPER"}</span></header>
       ${canTrade ? `<form class="trade-ticket" id="tradeForm">
         ${modePicker}
         <label class="control">السوق<select name="symbol">${marketOptions}</select></label>
         <div class="side-picker"><button type="button" class="${app.tradeSide === "buy" ? "active" : ""}" data-side="buy">↗ شراء</button><button type="button" class="${app.tradeSide === "sell" ? "active" : ""}" data-side="sell">↘ بيع</button></div>
-        <label class="control">${liveMode ? "قيمة الأمر بـ USDT" : "حجم الصفقة بالدولار"}<input name="amount" type="number" min="25" max="${liveMode ? Number(app.broker.maxLiveOrderUsd || 100) : "6250"}" step="25" value="${liveMode ? Math.min(100, Number(app.broker.maxLiveOrderUsd || 100)) : 500}" required></label>
+        <label class="control">${liveMode ? "قيمة الأمر بـ USDT" : "حجم الصفقة بالدولار"}<input name="amount" type="number" min="25" max="${maxAmount}" step="25" value="${escapeHtml(amount)}" required></label>
         <div class="trade-summary"><p><span>السعر المعروض</span><b>${selected ? money(selected.price) : "يؤخذ عند التنفيذ"}</b></p>${liveMode ? `<p><span>حد الأمر الحقيقي</span><b>${money(app.broker.maxLiveOrderUsd)}</b></p><p><span>رصيد USDT المتاح</span><b>${money(app.broker.availableUsdt)}</b></p>` : `<p><span>حد الصفقات المفتوحة</span><b>${app.state.risk.maxOpenTrades}</b></p><p><span>المخاطرة لكل صفقة</span><b>${app.state.risk.riskPerTradePct}%</b></p>`}</div>
         ${liveMode ? '<div class="live-warning">صفقة حقيقية بأموال موجودة في Binance. لا يوجد ضمان للربح، ولا يمكن لـ VAREX سحب الأموال.</div>' : ""}
         <button class="primary-button" type="submit">${liveMode ? `مراجعة أمر ${app.tradeSide === "buy" ? "شراء" : "بيع"} حقيقي` : `فتح صفقة ${app.tradeSide === "buy" ? "شراء" : "بيع"} ورقية`}</button>
@@ -532,9 +654,9 @@
     return `<section class="trial-guide"><div><span class="eyebrow">تجربة بدون أموال حقيقية</span><h2>بدء أول تجربة تداول</h2><p>لا حاجة إلى وسيط في هذه المرحلة. يقرأ VAREX السوق الحي ويعرض قراراً احتمالياً، ثم يتم تأكيد الصفقة الورقية يدوياً.</p></div><ol class="trial-steps"><li><b>1</b><span>اختيار عملة</span></li><li><b>2</b><span>تشغيل تحليل VAREX</span></li><li><b>3</b><span>فتح صفقة ورقية</span></li></ol><button class="primary-button" data-action="guided-analysis">✦ تحليل ${escapeHtml(app.selectedMarket?.label || "BTC / USD")} الآن</button></section>
     <section class="stats-grid">
       ${statCard("▣", "الرصيد الورقي", money(metrics.balance), "الرصيد المحفوظ في حسابك")}
-      ${statCard("$", "صافي اليوم", money(metrics.todayPnl), metrics.closed.length ? "من الصفقات المغلقة اليوم" : "لا توجد صفقات مغلقة اليوم", metrics.todayPnl >= 0 ? "positive" : "negative")}
+      ${statCard("$", "صافي اليوم (UTC)", money(metrics.todayPnl), "من الصفقات المغلقة منذ 00:00 UTC", metrics.todayPnl >= 0 ? "positive" : "negative")}
       ${statCard("⌁", "صفقات مفتوحة", String(metrics.open.length), `الحد المسموح ${app.state.risk.maxOpenTrades}`)}
-      ${statCard("◇", "استخدام حد الخسارة", `${dailyRisk.toFixed(2)}%`, `من حد يومي ${app.state.risk.maxDailyLossPct}%`, dailyRisk >= app.state.risk.maxDailyLossPct ? "negative" : "")}
+      ${statCard("◇", "استخدام حد الخسارة", `${dailyRisk.toFixed(2)}%`, `من حد يومي ${app.state.risk.maxDailyLossPct}% · UTC`, dailyRisk >= app.state.risk.maxDailyLossPct ? "negative" : "")}
     </section>
     <section class="content-grid">${marketPanel()}${tradeTicket()}</section>
     <section class="panel"><header class="panel-head"><div><h2>آخر الصفقات</h2><p>بيانات فعلية من سجل حسابك الورقي.</p></div><button class="small-button" data-view="trades">عرض الكل</button></header>${renderRecentTrades()}</section>`;
@@ -567,23 +689,24 @@
       const currentPnl = trade.status === "open" ? unrealizedFor(trade) : trade.pnl;
       return `<tr><td dir="ltr"><b>${escapeHtml(trade.symbol)}</b></td><td><span class="badge ${trade.side}">${directionLabel(trade.side)}</span></td><td dir="ltr">${money(trade.amount)}</td><td dir="ltr">${money(trade.entryPrice)}</td><td dir="ltr">${trade.exitPrice ? money(trade.exitPrice) : getMarket(trade.symbol) ? money(getMarket(trade.symbol).price) : "—"}</td><td class="${currentPnl >= 0 ? "positive" : "negative"}" dir="ltr">${money(currentPnl)}</td><td>${trade.status === "open" ? '<span class="badge active">مفتوحة</span>' : '<span class="badge pending">مغلقة</span>'}</td><td>${trade.status === "open" && app.profile.canTrade ? `<button class="small-button danger" data-close-trade="${trade.id}">إغلاق</button>` : "—"}</td></tr>`;
     }).join("");
-    return `<section class="content-grid">${tradeTicket()}<article class="panel"><header class="panel-head"><div><h2>قواعد التنفيذ</h2><p>تُطبق على الخادم قبل فتح الصفقة.</p></div></header><div class="toggle-row"><p><b>الحد الأقصى المفتوح</b><small>لا يمكن تجاوزه</small></p><strong>${app.state.risk.maxOpenTrades}</strong></div><div class="toggle-row"><p><b>حجم الصفقة</b><small>حتى 25% من الرصيد</small></p><strong>25%</strong></div><div class="toggle-row"><p><b>وقف تلقائي</b><small>محفوظ مع الصفقة</small></p><span class="badge ${app.state.risk.autoStop ? "active" : "inactive"}">${app.state.risk.autoStop ? "مفعّل" : "متوقف"}</span></div></article></section>
+    return `<section class="content-grid">${tradeTicket()}<article class="panel"><header class="panel-head"><div><h2>قواعد التنفيذ</h2><p>تُطبق على الخادم قبل فتح الصفقة.</p></div></header><div class="toggle-row"><p><b>الحد الأقصى المفتوح</b><small>لا يمكن تجاوزه</small></p><strong>${app.state.risk.maxOpenTrades}</strong></div><div class="toggle-row"><p><b>حجم الصفقة</b><small>حتى 25% من الرصيد</small></p><strong>25%</strong></div><div class="toggle-row"><p><b>وقف ورقي عند تحديث الأسعار</b><small>تتم المتابعة أثناء فتح التطبيق وظهور التبويب</small></p><span class="badge ${app.state.risk.autoStop ? "active" : "inactive"}">${app.state.risk.autoStop ? "مفعّل" : "متوقف"}</span></div></article></section>
       <section class="panel"><header class="panel-head"><div><h2>سجل الصفقات</h2><p>${trades.length} صفقة محفوظة.</p></div></header><div class="table-wrap">${trades.length ? `<table class="data-table"><thead><tr><th>السوق</th><th>الاتجاه</th><th>الحجم</th><th>الدخول</th><th>الخروج / الحالي</th><th>النتيجة</th><th>الحالة</th><th>الإجراء</th></tr></thead><tbody>${rows}</tbody></table>` : '<div class="empty"><span>▣</span><p>لا توجد صفقات بعد.</p></div>'}</div></section>`;
   }
 
   function renderRisk() {
     const metrics = accountMetrics(), lossToday = Math.min(0, metrics.todayPnl), used = metrics.balance ? Math.abs(lossToday) / metrics.balance * 100 : 0;
+    const risk = formDraft("riskForm", app.state.risk);
     return `<section class="stats-grid">
-      ${statCard("◇", "حد الخسارة اليومي", `${app.state.risk.maxDailyLossPct}%`, "يمنع فتح صفقة بعد بلوغه")}
-      ${statCard("⌁", "استهلاك الحد اليومي", `${used.toFixed(2)}%`, lossToday ? money(lossToday) : "لا توجد خسارة محققة", used >= app.state.risk.maxDailyLossPct ? "negative" : "positive")}
+      ${statCard("◇", "حد الخسارة اليومي (UTC)", `${app.state.risk.maxDailyLossPct}%`, "يمنع فتح صفقة بعد بلوغه")}
+      ${statCard("⌁", "استهلاك الحد اليومي", `${used.toFixed(2)}%`, `منذ 00:00 UTC · ${lossToday ? money(lossToday) : "لا توجد خسارة محققة"}`, used >= app.state.risk.maxDailyLossPct ? "negative" : "positive")}
       ${statCard("▣", "حد الصفقات", String(app.state.risk.maxOpenTrades), `${metrics.open.length} مفتوحة حالياً`)}
       ${statCard("%", "مخاطرة الصفقة", `${app.state.risk.riskPerTradePct}%`, "من الرصيد الورقي")}
     </section>
     <section class="content-grid equal-grid"><form class="panel" id="riskForm"><header class="panel-head"><div><h2>حدود المخاطر</h2><p>تُحفظ وتُطبق فوراً.</p></div></header><div class="form-grid">
-      <label class="control">حد الخسارة اليومي %<input name="maxDailyLossPct" type="number" min=".5" max="20" step=".5" value="${app.state.risk.maxDailyLossPct}"></label>
-      <label class="control">أقصى صفقات مفتوحة<input name="maxOpenTrades" type="number" min="1" max="10" step="1" value="${app.state.risk.maxOpenTrades}"></label>
-      <label class="control">مخاطرة الصفقة %<input name="riskPerTradePct" type="number" min=".25" max="5" step=".25" value="${app.state.risk.riskPerTradePct}"></label>
-    </div><div class="toggle-row"><p><b>تحديد وقف خسارة</b><small>يحفظ مستوى وقف محسوباً مع كل صفقة جديدة</small></p><button type="button" class="switch ${app.state.risk.autoStop ? "on" : ""}" data-toggle-risk="autoStop"><i></i></button></div><button class="primary-button" type="submit">حفظ حدود المخاطر</button></form>
+      <label class="control">حد الخسارة اليومي %<input name="maxDailyLossPct" type="number" min=".5" max="20" step=".5" value="${escapeHtml(risk.maxDailyLossPct)}" required></label>
+      <label class="control">أقصى صفقات مفتوحة<input name="maxOpenTrades" type="number" min="1" max="10" step="1" value="${escapeHtml(risk.maxOpenTrades)}" required></label>
+      <label class="control">مخاطرة الصفقة %<input name="riskPerTradePct" type="number" min=".25" max="5" step=".25" value="${escapeHtml(risk.riskPerTradePct)}" required></label>
+    </div><div class="toggle-row"><p><b>تحديد وقف خسارة</b><small>يغلق الصفقة الورقية عند بلوغ الحد أثناء تحديث الأسعار؛ تتوقف المتابعة عند إغلاق التطبيق</small></p><button type="button" class="switch ${risk.autoStop ? "on" : ""}" data-toggle-risk="autoStop"><i></i></button></div><button class="primary-button" type="submit">حفظ حدود المخاطر</button></form>
       <article class="panel"><header class="panel-head"><div><h2>حالة الحماية</h2><p>ملخص القرارات الحالية.</p></div></header><div class="notice">حد الخسارة وعدد الصفقات وحجم الصفقة تُفحص على الخادم في التداول الورقي. التداول الحقيقي يطبق حد الأمر المضبوط في شاشة حساب التداول.</div><div class="toggle-row"><p><b>القدرة على التداول</b><small>حسب صلاحية الحساب</small></p><span class="badge ${app.profile.canTrade ? "active" : "inactive"}">${app.profile.canTrade ? "مسموح" : "عرض فقط"}</span></div><div class="toggle-row"><p><b>حساب Binance</b><small>الربط متاح لحساب الإدارة فقط</small></p><span class="badge ${app.broker?.connected ? "active" : "pending"}">${app.broker?.connected ? "مربوط" : "غير مربوط"}</span></div></article></section>`;
   }
 
@@ -638,8 +761,9 @@
   }
 
   function renderWatchlist() {
+    const symbols = formDraft("watchlistForm", { symbols: app.state.watchlist }).symbols;
     const cards = app.supportedMarkets.map((item) => {
-      const market = getMarket(item.symbol), checked = app.state.watchlist.includes(item.symbol);
+      const market = getMarket(item.symbol), checked = symbols.includes(item.symbol);
       return `<label class="watch-card"><input type="checkbox" name="symbols" value="${item.symbol}" ${checked ? "checked" : ""}><span class="coin">${escapeHtml(item.icon)}</span><p><b>${escapeHtml(item.label)}</b><small>${escapeHtml(item.name)}</small></p><span><b>${market ? money(market.price) : "—"}</b><small class="${market?.changePct >= 0 ? "positive" : "negative"}">${market ? pct(market.changePct) : "غير متاح"}</small></span></label>`;
     }).join("");
     return `<form class="panel" id="watchlistForm"><header class="panel-head"><div><h2>الأسواق المتاحة</h2><p>يجب اختيار سوق واحد على الأقل.</p></div><button class="primary-button" type="submit">حفظ القائمة</button></header><div class="watch-grid">${cards}</div></form>`;
@@ -661,16 +785,17 @@
     if (!app.profile.canManageUsers) return '<div class="notice">هذه الشاشة متاحة لحساب الإدارة فقط.</div>';
     if (app.usersLoading) return '<section class="panel"><div class="empty"><span class="loader"></span><p>جاري تحميل الحسابات…</p></div></section>';
     const cards = app.users.map((user) => {
-      const developer = user.role === "developer", status = user.pending ? "pending" : user.status;
-      return `<div class="user-card" data-user-row="${escapeHtml(user.email)}"><p><b>${escapeHtml(user.displayName)}</b><small dir="ltr">${escapeHtml(user.email)}</small></p><aside><span class="badge ${status}">${status === "pending" ? "بانتظار التسجيل" : status === "active" ? "نشط" : "متوقف"}</span>${developer ? '<span class="badge active">إدارة</span>' : `<select class="small-button user-role"><option value="trader" ${user.role === "trader" ? "selected" : ""}>صلاحية تداول</option><option value="viewer" ${user.role === "viewer" ? "selected" : ""}>عرض فقط</option></select><button class="small-button" data-user-save="${escapeHtml(user.email)}" data-status="${status === "inactive" || status === "revoked" ? "active" : "inactive"}">${status === "inactive" || status === "revoked" ? "تفعيل" : "إيقاف"}</button>`}</aside></div>`;
+      const developer = user.role === "developer", inactive = user.status === "inactive" || user.status === "revoked";
+      const status = inactive ? "inactive" : user.pending ? "pending" : user.status, role = app.userRoleDrafts[user.email] || user.role;
+      return `<div class="user-card" data-user-row="${escapeHtml(user.email)}"><p><b>${escapeHtml(user.displayName)}</b><small dir="ltr">${escapeHtml(user.email)}</small></p><aside><span class="badge ${status}">${status === "pending" ? "بانتظار التسجيل" : status === "active" ? "نشط" : "متوقف"}</span>${developer ? '<span class="badge active">إدارة</span>' : `<select class="small-button user-role" aria-label="صلاحية ${escapeHtml(user.displayName)}"><option value="trader" ${role === "trader" ? "selected" : ""}>صلاحية تداول</option><option value="viewer" ${role === "viewer" ? "selected" : ""}>عرض فقط</option></select><button class="small-button" data-user-save="${escapeHtml(user.email)}">حفظ الصلاحية</button><button class="small-button" data-user-toggle="${escapeHtml(user.email)}" data-status="${inactive ? "active" : "inactive"}">${inactive ? "تفعيل" : "إيقاف"}</button>`}</aside></div>`;
     }).join("");
     return `<section class="content-grid"><form class="panel" id="inviteForm"><header class="panel-head"><div><h2>تحديد صلاحية مسبقاً — اختياري</h2><p>التسجيل مفتوح للجميع. تستخدم هذه الخانة فقط لتحديد صلاحية خاصة قبل التسجيل.</p></div></header><div class="form-grid"><label class="control">اسم المستخدم<input name="displayName" required maxlength="80" placeholder="مثال: إدارة الاستثمار"></label><label class="control">البريد الإلكتروني<input name="email" type="email" required placeholder="user@example.com"></label><label class="control">الصلاحية<select name="role"><option value="trader">صلاحية تداول — فتح وإغلاق صفقات وربط حساب تداول مستقل</option><option value="viewer">عرض فقط — قراءة فقط</option></select></label></div><button class="primary-button" type="submit">حفظ الصلاحية المسبقة</button></form><article class="panel"><header class="panel-head"><div><h2>التسجيل المباشر</h2><p>لا حاجة إلى إضافة البريد من حساب المطور.</p></div></header><div class="notice">يُنشأ الحساب مباشرة من صفحة التسجيل، ثم يصل رمز OTP إلى البريد. لكل حساب ملف ورصيد ورقي وصفقات وربط تداول منفصل تماماً عن بقية الحسابات.</div></article></section><section class="panel"><header class="panel-head"><div><h2>قائمة الحسابات</h2><p>${app.users.length} حساباً أو إعداد صلاحية.</p></div><button class="small-button" data-action="reload-users">تحديث</button></header>${cards || '<div class="empty"><p>لا توجد حسابات بعد.</p></div>'}</section>`;
   }
 
   function renderSettings() {
-    const settings = app.state.settings;
-    return `<section class="settings-stack"><form class="panel" id="profileForm"><header class="panel-head"><div><h2>بيانات الحساب</h2><p>يظهر اسم المستخدم في التحية والقائمة.</p></div></header><div class="form-grid"><label class="control">اسم المستخدم<input name="displayName" value="${escapeHtml(app.profile.displayName)}" maxlength="80" required></label><label class="control">البريد الإلكتروني<input value="${escapeHtml(app.profile.email)}" disabled dir="ltr"></label></div><button class="primary-button" type="submit">حفظ اسم المستخدم</button></form>
-      <form class="panel" id="settingsForm"><header class="panel-head"><div><h2>تفضيلات الواجهة</h2><p>محفوظة في حسابك على قاعدة البيانات.</p></div></header><div class="form-grid"><label class="control">المنطقة الزمنية<select name="timezone"><option value="Asia/Dubai" ${settings.timezone === "Asia/Dubai" ? "selected" : ""}>الإمارات — دبي</option><option value="Asia/Riyadh" ${settings.timezone === "Asia/Riyadh" ? "selected" : ""}>السعودية — الرياض</option><option value="UTC" ${settings.timezone === "UTC" ? "selected" : ""}>UTC</option></select></label></div><div class="toggle-row"><p><b>إشعارات داخل التطبيق</b><small>إظهار تنبيهات نجاح العمليات وأخطاء السوق</small></p><button type="button" class="switch ${settings.notifications ? "on" : ""}" data-toggle-setting="notifications"><i></i></button></div><div class="toggle-row"><p><b>الوضع المضغوط</b><small>جاهز للاستخدام في تحديث واجهة لاحق</small></p><button type="button" class="switch ${settings.compactMode ? "on" : ""}" data-toggle-setting="compactMode"><i></i></button></div><button class="primary-button" type="submit">حفظ التفضيلات</button></form>
+    const settings = formDraft("settingsForm", app.state.settings), profile = formDraft("profileForm", app.profile);
+    return `<section class="settings-stack"><form class="panel" id="profileForm"><header class="panel-head"><div><h2>بيانات الحساب</h2><p>يظهر اسم المستخدم في التحية والقائمة.</p></div></header><div class="form-grid"><label class="control">اسم المستخدم<input name="displayName" value="${escapeHtml(profile.displayName)}" maxlength="80" required></label><label class="control">البريد الإلكتروني<input value="${escapeHtml(app.profile.email)}" disabled dir="ltr"></label></div><button class="primary-button" type="submit">حفظ اسم المستخدم</button></form>
+      <form class="panel" id="settingsForm"><header class="panel-head"><div><h2>تفضيلات الواجهة</h2><p>محفوظة في حسابك على قاعدة البيانات.</p></div></header><div class="form-grid"><label class="control">المنطقة الزمنية<select name="timezone"><option value="Asia/Dubai" ${settings.timezone === "Asia/Dubai" ? "selected" : ""}>الإمارات — دبي</option><option value="Asia/Riyadh" ${settings.timezone === "Asia/Riyadh" ? "selected" : ""}>السعودية — الرياض</option><option value="UTC" ${settings.timezone === "UTC" ? "selected" : ""}>UTC</option></select></label></div><div class="toggle-row"><p><b>إشعارات داخل التطبيق</b><small>إظهار تنبيهات نجاح العمليات وأخطاء السوق</small></p><button type="button" class="switch ${settings.notifications ? "on" : ""}" data-toggle-setting="notifications"><i></i></button></div><div class="toggle-row"><p><b>الوضع المضغوط</b><small>تقليل المسافات داخل البطاقات والجداول</small></p><button type="button" class="switch ${settings.compactMode ? "on" : ""}" data-toggle-setting="compactMode"><i></i></button></div><button class="primary-button" type="submit">حفظ التفضيلات</button></form>
       ${app.profile.canTrade ? '<article class="panel danger-zone"><header class="panel-head"><div><h2>إعادة ضبط التداول الورقي</h2><p>يحذف الصفقات والتحليلات ويعيد الرصيد إلى 25,000 دولار. لا يحذف الحساب أو الحسابات المضافة.</p></div></header><button class="danger-button" data-action="reset-paper">إعادة الضبط</button></article>' : ""}
     </section>`;
   }
@@ -683,6 +808,7 @@
       try {
         const result = await tradingPost("save_preferences", { selectedSymbol: marketButton.dataset.market });
         app.state = result.state; app.version = result.version;
+        app.formDrafts.tradeForm = { ...app.formDrafts.tradeForm, symbol: marketButton.dataset.market };
         await runAnalysis(marketButton.dataset.market);
       } catch (error) { showToast(error.message, "error"); }
       return;
@@ -690,6 +816,8 @@
     const useAnalysis = event.target.closest("[data-use-analysis]");
     if (useAnalysis) {
       app.tradeSide = useAnalysis.dataset.side === "sell" ? "sell" : "buy";
+      app.executionMode = "paper";
+      app.formDrafts.tradeForm = { ...app.formDrafts.tradeForm, symbol: useAnalysis.dataset.useAnalysis };
       return goTo("trades");
     }
     const executionMode = event.target.closest("[data-execution-mode]");
@@ -697,9 +825,17 @@
     const sideButton = event.target.closest("[data-side]");
     if (sideButton) { app.tradeSide = sideButton.dataset.side; render(); return; }
     const toggleRisk = event.target.closest("[data-toggle-risk]");
-    if (toggleRisk) { app.state.risk[toggleRisk.dataset.toggleRisk] = !app.state.risk[toggleRisk.dataset.toggleRisk]; render(); return; }
+    if (toggleRisk) {
+      const key = toggleRisk.dataset.toggleRisk, risk = formDraft("riskForm", app.state.risk);
+      app.formDrafts.riskForm = { ...app.formDrafts.riskForm, [key]: !risk[key] };
+      render(); return;
+    }
     const toggleSetting = event.target.closest("[data-toggle-setting]");
-    if (toggleSetting) { app.state.settings[toggleSetting.dataset.toggleSetting] = !app.state.settings[toggleSetting.dataset.toggleSetting]; render(); return; }
+    if (toggleSetting) {
+      const key = toggleSetting.dataset.toggleSetting, settings = formDraft("settingsForm", app.state.settings);
+      app.formDrafts.settingsForm = { ...app.formDrafts.settingsForm, [key]: !settings[key] };
+      render(); return;
+    }
     const analyze = event.target.closest("[data-analyze]");
     if (analyze) return runAnalysis(analyze.dataset.analyze);
     const close = event.target.closest("[data-close-trade]");
@@ -707,13 +843,26 @@
     const userSave = event.target.closest("[data-user-save]");
     if (userSave) {
       const row = userSave.closest("[data-user-row]"), role = $(".user-role", row).value;
-      return updateUser(userSave.dataset.userSave, role, userSave.dataset.status);
+      const user = app.users.find((item) => item.email === userSave.dataset.userSave);
+      if (!user) return;
+      const status = user.status === "inactive" || user.status === "revoked" ? "inactive" : "active";
+      userSave.disabled = true;
+      try { return await updateUser(user.email, role, status, "role"); }
+      finally { userSave.disabled = false; }
+    }
+    const userToggle = event.target.closest("[data-user-toggle]");
+    if (userToggle) {
+      const user = app.users.find((item) => item.email === userToggle.dataset.userToggle);
+      if (!user) return;
+      userToggle.disabled = true;
+      try { return await updateUser(user.email, user.role, userToggle.dataset.status); }
+      finally { userToggle.disabled = false; }
     }
     const action = event.target.closest("[data-action]")?.dataset.action;
     if (!action) return;
     if (action === "refresh-markets") return refreshMarkets();
-    if (action === "guided-analysis") return runAnalysis(app.state.selectedSymbol || app.selectedMarket?.symbol || "BTC-USD");
-    if (action === "analyze-current") return runAnalysis(app.state.selectedSymbol);
+    if (action === "guided-analysis") return runAnalysis(currentSymbol());
+    if (action === "analyze-current") return runAnalysis(currentSymbol());
     if (action === "export-report") return exportReport();
     if (action === "reload-users") return loadUsers();
     if (action === "refresh-broker") return refreshBroker();
@@ -725,29 +874,32 @@
   async function handleSubmit(event) {
     event.preventDefault();
     const form = event.target, data = new FormData(form), submit = form.querySelector('button[type="submit"]');
+    if (pendingForms.has(form.id)) return;
+    pendingForms.add(form.id);
     if (submit) submit.disabled = true;
     try {
       if (form.id === "tradeForm") {
-        const symbol = String(data.get("symbol")), amount = Number(data.get("amount"));
+        const symbol = String(data.get("symbol")), amount = Number(data.get("amount")), side = app.tradeSide;
         if (app.executionMode === "live") {
-          const accepted = await confirmAction("تأكيد صفقة حقيقية", `سيتم إرسال أمر ${app.tradeSide === "buy" ? "شراء" : "بيع"} MARKET حقيقي بقيمة ${money(amount)} إلى Binance Spot. التداول قد يحقق خسارة، ولا توجد إعادة تلقائية عند انقطاع الاتصال.`);
+          const accepted = await confirmAction("تأكيد صفقة حقيقية", `سيتم إرسال أمر ${side === "buy" ? "شراء" : "بيع"} MARKET حقيقي بقيمة ${money(amount)} على ${symbol} إلى Binance Spot. التداول قد يحقق خسارة، ولا توجد إعادة تلقائية عند انقطاع الاتصال.`);
           if (!accepted) return;
-          const result = await tradingPost("place_live_order", { symbol, side: app.tradeSide, amount, clientRequestId: crypto.randomUUID(), confirmation: "LIVE_ORDER_CONFIRMED" });
+          const result = await tradingPost("place_live_order", { symbol, side, amount, clientRequestId: crypto.randomUUID(), confirmation: "LIVE_ORDER_CONFIRMED" });
           app.broker = result.broker;
           updateExecutionUi();
           showToast("تم إرسال الأمر الحقيقي إلى Binance وحفظ نتيجة التنفيذ.");
           goTo("broker");
         } else {
-          const result = await tradingPost("open_trade", { symbol, side: app.tradeSide, amount });
+          const result = await tradingPost("open_trade", { symbol, side, amount });
           app.state = result.state; app.version = result.version;
           await loadMarkets(app.state.selectedSymbol, true);
           showToast("تم فتح الصفقة الورقية. لم يُخصم أي مال حقيقي.");
           goTo("trades");
         }
       } else if (form.id === "riskForm") {
-        const risk = { ...app.state.risk, maxDailyLossPct: Number(data.get("maxDailyLossPct")), maxOpenTrades: Number(data.get("maxOpenTrades")), riskPerTradePct: Number(data.get("riskPerTradePct")) };
+        const risk = { ...formDraft("riskForm", app.state.risk), maxDailyLossPct: Number(data.get("maxDailyLossPct")), maxOpenTrades: Number(data.get("maxOpenTrades")), riskPerTradePct: Number(data.get("riskPerTradePct")) };
         const result = await tradingPost("save_preferences", { risk });
         app.state = result.state; app.version = result.version;
+        delete app.formDrafts.riskForm;
         showToast("تم حفظ حدود المخاطر وتفعيلها.");
         render();
       } else if (form.id === "watchlistForm") {
@@ -755,6 +907,7 @@
         if (!watchlist.length) throw new Error("يجب اختيار سوق واحد على الأقل.");
         const result = await tradingPost("save_preferences", { watchlist });
         app.state = result.state; app.version = result.version;
+        delete app.formDrafts.watchlistForm;
         showToast("تم حفظ قائمة المراقبة.");
         render();
       } else if (form.id === "inviteForm") {
@@ -766,13 +919,16 @@
       } else if (form.id === "profileForm") {
         const result = await tradingPost("update_profile", { displayName: String(data.get("displayName")) });
         app.profile.displayName = result.displayName;
+        delete app.formDrafts.profileForm;
         applyIdentity();
         showToast("تم تحديث اسم المستخدم.");
         render();
       } else if (form.id === "settingsForm") {
-        const settings = { ...app.state.settings, timezone: String(data.get("timezone")) };
+        const settings = { ...formDraft("settingsForm", app.state.settings), timezone: String(data.get("timezone")) };
         const result = await tradingPost("save_preferences", { settings });
         app.state = result.state; app.version = result.version;
+        delete app.formDrafts.settingsForm;
+        applyIdentity();
         showToast("تم حفظ التفضيلات.");
         render();
       } else if (form.id === "brokerConnectForm") {
@@ -809,7 +965,10 @@
     } catch (error) {
       showToast(error.message, "error");
     } finally {
+      pendingForms.delete(form.id);
       if (submit) submit.disabled = false;
+      const currentSubmit = $(`#${form.id} button[type="submit"]`);
+      if (currentSubmit) currentSubmit.disabled = false;
     }
   }
 
@@ -819,6 +978,7 @@
     try {
       const result = await tradingPost("analyze", { symbol });
       app.state = result.state; app.version = result.version;
+      app.formDrafts.tradeForm = { ...app.formDrafts.tradeForm, symbol: app.state.selectedSymbol };
       await loadMarkets(symbol, true);
       showToast("اكتمل تحليل VAREX. يمكن مراجعة القرار واختيار الخطوة التالية.");
       goTo("intelligence");
@@ -876,12 +1036,13 @@
     } catch (error) { showToast(error.message, "error"); }
     finally { app.usersLoading = false; render(); }
   }
-  async function updateUser(email, role, status) {
+  async function updateUser(email, role, status, operation = "status") {
     try {
       const user = app.users.find((item) => item.email === email);
       const result = await tradingPost("update_user", { email, role, status, displayName: user?.displayName || email.split("@")[0] });
       app.users = result.users || [];
-      showToast(status === "inactive" ? "تم إيقاف الحساب." : "تم تفعيل الحساب.");
+      if (operation === "role") delete app.userRoleDrafts[email];
+      showToast(operation === "role" ? "تم حفظ صلاحية الحساب دون تغيير حالة التفعيل." : status === "inactive" ? "تم إيقاف الحساب." : "تم تفعيل الحساب.");
       render();
     } catch (error) { showToast(error.message, "error"); }
   }
@@ -891,13 +1052,22 @@
     try {
       const result = await tradingPost("reset_paper");
       app.state = result.state; app.version = result.version;
+      delete app.formDrafts.tradeForm;
+      delete app.formDrafts.riskForm;
+      await loadMarkets(app.state.selectedSymbol, true);
       showToast("تمت إعادة ضبط حساب التداول الورقي.");
       render();
     } catch (error) { showToast(error.message, "error"); }
   }
   async function logout() {
-    try { await authRequest("/api/auth/sign-out", {}); } catch {}
+    try { await authRequest("/api/auth/sign-out", {}); }
+    catch (error) { showToast(error.message || "تعذر إنهاء الجلسة. يرجى إعادة المحاولة.", "error"); return; }
     app.profile = null; app.state = null; app.broker = null; app.users = []; app.executionMode = "paper";
+    app.formDrafts = {}; app.userRoleDrafts = {}; app.view = "dashboard"; app.tradeSide = "buy";
+    app.markets = []; app.selectedMarket = null; app.supportedMarkets = []; app.marketError = "";
+    stopMarketRefresh();
+    marketRequestId += 1;
+    pendingAuth = { purpose: "", email: "", password: "", displayName: "", otp: "" };
     showLoggedOut();
   }
   function exportReport() {
