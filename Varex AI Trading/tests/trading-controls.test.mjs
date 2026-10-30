@@ -105,6 +105,7 @@ function harness(respond = () => { throw new Error("Unexpected API request in a 
   return {
     ...controls, calls, getElement, document, window, timers,
     html: () => getElement("#viewRoot").innerHTML,
+    documentClick: (event) => listeners.get("click")?.(event),
     visibility: (value) => { document.visibilityState = value; listeners.get("visibilitychange")?.(); },
     refreshTimers: () => [...timers.values()].filter((timer) => timer.delay === 30000),
     tickRefresh: async () => {
@@ -444,6 +445,43 @@ test("other forbidden sign-in failures remain errors and do not start an OTP flo
   assert.equal(h.getElement("#otpEmail").textContent, "");
   assert.match(h.getElement("#authMessage").textContent, /Account unavailable/);
   assert.equal(h.calls.length, 1);
+});
+
+test("duplicate registration clears new credentials and offers manual login or recovery without submitting either", async () => {
+  const h = harness(({ path }) => path === "/api/auth/sign-in/email"
+    ? Response.json({ code: "email_not_confirmed", emailVerificationRequired: true, error: "Confirm email" }, { status: 403 })
+    : Response.json({ code: "signup_unavailable", error: "تعذر إكمال إنشاء الحساب. جرّب تسجيل الدخول أو استعادة كلمة المرور." }, { status: 409 }));
+  const login = Object.assign(h.getElement("#loginForm"), form("loginForm", { email: "previous@example.test", password: "PreviousPassword!7" }));
+  const registration = Object.assign(h.getElement("#registerPane"), form("registerPane", {
+    email: " Member@Example.Test ", displayName: "Test Member", password: "FreshSignupPassword!9", confirmPassword: "FreshSignupPassword!9",
+  }));
+  const password = h.getElement('#registerPane [name="password"]');
+  const confirmation = h.getElement('#registerPane [name="confirmPassword"]');
+  password.value = confirmation.value = "FreshSignupPassword!9";
+  h.getElement("#loginForm [name=password]").value = "PreviousPassword!7";
+  h.bindAuth();
+  await login.listeners.get("submit")({ currentTarget: login, preventDefault() {} });
+  assert.equal(h.pendingAuth().password, "PreviousPassword!7", "The failed signup must also discard any older pending verification credentials.");
+
+  await registration.listeners.get("submit")({ currentTarget: registration, preventDefault() {} });
+  assert.equal(h.getElement("#loginForm [name=email]").value, "member@example.test");
+  assert.equal(h.getElement("#recoverPane [name=email]").value, "member@example.test");
+  assert.equal(h.getElement("#loginForm [name=password]").value, "");
+  assert.equal(password.value, "");
+  assert.equal(confirmation.value, "");
+  assert.ok(Object.values(h.pendingAuth()).every((value) => value === ""));
+  assert.match(h.getElement("#authMessage").textContent, /إذا كان لديك حساب VAREX/);
+  assert.equal(h.getElement("#existingAccountActions").classList.contains("hidden"), false);
+  assert.deepEqual(h.calls.map((call) => call.path), [
+    "/api/auth/sign-in/email", "/api/auth/sign-up/email", "/api/trading-auth/send-otp",
+  ]);
+  assert.equal(h.calls[2].body.purpose, "verify", "The existing failed-signup propagation is not a recovery email request.");
+
+  h.documentClick(buttonEvent("[data-auth-pane]", { authPane: "recoverPane" }));
+  assert.equal(h.getElement("#recoverPane").classList.contains("hidden"), false);
+  assert.equal(h.getElement("#existingAccountActions").classList.contains("hidden"), true);
+  assert.equal(h.getElement("#authMessage").textContent, "");
+  assert.equal(h.calls.length, 3, "Opening recovery must not automatically send an email or sign in.");
 });
 
 test("daily paper PnL and risk use the server's UTC boundary even when the browser is on the previous local day", () => {

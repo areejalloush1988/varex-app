@@ -138,6 +138,7 @@
     const target = $("#authMessage");
     target.textContent = message;
     target.className = `auth-message${message ? " show" : ""}${type === "success" ? " success" : ""}`;
+    $("#existingAccountActions")?.classList.add("hidden");
   }
   function setBusy(form, active, label = "جاري التنفيذ…") {
     const button = form.querySelector('button[type="submit"]');
@@ -384,7 +385,18 @@
           showAuthPane("otpPane");
           showAuthMessage("أرسلنا رمز التحقق إلى بريدك.", "success");
         }, "جاري إنشاء الحساب…");
-      } catch {}
+      } catch (error) {
+        if (error.payload?.code !== "signup_unavailable") return;
+        pendingAuth = { purpose: "", email: "", password: "", displayName: "", otp: "" };
+        $("#loginForm [name=email]").value = email;
+        $("#recoverPane [name=email]").value = email;
+        $("#loginForm [name=password]").value = "";
+        registerPassword.value = "";
+        $('#registerPane [name="confirmPassword"]').value = "";
+        updatePasswordRules("");
+        showAuthMessage("لا يمكن إكمال إنشاء حساب جديد بهذا البريد. إذا كان لديك حساب VAREX، سجّل الدخول بكلمة مروره أو استخدم استعادة كلمة المرور.");
+        $("#existingAccountActions")?.classList.remove("hidden");
+      }
     });
     $("#recoverPane").addEventListener("submit", async (event) => {
       event.preventDefault();

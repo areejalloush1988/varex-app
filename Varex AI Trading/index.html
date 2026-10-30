@@ -6,11 +6,18 @@
   <meta name="theme-color" content="#081D36">
   <meta name="description" content="VAREX AI Trading — تحليل سوق وتداول ورقي وربط آمن بحساب Binance Spot.">
   <meta name="robots" content="noindex">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="VAREX Trading">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <link rel="manifest" href="/trading/manifest.webmanifest">
+  <link rel="apple-touch-icon" href="/trading/icons/apple-touch-icon.png">
   <link rel="canonical" href="https://app.varexapp.com/trading/">
   <link rel="icon" type="image/svg+xml" href="./favicon.svg">
   <script src="./theme.js?v=1"></script>
   <link rel="stylesheet" href="./styles.css?v=7">
-  <link rel="stylesheet" href="./themes.css?v=1">
+  <link rel="stylesheet" href="./themes.css?v=2">
+  <script defer src="./install.js?v=1"></script>
   <title>VAREX AI Trading</title>
 </head>
 <body>
@@ -24,6 +31,7 @@
       <button class="theme-toggle auth-theme-toggle" type="button" data-theme-toggle aria-label="تفعيل الوضع النهاري"><span data-theme-icon aria-hidden="true">☀</span><span data-theme-label>النهاري</span></button>
       <div class="mobile-auth-brand"><span class="brand-mark">↗</span><b>VAREX AI TRADING</b></div>
       <div class="auth-message" id="authMessage" role="alert"></div>
+      <div id="existingAccountActions" class="auth-account-actions hidden"><button type="button" class="secondary-button" data-auth-pane="loginForm">تسجيل الدخول</button><button type="button" class="secondary-button" data-auth-pane="recoverPane">استعادة كلمة المرور</button></div>
 
       <form class="auth-pane" id="loginForm">
         <header><span class="eyebrow">مرحباً من جديد</span><h2>تسجيل الدخول</h2><p>الدخول إلى مساحة التداول الخاصة بالحساب.</p></header>
@@ -68,6 +76,7 @@
         <button class="main-button" type="submit">حفظ كلمة المرور</button>
         <p class="auth-switch"><button type="button" data-auth-pane="otpPane">تصحيح رمز التحقق</button> · <button type="button" data-auth-pane="recoverPane">طلب رمز جديد</button></p>
       </form>
+      <a class="auth-install-link" data-install-link href="/trading/install.html">↓ تثبيت التطبيق على ويندوز وآيفون</a>
     </div>
   </section>
 
@@ -93,6 +102,7 @@
         <button class="nav-item hidden" data-view="users" id="usersNav"><span>♙</span> الحسابات</button>
       </nav>
       <div class="sidebar-bottom">
+        <a class="nav-item app-install-link" data-install-link href="/trading/install.html"><span>↓</span> تثبيت التطبيق</a>
         <button class="nav-item" data-view="settings"><span>⚙</span> الإعدادات</button>
         <div class="agent-card"><span>AI</span><p><b>وكيل VAREX</b><small><i></i> تحليل عند الطلب</small></p></div>
         <button class="nav-item logout-item" type="button" data-action="logout"><span>↪</span> تسجيل الخروج</button>
@@ -111,6 +121,6 @@
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
   <div class="modal hidden" id="confirmModal" role="dialog" aria-modal="true"><div><h3 id="confirmTitle">تأكيد الإجراء</h3><p id="confirmText"></p><footer><button class="secondary-button" id="confirmCancel">إلغاء</button><button class="danger-button" id="confirmAccept">تأكيد</button></footer></div></div>
   <script src="./supabase-api.js?v=1"></script>
-  <script src="./app.js?v=9"></script>
+  <script src="./app.js?v=10"></script>
 </body>
 </html>

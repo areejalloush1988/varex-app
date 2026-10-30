@@ -147,6 +147,12 @@ html[data-theme="light"] .avatar { color: var(--brand-navy); background: var(--b
 .theme-toggle:hover { border-color: var(--accent-ink); }
 .topbar .theme-toggle:hover { border-color: var(--brand-yellow); }
 .auth-theme-toggle { align-self: flex-end; margin-bottom: 24px; }
+.auth-account-actions { display: flex; flex-wrap: wrap; gap: 10px; width: 100%; max-width: 430px; margin-bottom: 20px; }
+.auth-account-actions .secondary-button { flex: 1 1 160px; }
+.auth-install-link { margin-top: 28px; color: var(--accent-ink); font-size: 13px; font-weight: 700; text-decoration: none; }
+.auth-install-link:hover { text-decoration: underline; }
+.app-install-link { text-decoration: none; }
+[data-install-button][hidden], [data-install-link][hidden] { display: none !important; }
 
 /* Shared surfaces and legible typography across all app views. */
 .stat-card, .panel, .trial-guide, .money-flow, .modal > div {
