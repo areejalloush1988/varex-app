@@ -16,7 +16,7 @@
 10. [VAREX Library | مكتبة فاريكس](./10-مكتبة-فاريكس/)
 11. [VAREX AI Employee | الموظف الذكي](./11-VAREX-AI-Employee/)
 12. [VAREX Call | فاركس كول](./12-VAREX-Call/)
-13. [VAREX AI Trading](./Varex%20AI%20Trading/)
+13. [VAREX AI Trading](https://app.varexapp.com/trading/)
 
 ## حالة المشروع
 

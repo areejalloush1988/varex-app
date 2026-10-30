@@ -1,6 +1,6 @@
 # VAREX AI Trading
 
-تطبيق تداول ورقي وربط آمن بحساب Binance Spot داخل مستودع VAREX الرئيسي، منشور على:
+تطبيق تداول ورقي وربط آمن بحساب Binance Spot داخل مستودع VAREX الرئيسي. الرابط الرسمي المعتمد في الواجهة:
 
 `https://app.varexapp.com/trading/`
 
@@ -8,7 +8,9 @@
 
 - الرابط الرسمي هو `https://app.varexapp.com/trading/` بدون إضافة `www` قبل `app`.
 - المسار `/trading` يحوّل تلقائياً إلى `/trading/`.
-- عامل التوجيه في موقع VAREX المركزي يربط `/trading/` مباشرةً بملف `trading/index.html` ويخدم ملفات الواجهة من المجلد نفسه.
+- ملف `trading/index.html` يعرض واجهة التطبيق مباشرةً دون إطار `iframe`، ويحمّل ملفات CSS وJavaScript من مجلد `Varex AI Trading`.
+- مدخلا التطبيق يعرّفان `https://app.varexapp.com/trading/` كرابط أساسي عبر `canonical`. إعداد النطاق ونشر الواجهة يتمان لدى مضيف الموقع؛ وسم `canonical` لا يغيّر DNS.
+- تشغيل تسجيل الدخول وحفظ الحسابات يتطلب خدمات `/api/auth/*` و`/api/trading*` على المضيف نفسه. نشر الملفات الثابتة وحدها على GitHub Pages لا ينشئ هذه الخدمات.
 
 ## الوظائف الحالية
 
