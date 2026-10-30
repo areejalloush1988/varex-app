@@ -84,17 +84,53 @@
     catch (error) { showAuthMessage(error.message || "تعذر إكمال الطلب."); throw error; }
     finally { setBusy(form, false); }
   }
+  function isRecord(value) {
+    return value !== null && typeof value === "object" && !Array.isArray(value);
+  }
   async function request(path, options = {}) {
     const init = { credentials: "include", ...options, headers: { "Content-Type": "application/json", "X-Client-Info": "varex-ai-trading/2.0", ...(options.headers || {}) } };
     const response = await fetch(path, init);
-    const data = await response.json().catch(() => ({}));
+    const invalidResponse = () => {
+      const error = new Error("خدمة التطبيق غير متاحة حالياً. يرجى إعادة المحاولة لاحقاً.");
+      error.status = response.ok ? 502 : response.status;
+      return error;
+    };
+    const contentType = (response.headers.get("content-type") || "").split(";")[0].trim();
+    if (!/^application\/(?:json|[\w.+-]+\+json)$/i.test(contentType)) throw invalidResponse();
+    let data;
+    try { data = await response.json(); }
+    catch { throw invalidResponse(); }
     if (!response.ok) {
-      const error = new Error(data.error || data.message || "تعذر إكمال الطلب.");
+      const message = isRecord(data) && (typeof data.error === "string" ? data.error : typeof data.message === "string" ? data.message : "");
+      const error = new Error(message || "تعذر إكمال الطلب.");
       error.status = response.status;
       error.payload = data;
       throw error;
     }
+    if (data === null && path === "/api/auth/get-session") return null;
+    if (!isRecord(data)) throw invalidResponse();
     return data;
+  }
+  function validateBootstrap(bootstrap) {
+    const profile = bootstrap?.profile, state = bootstrap?.state;
+    if (!isRecord(bootstrap) || !isRecord(profile) || !isRecord(state)
+      || typeof profile.id !== "string" || !profile.id
+      || typeof profile.displayName !== "string" || !profile.displayName.trim()
+      || !["developer", "trader", "viewer"].includes(profile.role)
+      || !Number.isInteger(bootstrap.version) || bootstrap.version < 1
+      || !Number.isFinite(state.balanceCents) || state.balanceCents < 0
+      || typeof state.selectedSymbol !== "string" || !state.selectedSymbol
+      || !Array.isArray(state.watchlist) || !state.watchlist.every((symbol) => typeof symbol === "string")
+      || !Array.isArray(state.trades) || !state.trades.every(isRecord)
+      || !Array.isArray(state.analyses) || !state.analyses.every(isRecord)
+      || !isRecord(state.risk) || !isRecord(state.settings)
+      || !["maxDailyLossPct", "maxOpenTrades", "riskPerTradePct"].every((key) => Number.isFinite(state.risk[key]))
+      || (bootstrap.broker != null && !isRecord(bootstrap.broker))
+      || (bootstrap.supportedMarkets != null && (!Array.isArray(bootstrap.supportedMarkets) || !bootstrap.supportedMarkets.every(isRecord)))) {
+      const error = new Error("تعذر تحميل بيانات الحساب كاملة. يرجى إعادة المحاولة لاحقاً.");
+      error.status = 502;
+      throw error;
+    }
   }
   function authRequest(path, body, method = "POST") {
     return request(path, { method, body: body === undefined ? undefined : JSON.stringify(body) });
@@ -167,6 +203,7 @@
     $("#loadingScreen").classList.remove("hidden");
     try {
       const bootstrap = await request("/api/trading");
+      validateBootstrap(bootstrap);
       app.profile = bootstrap.profile;
       app.state = bootstrap.state;
       app.version = bootstrap.version;

@@ -664,7 +664,7 @@ export async function tradingRequest(request: Request) {
         supportedMarkets: Object.values(TRADING_MARKETS),
       });
     }
-    return handlePost(request, await bodyOf(request));
+    return await handlePost(request, await bodyOf(request));
   } catch (error) {
     if (error instanceof TradingAccessError) return json({ error: error.message }, error.status);
     if (error instanceof TradingBrokerError) return json({ error: error.message, executionUncertain: error.uncertain }, error.status);
