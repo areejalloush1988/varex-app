@@ -56,12 +56,14 @@
         <label>رمز OTP<input name="otp" class="otp-input" inputmode="numeric" autocomplete="one-time-code" maxlength="6" pattern="[0-9]{6}" required placeholder="000000"></label>
         <button class="main-button" type="submit">تأكيد الرمز</button>
         <p class="auth-switch"><button type="button" id="resendOtp">إرسال رمز جديد</button></p>
+        <p class="auth-switch"><button type="button" data-auth-pane="loginForm">العودة لتسجيل الدخول</button></p>
       </form>
 
       <form class="auth-pane hidden" id="resetPane">
         <header><span class="eyebrow">كلمة مرور جديدة</span><h2>تحديث كلمة المرور</h2><p>يجب اختيار كلمة قوية وغير مستخدمة في حساب آخر.</p></header>
         <label>كلمة المرور الجديدة<span class="password-field"><input name="password" type="password" autocomplete="new-password" required minlength="8" placeholder="••••••••"><button class="password-toggle" type="button" data-password-toggle aria-label="إظهار كلمة المرور الجديدة" aria-pressed="false">إظهار</button></span></label>
         <button class="main-button" type="submit">حفظ كلمة المرور</button>
+        <p class="auth-switch"><button type="button" data-auth-pane="otpPane">تصحيح رمز التحقق</button> · <button type="button" data-auth-pane="recoverPane">طلب رمز جديد</button></p>
       </form>
     </div>
   </section>
@@ -105,6 +107,7 @@
   <div class="loading-screen" id="loadingScreen"><span class="loader"></span><b>جاري تجهيز مساحة التداول…</b></div>
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
   <div class="modal hidden" id="confirmModal" role="dialog" aria-modal="true"><div><h3 id="confirmTitle">تأكيد الإجراء</h3><p id="confirmText"></p><footer><button class="secondary-button" id="confirmCancel">إلغاء</button><button class="danger-button" id="confirmAccept">تأكيد</button></footer></div></div>
-  <script src="../Varex%20AI%20Trading/app.js?v=8"></script>
+  <script src="../Varex%20AI%20Trading/supabase-api.js?v=1"></script>
+  <script src="../Varex%20AI%20Trading/app.js?v=9"></script>
 </body>
 </html>
