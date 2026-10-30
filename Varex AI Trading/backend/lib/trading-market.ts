@@ -31,7 +31,18 @@ const KRAKEN_MARKETS: Record<TradingSymbol, string> = {
 };
 
 export class TradingMarketError extends Error {
-  constructor(message = "تعذر جلب أسعار السوق الحية حالياً.") { super(message); }
+  constructor(
+    message = "تعذر جلب أسعار السوق الحية حالياً.",
+    readonly status = 502,
+    readonly code = "market_unavailable",
+  ) { super(message); }
+}
+
+export class TradingSymbolError extends TradingMarketError {
+  constructor() {
+    super("السوق المطلوب غير مدعوم في هذه الخدمة حالياً.", 400, "unsupported_symbol");
+    this.name = "TradingSymbolError";
+  }
 }
 
 function finite(value: unknown) {
@@ -40,9 +51,17 @@ function finite(value: unknown) {
   return number;
 }
 
-export function normalizeTradingSymbol(value: unknown): TradingSymbol {
-  const symbol = String(value ?? "BTC-USD").trim().toUpperCase() as TradingSymbol;
-  return symbol in TRADING_MARKETS ? symbol : "BTC-USD";
+export function normalizeTradingSymbol(value: unknown, allowDefault = true): TradingSymbol {
+  // Only an omitted optional selection may default. Never reinterpret an
+  // explicitly requested instrument as a different executable market.
+  if (value === undefined || value === null) {
+    if (allowDefault) return "BTC-USD";
+    throw new TradingSymbolError();
+  }
+  if (typeof value !== "string") throw new TradingSymbolError();
+  const symbol = value.trim().toUpperCase();
+  if (!Object.prototype.hasOwnProperty.call(TRADING_MARKETS, symbol)) throw new TradingSymbolError();
+  return symbol as TradingSymbol;
 }
 
 async function coinbase(path: string) {

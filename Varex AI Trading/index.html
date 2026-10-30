@@ -17,6 +17,7 @@
   <script src="./theme.js?v=1"></script>
   <link rel="stylesheet" href="./styles.css?v=7">
   <link rel="stylesheet" href="./themes.css?v=2">
+  <link rel="stylesheet" href="./markets.css?v=1">
   <script defer src="./install.js?v=1"></script>
   <title>VAREX AI Trading</title>
 </head>
@@ -76,6 +77,7 @@
         <button class="main-button" type="submit">حفظ كلمة المرور</button>
         <p class="auth-switch"><button type="button" data-auth-pane="otpPane">تصحيح رمز التحقق</button> · <button type="button" data-auth-pane="recoverPane">طلب رمز جديد</button></p>
       </form>
+      <a class="auth-install-link" href="/trading/markets.html">⌁ تصفّح الأسواق والتحليل</a>
       <a class="auth-install-link" data-install-link href="/trading/install.html">↓ تثبيت التطبيق على ويندوز وآيفون</a>
     </div>
   </section>
@@ -93,7 +95,8 @@
       <p class="nav-title">مساحة التداول</p>
       <nav id="mainNav">
         <button class="nav-item active" data-view="dashboard"><span>▦</span> لوحة التحكم</button>
-        <button class="nav-item" data-view="intelligence"><span>✦</span> فرص الذكاء</button>
+        <button class="nav-item" data-view="markets"><span>⌁</span> الأسواق</button>
+        <button class="nav-item" data-view="intelligence"><span>✦</span> تحليل الأسواق</button>
         <button class="nav-item" data-view="trades"><span>▣</span> الصفقات</button>
         <button class="nav-item" data-view="risk"><span>◇</span> مركز المخاطر</button>
         <button class="nav-item hidden" data-view="broker" id="brokerNav"><span>⇄</span> حساب التداول</button>
@@ -121,6 +124,9 @@
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
   <div class="modal hidden" id="confirmModal" role="dialog" aria-modal="true"><div><h3 id="confirmTitle">تأكيد الإجراء</h3><p id="confirmText"></p><footer><button class="secondary-button" id="confirmCancel">إلغاء</button><button class="danger-button" id="confirmAccept">تأكيد</button></footer></div></div>
   <script src="./supabase-api.js?v=1"></script>
-  <script src="./app.js?v=10"></script>
+  <script src="./market-analysis.js?v=1"></script>
+  <script src="./market-data.js?v=1"></script>
+  <script src="./market-workspace.js?v=1"></script>
+  <script src="./app.js?v=11"></script>
 </body>
 </html>

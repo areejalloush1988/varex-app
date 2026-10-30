@@ -378,6 +378,32 @@ export function createTradingHandler(overrides: Partial<Dependencies> = {}) {
       const user = candidate;
       const email = normalizeEmail(user.email);
       if (!EMAIL_PATTERN.test(email)) throw new TradingAccessError(401, "بيانات الحساب غير صالحة.");
+      // Validate requested instruments before provisioning can create or update
+      // account data. Browsable instruments are not automatically executable.
+      let body: RecordValue = {};
+      if (request.method === "POST") {
+        if (!/^application\/json(?:\s*;|$)/i.test(request.headers.get("content-type") || "")) {
+          throw new TradingAccessError(415, "يلزم إرسال الطلب بصيغة JSON.");
+        }
+        const rawBody = await request.text();
+        if (rawBody.length > 65_536) throw new TradingAccessError(413, "حجم الطلب أكبر من الحد المسموح.");
+        try {
+          const parsed: unknown = JSON.parse(rawBody);
+          if (!isRecord(parsed)) throw new Error("invalid body");
+          body = parsed;
+        } catch { throw new TradingAccessError(400, "بيانات الطلب غير صالحة."); }
+      }
+      const action = String(body.action || "");
+      if (request.method === "GET") {
+        const url = new URL(request.url);
+        if (url.searchParams.get("action") === "markets") normalizeTradingSymbol(url.searchParams.get("symbol"));
+      } else if (action === "open_trade" || action === "place_live_order") {
+        body.symbol = normalizeTradingSymbol(body.symbol, false);
+      } else if (action === "analyze") {
+        body.symbol = normalizeTradingSymbol(body.symbol);
+      } else if (action === "save_preferences" && Object.prototype.hasOwnProperty.call(body, "selectedSymbol")) {
+        body.selectedSymbol = normalizeTradingSymbol(body.selectedSymbol, false);
+      }
       const store = new TradingStore(client);
       const provision = await store.rpc<{ profile?: Profile; reason?: string }>("provision", {
         p_user_id: user.id,
@@ -545,19 +571,6 @@ export function createTradingHandler(overrides: Partial<Dependencies> = {}) {
           supportedMarkets: Object.values(TRADING_MARKETS),
         });
       }
-
-      if (!/^application\/json(?:\s*;|$)/i.test(request.headers.get("content-type") || "")) {
-        throw new TradingAccessError(415, "يلزم إرسال الطلب بصيغة JSON.");
-      }
-      const rawBody = await request.text();
-      if (rawBody.length > 65_536) throw new TradingAccessError(413, "حجم الطلب أكبر من الحد المسموح.");
-      let body: RecordValue;
-      try {
-        const parsed: unknown = JSON.parse(rawBody);
-        if (!isRecord(parsed)) throw new Error("invalid body");
-        body = parsed;
-      } catch { throw new TradingAccessError(400, "بيانات الطلب غير صالحة."); }
-      const action = String(body.action || "");
 
       if (action === "save_preferences") {
         const changesRisk = isRecord(body.risk) && profile.role !== "viewer";
@@ -784,7 +797,10 @@ export function createTradingHandler(overrides: Partial<Dependencies> = {}) {
     } catch (error) {
       if (error instanceof TradingAccessError) return json({ error: error.message, ...error.extra }, error.status);
       if (error instanceof TradingBrokerError) return json({ error: error.message, executionUncertain: error.uncertain }, error.status);
-      if (error instanceof TradingMarketError) return json({ error: error.message, marketUnavailable: true }, 502);
+      if (error instanceof TradingMarketError) {
+        if (error.status === 400) return json({ error: error.message, code: error.code }, 400);
+        return json({ error: error.message, marketUnavailable: true }, 502);
+      }
       // Do not log tokens, request bodies, broker keys, or upstream response bodies.
       console.error("VAREX trading API request failed", error instanceof Error ? error.name : "UnknownError");
       return json({ error: "تعذر إكمال الطلب حالياً." }, 500);

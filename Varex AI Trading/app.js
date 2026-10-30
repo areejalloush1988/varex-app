@@ -19,7 +19,10 @@
     usersLoading: false,
     formDrafts: {},
     userRoleDrafts: {},
+    exploreSymbol: "",
+    exploreInterval: "60",
   };
+  let marketWorkspace = null;
   let pendingAuth = { purpose: "", email: "", password: "", displayName: "", otp: "" };
   let toastTimer = 0;
   let confirmResolve = null;
@@ -82,7 +85,7 @@
       await loadMarkets(currentSymbol(), true);
       if (!app.profile || document.visibilityState === "hidden") return;
       // These views contain market data. Other pages may contain unsubmitted broker credentials.
-      if (!["dashboard", "intelligence", "trades", "risk", "watchlist", "reports"].includes(app.view)) return;
+      if (!["dashboard", "trades", "risk", "watchlist", "reports"].includes(app.view)) return;
       const focused = document.activeElement;
       const formId = focused?.closest?.("form")?.id;
       const fieldName = focused?.name;
@@ -268,6 +271,8 @@
     }
   }
   function showLoggedOut(message = "") {
+    marketWorkspace?.destroy();
+    marketWorkspace = null;
     $("#loadingScreen").classList.add("hidden");
     $("#appShell").classList.add("hidden");
     $("#authScreen").classList.remove("hidden");
@@ -571,7 +576,8 @@
   function headerForView() {
     const map = {
       dashboard: [`${greeting()}، ${app.profile.displayName}`, "اختيار عملة، تشغيل تحليل VAREX، ثم تجربة صفقة ورقية."],
-      intelligence: ["فرص الذكاء", "تحليل احتمالي مبني على أسعار السوق الحية وحركة آخر 24 ساعة."],
+      markets: ["الأسواق", "الفوركس والمؤشرات والسلع والمعادن والأسهم والعملات الرقمية في مساحة واحدة."],
+      intelligence: ["تحليل الأسواق", "الاتجاه والزخم والتذبذب ومستويات السعر، مع مصدر البيانات والفترة الزمنية."],
       trades: ["الصفقات", "فتح وإغلاق صفقات ورقية أو تنفيذ أمر Spot حقيقي بعد تأكيد واضح."],
       risk: ["مركز المخاطر", "حدود حقيقية يطبقها الخادم قبل السماح بأي صفقة ورقية."],
       broker: ["حساب التداول", "ربط Binance Spot ومراجعة الرصيد والصلاحيات دون إتاحة السحب عبر VAREX."],
@@ -585,22 +591,58 @@
     $("#pageSubtitle").textContent = subtitle;
     const actions = {
       dashboard: '<div class="panel-actions"><button class="primary-button" data-action="guided-analysis">✦ بدء التجربة</button><button class="small-button" data-action="refresh-markets">↻ تحديث الأسعار</button></div>',
-      intelligence: '<button class="primary-button" data-action="analyze-current">✦ تحليل السوق المحدد</button>',
+      markets: '<button class="small-button" data-action="refresh-technical">↻ تحديث العرض</button>',
+      intelligence: '<button class="primary-button" data-action="refresh-technical">↻ تحديث التحليل</button>',
       reports: '<button class="primary-button" data-action="export-report">⇩ تصدير CSV</button>',
       broker: app.broker?.connected ? '<button class="primary-button" data-action="refresh-broker">↻ فحص الاتصال والرصيد</button>' : "",
     };
     $("#pageActions").innerHTML = actions[app.view] || "";
+    $("#executionBanner")?.classList.toggle("hidden", ["markets", "intelligence"].includes(app.view));
   }
   function render() {
     if (!app.state || !app.profile) return;
     document.documentElement.classList.toggle("compact-mode", app.state.settings.compactMode === true);
     headerForView();
-    const renderers = { dashboard: renderDashboard, intelligence: renderIntelligence, trades: renderTrades, risk: renderRisk, broker: renderBroker, watchlist: renderWatchlist, reports: renderReports, users: renderUsers, settings: renderSettings };
+    marketWorkspace?.destroy();
+    marketWorkspace = null;
+    const renderers = { dashboard: renderDashboard, markets: renderMarkets, intelligence: renderIntelligence, trades: renderTrades, risk: renderRisk, broker: renderBroker, watchlist: renderWatchlist, reports: renderReports, users: renderUsers, settings: renderSettings };
     $("#viewRoot").innerHTML = (renderers[app.view] || renderDashboard)();
+    if (["markets", "intelligence"].includes(app.view)) mountMarketWorkspace();
     pendingForms.forEach((id) => {
       const submit = $(`#${id} button[type="submit"]`);
       if (submit) submit.disabled = true;
     });
+  }
+  function renderMarkets() {
+    return '<div id="marketWorkspace"><div class="mw-empty" role="status">جاري تجهيز الأسواق والتحليل…</div></div>';
+  }
+  function mountMarketWorkspace() {
+    const target = $("#marketWorkspace"), workspace = window.VarexMarketWorkspace;
+    if (!target) return;
+    if (!workspace) {
+      target.innerHTML = '<div class="mw-empty"><p>تعذر تحميل أدوات الأسواق. أعد تحميل الصفحة أو افتح المساحة المستقلة.</p><a href="/trading/markets.html">فتح الأسواق والتحليل</a></div>';
+      return;
+    }
+    marketWorkspace = workspace.mount(target, {
+      authenticated: true,
+      canTrade: app.profile.canTrade === true,
+      initialSymbol: app.exploreSymbol || (app.view === "intelligence" ? app.selectedMarket?.symbol || app.state.selectedSymbol : "EURUSD"),
+      interval: app.exploreInterval,
+      onSelect({ id, interval }) { app.exploreSymbol = id; app.exploreInterval = interval; },
+      onTrade: openResearchTrade,
+    });
+  }
+  async function openResearchTrade(symbol) {
+    const item = window.VarexMarketWorkspace?.getMarket(symbol);
+    if (!app.profile?.canTrade || !item?.executionSymbol || item.executionSymbol !== symbol
+      || !app.supportedMarkets.some((market) => market.symbol === symbol)) {
+      return showToast("هذا السوق متاح للعرض والتحليل فقط.", "error");
+    }
+    app.executionMode = "paper";
+    app.formDrafts.tradeForm = { ...app.formDrafts.tradeForm, symbol };
+    goTo("trades");
+    await loadMarkets(symbol, true);
+    if (app.profile && app.view === "trades") render();
   }
   function statCard(icon, label, value, note, valueClass = "") {
     return `<article class="stat-card"><header><span>${escapeHtml(label)}</span><span class="stat-icon">${icon}</span></header><strong class="${valueClass}">${escapeHtml(value)}</strong><small>${escapeHtml(note)}</small></article>`;
@@ -684,15 +726,8 @@
       ${analysis.direction === "wait" ? '<div class="analysis-next wait"><div><b>قرار VAREX الآن: الانتظار</b><small>لا يفتح النظام صفقة عندما لا يرى إشارة دخول كافية. يمكن اختيار عملة ثانية وتشغيل تحليل جديد.</small></div><button class="secondary-button" data-view="dashboard">اختيار عملة أخرى</button></div>' : `<div class="analysis-next"><div><b>الخطوة التالية</b><small>يمكن استخدام نتيجة التحليل لتهيئة صفقة ورقية؛ لن يُخصم أي مال حقيقي.</small></div><button class="primary-button" data-use-analysis="${escapeHtml(analysis.symbol)}" data-side="${analysis.direction}">استخدام النتيجة وفتح صفقة ${directionLabel(analysis.direction)} تجريبية</button></div>`}`;
   }
   function renderIntelligence() {
-    const latest = app.state.analyses[0], opportunities = app.markets.map((market) => {
-      const direction = market.changePct >= 1 ? "buy" : market.changePct <= -1 ? "sell" : "wait";
-      const confidence = Math.max(52, Math.min(92, Math.round(56 + Math.abs(market.changePct) * 7)));
-      return `<div class="list-row"><span><strong>${escapeHtml(market.label)}</strong><small class="muted"> · ${pct(market.changePct)}</small></span><span class="badge ${direction}">${directionLabel(direction)}</span><span>${confidence}% رصد أولي</span><button class="small-button" data-analyze="${market.symbol}">تحليل كامل</button></div>`;
-    }).join("");
     const history = app.state.analyses.slice(0, 8);
-    return `<section class="content-grid"><article class="panel"><header class="panel-head"><div><h2>التحليل الأخير</h2><p>يُنشأ على الخادم من بيانات السوق الحية.</p></div></header>${analysisCard(latest)}</article>
-      <article class="panel"><header class="panel-head"><div><h2>الرصد الحالي</h2><p>قراءة أولية لحركة 24 ساعة.</p></div></header>${opportunities || '<div class="empty"><p>الأسعار غير متاحة.</p></div>'}</article></section>
-      <section class="panel"><header class="panel-head"><div><h2>سجل التحليلات</h2><p>محفوظ في حسابك.</p></div></header>${history.length ? `<div class="analysis-history">${history.map((item) => `<div class="analysis-item"><p><b>${escapeHtml(item.symbol)}</b><span class="badge ${item.direction}">${directionLabel(item.direction)}</span><small>${localDate(item.createdAt, true)}</small></p><strong>${Number(item.confidence || 0)}%</strong></div>`).join("")}</div>` : '<div class="empty"><p>لا يوجد سجل تحليل بعد.</p></div>'}</section>`;
+    return renderMarkets() + (history.length ? `<details class="panel mw-legacy-history"><summary>سجل قراءات حركة 24 ساعة السابقة</summary><p class="notice">هذه قراءات المحرك السابق المحفوظة في الحساب. التحليل الفني الحالي ظاهر أعلاه للسوق والفترة المحدّدين.</p><div class="analysis-history">${history.map((item) => `<div class="analysis-item"><p><b>${escapeHtml(item.symbol)}</b><span class="badge ${escapeHtml(item.direction)}">${directionLabel(item.direction)}</span><small>${localDate(item.createdAt, true)}</small></p></div>`).join("")}</div></details>` : "");
   }
 
   function renderTrades() {
@@ -873,6 +908,7 @@
     const action = event.target.closest("[data-action]")?.dataset.action;
     if (!action) return;
     if (action === "refresh-markets") return refreshMarkets();
+    if (action === "refresh-technical") return marketWorkspace?.refresh();
     if (action === "guided-analysis") return runAnalysis(currentSymbol());
     if (action === "analyze-current") return runAnalysis(currentSymbol());
     if (action === "export-report") return exportReport();
@@ -992,7 +1028,8 @@
       app.state = result.state; app.version = result.version;
       app.formDrafts.tradeForm = { ...app.formDrafts.tradeForm, symbol: app.state.selectedSymbol };
       await loadMarkets(symbol, true);
-      showToast("اكتمل تحليل VAREX. يمكن مراجعة القرار واختيار الخطوة التالية.");
+      app.exploreSymbol = symbol;
+      showToast("تُفتح الآن لوحة التحليل الفني للسوق المحدّد.");
       goTo("intelligence");
     } catch (error) { showToast(error.message, "error"); }
     finally { buttons.forEach((button) => { button.disabled = false; }); }
@@ -1077,6 +1114,7 @@
     app.profile = null; app.state = null; app.broker = null; app.users = []; app.executionMode = "paper";
     app.formDrafts = {}; app.userRoleDrafts = {}; app.view = "dashboard"; app.tradeSide = "buy";
     app.markets = []; app.selectedMarket = null; app.supportedMarkets = []; app.marketError = "";
+    app.exploreSymbol = ""; app.exploreInterval = "60";
     stopMarketRefresh();
     marketRequestId += 1;
     pendingAuth = { purpose: "", email: "", password: "", displayName: "", otp: "" };

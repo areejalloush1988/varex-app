@@ -5,10 +5,12 @@ import { randomUUID } from "node:crypto";
 import test from "node:test";
 
 const client = fs.readFileSync(new URL("../app.js", import.meta.url), "utf8");
+const workspaceModule = { exports: {} };
+vm.runInNewContext(fs.readFileSync(new URL("../market-workspace.js", import.meta.url), "utf8"), { module: workspaceModule });
 const testClient = client.replace(/  init\(\);\s*\}\)\(\);\s*$/, `  globalThis.controls = {
     app, rememberFormField, handleFormChange, handleActionClick, handleSubmit,
     render, tradeTicket, renderUsers, localDate, resolveConfirm, logout, accountMetrics,
-    request, loadMarkets, scheduleMarketRefresh, bindShell, bindAuth,
+    request, loadMarkets, scheduleMarketRefresh, bindShell, bindAuth, openResearchTrade,
     pendingAuth: () => ({ ...pendingAuth })
   };
 })();`);
@@ -187,6 +189,66 @@ test("using an analysis explicitly prepares its symbol and side in paper mode wi
   assert.match(h.html(), /value="ETH-USD" selected/);
   assert.match(h.html(), /فتح صفقة بيع ورقية/);
   assert.equal(h.calls.length, 0);
+});
+
+test("research order preparation rejects unsupported symbols, aliases, viewers and unavailable execution instruments", async () => {
+  const h = harness();
+  h.window.VarexMarketWorkspace = workspaceModule.exports;
+  for (const symbol of ["XAUUSD", "EURUSD", "UNKNOWN", "BTC-USDT", "COINBASE:BTCUSD"]) await h.openResearchTrade(symbol);
+  h.app.profile.canTrade = false;
+  await h.openResearchTrade("BTC-USD");
+  h.app.profile.canTrade = true;
+  h.app.supportedMarkets = h.app.supportedMarkets.filter((market) => market.symbol !== "BTC-USD");
+  await h.openResearchTrade("BTC-USD");
+  assert.equal(h.calls.length, 0);
+  assert.equal(Object.keys(h.app.formDrafts).length, 0);
+  assert.equal(h.app.state.selectedSymbol, "BTC-USD");
+  assert.equal(h.app.view, "dashboard");
+});
+
+test("research order preparation forces paper mode and fetches only the explicitly selected supported market", async () => {
+  const h = harness(() => Response.json({ selected: "ETH-USD", markets: markets() }));
+  h.window.VarexMarketWorkspace = workspaceModule.exports;
+  h.app.broker.connected = true; h.app.broker.liveTradingEnabled = true; h.app.executionMode = "live";
+  h.app.formDrafts.tradeForm = { symbol: "BTC-USD", paperAmount: "1275", liveAmount: "75" };
+  const stateBefore = JSON.stringify(h.app.state);
+  await h.openResearchTrade("ETH-USD");
+  assert.equal(h.app.executionMode, "paper");
+  assert.equal(h.app.view, "trades");
+  assert.equal(h.app.formDrafts.tradeForm.symbol, "ETH-USD");
+  assert.equal(h.app.formDrafts.tradeForm.paperAmount, "1275");
+  assert.equal(h.app.formDrafts.tradeForm.liveAmount, "75");
+  assert.equal(JSON.stringify(h.app.state), stateBefore);
+  assert.equal(h.calls.length, 1);
+  assert.equal(h.calls[0].path, "/api/trading?action=markets&symbol=ETH-USD");
+  assert.equal(h.calls[0].body, undefined);
+  assert.notEqual(h.calls[0].options.method, "POST");
+});
+
+test("research selection stays local, ordinary quote polling preserves the mounted workspace, and logout destroys it", async () => {
+  const h = harness(({ path }) => path === "/api/auth/sign-out" ? Response.json({ success: true }) : Response.json({ selected: "BTC-USD", markets: markets() }));
+  let mounted = 0, destroyed = 0, callbacks;
+  h.window.VarexMarketWorkspace = {
+    getMarket: workspaceModule.exports.getMarket,
+    mount(_target, options) { mounted += 1; callbacks = options; return { destroy() { destroyed += 1; } }; },
+  };
+  h.app.view = "markets"; h.render();
+  callbacks.onSelect({ id: "XAUUSD", interval: "240" });
+  assert.equal(h.app.exploreSymbol, "XAUUSD");
+  assert.equal(h.app.exploreInterval, "240");
+  assert.equal(h.app.state.selectedSymbol, "BTC-USD");
+  assert.equal(h.calls.length, 0);
+  await h.loadMarkets("BTC-USD", true); await h.tickRefresh();
+  assert.equal(mounted, 1); assert.equal(destroyed, 0);
+  h.app.view = "intelligence"; h.render();
+  assert.equal(mounted, 2); assert.equal(destroyed, 1);
+  assert.equal(callbacks.initialSymbol, "XAUUSD");
+  assert.equal(callbacks.interval, "240");
+  await h.tickRefresh();
+  assert.equal(mounted, 2); assert.equal(destroyed, 1);
+  await h.logout();
+  assert.equal(destroyed, 2);
+  assert.equal(h.app.profile, null);
 });
 
 test("risk toggles preserve numeric edits and failed saves do not pretend to change persisted rules", async () => {

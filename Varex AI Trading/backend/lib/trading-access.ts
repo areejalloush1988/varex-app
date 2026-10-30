@@ -203,8 +203,9 @@ async function sessionUser(request: Request) {
   return user;
 }
 
-async function requireAccess(request: Request, roles?: TradingRole[]) {
+async function requireAccess(request: Request, roles?: TradingRole[], validateInput?: () => void) {
   const user = await sessionUser(request);
+  validateInput?.();
   let profile = await profileFor(user.id);
   if (!profile && (isTradingDeveloperEmail(user.email) || await canRegisterTradingEmail(user.email))) profile = await provisionVerifiedTradingUser(user);
   if (!profile) throw new TradingAccessError(403, "هذا الحساب غير مضاف إلى VAREX AI Trading.");
@@ -213,8 +214,8 @@ async function requireAccess(request: Request, roles?: TradingRole[]) {
   return { user, profile, environment: await runtime() };
 }
 
-async function requireBrokerAccess(request: Request) {
-  return requireAccess(request, ["developer", "trader"]);
+async function requireBrokerAccess(request: Request, validateInput?: () => void) {
+  return requireAccess(request, ["developer", "trader"], validateInput);
 }
 
 function credentialKey(environment: CashierAuthEnv) {
@@ -474,7 +475,9 @@ async function disconnectBroker(request: Request, body: Record<string, unknown>)
 }
 
 async function placeLiveOrder(request: Request, body: Record<string, unknown>) {
-  const { profile, environment } = await requireBrokerAccess(request);
+  const { profile, environment } = await requireBrokerAccess(request, () => {
+    body.symbol = normalizeTradingSymbol(body.symbol, false);
+  });
   if (body.confirmation !== "LIVE_ORDER_CONFIRMED") throw new TradingAccessError(400, "يلزم تأكيد الصفقة الحقيقية قبل التنفيذ.");
   const connection = await brokerConnection(environment, profile.userId);
   if (!connection || connection.status !== "connected" || !Boolean(connection.liveTradingEnabled)) {
@@ -547,7 +550,11 @@ async function handlePost(request: Request, body: Record<string, unknown>) {
   if (action === "disconnect_broker") return disconnectBroker(request, body);
   if (action === "place_live_order") return placeLiveOrder(request, body);
   if (action === "save_preferences") {
-    const { profile } = await requireAccess(request);
+    const { profile } = await requireAccess(request, undefined, () => {
+      if (Object.prototype.hasOwnProperty.call(body, "selectedSymbol")) {
+        body.selectedSymbol = normalizeTradingSymbol(body.selectedSymbol, false);
+      }
+    });
     const result = await mutateState(profile, (state) => {
       if (Array.isArray(body.watchlist)) state.watchlist = body.watchlist.map(String).filter((symbol) => SUPPORTED_SYMBOLS.has(symbol));
       if (body.selectedSymbol) state.selectedSymbol = normalizeTradingSymbol(body.selectedSymbol);
@@ -567,13 +574,17 @@ async function handlePost(request: Request, body: Record<string, unknown>) {
     return json({ saved: true, displayName });
   }
   if (action === "analyze") {
-    const { profile } = await requireAccess(request);
+    const { profile } = await requireAccess(request, undefined, () => {
+      body.symbol = normalizeTradingSymbol(body.symbol);
+    });
     const snapshot = await getMarketSnapshot(body.symbol, true), analysis = analyzeSnapshot(snapshot);
     const result = await mutateState(profile, (state) => { state.selectedSymbol = snapshot.symbol; state.analyses.unshift(analysis); return state; });
     return json({ analysis, market: snapshot, ...result });
   }
   if (action === "open_trade") {
-    const { profile } = await requireAccess(request, ["developer", "trader"]);
+    const { profile } = await requireAccess(request, ["developer", "trader"], () => {
+      body.symbol = normalizeTradingSymbol(body.symbol, false);
+    });
     const side = body.side === "sell" ? "sell" : "buy", amount = Number(body.amount), snapshot = await getMarketSnapshot(body.symbol);
     if (!Number.isFinite(amount) || amount < 25) throw new TradingAccessError(400, "الحد الأدنى للصفقة التجريبية 25 دولاراً.");
     const result = await mutateState(profile, (state) => {
@@ -652,7 +663,7 @@ export async function tradingRequest(request: Request) {
     if (request.method === "GET") {
       const url = new URL(request.url), action = url.searchParams.get("action") || "bootstrap";
       if (action === "markets") {
-        await requireAccess(request);
+        await requireAccess(request, undefined, () => { normalizeTradingSymbol(url.searchParams.get("symbol")); });
         return json(await getMarketBoard(url.searchParams.get("symbol")));
       }
       if (action === "users") return json({ users: await listUsers(request) });
@@ -668,7 +679,10 @@ export async function tradingRequest(request: Request) {
   } catch (error) {
     if (error instanceof TradingAccessError) return json({ error: error.message }, error.status);
     if (error instanceof TradingBrokerError) return json({ error: error.message, executionUncertain: error.uncertain }, error.status);
-    if (error instanceof TradingMarketError) return json({ error: error.message, marketUnavailable: true }, 502);
+    if (error instanceof TradingMarketError) {
+      if (error.status === 400) return json({ error: error.message, code: error.code }, 400);
+      return json({ error: error.message, marketUnavailable: true }, 502);
+    }
     console.error("Trading request error", error);
     return json({ error: "تعذر إكمال الطلب حالياً." }, 500);
   }
