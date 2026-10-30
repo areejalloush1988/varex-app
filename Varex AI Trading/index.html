@@ -1,14 +1,16 @@
 <!doctype html>
-<html lang="ar" dir="rtl">
+<html lang="ar" dir="rtl" data-theme="dark">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-  <meta name="theme-color" content="#07111f">
+  <meta name="theme-color" content="#081D36">
   <meta name="description" content="VAREX AI Trading — تحليل سوق وتداول ورقي وربط آمن بحساب Binance Spot.">
   <meta name="robots" content="noindex">
   <link rel="canonical" href="https://app.varexapp.com/trading/">
   <link rel="icon" type="image/svg+xml" href="./favicon.svg">
+  <script src="./theme.js?v=1"></script>
   <link rel="stylesheet" href="./styles.css?v=7">
+  <link rel="stylesheet" href="./themes.css?v=1">
   <title>VAREX AI Trading</title>
 </head>
 <body>
@@ -19,6 +21,7 @@
       <div class="visual-points"><span>✓ مفاتيح مشفرة</span><span>✓ السحب غير مسموح</span><span>✓ تأكيد يدوي لكل أمر حقيقي</span></div>
     </div>
     <div class="auth-card">
+      <button class="theme-toggle auth-theme-toggle" type="button" data-theme-toggle aria-label="تفعيل الوضع النهاري"><span data-theme-icon aria-hidden="true">☀</span><span data-theme-label>النهاري</span></button>
       <div class="mobile-auth-brand"><span class="brand-mark">↗</span><b>VAREX AI TRADING</b></div>
       <div class="auth-message" id="authMessage" role="alert"></div>
 
@@ -72,7 +75,7 @@
     <header class="topbar">
       <div class="brand"><button class="icon-button mobile-menu" id="menuButton" aria-label="فتح القائمة">☰</button><span class="brand-mark">↗</span><span class="brand-copy"><b>VAREX</b><small>AI TRADING</small></span></div>
       <div class="top-status"><span class="status-chip live" id="marketStatus"><i></i> بيانات سوق حية</span><span class="status-chip paper" id="executionStatus">PAPER TRADING</span></div>
-      <button class="user-menu" id="userMenuButton"><span class="avatar" id="avatar">U</span><span><b id="topUserName">اسم المستخدم</b><small id="topUserRole">حساب</small></span></button>
+      <div class="topbar-actions"><button class="icon-button theme-toggle" type="button" data-theme-toggle aria-label="تفعيل الوضع النهاري"><span data-theme-icon aria-hidden="true">☀</span><span data-theme-label>النهاري</span></button><button class="user-menu" id="userMenuButton"><span class="avatar" id="avatar">U</span><span><b id="topUserName">اسم المستخدم</b><small id="topUserRole">حساب</small></span></button></div>
     </header>
 
     <button class="drawer-backdrop" id="drawerBackdrop" aria-label="إغلاق القائمة"></button>
