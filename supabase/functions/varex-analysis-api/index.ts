@@ -116,6 +116,10 @@ async function providerJson(url: string, init: RequestInit, deps: Dependencies):
   let timer: ReturnType<typeof setTimeout> | undefined;
   const task = (async () => {
     const response = await deps.fetch(url, { ...init, signal: controller.signal, redirect: "error", cache: "no-store" });
+    // Provider credentials are a service failure, not an expired app session.
+    if (url === "https://api.openai.com/v1/responses" && response.status === 401) {
+      fail(503, "ai_provider_auth_failed", "مفتاح خدمة الذكاء الاصطناعي غير صالح. يلزم أن يحدّثه مطوّر التطبيق.");
+    }
     if (!response.ok) fail(502, "provider_unavailable", "المزوّد الخارجي غير متاح حالياً. أعد المحاولة لاحقاً.");
     return await boundedJson(response.body, PROVIDER_BODY_LIMIT);
   })();
@@ -127,7 +131,7 @@ async function providerJson(url: string, init: RequestInit, deps: Dependencies):
       }, Math.max(1, Math.min(15000, deps.providerTimeoutMs)));
     })]);
   } catch (error) {
-    if (error instanceof AnalysisApiError && error.code === "provider_timeout") throw error;
+    if (error instanceof AnalysisApiError && ["provider_timeout", "ai_provider_auth_failed"].includes(error.code)) throw error;
     fail(502, "provider_unavailable", "المزوّد الخارجي أعاد استجابة غير متاحة أو غير صالحة.");
   } finally { if (timer !== undefined) clearTimeout(timer); }
 }

@@ -1,0 +1,32 @@
+{
+  "diagnostic": true,
+  "checkedAt": "2026-10-31T22:01:35.948Z",
+  "expiresAt": "2026-10-31T22:45:00Z",
+  "productionSettingsChanged": false,
+  "quotaWrites": false,
+  "config": {
+    "aiEnabled": true,
+    "keyPresent": true,
+    "keyFormatValid": true,
+    "modelMatches": true,
+    "expectedModel": "gpt-5.4-mini-2026-03-17"
+  },
+  "readiness": {
+    "ready": true,
+    "rpcHttpStatus": 200,
+    "classification": "quota_ready"
+  },
+  "ai": {
+    "attempted": true,
+    "ok": false,
+    "providerHttpStatus": 401,
+    "providerCode": "invalid_api_key",
+    "responseStatus": null,
+    "incompleteReason": null,
+    "completed": false,
+    "outputTextPresent": false,
+    "outputTextItems": 0,
+    "outputTextCharacters": 0,
+    "classification": "authentication_rejected"
+  }
+}

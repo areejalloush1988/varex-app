@@ -13,7 +13,7 @@ checks, rather than treating repository changes as deployment evidence:
 | `varex-analysis-api` | Deployed. The handler returned HTTP `405` for an unsupported method, `401 sign_in_required` for a missing token, and `401 invalid_session` for an invalid dummy token. These checks do not establish a successful authenticated conversation. |
 | `varex-trading-api` retirement wrapper | Deployed from commit `19b71bd`, with all six source/configuration files checked against the prepared text. A default legacy POST returned `410 analysis_only`; `GET ?action=access` without a session returned the expected Arabic sign-in error with HTTP `401`. |
 | `varex-trading-automation` retirement handler | Deployed from commit `19b71bd`, with all three source/configuration files checked against the prepared text. The Dashboard POST test returned HTTP `410` and `{enabled:false,analysisOnly:true,code:"analysis_only"}` with the expected retirement message. |
-| Paid providers at initial deployment | Neither provider key was configured at the 2026-10-31 deployment stage, and no paid request was made. The later OpenAI configuration is recorded separately below. |
+| Paid providers at initial deployment | Neither provider key was configured at the initial deployment stage, and no paid request was made then. The later Twelve Data samples and failed OpenAI authentication attempt are recorded separately below. |
 
 The Dashboard showed a current ECC (P-256) Auth signing key and the previous
 HS256 key. The frontend sends the user's session JWT in `Authorization` and the
@@ -29,7 +29,7 @@ It must never label that local explanation as a generated language-model answer.
 ## AI configuration — 2026-11-01 (Asia/Dubai)
 
 The user saved `OPENAI_API_KEY`, and its secret name was verified in the
-Dashboard. The key value was never read or copied into documentation. The
+Dashboard. The operator did not display or copy its value into documentation. The
 following configuration was saved successfully through the Dashboard and the
 corresponding secret names were verified:
 
@@ -41,13 +41,13 @@ corresponding secret names were verified:
 | `VAREX_ANALYSIS_USER_DAILY_LIMIT` | `10` |
 | `VAREX_ANALYSIS_GLOBAL_DAILY_LIMIT` | `20` |
 
-This records configuration, not a successful provider health check. Application
-sign-in was not completed for this verification, so there is no authenticated
-`capabilities` HTTP `200` result or successful real-user AI conversation to
-report. Key validity, model access and billing remain unverified. No paid call
-was made, and no authentication or profile requirement was bypassed. The
-Twelve Data key was absent at that stage; its later private verification is
-recorded below. The public market feed remains disabled.
+This configuration step did not test provider credentials. Application sign-in
+was not completed for that step, and it made no OpenAI request. The later private
+diagnostic below establishes that OpenAI rejected the saved key; it does not
+establish model access, billing readiness or a successful real-user conversation.
+No application authentication or profile requirement was bypassed. The Twelve
+Data key was absent at the configuration step, then saved and tested as recorded
+below. The public market licensing flag remains disabled.
 
 The update date above uses Asia/Dubai. Quota accounting still uses UTC days.
 
@@ -82,6 +82,88 @@ passing fixture tests, and sanitized provider result are retained under
 `supabase/diagnostics/twelve-data-check-20261031/`. Do not redeploy the archived
 probe or treat the saved Basic key as a commercial display license.
 
+## OpenAI verification — 2026-11-01 (Asia/Dubai)
+
+A separate operator diagnostic completed at **2026-10-31T22:01:35.948Z**. The
+unchanged sanitized response is retained in
+[`observed-result.json`](../../supabase/diagnostics/ai-check-20261031/observed-result.json),
+with the exact source and twelve passing fixture tests in the
+[diagnostic archive](../../supabase/diagnostics/ai-check-20261031/README.md).
+
+| Check | Observed result |
+|---|---|
+| Configuration | `aiEnabled`, `keyPresent`, `keyFormatValid` and `modelMatches` were all `true`; expected model was `gpt-5.4-mini-2026-03-17`. The format check only detects missing/whitespace/oversized keys; it does not validate a provider credential. |
+| Quota readiness | Read-only `varex_analysis_usage_ready` returned HTTP `200` and literal `true`. |
+| OpenAI request | One fixed Responses request was attempted; provider HTTP **`401`**, allowlisted provider code **`invalid_api_key`**, classification `authentication_rejected`. |
+| Generated output | `completed:false`, `outputTextPresent:false`, zero text items and zero text characters; no generated answer. |
+| Production changes | `productionSettingsChanged:false`, `quotaWrites:false`. |
+
+The diagnostic's single provider attempt used the fixed educational question
+“ما معنى مؤشر RSI؟”, `max_output_tokens:128`, `store:false`, no tools or user
+data, a 15-second request deadline, and bounded response bodies. This was an
+attempt to call the potentially billable Responses endpoint, not evidence of a
+charged generation. The provider rejected authentication. It is **not a billing,
+insufficient-quota or model-availability finding**; those conditions remain
+unverified.
+
+The probe required the exact default server secret in `apikey`; it accepted no
+user-token substitution and did not create, impersonate or bypass an app user or
+session. Its only database operation checked quota readiness; it did not call
+the quota-reservation RPC or change production quotas. This separate operator
+path was not added to the app and does not relax the normal authenticated chat
+contract. A warm-isolate result cache limited duplicates within that isolate;
+it was not a global once-only spending guarantee. The operator made one attempt.
+
+The user must replace **`OPENAI_API_KEY`** with a valid key directly in the
+authorized project's **Edge Function Secrets**. Never copy its value into this
+repository, the frontend, chat or the diagnostic result. A later successful
+authenticated request is still required before describing generative answers
+as working.
+
+**Retirement confirmed:** the exact inert replacement at
+`supabase/functions/varex-ai-check/index.ts` was deployed, and a fresh Dashboard
+POST returned HTTP `410` with
+`{"code":"diagnostic_retired","enabled":false}`. It reads no secrets or data.
+Legacy JWT verification was then restored to ON and saved for that retired
+diagnostic only; the main analysis function's gateway setting was unchanged.
+The archived probe's absolute deadline is `2026-10-31T22:45:00Z`; do not redeploy
+it or extend that deadline.
+
+## Frontend changes in this release
+
+The frontend no longer treats missing candle data as a reason to block
+an available language-model request. It sends `context:null` for educational
+questions without a valid report and labels any resulting answer as having no
+current market context. A locally calculated fallback remains explicitly local;
+it is never relabelled as an OpenAI answer.
+
+The analysis handler change translates HTTP `401` from the fixed OpenAI
+Responses URL into **HTTP `503 ai_provider_auth_failed`**, with a fixed Arabic
+message requiring the developer to update the provider key. It does not expose
+the provider error body, and it does not treat that service failure as an
+expired app login. All JWT, confirmed-email, active-profile and durable-quota
+checks remain in place. Successful frontend fixture responses test the code
+path; they do not override the live `invalid_api_key` result.
+
+Both `trading/index.html` and `Varex AI Trading/index.html` load
+`analysis-app.js?v=2`. The Trading service worker does not cache scripts or
+account pages; no root-worker cache change is required. Once these files are
+published, a fresh page load is required to execute the new script. Confirm
+public frontend publication through the GitHub Pages run for the release commit
+and the served asset; local source and fixture tests do not claim publication.
+
+**Backend update confirmed:** the deployed `varex-analysis-api` source was
+reloaded from the Dashboard and matched the local file exactly: **26,530 bytes**,
+SHA-256
+`208d54a46c9ca4b3b7f4dfd5e95baa4095b4ad1922fa7b1a106d7f2c50e142f6`.
+A fresh POST with no action returned `405 method_not_allowed`; a subsequent
+`POST ?action=chat` without a user JWT returned `401 sign_in_required`.
+All **20 backend fixture tests passed**, including the safe `503` provider-auth
+mapping and unchanged app authentication, profile and quota checks. The `503`
+mapping was verified with fixtures, not by repeating the paid provider attempt.
+No successful authenticated real-user chat was tested: the saved provider key
+was rejected, and no live user login was completed for this verification.
+
 ## Endpoint contract
 
 The Edge Function is `varex-analysis-api`. Every actual request requires a valid
@@ -96,9 +178,13 @@ execute orders, or change trading/automation records.
 - `GET ?action=capabilities`: `{languageModelAvailable, marketDataAvailable, model}`.
 - `GET ?action=market&symbol=XAU-USD&interval=60`: a **flat** gold OHLC dataset,
   including symbol, interval, source, sourceUrl, timestamps and provenance.
-- `POST ?action=chat`: `{question, context: report}`. A `report` alias is accepted.
+- `POST ?action=chat`: `{question, context: report | null}`. A `report` alias is accepted.
   Returns `{answer, mode:"language-model", generated:true, model, asOf,
   evidenceOrigin:"client-provided", sourceVerified:false}`.
+
+Null or omitted context supports an educational question without market data;
+the normalized context is `available:false`, and the response `asOf` is `null`.
+It is not a request to invent candles, current prices or verified market facts.
 
 Chat requests are capped at 32 KiB and questions at 1,000 characters. Only an
 allowlisted numerical subset of the report enters model context. Prose, source
@@ -182,26 +268,42 @@ application-state storage; it is not a blanket zero-retention promise about the
 provider's policies. Both providers have a 15-second timeout and bounded bodies.
 Errors returned to the browser are generic and never include keys, request URLs,
 authorization headers, upstream bodies or SQL errors.
+The follow-up described above gives an OpenAI authentication rejection the safe
+service-level code `ai_provider_auth_failed`; it does not return the upstream
+HTTP `401` to the browser as if the user's session had failed.
 
 ## Verification limits and provider activation
 
-All three function deployments and both retirement responses are confirmed.
-The analysis handler's boot and rejected-session paths were checked; a real
-confirmed user's successful HTTP `200` response and a generated AI conversation
-were not verified during this rollout. OpenAI configuration is now saved as
-recorded above, but its key, model access and billing have not been validated by
-a live request. Gold remains unconfigured, and no paid model or gold-data request
-was made. The `capabilities` route checks configuration and quota readiness; it
-does not itself test provider credentials or billing. Retain the existing Auth/profile
-checks, verified RLS/RPC restrictions, explicit model/data configuration, and
-durable caps. Automated tests exercise denied access and quota exhaustion
-without provider credentials. No live trading test is needed.
+The initial three application function deployments, both legacy trading
+retirement responses and both provider diagnostic retirements are confirmed.
+The AI diagnostic's legacy JWT verification is back ON. The analysis backend
+update's persisted-source match and rejected-session checks are confirmed in the
+release section above; public frontend publication is verified separately by
+its Pages run and served asset.
+The initial analysis handler's boot and rejected-session paths were checked.
+A successful real-user generated conversation has not been verified.
+
+The live OpenAI attempt returned `401 invalid_api_key`; the saved key requires
+replacement. Model access and billing remain unverified, and no generated
+answer was received. The Twelve Data key returned the documented sample
+responses, but `VAREX_MARKET_DATA_LICENSED` remains unset and public gold data
+is not activated. These two diagnostic checks do not establish an end-to-end
+app conversation.
+
+The `capabilities` route checks configuration and quota readiness; it does not
+test provider credentials or billing. Retain the existing Auth/profile checks,
+verified RLS/RPC restrictions, explicit model/data configuration and durable
+caps. The separate one-off operator probe made no quota writes; ordinary
+authenticated paid requests still reserve a durable quota slot before calling
+the provider, including attempts rejected by it. Automated tests use fixtures
+and never a provider key. No live trading test is needed.
 
 References checked for implementation:
 
 - https://supabase.com/docs/guides/functions
 - https://supabase.com/docs/guides/functions/auth
 - https://supabase.com/docs/guides/functions/auth-headers
+- https://supabase.com/docs/guides/functions/secrets
 - https://developers.openai.com/api/docs/guides/text
 - https://developers.openai.com/api/reference/resources/responses/methods/create
 - https://twelvedata.com/docs

@@ -6,7 +6,8 @@
   const dataFeed = () => window.VarexAnalysisData;
   const app = { profile: null, user: null, view: "analysis", symbol: "XAU-USD", interval: "60", dataset: null, report: null, reports: [], capabilities: {}, messages: [], loading: false, chatPending: false };
   let pendingAuth = { purpose: "", email: "", password: "", displayName: "", otp: "" };
-  let toastTimer = 0, contextEpoch = 0, accessEpoch = 0, dataRequest = null, chatRequest = null, checkingAccess = false;
+  let toastTimer = 0, contextEpoch = 0, chatEpoch = 0, accessEpoch = 0, dataRequest = null, chatRequest = null, checkingAccess = false;
+  let capabilityRequest = null, capabilityError = "";
   const FALLBACK_MARKETS = [
     { symbol: "XAU-USD", name: "الذهب مقابل الدولار", shortName: "الذهب" },
     { symbol: "BTC-USD", name: "بيتكوين مقابل الدولار", shortName: "بيتكوين" },
@@ -232,7 +233,7 @@
   }
 
   function cancelContext() {
-    contextEpoch += 1;
+    contextEpoch += 1; chatEpoch += 1;
     dataRequest?.abort(); chatRequest?.abort();
     dataRequest = null; chatRequest = null;
     app.loading = false; app.chatPending = false;
@@ -244,6 +245,7 @@
   }
   function clearPrivateWorkspace() {
     cancelContext();
+    capabilityRequest?.controller.abort(); capabilityRequest = null; capabilityError = "";
     app.profile = null; app.user = null; app.dataset = null; app.report = null;
     app.reports = []; app.messages = []; app.capabilities = {};
     $("#chartRoot").replaceChildren(); $("#reportRoot").replaceChildren();
@@ -300,15 +302,59 @@
       if (epoch === accessEpoch) showLoggedOut(error.message || "تعذر التحقق من الحساب.");
     } finally { if (epoch === accessEpoch) $("#loadingScreen").classList.add("hidden"); }
   }
-  async function loadCapabilities(epoch) {
-    try {
-      const result = await request("/api/analysis/capabilities", { method: "GET", signal: AbortSignal.timeout(10000) });
-      if (epoch !== accessEpoch || !app.profile) return;
-      app.capabilities = result;
-    } catch { if (epoch === accessEpoch) app.capabilities = {}; }
-    if (epoch !== accessEpoch || !app.profile) return;
-    $("#analysisMode").textContent = app.capabilities.languageModelAvailable === true ? "تحليل + شرح بالذكاء الاصطناعي" : "تحليل حسابي";
-    $("#chatMode").textContent = app.capabilities.languageModelAvailable === true ? "شرح ذكي يستند إلى التقرير" : "شرح محلي للمؤشرات والقراءات";
+  function aiFailureReason(error) {
+    const code = error?.payload?.code || error?.code;
+    const messages = {
+      ai_not_configured: "خدمة الذكاء الاصطناعي غير مفعلة حالياً.",
+      ai_provider_auth_failed: "مفتاح خدمة الذكاء الاصطناعي غير صالح حالياً؛ يحتاج مطوّر التطبيق إلى تحديثه.",
+      daily_limit: "وصلت خدمة الذكاء الاصطناعي إلى حد الاستخدام اليومي.",
+      usage_not_ready: "تعذر التحقق من حدود استخدام الذكاء الاصطناعي حالياً.",
+      provider_timeout: "انتهت مهلة انتظار خدمة الذكاء الاصطناعي.",
+      provider_unavailable: "مزود الذكاء الاصطناعي غير متاح حالياً.",
+      invalid_ai_response: "لم يصل جواب مكتمل من خدمة الذكاء الاصطناعي.",
+      invalid_context: "تعذر اعتماد بيانات التقرير للشرح الذكي. حمّل الشموع مجدداً.",
+      invalid_capabilities: "تعذر التحقق من إتاحة خدمة الذكاء الاصطناعي.",
+      auth_not_ready: "تعذر الاتصال بخدمة الحسابات للتحقق من إتاحة المساعد.",
+      profile_unavailable: "تعذر التحقق من صلاحية الحساب لاستخدام المساعد حالياً.",
+    };
+    if (typeof code === "string" && Object.hasOwn(messages, code)) return messages[code];
+    if (error?.status === 401) return "انتهت جلسة الحساب. سجّل الدخول مجدداً لاستخدام الذكاء الاصطناعي.";
+    if (error?.status === 403) return "لم يُسمح لهذا الحساب بالوصول إلى خدمة الذكاء الاصطناعي.";
+    if (error?.status === 429) return "وصلت خدمة الذكاء الاصطناعي إلى حد الطلبات. حاول لاحقاً.";
+    if (error?.name === "AbortError" || error?.name === "TimeoutError" || error?.status === 504) return messages.provider_timeout;
+    if (error?.status >= 500 || error?.status === 404) return "خدمة الذكاء الاصطناعي غير متاحة حالياً. يمكنك إعادة المحاولة.";
+    return "تعذر الاتصال بخدمة الذكاء الاصطناعي. تحقق من الاتصال ثم أعد السؤال.";
+  }
+  function renderAssistantMode() {
+    const available = app.capabilities.languageModelAvailable === true;
+    $("#analysisMode").textContent = available ? "تحليل + شرح بالذكاء الاصطناعي" : "تحليل حسابي";
+    $("#chatMode").textContent = available ? "شرح بالذكاء الاصطناعي؛ تحليل الأسعار يحتاج شموعاً" : "شرح محلي مؤقت — أعد السؤال للمحاولة";
+    $("#chatMode").title = capabilityError;
+  }
+  function loadCapabilities(epoch) {
+    if (epoch !== accessEpoch || !app.profile) return Promise.resolve();
+    if (capabilityRequest?.epoch === epoch) return capabilityRequest.promise;
+    capabilityRequest?.controller.abort();
+    const operation = { epoch, controller: new AbortController(), promise: null };
+    capabilityRequest = operation;
+    operation.promise = (async () => {
+      const timer = setTimeout(() => operation.controller.abort(), 10000);
+      try {
+        const result = await request("/api/analysis/capabilities", { method: "GET", signal: operation.controller.signal });
+        if (typeof result.languageModelAvailable !== "boolean") { const error = new Error(); error.code = "invalid_capabilities"; throw error; }
+        if (epoch !== accessEpoch || !app.profile) return;
+        app.capabilities = result;
+        capabilityError = result.languageModelAvailable ? "" : "خدمة الذكاء الاصطناعي غير متاحة حالياً لهذا الحساب.";
+      } catch (error) {
+        if (epoch !== accessEpoch || !app.profile) return;
+        app.capabilities = {}; capabilityError = aiFailureReason(error);
+      } finally {
+        clearTimeout(timer);
+        if (capabilityRequest === operation) capabilityRequest = null;
+      }
+      if (epoch === accessEpoch && app.profile) renderAssistantMode();
+    })();
+    return operation.promise;
   }
   async function revalidateAccess() {
     if (!app.profile || checkingAccess) return;
@@ -486,33 +532,42 @@
     question = String(question || "").trim();
     if (!question || app.chatPending || !app.profile) return;
     if (question.length > 1000) return showToast("السؤال طويل. اختصره إلى 1,000 حرف أو أقل ثم أعد الإرسال.", "error");
-    const epoch = contextEpoch;
+    const epoch = contextEpoch, questionEpoch = ++chatEpoch;
+    const isCurrent = () => epoch === contextEpoch && questionEpoch === chatEpoch && Boolean(app.profile);
     app.chatPending = true; $("#chatForm button[type=submit]").disabled = true;
     addMessage("user",question); $("#chatInput").value = "";
     const pending = addMessage("pending","جاري قراءة سؤالك…", "VAREX");
     try {
       let text = "", mode = "شرح محلي";
-      if (app.capabilities.languageModelAvailable === true && app.report && app.report.status !== "unavailable") {
+      if (capabilityRequest || app.capabilities.languageModelAvailable !== true) await loadCapabilities(accessEpoch);
+      if (!isCurrent()) return;
+      if (app.capabilities.languageModelAvailable === true) {
+        const context = app.report && app.report.status !== "unavailable" && app.report.analysis?.candleCount > 0
+          && finite(app.report.lastClose ?? app.report.analysis?.lastClose) && Number.isFinite(Date.parse(app.report.asOf)) ? app.report : null;
         const controller = new AbortController(); chatRequest = controller;
         const timer = setTimeout(() => controller.abort(),20000);
         try {
-          const result = await request("/api/analysis/chat", { method: "POST", body: JSON.stringify({ question, context: app.report }), signal: controller.signal });
-          if (typeof result.answer !== "string" || result.mode !== "language-model") throw new Error("invalid_analysis_answer");
-          text = result.answer; mode = "شرح بالذكاء الاصطناعي";
+          const result = await request("/api/analysis/chat", { method: "POST", body: JSON.stringify({ question, context }), signal: controller.signal });
+          if (typeof result.answer !== "string" || !result.answer.trim() || result.mode !== "language-model") { const error = new Error(); error.code = "invalid_ai_response"; throw error; }
+          text = context ? result.answer : "شرح تعليمي دون بيانات سوق حالية؛ لم تُحمّل شموع للتحليل.\n\n" + result.answer;
+          mode = context ? "شرح بالذكاء الاصطناعي" : "شرح تعليمي بالذكاء الاصطناعي";
         } catch (error) {
-          if (epoch !== contextEpoch) return;
+          if (!isCurrent()) return;
+          app.capabilities = {}; capabilityError = aiFailureReason(error); renderAssistantMode();
           const local = core()?.answerQuestion(question,app.report);
-          text = "تعذّر الوصول إلى الشرح الموسّع. هذا شرح محلي يستند إلى البيانات المتاحة:\n\n" + (local?.text || "أعد المحاولة لاحقاً.");
+          text = "لم يُستخدم الذكاء الاصطناعي في هذه الإجابة: " + capabilityError + "\nهذا شرح محلي؛ يمكنك إعادة السؤال للمحاولة مجدداً.\n\n" + (local?.text || "أعد المحاولة لاحقاً.");
         } finally { clearTimeout(timer); }
       } else {
-        text = core()?.answerQuestion(question,app.report)?.text || "تعذر تحميل المساعد. أعد تحميل الصفحة.";
+        text = "لم يُستخدم الذكاء الاصطناعي في هذه الإجابة: " + (capabilityError || "تعذر التحقق من إتاحة الخدمة.")
+          + "\nهذا شرح محلي؛ سنعيد التحقق عند إرسال سؤال جديد.\n\n"
+          + (core()?.answerQuestion(question,app.report)?.text || "تعذر تحميل المساعد. أعد تحميل الصفحة.");
       }
-      if (epoch !== contextEpoch || !app.profile) return;
+      if (!isCurrent()) return;
       pending.remove(); app.messages = app.messages.filter((message) => message.role !== "pending");
       addMessage("assistant",text,mode);
     } catch (error) {
-      if (epoch === contextEpoch && app.profile) { pending.remove(); addMessage("assistant",error.message || "تعذر إكمال الإجابة.","شرح محلي"); }
-    } finally { if (epoch === contextEpoch) { chatRequest = null; app.chatPending = false; $("#chatForm button[type=submit]").disabled = false; } }
+      if (isCurrent()) { pending.remove(); addMessage("assistant","تعذر إكمال الإجابة. يمكنك إعادة السؤال للمحاولة مجدداً.","شرح محلي"); }
+    } finally { if (isCurrent()) { chatRequest = null; app.chatPending = false; $("#chatForm button[type=submit]").disabled = false; } }
   }
   function historyKey() { return app.profile ? `varex.analysis.reports.v1.${encodeURIComponent(app.profile.id)}` : ""; }
   function readReports() {
@@ -614,7 +669,7 @@
     $("#marketSelect").addEventListener("change",(event) => changeContext(event.target.value,app.interval));
     $("#intervalButtons").addEventListener("click",(event) => { const button = event.target.closest("[data-interval]"); if (button) changeContext(app.symbol,button.dataset.interval); });
     $("#analyzeButton").addEventListener("click",analyze); $("#saveReportButton").addEventListener("click",saveReport);
-    $("#clearChatButton").addEventListener("click",() => { if (app.chatPending) { chatRequest?.abort(); contextEpoch += 1; app.chatPending = false; $("#chatForm button[type=submit]").disabled = false; } resetChat(); });
+    $("#clearChatButton").addEventListener("click",() => { chatEpoch += 1; chatRequest?.abort(); chatRequest = null; app.chatPending = false; $("#chatForm button[type=submit]").disabled = false; resetChat(); });
     $("#chatForm").addEventListener("submit",(event) => { event.preventDefault(); ask($("#chatInput").value); });
     $("#chatInput").addEventListener("keydown",(event) => { if (event.key === "Enter" && !event.shiftKey && !event.isComposing) { event.preventDefault(); ask(event.currentTarget.value); } });
     $("#importForm").addEventListener("submit",submitImport); $("#csvFile").addEventListener("change",bindFileInput);

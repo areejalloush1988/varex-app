@@ -76,8 +76,9 @@ async function respond(route, value, status = 200) {
   return route.fulfill({ status, headers: { "Content-Type": "application/json", "Cache-Control": "no-store", "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Headers": "*", "Access-Control-Allow-Methods": "GET, POST, OPTIONS" }, body: status === 204 ? "" : JSON.stringify(value) });
 }
 
-async function installFixtures(context, name) {
-  const state = { name, requests: [], auth: [], accessOverride: null, crypto: [], modelCalls: [] };
+async function installFixtures(context, name, options = {}) {
+  const state = { name, requests: [], auth: [], accessOverride: null, crypto: [], modelCalls: [], modelUsers: [],
+    aiEnabled: options.aiEnabled === true, capabilityFailures: options.capabilityFailures || 0, capabilityCalls: 0, chatFailure: null };
   context.on("page", (page) => page.on("pageerror", (error) => report.pageErrors.push({ context: name, message: error.message, stack: error.stack })));
   await context.route("**/*", async (route) => {
     const request = route.request(), url = new URL(request.url());
@@ -105,12 +106,24 @@ async function installFixtures(context, name) {
         return respond(route, { profile: { ...profile, ...(state.accessOverride || {}) } });
       }
       if (url.pathname === "/functions/v1/varex-analysis-api" && url.searchParams.get("action") === "capabilities") {
-        return respond(route, { languageModelAvailable: false, analysisMode: "technical-calculation", marketDataConfigured: false });
+        state.capabilityCalls += 1;
+        if (state.capabilityFailures > 0) {
+          state.capabilityFailures -= 1;
+          return respond(route, { error: "UNSAFE_FIXTURE_DETAIL secret-key-must-not-render", code: "analysis_unavailable" }, 503);
+        }
+        return respond(route, { languageModelAvailable: state.aiEnabled, analysisMode: "technical-calculation", marketDataConfigured: false });
       }
       if (url.pathname === "/functions/v1/varex-analysis-api" && url.searchParams.get("action") === "market") {
         return respond(route, { error: "Fixture: gold provider unavailable.", code: "market_provider_not_configured" }, 503);
       }
-      if (url.pathname === "/functions/v1/varex-analysis-api" && url.searchParams.get("action") === "chat") state.modelCalls.push(body);
+      if (url.pathname === "/functions/v1/varex-analysis-api" && url.searchParams.get("action") === "chat") {
+        state.modelCalls.push(body); state.modelUsers.push(key);
+        if (state.chatFailure) return respond(route, state.chatFailure.body, state.chatFailure.status);
+        if (state.aiEnabled) return respond(route, { answer: body.context
+          ? "إجابة AI للاختبار: بحسب البيانات المرفقة، هذه قراءة تاريخية تخص التقرير المحدد."
+          : "إجابة AI تعليمية للاختبار: RSI يصف الزخم. لا توجد بيانات سوق مرفقة، لذلك لا أملك سعراً حالياً أو مستويات للذهب.",
+        mode: "language-model", generated: true, model: "browser-fixture-model", asOf: body.context?.asOf || null });
+      }
       report.unexpectedRequests.push({ context: name, method: request.method(), url: url.href, action: body.action || null });
       return respond(route, { error: "Unexpected production API request in fixture browser." }, 500);
     }
@@ -349,6 +362,75 @@ async function mobileSmoke() {
   await context.close(); activePage = null;
 }
 
+async function aiAvailabilitySmoke() {
+  const context = await browser.newContext({ viewport: { width: 1440, height: 1000 }, locale: "ar-AE", timezoneId: "UTC", serviceWorkers: "block", reducedMotion: "reduce" });
+  const fixture = await installFixtures(context, "ai-availability", { aiEnabled: true, capabilityFailures: 1 });
+  const page = await context.newPage(); activePage = page; page.setDefaultTimeout(10000);
+  await step("A failed initial capability check recovers on the next question without a reload or report", async () => {
+    await page.goto(baseUrl + entryPath, { waitUntil: "domcontentloaded" }); await hidden(page, "#loadingScreen");
+    await login(page, "alpha"); await textMatches(page, "#chatMode", /شرح محلي مؤقت/);
+    assert.equal(fixture.capabilityCalls, 1);
+    assert.doesNotMatch(await page.locator("#chatMode").getAttribute("title"), /UNSAFE_FIXTURE_DETAIL|secret-key/);
+    const answer = await ask(page, "اشرح RSI بطريقة بسيطة");
+    assert.match(answer, /شرح تعليمي بالذكاء الاصطناعي/); assert.match(answer, /دون بيانات سوق حالية/);
+    assert.match(answer, /إجابة AI تعليمية للاختبار/);
+    assert.equal(fixture.capabilityCalls, 2); assert.equal(fixture.modelCalls.length, 1);
+    assert.deepEqual(fixture.modelCalls[0], { question: "اشرح RSI بطريقة بسيطة", context: null });
+    assert.equal(await page.locator("#marketSelect").inputValue(), "XAU-USD");
+    assert.equal(await page.locator("#chartRoot svg, #reportRoot .aa-level").count(), 0);
+    await textMatches(page, "#analysisMode", /بالذكاء الاصطناعي/);
+  });
+  await step("Gold feed failure does not disable educational AI or invent a numerical context", async () => {
+    await page.locator("#analyzeButton").click(); await textMatches(page, "#reportRoot", /بيانات الذهب الآلية غير متاحة/);
+    const answer = await ask(page, "كم سعر الذهب الآن ووين المقاومة؟");
+    assert.match(answer, /شرح تعليمي بالذكاء الاصطناعي/); assert.match(answer, /لا أملك سعراً حالياً/);
+    assert.equal(fixture.modelCalls.at(-1).context, null);
+    assert.equal(await page.locator("#chartRoot svg, #reportRoot .aa-level").count(), 0);
+    await screenshot(page, "09-ai-without-market-data.png");
+  });
+  await step("Provider failure explains the local fallback safely, then capability changes recover without reload", async () => {
+    fixture.chatFailure = { status: 502, body: { code: "provider_unavailable", error: "UNSAFE_FIXTURE_DETAIL secret-key-must-not-render" } };
+    const fallback = await ask(page, "شو يعني MACD؟");
+    assert.match(fallback, /شرح محلي/); assert.match(fallback, /مزود الذكاء الاصطناعي غير متاح/);
+    assert.doesNotMatch(fallback, /UNSAFE_FIXTURE_DETAIL|secret-key/);
+    assert.doesNotMatch(await page.locator("#chatMode").getAttribute("title"), /UNSAFE_FIXTURE_DETAIL|secret-key/);
+    fixture.chatFailure = { status: 503, body: { code: "ai_provider_auth_failed", error: "UNSAFE_FIXTURE_DETAIL secret-key-must-not-render" } };
+    const logoutCount = fixture.auth.filter((item) => item.operation === "logout").length;
+    const providerAuthFailure = await ask(page, "اشرح RSI");
+    assert.match(providerAuthFailure, /مفتاح خدمة الذكاء الاصطناعي غير صالح حالياً؛ يحتاج مطوّر التطبيق إلى تحديثه/);
+    assert.match(providerAuthFailure, /شرح محلي/); assert.doesNotMatch(providerAuthFailure, /UNSAFE_FIXTURE_DETAIL|secret-key/);
+    assert.equal(await page.locator("#appShell").isVisible(), true); assert.equal(await page.locator("#authScreen").isVisible(), false);
+    assert.equal(await page.evaluate(() => Object.keys(localStorage).some((key) => key.startsWith("varex.trading.supabase.session"))), true);
+    assert.equal(fixture.auth.filter((item) => item.operation === "logout").length, logoutCount);
+    fixture.chatFailure = null; fixture.aiEnabled = false;
+    const beforeUnavailable = fixture.modelCalls.length, beforeChecks = fixture.capabilityCalls;
+    const unavailable = await ask(page, "ما معنى ATR؟");
+    assert.match(unavailable, /لم يُستخدم الذكاء الاصطناعي/); assert.match(unavailable, /غير متاحة حالياً لهذا الحساب/);
+    assert.equal(fixture.modelCalls.length, beforeUnavailable); assert.equal(fixture.capabilityCalls, beforeChecks + 1);
+    fixture.aiEnabled = true;
+    const recovered = await ask(page, "اشرح الفرق بين الدعم والمقاومة");
+    assert.match(recovered, /شرح تعليمي بالذكاء الاصطناعي/); assert.equal(fixture.modelCalls.length, beforeUnavailable + 1);
+    assert.equal(fixture.capabilityCalls, beforeChecks + 2); assert.equal(fixture.modelCalls.at(-1).context, null);
+  });
+  await step("AI uses the loaded report and a new verified account never sends the previous account context", async () => {
+    await page.locator("#marketSelect").selectOption("BTC-USD"); await importCsv(page);
+    const answer = await ask(page, "اشرح اتجاه البيانات المرفقة"); assert.match(answer, /شرح بالذكاء الاصطناعي/);
+    const evidence = fixture.modelCalls.at(-1);
+    assert.equal(evidence.context.symbol, "BTC-USD"); assert.equal(evidence.context.asOf, expectedCsv.asOf);
+    assert.equal(evidence.context.lastClose, expectedCsv.close);
+    assert.deepEqual(Object.keys(evidence).sort(), ["context", "question"]);
+    assert.doesNotMatch(JSON.stringify(evidence), /alpha@fixture|11111111-1111|access_token|refresh_token/);
+    await logout(page); await login(page, "beta");
+    const fresh = await ask(page, "اشرح لي الدعم والمقاومة"); assert.match(fresh, /شرح تعليمي بالذكاء الاصطناعي/);
+    assert.equal(fixture.modelCalls.at(-1).context, null); assert.equal(fixture.modelUsers.at(-1), "beta");
+    assert.doesNotMatch(JSON.stringify(fixture.modelCalls.at(-1)), /QA CSV Alpha|BTC-USD|2025-01-04|alpha@fixture/);
+    await noTradingSurface(page); await noOverflow(page, "AI availability");
+  });
+  report.aiRequests = fixture.requests;
+  report.aiCoverage = { capabilityChecks: fixture.capabilityCalls, modelRequests: fixture.modelCalls.length, noReportRequests: fixture.modelCalls.filter((item) => item.context === null).length };
+  await context.close(); activePage = null;
+}
+
 async function goldDiagnostic() {
   if (process.env.ANALYSIS_GOLD_DIAGNOSTIC !== "1") return;
   const context = await browser.newContext({ serviceWorkers: "block" });
@@ -395,10 +477,10 @@ async function goldDiagnostic() {
   try {
     await startServer();
     const { chromium } = playwrightModule(); browser = await chromium.launch({ headless: true });
-    await desktopSmoke(); await mobileSmoke();
+    await desktopSmoke(); await mobileSmoke(); await aiAvailabilitySmoke();
     await step("No browser exceptions, unmocked network, or legacy bootstrap/trading requests", async () => {
       assert.deepEqual(report.pageErrors, []); assert.deepEqual(report.unexpectedRequests, []);
-      for (const item of [...report.desktopRequests, ...report.mobileRequests].filter((item) => item.path.endsWith("/varex-trading-api"))) assert.equal(item.action, "access");
+      for (const item of [...report.desktopRequests, ...report.mobileRequests, ...report.aiRequests].filter((item) => item.path.endsWith("/varex-trading-api"))) assert.equal(item.action, "access");
     });
     report.status = "passed";
   } catch (error) {

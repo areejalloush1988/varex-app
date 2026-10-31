@@ -242,6 +242,51 @@ test("provider failure, refusal and incomplete responses never become simulated 
   }
 });
 
+test("OpenAI key rejection is a sanitized service 503 after normal user auth and quota", async () => {
+  const { handler, calls } = setup({ env: aiEnv, fetch: async () => Response.json({
+    error: { code: "invalid_api_key", message: "Authorization: provider-fixture-secret; server-fixture-secret; upstream-only-marker" },
+  }, { status: 401 }) });
+  const response = await handler(request("chat", { body: { question: "اشرح RSI", context: null } }));
+  assert.equal(response.status, 503, "provider rejection must not expire the user's app session");
+  const data = await response.json();
+  assert.equal(data.code, "ai_provider_auth_failed");
+  assert.match(data.error, /مفتاح خدمة الذكاء الاصطناعي/);
+  assert.match(data.error, /مطوّر التطبيق/);
+  assert.equal(data.generated, undefined);
+  assert.equal(calls.auth, 1);
+  assert.deepEqual(calls.tables, ["varex_trading_profile"]);
+  assert.deepEqual(calls.rpcs, [{ name: "varex_analysis_claim_request", args: {
+    p_user_id: userId, p_now: new Date(now).toISOString(), p_user_limit: 20, p_global_limit: 200,
+  } }]);
+  assert.equal(calls.fetches.length, 1);
+  const encoded = JSON.stringify(data);
+  for (const secret of ["provider-fixture-secret", "server-fixture-secret", "Authorization", "upstream-only-marker", "invalid_api_key"]) {
+    assert.equal(encoded.includes(secret), false);
+  }
+});
+
+test("OpenAI-specific 401 mapping leaves app auth, quota denial and gold provider failures unchanged", async () => {
+  const invalid = setup({ env: aiEnv, authError: { message: "private-auth-detail" } });
+  const invalidResponse = await invalid.handler(request("chat"));
+  assert.equal(invalidResponse.status, 401);
+  assert.equal((await invalidResponse.json()).code, "invalid_session");
+  assert.equal(invalid.calls.fetches.length, 0);
+  assert.equal(invalid.calls.rpcs.length, 0);
+
+  const exhausted = setup({ env: aiEnv, rpc: async () => ({ data: { allowed: false }, error: null }) });
+  const exhaustedResponse = await exhausted.handler(request("chat"));
+  assert.equal(exhaustedResponse.status, 429);
+  assert.equal((await exhaustedResponse.json()).code, "daily_limit");
+  assert.equal(exhausted.calls.fetches.length, 0);
+
+  const gold = setup({ env: marketEnv, fetch: async () => new Response("market-fixture-secret", { status: 401 }) });
+  const goldResponse = await gold.handler(request("market", { query: "&symbol=XAU-USD&interval=60" }));
+  assert.equal(goldResponse.status, 502);
+  const goldData = await goldResponse.json();
+  assert.equal(goldData.code, "provider_unavailable");
+  assert.equal(JSON.stringify(goldData).includes("market-fixture-secret"), false);
+});
+
 test("provider timeout settles even if the injected fetch ignores abort", async () => {
   const { handler } = setup({ env: aiEnv, timeout: 10, fetch: async () => new Promise(() => {}) });
   const result = await handler(request("chat"));
