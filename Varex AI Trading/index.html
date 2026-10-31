@@ -4,11 +4,11 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="theme-color" content="#081D36">
-  <meta name="description" content="VAREX AI Trading — تحليل الأسواق وتداول تجريبي وربط حسابات منصات التداول المدعومة.">
+  <meta name="description" content="VAREX AI — مساعد عربي لفهم الأسواق والشارت والدعم والمقاومة.">
   <meta name="robots" content="noindex">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-title" content="VAREX Trading">
+  <meta name="apple-mobile-web-app-title" content="VAREX AI">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <link rel="manifest" href="/trading/manifest.webmanifest">
   <link rel="apple-touch-icon" href="/trading/icons/apple-touch-icon.png">
@@ -17,27 +17,25 @@
   <script src="./theme.js?v=1"></script>
   <link rel="stylesheet" href="./styles.css?v=7">
   <link rel="stylesheet" href="./themes.css?v=2">
-  <link rel="stylesheet" href="./markets.css?v=2">
-  <link rel="stylesheet" href="./accounts.css?v=1">
-  <script defer src="./install.js?v=1"></script>
-  <title>VAREX AI Trading</title>
+  <link rel="stylesheet" href="./analysis-assistant.css?v=1">
+  <script defer src="./install.js?v=3"></script>
+  <title>VAREX AI — مساعد التحليل</title>
 </head>
 <body>
   <section class="auth-screen" id="authScreen">
     <div class="auth-visual">
-      <div class="visual-brand"><span class="brand-mark">↗</span><span><b>VAREX</b><small>AI TRADING</small></span></div>
-      <div class="visual-copy"><span class="eyebrow">منصة تداول ذكية</span><h1>حساب واحد للأسواق، التجربة، وربط المنصات.</h1><p>إنشاء حساب VAREX أولاً، ثم تجربة التداول برصيد يبدأ من 25,000 دولار تجريبي أو ربط منصة تداول مدعومة. الأموال الحقيقية تبقى لدى المنصة.</p></div>
-      <div class="visual-points"><span>✓ مفاتيح مشفرة</span><span>✓ السحب غير مسموح</span><span>✓ تأكيد يدوي لكل أمر حقيقي</span></div>
+      <div class="visual-brand"><span class="brand-mark">↗</span><span><b>VAREX</b><small>AI ANALYSIS</small></span></div>
+      <div class="visual-copy"><span class="eyebrow">مساحة لفهم الأسواق</span><h1>اقرأ الشارت.<br>افهم الصورة.</h1><p>مساعد عربي يشرح الاتجاه والزخم ومناطق الدعم والمقاومة. قراءة واضحة تستند إلى بيانات معلومة المصدر والوقت، مع سيناريوهات تساعدك على فهم الحركة.</p></div>
+      <div class="visual-points"><span>شارت وتحليل في مكان واحد</span><span>شرح عربي مبسّط</span><span>مصدر ووقت لكل قراءة</span></div>
     </div>
     <div class="auth-card">
       <button class="theme-toggle auth-theme-toggle" type="button" data-theme-toggle aria-label="تفعيل الوضع النهاري"><span data-theme-icon aria-hidden="true">☀</span><span data-theme-label>النهاري</span></button>
-      <div class="mobile-auth-brand"><span class="brand-mark">↗</span><b>VAREX AI TRADING</b></div>
-      <div id="authAccountChoices" class="va-auth-choices" aria-label="اختيار نوع الحساب بعد تسجيل الدخول"></div>
+      <div class="mobile-auth-brand"><span class="brand-mark">↗</span><b>VAREX AI ANALYSIS</b></div>
       <div class="auth-message" id="authMessage" role="alert"></div>
       <div id="existingAccountActions" class="auth-account-actions hidden"><button type="button" class="secondary-button" data-auth-pane="loginForm">تسجيل الدخول</button><button type="button" class="secondary-button" data-auth-pane="recoverPane">استعادة كلمة المرور</button></div>
 
       <form class="auth-pane hidden" id="loginForm">
-        <header><span class="eyebrow">مرحباً من جديد</span><h2>تسجيل الدخول إلى VAREX</h2><p>الدخول إلى مساحة التداول الخاصة بالحساب.</p></header>
+        <header><span class="eyebrow">مرحباً من جديد</span><h2>تسجيل الدخول إلى VAREX</h2><p>افتح مساحة التحليل وتقاريرك المحفوظة على هذا الجهاز.</p></header>
         <label>البريد الإلكتروني<input name="email" type="email" autocomplete="email" required placeholder="name@example.com"></label>
         <label>كلمة المرور<span class="password-field"><input name="password" type="password" autocomplete="current-password" required minlength="8" placeholder="••••••••"><button class="password-toggle" type="button" data-password-toggle aria-label="إظهار كلمة المرور" aria-pressed="false">إظهار</button></span></label>
         <div class="form-row"><label class="check"><input name="remember" type="checkbox" checked><span>حفظ بيانات الدخول</span></label><button class="text-button" type="button" data-auth-pane="recoverPane">استعادة كلمة المرور</button></div>
@@ -46,8 +44,8 @@
       </form>
 
       <form class="auth-pane" id="registerPane">
-        <header><span class="eyebrow">حساب جديد</span><h2>إنشاء حساب VAREX</h2><p>التسجيل مفتوح مباشرة. هذا حساب VAREX لحفظ الرصيد التجريبي والإعدادات؛ سيصل رمز OTP لتأكيد البريد.</p></header>
-        <label>اسم المستخدم<input name="displayName" maxlength="80" required placeholder="مثال: إدارة التداول"></label>
+        <header><span class="eyebrow">حساب جديد</span><h2>إنشاء حساب VAREX</h2><p>أنشئ حسابك لفتح مساحة التحليل. سيصل رمز إلى بريدك لتأكيد الحساب.</p></header>
+        <label>اسم المستخدم<input name="displayName" maxlength="80" required placeholder="الاسم الذي تريد ظهوره"></label>
         <label>البريد الإلكتروني<input name="email" type="email" autocomplete="email" required placeholder="name@example.com"></label>
         <label>كلمة المرور<span class="password-field"><input name="password" type="password" autocomplete="new-password" required minlength="8" placeholder="8 أحرف على الأقل"><button class="password-toggle" type="button" data-password-toggle aria-label="إظهار كلمة المرور" aria-pressed="false">إظهار</button></span></label>
         <ul class="password-rules" id="registerPasswordRules" aria-live="polite">
@@ -79,58 +77,93 @@
         <button class="main-button" type="submit">حفظ كلمة المرور</button>
         <p class="auth-switch"><button type="button" data-auth-pane="otpPane">تصحيح رمز التحقق</button> · <button type="button" data-auth-pane="recoverPane">طلب رمز جديد</button></p>
       </form>
-      <a class="auth-install-link" href="/trading/?auth=signup&amp;next=markets">⌁ الأسواق والتحليل بعد تسجيل الدخول</a>
+      <a class="auth-install-link" href="/trading/?auth=signup&amp;next=markets">⌁ مساحة التحليل بعد تسجيل الدخول</a>
       <a class="auth-install-link" data-install-link href="/trading/install.html">↓ تثبيت التطبيق على ويندوز وآيفون</a>
     </div>
   </section>
 
-  <div class="app-shell hidden" id="appShell">
+  <div class="app-shell hidden analysis-shell" id="appShell">
     <header class="topbar">
-      <div class="brand"><button class="icon-button mobile-menu" id="menuButton" aria-label="فتح القائمة">☰</button><span class="brand-mark">↗</span><span class="brand-copy"><b>VAREX</b><small>AI TRADING</small></span></div>
-      <div class="top-status"><span class="status-chip live" id="marketStatus"><i></i> بيانات سوق حية</span><span class="status-chip paper" id="executionStatus">DEMO TRADING</span></div>
-      <div class="topbar-actions"><button class="icon-button theme-toggle" type="button" data-theme-toggle aria-label="تفعيل الوضع النهاري"><span data-theme-icon aria-hidden="true">☀</span><span data-theme-label>النهاري</span></button><button class="user-menu" id="userMenuButton"><span class="avatar" id="avatar">U</span><span><b id="topUserName">اسم المستخدم</b><small id="topUserRole">حساب</small></span></button></div>
+      <div class="brand"><button class="icon-button mobile-menu" id="menuButton" aria-label="فتح القائمة" aria-expanded="false">☰</button><span class="brand-mark">✦</span><span class="brand-copy"><b>VAREX</b><small>AI ANALYSIS</small></span></div>
+      <div class="top-status"><span class="status-chip" id="analysisMode">تحليل حسابي</span><span class="aa-top-label">مساحة لفهم الأسواق</span></div>
+      <div class="topbar-actions"><button class="icon-button theme-toggle" type="button" data-theme-toggle aria-label="تفعيل الوضع النهاري"><span data-theme-icon aria-hidden="true">☀</span><span data-theme-label>النهاري</span></button><button class="user-menu" id="userMenuButton"><span class="avatar" id="avatar">U</span><span><b id="topUserName"></b><small>حساب التحليل</small></span></button></div>
     </header>
-
     <button class="drawer-backdrop" id="drawerBackdrop" aria-label="إغلاق القائمة"></button>
     <aside class="sidebar" id="sidebar">
-      <div class="sidebar-head"><span class="brand-mark">↗</span><b>VAREX</b><button class="icon-button" id="closeMenu">×</button></div>
-      <p class="nav-title">مساحة التداول</p>
-      <nav id="mainNav">
-        <button class="nav-item active" data-view="dashboard"><span>▦</span> لوحة التحكم</button>
-        <button class="nav-item" data-view="markets"><span>⌁</span> الأسواق</button>
-        <button class="nav-item" data-view="intelligence"><span>✦</span> تحليل الأسواق</button>
-        <button class="nav-item" data-view="trades"><span>▣</span> الصفقات</button>
-        <button class="nav-item" data-view="automation"><span>◷</span> التداول الآلي</button>
-        <button class="nav-item" data-view="risk"><span>◇</span> مركز المخاطر</button>
-        <button class="nav-item" data-view="broker" id="brokerNav"><span>⇄</span> ربط حساب منصة تداول</button>
-        <button class="nav-item" data-view="watchlist"><span>◉</span> قائمة المراقبة</button>
-        <button class="nav-item" data-view="reports"><span>▤</span> التقارير</button>
-        <button class="nav-item hidden" data-view="users" id="usersNav"><span>♙</span> الحسابات</button>
+      <div class="sidebar-head"><span class="brand-mark">✦</span><b>VAREX</b><button class="icon-button" id="closeMenu" aria-label="إغلاق القائمة">×</button></div>
+      <p class="nav-title">مساحتك</p>
+      <nav id="mainNav" aria-label="القائمة الرئيسية">
+        <button class="nav-item active" data-view="analysis"><span aria-hidden="true">⌁</span> مساعد التحليل</button>
+        <button class="nav-item" data-view="history"><span aria-hidden="true">▤</span> تقاريري المحفوظة <b id="historyCount" class="aa-nav-count">0</b></button>
+        <button class="nav-item" data-view="learn"><span aria-hidden="true">◇</span> افهم الشارت</button>
       </nav>
+      <div class="aa-sidebar-note"><b>قراءة يمكن مراجعتها</b><p>كل تحليل يوضح مصدر الشموع، وفترتها، وما يدعم السيناريو أو يضعفه.</p></div>
       <div class="sidebar-bottom">
-        <a class="nav-item app-install-link" data-install-link href="/trading/install.html"><span>↓</span> تثبيت التطبيق</a>
-        <button class="nav-item" data-view="settings"><span>⚙</span> الإعدادات</button>
-        <div class="agent-card"><span>AI</span><p><b>وكيل VAREX</b><small><i></i> تحليل عند الطلب</small></p></div>
-        <button class="nav-item logout-item" type="button" data-action="logout"><span>↪</span> تسجيل الخروج</button>
+        <a class="nav-item app-install-link" data-install-link href="/trading/install.html"><span aria-hidden="true">↓</span> تثبيت التطبيق</a>
+        <button class="nav-item" data-view="settings"><span aria-hidden="true">⚙</span> إعدادات الحساب</button>
+        <button class="nav-item logout-item" type="button" data-action="logout"><span aria-hidden="true">↪</span> تسجيل الخروج</button>
       </div>
     </aside>
-
-    <main class="workspace">
-      <section class="page-header"><div><small id="dateLabel"></small><h1 id="pageTitle">صباح الخير، اسم المستخدم</h1><p id="pageSubtitle">بيانات حسابك الفعلية محفوظة وآمنة.</p></div><div id="pageActions"></div></section>
-      <section class="paper-banner" id="executionBanner"><span>◇</span><p><b id="executionBannerTitle">التجربة الحالية تجريبية وآمنة للتعلّم</b><small id="executionBannerText">لا حاجة إلى ربط حساب تداول أو إيداع مال. الأسعار حية، لكن كل الصفقات تجريبية فقط.</small></p><strong id="brokerLabel">حساب التداول غير مربوط</strong></section>
-      <div id="viewRoot" aria-live="polite"></div>
-      <footer class="app-footer"><span>VAREX AI Trading</span><span>التحليل احتمالي وليس ضماناً للربح أو توصية استثمارية.</span></footer>
+    <main class="workspace aa-workspace">
+      <section class="page-header"><div><small id="dateLabel"></small><h1 id="pageTitle">ماذا يحدث في السوق؟</h1><p id="pageSubtitle">اختر السوق والفترة، ثم اطلب قراءة واضحة للشارت.</p></div><div id="pageActions"><button class="secondary-button" type="button" data-action="import">↑ استيراد شموع</button></div></section>
+      <section id="analysisView" class="aa-view">
+        <div class="aa-market-controls">
+          <label class="control aa-market-select">السوق<select id="marketSelect" aria-label="السوق"><option value="XAU-USD">الذهب مقابل الدولار · XAU/USD</option></select></label>
+          <div class="aa-period-control"><span class="aa-control-label">الإطار الزمني</span><div class="aa-periods" id="intervalButtons" role="group" aria-label="الإطار الزمني"></div></div>
+          <button class="primary-button aa-analyze-button" type="button" id="analyzeButton"><span aria-hidden="true">✦</span> حلّل السوق</button>
+        </div>
+        <div class="aa-status-line" role="status" id="dataStatus"><span class="aa-status-dot"></span><span>اختر «حلّل السوق» لتحميل الشموع المتاحة.</span></div>
+        <div class="aa-analysis-layout">
+          <div class="aa-market-column">
+            <section class="panel aa-chart-panel" aria-labelledby="chartTitle">
+              <header class="aa-panel-header"><div class="aa-market-heading"><span class="aa-symbol-icon" id="marketIcon">Au</span><div><h2 id="chartTitle">الذهب مقابل الدولار</h2><span id="chartSymbol" dir="ltr">XAU/USD</span></div></div><span class="aa-source-chip" id="chartKind">شارت مرجعي</span></header>
+              <div class="aa-chart" id="chartRoot"><div class="aa-empty"><span aria-hidden="true">⌁</span><h3>الشارت قيد التحضير</h3><p>سيظهر بعد التحقق من جلسة الحساب.</p></div></div>
+              <div class="aa-chart-caption" id="chartCaption">مصدر الرسم يظهر أسفل الشارت. التحليل الحسابي يعتمد فقط على الشموع المحمّلة أو المستوردة.</div>
+            </section>
+            <section class="panel aa-report-panel" aria-labelledby="reportTitle">
+              <header class="aa-panel-header"><div><span class="eyebrow">قراءة فنية</span><h2 id="reportTitle">صورة السوق</h2></div><button class="small-button" id="saveReportButton" type="button" disabled>حفظ التقرير</button></header>
+              <div id="reportRoot"><div class="aa-empty aa-report-empty"><span aria-hidden="true">◈</span><h3>كل قراءة تبدأ ببيانات واضحة</h3><p>حمّل شموع السوق أو استورد ملفك لعرض الاتجاه والدعم والمقاومة والسيناريوهات. لا تُستنتج أسعار من الشارت المرجعي.</p></div></div>
+            </section>
+          </div>
+          <section class="panel aa-chat-panel" aria-labelledby="chatTitle">
+            <header class="aa-panel-header"><div class="aa-chat-heading"><span class="aa-assistant-icon" aria-hidden="true">✦</span><div><h2 id="chatTitle">اسأل عن الشارت</h2><small id="chatMode">شرح محلي للمؤشرات والقراءات</small></div></div><button class="icon-button" id="clearChatButton" aria-label="بدء محادثة جديدة" title="بدء محادثة جديدة">↺</button></header>
+            <div class="aa-chat-messages" id="chatMessages" role="log" aria-live="polite" aria-relevant="additions text"></div>
+            <div class="aa-suggestions" id="chatSuggestions"><button type="button" data-question="اشرح لي الاتجاه الحالي">اشرح الاتجاه</button><button type="button" data-question="وين الدعم والمقاومة؟">الدعم والمقاومة</button><button type="button" data-question="شو يعني RSI؟">ما هو RSI؟</button></div>
+            <form id="chatForm" class="aa-chat-form"><label for="chatInput" class="aa-sr-only">سؤالك عن الشارت</label><textarea id="chatInput" name="question" rows="2" maxlength="1000" placeholder="مثلاً: شو الذي يقوّي سيناريو الصعود؟" required></textarea><button type="submit" class="aa-send" aria-label="إرسال السؤال">↑</button></form>
+            <p class="aa-chat-note">تُشرح الأرقام المتاحة ومصدرها. عندما تكون البيانات ناقصة، يظهر ذلك في الإجابة.</p>
+          </section>
+        </div>
+      </section>
+      <section id="historyView" class="aa-view hidden" aria-labelledby="historyTitle"><div class="panel"><header class="aa-panel-header"><div><h2 id="historyTitle">تقارير محفوظة على هذا الجهاز</h2><p>خاصة بحسابك الحالي. تاريخ التقرير يوضح الفترة التي يصفها.</p></div></header><div id="historyRoot"></div></div></section>
+      <section id="learnView" class="aa-view hidden" aria-label="شرح المؤشرات"><div id="learnRoot" class="aa-learn-grid"></div></section>
+      <section id="settingsView" class="aa-view hidden" aria-label="إعدادات الحساب"><div class="aa-settings-grid"><section class="panel"><header class="aa-panel-header"><div><h2>حسابك</h2><p id="settingsEmail"></p></div></header><form id="profileForm" class="aa-profile-form"><label class="control">الاسم الظاهر<input name="displayName" id="displayNameInput" required minlength="2" maxlength="80"></label><button type="submit" class="primary-button">حفظ الاسم</button></form><button type="button" class="text-button aa-reset-link" id="changePasswordButton">استعادة أو تغيير كلمة المرور</button></section><section class="panel"><header class="aa-panel-header"><div><h2>العرض والخصوصية</h2><p>اضبط مساحة العمل على هذا الجهاز.</p></div></header><div class="aa-setting-row"><div><b>مظهر التطبيق</b><p>الكحلي والأصفر في الوضعين.</p></div><button class="theme-toggle" type="button" data-theme-toggle><span data-theme-icon aria-hidden="true">☀</span><span data-theme-label>النهاري</span></button></div><div class="aa-setting-row"><div><b>التقارير المحفوظة</b><p>تُحفظ محلياً لهذا الحساب، ولا تتزامن تلقائياً مع الأجهزة الأخرى.</p></div></div><p class="aa-muted">عند تفعيل الشرح بالذكاء الاصطناعي، يُرسل السؤال وملخص التحليل إلى الخدمة المفعّلة. ملف الشموع الكامل يبقى في جلسة المتصفح.</p></section></div></section>
+      <footer class="app-footer"><span dir="ltr">VAREX AI · Market Analysis</span><span>القراءة الفنية تصف البيانات والسيناريوهات؛ اتجاه السوق القادم غير مضمون.</span></footer>
     </main>
   </div>
 
-  <div class="loading-screen" id="loadingScreen"><span class="loader"></span><b>جاري تجهيز مساحة التداول…</b></div>
+  <dialog class="aa-dialog" id="importDialog" aria-labelledby="importTitle">
+    <form id="importForm">
+      <header class="aa-panel-header"><div><span class="eyebrow">بياناتك للتحليل</span><h2 id="importTitle">استيراد شموع CSV</h2></div><button type="button" class="icon-button" data-close-dialog aria-label="إغلاق">×</button></header>
+      <p class="aa-muted">استورد ملف شموع تملك حق استخدامه. تأكد أن الأداة والفريم يطابقان اختيارك؛ سيظهر التقرير كتحليل لبيانات مستوردة مع تاريخها.</p>
+      <div class="aa-import-context" id="importContext"></div>
+      <label class="control">اسم المصدر<input name="source" maxlength="100" required placeholder="مثلاً: ملف شموع صادر من مزود بياناتي"></label>
+      <label class="control">توقيت التواريخ التي لا تحتوي على منطقة زمنية<select name="timezone"><option value="0">UTC — التوقيت العالمي</option><option value="240">UTC+4 — الإمارات</option><option value="180">UTC+3 — الرياض</option></select></label>
+      <label class="control aa-file-label">ملف CSV<input id="csvFile" type="file" accept=".csv,text/csv,text/plain"></label>
+      <label class="control">أو الصق بيانات CSV<textarea id="csvText" name="csv" rows="7" maxlength="2000000" spellcheck="false" dir="ltr" placeholder="time,open,high,low,close,volume"></textarea></label>
+      <p class="aa-muted aa-import-hint">الأعمدة: <bdi>time, open, high, low, close</bdi> وحجم التداول اختياري. نستخدم الشموع المكتملة فقط؛ لا يُملأ التاريخ الناقص تلقائياً.</p>
+      <p class="aa-form-message" id="importMessage" role="alert"></p>
+      <footer class="aa-dialog-actions"><button type="button" class="secondary-button" data-close-dialog>إلغاء</button><button type="submit" class="primary-button">استيراد وتحليل</button></footer>
+    </form>
+  </dialog>
+  <div class="loading-screen" id="loadingScreen"><span class="loader"></span><b>جاري تجهيز مساحة التحليل…</b></div>
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
-  <div class="modal hidden" id="confirmModal" role="dialog" aria-modal="true"><div><h3 id="confirmTitle">تأكيد الإجراء</h3><p id="confirmText"></p><footer><button class="secondary-button" id="confirmCancel">إلغاء</button><button class="danger-button" id="confirmAccept">تأكيد</button></footer></div></div>
-  <script src="./supabase-api.js?v=2"></script>
+  <noscript><p class="aa-noscript">يلزم تفعيل JavaScript لتسجيل الدخول واستخدام مساعد التحليل.</p></noscript>
+  <script src="./supabase-api.js?v=4"></script>
   <script src="./market-analysis.js?v=2"></script>
   <script src="./market-data.js?v=2"></script>
-  <script src="./market-workspace.js?v=3"></script>
-  <script src="./broker-directory.js?v=1"></script>
-  <script src="./app.js?v=12"></script>
+  <script src="./analysis-assistant-core.js?v=1"></script>
+  <script src="./analysis-data.js?v=1"></script>
+  <script src="./analysis-app.js?v=1"></script>
 </body>
 </html>
+

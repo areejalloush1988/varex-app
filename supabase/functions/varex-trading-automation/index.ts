@@ -170,4 +170,19 @@ export function createAutomationHandler(overrides: Partial<typeof defaults> = {}
   };
 }
 
-if (typeof Deno !== "undefined") Deno.serve(createAutomationHandler());
+// Product pivot: no scheduled or user-triggered trading is dispatched.
+// Existing configuration/history stays intact for an operator to archive.
+export function retiredAutomationHandler(request: Request) {
+  const origin = request.headers.get("origin");
+  const allowed = new Set(["https://app.varexapp.com", "https://areejalloush1988.github.io"]);
+  const headers = new Headers({ "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store", "Vary": "Origin" });
+  if (origin && allowed.has(origin)) headers.set("Access-Control-Allow-Origin", origin);
+  if (origin && !allowed.has(origin)) return new Response(JSON.stringify({ code: "origin_not_allowed" }), { status: 403, headers });
+  if (request.method === "OPTIONS") {
+    headers.set("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+    headers.set("Access-Control-Allow-Headers", "authorization, apikey, content-type, x-client-info");
+    return new Response(null, { status: 204, headers });
+  }
+  return new Response(JSON.stringify({ enabled: false, analysisOnly: true, code: "analysis_only", message: "تحول التطبيق إلى مساعد تحليل؛ التداول الآلي متوقف." }), { status: 410, headers });
+}
+if (typeof Deno !== "undefined") Deno.serve(retiredAutomationHandler);

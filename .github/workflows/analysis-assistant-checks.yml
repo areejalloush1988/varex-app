@@ -1,0 +1,57 @@
+name: Verify VAREX analysis assistant
+
+on:
+  push:
+    branches: [main, analysis-assistant]
+    paths:
+      - 'Varex AI Trading/**'
+      - 'trading/**'
+      - 'supabase/functions/varex-analysis-api/**'
+      - 'supabase/functions/varex-trading-api/**'
+      - 'supabase/functions/varex-trading-automation/**'
+      - 'supabase/setup/varex-analysis-usage.sql'
+      - '.github/workflows/analysis-assistant-checks.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: analysis-checks-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: 'Varex AI Trading/package-lock.json'
+      - name: Install pinned test dependencies
+        working-directory: Varex AI Trading
+        run: npm ci --ignore-scripts
+      - name: Run regression and analysis tests
+        working-directory: Varex AI Trading
+        run: npm test
+      - name: Install browser test runtime
+        run: |
+          npm install --prefix "$RUNNER_TEMP/varex-browser-qa" --no-package-lock --ignore-scripts playwright@1.62.1
+          node "$RUNNER_TEMP/varex-browser-qa/node_modules/playwright/cli.js" install --with-deps chromium
+      - name: Verify desktop and mobile assistant flows
+        env:
+          PLAYWRIGHT_MODULE: ${{ runner.temp }}/varex-browser-qa/node_modules/playwright
+          ANALYSIS_GOLD_DIAGNOSTIC: '1'
+          ANALYSIS_ARTIFACT_DIR: ${{ github.workspace }}/analysis-qa-artifacts
+        run: node "Varex AI Trading/tests/analysis-browser-smoke.cjs"
+      - name: Keep browser report and screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: analysis-assistant-qa
+          path: analysis-qa-artifacts/
+          if-no-files-found: ignore
+          retention-days: 14

@@ -867,4 +867,6 @@ export function createTradingHandler(overrides: Partial<Dependencies> = {}) {
   };
 }
 
-if (typeof Deno !== "undefined") Deno.serve(createTradingHandler());
+// Keep historical utilities testable; the public entrypoint is analysis-only.
+import { analysisOnlyHandler } from "./analysis-retirement.ts";
+if (typeof Deno !== "undefined") Deno.serve(analysisOnlyHandler(createTradingHandler()));

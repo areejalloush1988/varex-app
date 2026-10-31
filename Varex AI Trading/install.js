@@ -23,9 +23,9 @@
       button.hidden = installed;
       button.disabled = installing;
       button.textContent = isIOS ? "عرض خطوات التثبيت على الآيفون"
-        : deferredPrompt ? "تثبيت VAREX Trading" : "تثبيت التطبيق على هذا الجهاز";
+        : deferredPrompt ? "تثبيت VAREX AI" : "تثبيت التطبيق على هذا الجهاز";
     });
-    if (installationConfirmed) status("تم تثبيت VAREX Trading. افتحه من أيقونته على جهازك.");
+    if (installationConfirmed) status("تم تثبيت VAREX AI. افتحه من أيقونته على جهازك.");
     else if (installed) status("التطبيق مفتوح الآن بنافذة مستقلة. يمكنك استخدامه من أيقونته على جهازك.");
     else if (deferredPrompt) status("التطبيق جاهز للتثبيت. اضغط زر التثبيت للمتابعة.");
     else if (isIOS) status("على الآيفون: افتح الصفحة في Safari، ثم المشاركة ← إضافة إلى الشاشة الرئيسية.");
@@ -53,7 +53,7 @@
     deferredPrompt = null;
     installing = false;
     updateInstallState();
-    status("تم تثبيت VAREX Trading. افتحه من أيقونته على جهازك.");
+    status("تم تثبيت VAREX AI. افتحه من أيقونته على جهازك.");
     buttons().forEach((button) => { button.hidden = true; });
   });
   standaloneMedia.addEventListener?.("change", updateInstallState);

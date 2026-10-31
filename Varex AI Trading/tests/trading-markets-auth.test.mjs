@@ -65,7 +65,7 @@ test('auth service failure remains closed and offers a registration link', async
   const h = harness([new Error('offline')]); await settle();
   assert.equal(h.mounts.length, 0); assert.match(h.target.innerHTML, /يلزم تسجيل الدخول/);
 });
-test('the standalone page loads auth transport before its guarded bootstrap', () => {
-  assert.ok(html.indexOf('supabase-api.js') < html.indexOf('markets-page.js'));
-  assert.match(html, /جارٍ التحقق من حسابك/);
+test('the retired standalone market page returns to the guarded assistant without loading the old workspace', () => {
+  assert.match(html, /href="\.\/"|new URL\(["']\.\/["'],\s*(?:window\.)?location\.href\)/);
+  assert.doesNotMatch(html, /(?:supabase-api|markets-page|market-workspace|app)\.js\?|id="publicMarkets"/);
 });

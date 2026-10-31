@@ -17,6 +17,7 @@
   const AUTH_URL = `${PROJECT_URL}/auth/v1`;
   const TRADING_URL = `${PROJECT_URL}/functions/v1/varex-trading-api`;
   const AUTOMATION_URL = `${PROJECT_URL}/functions/v1/varex-trading-automation`;
+  const ANALYSIS_URL = `${PROJECT_URL}/functions/v1/varex-analysis-api`;
   const STORAGE_KEY = "varex.trading.supabase.session.v1.eibadfdqzpeigccfdipt";
   const REFRESH_MARGIN = 45;
   const SIGNUP_MARKER_TTL = 10 * 60 * 1000;
@@ -405,14 +406,33 @@
     try { url = new URL(path, window.location.href); }
     catch { return fetchRequest(path, options); }
     const isLocal = url.origin === window.location.origin;
+    const analysisAction = isLocal ? ({
+      "/api/analysis/capabilities": "capabilities",
+      "/api/analysis/market": "market",
+      "/api/analysis/chat": "chat",
+    })[url.pathname] : undefined;
+    const isAnalysis = Boolean(analysisAction);
     const isAutomation = isLocal && url.pathname === "/api/trading-automation";
-    const isTrading = isLocal && (url.pathname === "/api/trading" || isAutomation);
+    const isTrading = isLocal && (url.pathname === "/api/trading" || isAutomation || isAnalysis);
     if (!isTrading && !(isLocal && authPaths.has(url.pathname))) return fetchRequest(path, options);
     const method = (options.method || "GET").toUpperCase();
     let tradingDispatched = false;
     try {
       if (options.signal?.aborted) options.signal.throwIfAborted();
       if (!isTrading) return await handleAuth(url.pathname, options);
+      // The published application is an analysis workspace. Legacy order and
+      // broker actions are never dispatched by this transport. This is a client
+      // boundary, not a substitute for the server retirement handler.
+      if (!isAnalysis) {
+        let action = url.searchParams.get("action") || "bootstrap";
+        if (method === "POST") {
+          try { action = JSON.parse(typeof options.body === "string" ? options.body : "{}").action; }
+          catch { return json({ error: "بيانات الطلب غير صالحة.", code: "invalid_request" }, 400); }
+        }
+        const allowed = !isAutomation && ((method === "GET" && ["access", "users"].includes(action))
+          || (method === "POST" && ["update_profile", "invite_user", "update_user"].includes(action)));
+        if (!allowed) return json({ error: "أصبح VAREX مساعداً لتحليل الأسواق. أوامر التداول وربط الوسطاء غير متاحة في هذه النسخة.", code: "analysis_only" }, 410);
+      }
       const value = await ensureSession();
       if (!value) return json({ error: "يرجى تسجيل الدخول أولاً.", code: "not_authenticated" }, 401);
       if (options.signal?.aborted) options.signal.throwIfAborted();
@@ -422,8 +442,11 @@
       headers.delete("Cookie");
       if (!headers.has("Content-Type")) headers.set("Content-Type", "application/json");
       const epoch = authEpoch;
-      tradingDispatched = true;
-      const response = await fetchRequest(`${isAutomation ? AUTOMATION_URL : TRADING_URL}${url.search}`, {
+      tradingDispatched = !isAnalysis;
+      const query = new URL(url.href).searchParams;
+      if (isAnalysis) query.set("action", analysisAction);
+      const queryString = query.size ? `?${query}` : "";
+      const response = await fetchRequest(`${isAnalysis ? ANALYSIS_URL : isAutomation ? AUTOMATION_URL : TRADING_URL}${queryString}`, {
         ...options, headers, credentials: "omit", cache: "no-store", redirect: "error", mode: "cors",
       });
       if (response.status === 401 && epoch === authEpoch) clearSession();

@@ -74,8 +74,8 @@ test("loading is explicit, can be disabled, and never overrides global fetch", (
 
 test("unrelated and foreign requests retain their original transport without auth injection", async () => {
   const response = new Response("original");
-  const h = harness({ network: async () => response });
-  for (const path of ["/api/unrelated", "https://foreign.example/api/trading", "https://foreign.example/api/trading-automation", "https://foreign.example/api/auth/sign-in/email"]) {
+  const h = harness({ sessionStorage: memoryStorage({ [KEY]: saved(tokenSession()) }), network: async () => response });
+  for (const path of ["/api/unrelated", "https://foreign.example/api/trading", "https://foreign.example/api/trading-automation", "https://foreign.example/api/auth/sign-in/email", "https://foreign.example/api/analysis/capabilities", "https://foreign.example/api/analysis/market?symbol=XAU-USD", "https://foreign.example/api/analysis/chat"]) {
     const options = { method: "GET", credentials: "include", headers: { "X-Example": "keep" } };
     assert.equal(await h.request(path, options), response);
     assert.equal(h.calls.at(-1).url, path);
@@ -311,7 +311,7 @@ test("concurrent expired-session requests share one refresh and use the rotated 
     assert.equal(new Headers(call.options.headers).get("authorization"), "Bearer test-access-new");
     return ok({ ready: true });
   } });
-  const requests = [h.request("/api/auth/get-session"), h.request("/api/trading?action=markets"), h.request("/api/trading", post({ action: "bootstrap" }))];
+  const requests = [h.request("/api/auth/get-session"), h.request("/api/trading?action=access"), h.request("/api/trading", post({ action: "update_profile", displayName: "Updated Person" }))];
   assert.equal(h.calls.length, 1);
   gate.resolve(ok(tokenSession("new")));
   for (const response of await Promise.all(requests)) assert.equal(response.status, 200);
@@ -346,7 +346,7 @@ test("invalid refresh tokens clear the session; temporary outages keep it for a 
   const invalid = harness({ localStorage: memoryStorage({ [KEY]: saved(tokenSession("old", -20)) }), network: async () => failure(400, "refresh_token_not_found") });
   assert.equal(await (await invalid.request("/api/auth/get-session")).json(), null);
   assert.equal(invalid.localStorage.getItem(KEY), null);
-  assert.equal((await invalid.request("/api/trading")).status, 401);
+  assert.equal((await invalid.request("/api/trading?action=access")).status, 401);
   assert.equal(invalid.calls.length, 1);
   const outage = harness({ sessionStorage: memoryStorage({ [KEY]: saved(tokenSession("old", -20)) }), network: async (_call, index) => index === 0 ? failure(503, "unexpected_failure") : ok(tokenSession("new")) });
   assert.equal((await outage.request("/api/auth/get-session")).status, 503);
@@ -383,18 +383,18 @@ test("a concurrent logout also cancels an in-flight password sign-in", async () 
   assertAuthCall(h.calls.at(-1), "/logout?scope=local");
 });
 
-test("trading forwards query and body once, replaces auth headers, omits cookies, and preserves the Response", async () => {
-  const upstream = Response.json({ error: "execution uncertain", executionUncertain: true }, { status: 409, headers: { "X-Trace": "trace-1" } });
+test("identity updates forward query and body once, replace auth headers, omit cookies, and preserve the Response", async () => {
+  const upstream = Response.json({ error: "profile conflict" }, { status: 409, headers: { "X-Trace": "trace-1" } });
   const h = harness({ sessionStorage: memoryStorage({ [KEY]: saved(tokenSession()) }), network: async () => upstream });
-  const body = JSON.stringify({ action: "open_trade", symbol: "BTC-USD", amount: 20 });
-  const response = await h.request("/api/trading?action=markets&symbol=BTC%2FUSD", { method: "POST", body, credentials: "include", headers: { Authorization: "wrong", apikey: "wrong", Cookie: "do-not-send", "X-Client-Info": "client" } });
+  const body = JSON.stringify({ action: "update_profile", displayName: "Updated Person" });
+  const response = await h.request("/api/trading?trace=profile%2Fupdate", { method: "POST", body, credentials: "include", headers: { Authorization: "wrong", apikey: "wrong", Cookie: "do-not-send", "X-Client-Info": "client" } });
   assert.equal(response, upstream);
   assert.equal(response.status, 409);
   assert.equal(response.headers.get("X-Trace"), "trace-1");
   assert.equal(response.bodyUsed, false);
   assert.equal(h.calls.length, 1);
   const call = h.calls[0], headers = new Headers(call.options.headers);
-  assert.equal(call.url, `${PROJECT}/functions/v1/varex-trading-api?action=markets&symbol=BTC%2FUSD`);
+  assert.equal(call.url, `${PROJECT}/functions/v1/varex-trading-api?trace=profile%2Fupdate`);
   assert.equal(call.options.method, "POST");
   assert.equal(call.options.body, body);
   assert.equal(call.options.credentials, "omit");
@@ -405,32 +405,44 @@ test("trading forwards query and body once, replaces auth headers, omits cookies
   assert.equal(headers.get("X-Client-Info"), "client");
 });
 
-test("a trading 401 clears the local session without replaying a request", async () => {
+test("an identity endpoint 401 clears the local session without replaying a request", async () => {
   const upstream = Response.json({ error: "Unauthorized" }, { status: 401 });
   const h = harness({ sessionStorage: memoryStorage({ [KEY]: saved(tokenSession()) }), network: async () => upstream });
-  assert.equal(await h.request("/api/trading", post({ action: "open_trade" })), upstream);
+  assert.equal(await h.request("/api/trading", post({ action: "update_profile", displayName: "Updated Person" })), upstream);
   assert.equal(h.calls.length, 1);
   assert.equal(await (await h.request("/api/auth/get-session")).json(), null);
   assert.equal(h.sessionStorage.getItem(KEY), null);
 });
 
-test("automation uses its separate authenticated endpoint and never dispatches without a session", async () => {
-  const anonymous = harness();
-  assert.equal((await anonymous.request('/api/trading-automation')).status, 401);
-  assert.equal(anonymous.calls.length, 0);
-  const h = harness({ sessionStorage: memoryStorage({ [KEY]: saved(tokenSession()) }), network: async () => ok({ automation: { enabled: false } }) });
-  const body = { action: 'configure', mode: 'demo', enabled: false };
-  assert.equal((await h.request('/api/trading-automation', post(body))).status, 200);
-  assert.equal(h.calls.length, 1);
-  assert.equal(h.calls[0].url, `${PROJECT}/functions/v1/varex-trading-automation`);
-  assert.equal(new Headers(h.calls[0].options.headers).get('authorization'), 'Bearer test-access-one');
-  assert.equal(h.calls[0].options.credentials, 'omit');
-  assert.deepEqual(JSON.parse(h.calls[0].options.body), body);
+test("retired trading and automation stop before Auth refresh or any network request", async () => {
+  const blockedActions = ["bootstrap", "markets", "analyze", "save_preferences", "open_trade", "close_trade", "reset_paper", "connect_broker", "refresh_broker", "configure_live_trading", "disconnect_broker", "place_live_order", "unknown_action"];
+  for (const stored of [null, tokenSession(), tokenSession("expired", -20)]) {
+    const storage = memoryStorage(stored ? { [KEY]: saved(stored) } : {});
+    const h = harness({ sessionStorage: storage });
+    const original = storage.getItem(KEY);
+    const requests = [
+      ["/api/trading", {}],
+      ["/api/trading-automation", {}],
+      ["/api/trading-automation", post({ action: "configure", mode: "demo", enabled: true })],
+      ["/api/trading-automation?action=access", {}],
+      ["/api/trading-automation", post({ action: "update_profile" })],
+      ...blockedActions.flatMap((action) => [[`/api/trading?action=${action}`, {}], ["/api/trading", post({ action })]]),
+      ["/api/trading?action=access", { method: "PUT", body: JSON.stringify({ action: "update_profile" }) }],
+      ["/api/trading?action=users", { method: "DELETE" }],
+    ];
+    for (const [path, options] of requests) {
+      const response = await h.request(path, options);
+      assert.equal(response.status, 410, `${path} ${options.method || "GET"}`);
+      assert.equal((await response.json()).code, "analysis_only");
+    }
+    assert.equal(h.calls.length, 0);
+    assert.equal(storage.getItem(KEY), original);
+  }
 });
 
-test("trading transport failures are not retried and flag mutation execution as uncertain", async () => {
+test("identity update transport failures are not retried and flag the mutation result as uncertain", async () => {
   const h = harness({ sessionStorage: memoryStorage({ [KEY]: saved(tokenSession()) }), network: async () => { throw new Error("private diagnostic"); } });
-  const response = await h.request("/api/trading", post({ action: "open_trade" }));
+  const response = await h.request("/api/trading", post({ action: "update_profile", displayName: "Updated Person" }));
   assert.equal(response.status, 503);
   const data = await response.json();
   assert.equal(data.executionUncertain, true);
@@ -439,23 +451,165 @@ test("trading transport failures are not retried and flag mutation execution as 
   assert.equal(h.calls.length, 1);
 });
 
-test("preflight refresh failures never claim that a trading mutation was dispatched", async () => {
+test("preflight refresh failures do not dispatch or replay a paid analysis request", async () => {
   const h = harness({ sessionStorage: memoryStorage({ [KEY]: saved(tokenSession("old", -20)) }), network: async (call) => {
     assertAuthCall(call, "/token?grant_type=refresh_token", { refresh_token: "test-refresh-old" });
     throw new Error("offline");
   } });
-  const response = await h.request("/api/trading", post({ action: "open_trade" }));
+  const response = await h.request("/api/analysis/chat", post({ message: "Explain this market report" }));
   assert.equal(response.status, 503);
   assert.equal((await response.json()).executionUncertain, undefined);
   assert.equal(h.calls.length, 1);
 });
 
-test("aborting an already dispatched trading mutation preserves execution uncertainty", async () => {
+test("aborting an already dispatched identity update preserves mutation uncertainty", async () => {
   const h = harness({ sessionStorage: memoryStorage({ [KEY]: saved(tokenSession()) }), network: async () => { throw new DOMException("aborted", "AbortError"); } });
-  const response = await h.request("/api/trading", post({ action: "open_trade" }));
+  const response = await h.request("/api/trading", post({ action: "update_profile", displayName: "Updated Person" }));
   assert.equal(response.status, 503);
   assert.equal((await response.json()).executionUncertain, true);
   assert.equal(h.calls.length, 1);
+});
+
+test("remaining identity routes still require a session and retain their exact allowed actions", async () => {
+  const requests = [
+    ["/api/trading?action=access", {}],
+    ["/api/trading?action=users", {}],
+    ...["update_profile", "invite_user", "update_user"].map((action) => ["/api/trading", post({ action })]),
+  ];
+  const anonymous = harness();
+  for (const [path, options] of requests) {
+    const result = await anonymous.request(path, options);
+    assert.equal(result.status, 401);
+    assert.equal((await result.json()).code, "not_authenticated");
+  }
+  assert.equal(anonymous.calls.length, 0);
+  const signedIn = harness({ sessionStorage: memoryStorage({ [KEY]: saved(tokenSession()) }), network: async () => ok({ allowed: true }) });
+  for (const [path, options] of requests) {
+    assert.equal((await signedIn.request(path, options)).status, 200);
+    assert.equal(signedIn.calls.at(-1).url, `${PROJECT}/functions/v1/varex-trading-api${path.slice("/api/trading".length)}`);
+    assert.equal(signedIn.calls.at(-1).options.body, options.body);
+    assert.equal(new Headers(signedIn.calls.at(-1).options.headers).get("authorization"), "Bearer test-access-one");
+  }
+  assert.equal(signedIn.calls.length, requests.length);
+});
+
+test("malformed legacy JSON cannot trigger an Auth refresh or any service call", async () => {
+  const h = harness({ sessionStorage: memoryStorage({ [KEY]: saved(tokenSession("expired", -20)) }) });
+  const response = await h.request("/api/trading?action=access", { method: "POST", body: "{broken" });
+  assert.equal(response.status, 400);
+  assert.equal((await response.json()).code, "invalid_request");
+  assert.equal(h.calls.length, 0);
+});
+
+test("analysis capabilities, market data, and chat require login before any service call", async () => {
+  const h = harness();
+  for (const [path, options] of [
+    ["/api/analysis/capabilities", {}],
+    ["/api/analysis/market?symbol=XAU-USD&interval=60", {}],
+    ["/api/analysis/chat", post({ message: "Explain the market report" })],
+  ]) {
+    const response = await h.request(path, options);
+    assert.equal(response.status, 401);
+    assert.equal((await response.json()).code, "not_authenticated");
+  }
+  assert.equal(h.calls.length, 0);
+});
+
+test("analysis routes map only to the analysis service and replace caller-supplied action and auth", async () => {
+  for (const route of ["capabilities", "market", "chat"]) {
+    const upstream = Response.json({ route, source: "test fixture" }, { headers: { "X-Trace": `analysis-${route}` } });
+    const h = harness({ sessionStorage: memoryStorage({ [KEY]: saved(tokenSession()) }), network: async () => upstream });
+    const body = route === "chat" ? JSON.stringify({ message: "Explain support and resistance", report: { symbol: "XAU-USD" } }) : undefined;
+    const options = {
+      method: route === "chat" ? "POST" : "GET", body, credentials: "include", cache: "force-cache",
+      headers: { Authorization: "wrong", apikey: "wrong", Cookie: "do-not-send", "X-Client-Info": "analysis-client" },
+    };
+    const response = await h.request(`/api/analysis/${route}?symbol=XAU-USD&interval=60&action=place_live_order&action=configure`, options);
+    assert.equal(response, upstream);
+    assert.equal(response.bodyUsed, false);
+    assert.equal(response.headers.get("X-Trace"), `analysis-${route}`);
+    assert.equal(h.calls.length, 1);
+    const call = h.calls[0], target = new URL(call.url), headers = new Headers(call.options.headers);
+    assert.equal(`${target.origin}${target.pathname}`, `${PROJECT}/functions/v1/varex-analysis-api`);
+    assert.deepEqual(target.searchParams.getAll("action"), [route]);
+    assert.equal(target.searchParams.get("symbol"), "XAU-USD");
+    assert.equal(target.searchParams.get("interval"), "60");
+    assert.equal(call.options.method, options.method);
+    assert.equal(call.options.body, body);
+    assert.equal(call.options.credentials, "omit");
+    assert.equal(call.options.cache, "no-store");
+    assert.equal(call.options.redirect, "error");
+    assert.equal(call.options.mode, "cors");
+    assert.equal(headers.get("authorization"), "Bearer test-access-one");
+    assert.match(headers.get("apikey"), /^sb_publishable_/);
+    assert.equal(headers.get("Cookie"), null);
+    assert.equal(headers.get("Content-Type"), "application/json");
+    assert.equal(headers.get("X-Client-Info"), "analysis-client");
+  }
+});
+
+test("analysis chat refreshes an expired session once before its single dispatch", async () => {
+  const body = { message: "Explain the market report" };
+  const upstream = ok({ answer: "Test explanation" });
+  const h = harness({ sessionStorage: memoryStorage({ [KEY]: saved(tokenSession("expired", -20)) }), network: async (call, index) => {
+    if (index === 0) {
+      assertAuthCall(call, "/token?grant_type=refresh_token", { refresh_token: "test-refresh-expired" });
+      return ok(tokenSession("rotated"));
+    }
+    assert.equal(call.url, `${PROJECT}/functions/v1/varex-analysis-api?action=chat`);
+    assert.equal(new Headers(call.options.headers).get("authorization"), "Bearer test-access-rotated");
+    assert.deepEqual(JSON.parse(call.options.body), body);
+    return upstream;
+  } });
+  assert.equal(await h.request("/api/analysis/chat", post(body)), upstream);
+  assert.equal(h.calls.length, 2);
+  assert.equal(JSON.parse(h.sessionStorage.getItem(KEY)).session.refresh_token, "test-refresh-rotated");
+});
+
+test("analysis chat 401 clears the session without refreshing or replaying the paid request", async () => {
+  const upstream = Response.json({ code: "not_authenticated" }, { status: 401 });
+  const h = harness({ sessionStorage: memoryStorage({ [KEY]: saved(tokenSession()) }), network: async () => upstream });
+  assert.equal(await h.request("/api/analysis/chat", post({ message: "Explain the market report" })), upstream);
+  assert.equal(h.calls.length, 1);
+  assert.equal(h.sessionStorage.getItem(KEY), null);
+  assert.equal(await (await h.request("/api/auth/get-session")).json(), null);
+});
+
+test("analysis rate limits and upstream failures preserve status, body, and Retry-After without paid retries", async () => {
+  for (const status of [403, 429, 500, 502, 503]) {
+    const upstream = Response.json({ code: status === 429 ? "rate_limited" : "provider_unavailable" }, { status, headers: { "Retry-After": "60" } });
+    const h = harness({ sessionStorage: memoryStorage({ [KEY]: saved(tokenSession()) }), network: async () => upstream });
+    const originalSession = h.sessionStorage.getItem(KEY);
+    const response = await h.request("/api/analysis/chat", post({ message: "Explain the market report" }));
+    assert.equal(response, upstream);
+    assert.equal(response.status, status);
+    assert.equal(response.bodyUsed, false);
+    assert.equal(response.headers.get("Retry-After"), "60");
+    assert.equal(h.calls.length, 1);
+    assert.equal(h.sessionStorage.getItem(KEY), originalSession);
+  }
+});
+
+test("analysis chat transport failures are sanitized and never claim a trade may have executed", async () => {
+  const h = harness({ sessionStorage: memoryStorage({ [KEY]: saved(tokenSession()) }), network: async () => { throw new Error("private provider diagnostic test-access-one"); } });
+  const response = await h.request("/api/analysis/chat", post({ message: "Explain the market report" }));
+  assert.equal(response.status, 503);
+  const data = await response.json();
+  assert.equal(data.code, "network_error");
+  assert.equal(Object.hasOwn(data, "executionUncertain"), false);
+  assert.doesNotMatch(JSON.stringify(data), /private provider|test-access/);
+  assert.equal(h.calls.length, 1);
+});
+
+test("aborting analysis chat propagates cancellation and does not retry a paid request", async () => {
+  const cancellation = new DOMException("aborted", "AbortError");
+  const h = harness({ sessionStorage: memoryStorage({ [KEY]: saved(tokenSession()) }), network: async () => { throw cancellation; } });
+  await assert.rejects(h.request("/api/analysis/chat", post({ message: "Explain the market report" })), (error) => error === cancellation);
+  assert.equal(h.calls.length, 1);
+  const controller = new AbortController();
+  controller.abort();
+  await assert.rejects(h.request("/api/analysis/chat", { ...post({ message: "Already cancelled" }), signal: controller.signal }), { name: "AbortError" });
+  assert.equal(h.calls.length, 1, "an already cancelled request must not reach the service");
 });
 
 test("auth rejects invalid methods and malformed upstream data without exposing its content", async () => {

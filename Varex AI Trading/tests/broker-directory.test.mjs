@@ -68,11 +68,12 @@ test("search and option inputs are escaped and cannot generate arbitrary provide
   assert.doesNotMatch(renderChoices({ demoBalance: payload }), /<img/);
 });
 
-test("public account entry page contains no account API, auth client or credential forms", () => {
+test("retired public account entry returns to the assistant without a broker client or credential form", () => {
   const controller = fs.readFileSync(new URL("../accounts-page.js", import.meta.url), "utf8");
   const html = fs.readFileSync(new URL("../../trading/accounts.html", import.meta.url), "utf8");
   assert.doesNotMatch(controller, /fetch\s*\(|XMLHttpRequest|localStorage|sessionStorage|\/api\/|supabase/);
-  assert.doesNotMatch(html, /supabase-api\.js|app\.js\?|type="password"|name="apiKey"/);
-  assert.match(html, /بعد التسجيل/);
+  assert.doesNotMatch(html, /supabase-api\.js|(?:accounts-page|broker-directory|app)\.js\?|type="password"|name="apiKey"/);
+  assert.match(html, /href="\.\/"|new URL\(["']\.\/["'],\s*(?:window\.)?location\.href\)/);
+  assert.doesNotMatch(html, /data-broker-connect|data-account-choice|id="publicAccounts"/);
   assert.match(controller, /\/trading\/\?account=demo/);
 });
