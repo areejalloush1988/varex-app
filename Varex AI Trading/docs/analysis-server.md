@@ -13,7 +13,7 @@ checks, rather than treating repository changes as deployment evidence:
 | `varex-analysis-api` | Deployed. The handler returned HTTP `405` for an unsupported method, `401 sign_in_required` for a missing token, and `401 invalid_session` for an invalid dummy token. These checks do not establish a successful authenticated conversation. |
 | `varex-trading-api` retirement wrapper | Deployed from commit `19b71bd`, with all six source/configuration files checked against the prepared text. A default legacy POST returned `410 analysis_only`; `GET ?action=access` without a session returned the expected Arabic sign-in error with HTTP `401`. |
 | `varex-trading-automation` retirement handler | Deployed from commit `19b71bd`, with all three source/configuration files checked against the prepared text. The Dashboard POST test returned HTTP `410` and `{enabled:false,analysisOnly:true,code:"analysis_only"}` with the expected retirement message. |
-| Paid model and gold data | Not activated. The configured secret names do not include `OPENAI_API_KEY` or `TWELVE_DATA_API_KEY`; no provider keys were added or paid requests made during this rollout. |
+| Paid providers at initial deployment | Neither provider key was configured at the 2026-10-31 deployment stage, and no paid request was made. The later OpenAI configuration is recorded separately below. |
 
 The Dashboard showed a current ECC (P-256) Auth signing key and the previous
 HS256 key. The frontend sends the user's session JWT in `Authorization` and the
@@ -25,6 +25,30 @@ of this work.
 
 The frontend can use its descriptive numerical explanation mode independently.
 It must never label that local explanation as a generated language-model answer.
+
+## AI configuration — 2026-11-01 (Asia/Dubai)
+
+The user saved `OPENAI_API_KEY`, and its secret name was verified in the
+Dashboard. The key value was never read or copied into documentation. The
+following configuration was saved successfully through the Dashboard and the
+corresponding secret names were verified:
+
+| Setting | Saved configuration |
+|---|---|
+| `OPENAI_API_KEY` | Present; value supplied by the user and not inspected. |
+| `OPENAI_MODEL` | `gpt-5.4-mini-2026-03-17` |
+| `VAREX_ANALYSIS_AI_ENABLED` | `true` |
+| `VAREX_ANALYSIS_USER_DAILY_LIMIT` | `10` |
+| `VAREX_ANALYSIS_GLOBAL_DAILY_LIMIT` | `20` |
+
+This records configuration, not a successful provider health check. Application
+sign-in was not completed for this verification, so there is no authenticated
+`capabilities` HTTP `200` result or successful real-user AI conversation to
+report. Key validity, model access and billing remain unverified. No paid call
+was made, and no authentication or profile requirement was bypassed. The gold
+provider remains unconfigured and disabled; `TWELVE_DATA_API_KEY` is absent.
+
+The update date above uses Asia/Dubai. Quota accounting still uses UTC days.
 
 ## Endpoint contract
 
@@ -98,6 +122,9 @@ increments. Defaults/hard ceilings are **20 requests per user per UTC day** and
 
 The server can lower limits using `VAREX_ANALYSIS_USER_DAILY_LIMIT` and
 `VAREX_ANALYSIS_GLOBAL_DAILY_LIMIT`; values over the hard ceiling fail closed.
+The saved operating limits from the 2026-11-01 configuration update are
+**10 requests per user and 20 across the service per UTC day**. The SQL hard
+ceilings remain unchanged at 20 and 200 respectively.
 Counters count attempted paid requests even if a provider subsequently fails.
 This is a request cap, not a guaranteed currency spend cap: configure provider
 billing limits and select a model appropriate to the approved budget.
@@ -129,9 +156,11 @@ authorization headers, upstream bodies or SQL errors.
 All three function deployments and both retirement responses are confirmed.
 The analysis handler's boot and rejected-session paths were checked; a real
 confirmed user's successful HTTP `200` response and a generated AI conversation
-were not verified during this rollout. Provider keys remain absent, and no paid
-model or gold-data request was made. Its `capabilities` response must remain
-truthful while providers are unavailable. Before activating a provider, retain the existing Auth/profile
+were not verified during this rollout. OpenAI configuration is now saved as
+recorded above, but its key, model access and billing have not been validated by
+a live request. Gold remains unconfigured, and no paid model or gold-data request
+was made. The `capabilities` route checks configuration and quota readiness; it
+does not itself test provider credentials or billing. Retain the existing Auth/profile
 checks, verified RLS/RPC restrictions, explicit model/data configuration, and
 durable caps. Automated tests exercise denied access and quota exhaustion
 without provider credentials. No live trading test is needed.
