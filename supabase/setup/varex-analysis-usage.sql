@@ -1,6 +1,7 @@
--- MANUAL SETUP DRAFT — NOT APPLIED.
--- For the existing VAREX project only. Run after reviewing the current schema,
--- using an authorized database administrator. No migrations were fabricated.
+-- APPLIED 2026-10-31 to VAREX project eibadfdqzpeigccfdipt via authorized SQL Editor.
+-- Exact operator transaction: records/2026-10-31-varex-analysis-deployment.sql.
+-- Canonical quota definitions; review current schema before any deliberate reapply.
+-- No synthetic migration timestamp or migration-history entry was created.
 -- Existing trading/auth records and other applications are not modified.
 begin;
 

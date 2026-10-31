@@ -1,4 +1,6 @@
--- Run after deploying varex-trading-automation. Tokens are generated/stored in
+-- HISTORICAL SETUP: the analysis-assistant rollout retired this job on 2026-10-31.
+-- Do not run this old scheduler setup as part of analysis-assistant deployment.
+-- Original instructions: run after deploying varex-trading-automation. Tokens are generated/stored in
 -- Supabase Vault on the database server, never copied into browser app code.
 create extension if not exists pg_cron with schema pg_catalog;
 create extension if not exists pg_net with schema extensions;

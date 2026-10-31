@@ -1,5 +1,10 @@
 # Server scheduled demo automation
 
+> Historical documentation. The analysis-assistant rollout unscheduled
+> `varex-trading-demo-24h` and reset its runtime on 2026-10-31. The old deployment
+> instructions below do not apply to the current product. Live retirement of
+> the legacy function endpoints is tracked in [analysis-server.md](analysis-server.md).
+
 The bot runs on Supabase, independently of an open browser or laptop. It is
 disabled for every account until the user explicitly enables it. It cannot read
 broker credentials and has no Binance, Capital.com or other live order client.

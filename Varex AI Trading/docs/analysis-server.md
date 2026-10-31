@@ -1,12 +1,27 @@
 # Optional VAREX analysis backend
 
-## Status
+## Deployment status — 2026-10-31
 
-The function and quota setup are prepared in the repository. **No schema setup,
-provider activation, or function deployment was performed by this change.**
-The connected Supabase account currently exposes no projects and denied access
-to the existing VAREX project. Reconnect the account authorized for that project
-before applying setup or deploying. No credentials or permissions were bypassed.
+Authorized Dashboard access to project `eibadfdqzpeigccfdipt` was established
+after the initial connector access failure. The following status records live
+checks, rather than treating repository changes as deployment evidence:
+
+| Component | Confirmed state |
+|---|---|
+| Analysis quota table and RPCs | Applied. `varex_analysis_usage_ready()` returned `true` while `current_user` was `service_role`. RLS is enabled, browser table/RPC grants are absent, and the counter table had zero rows after verification. |
+| Legacy demo scheduler | Job `varex-trading-demo-24h` (previously job ID `1`) was unscheduled. The matching job count is `0`; runtime row `1` has `scheduler_ready=false` and `job_id=NULL`; enabled bots and leases both count `0`. |
+| `varex-analysis-api` | Deployed. The handler returned HTTP `405` for an unsupported method, `401 sign_in_required` for a missing token, and `401 invalid_session` for an invalid dummy token. These checks do not establish a successful authenticated conversation. |
+| `varex-trading-api` retirement wrapper | Deployed from commit `19b71bd`, with all six source/configuration files checked against the prepared text. A default legacy POST returned `410 analysis_only`; `GET ?action=access` without a session returned the expected Arabic sign-in error with HTTP `401`. |
+| `varex-trading-automation` retirement handler | Deployed from commit `19b71bd`, with all three source/configuration files checked against the prepared text. The Dashboard POST test returned HTTP `410` and `{enabled:false,analysisOnly:true,code:"analysis_only"}` with the expected retirement message. |
+| Paid model and gold data | Not activated. The configured secret names do not include `OPENAI_API_KEY` or `TWELVE_DATA_API_KEY`; no provider keys were added or paid requests made during this rollout. |
+
+The Dashboard showed a current ECC (P-256) Auth signing key and the previous
+HS256 key. The frontend sends the user's session JWT in `Authorization` and the
+publishable API key in `apikey`. The analysis function's deployed gateway
+setting is `verify_jwt=false`; user authentication remains enforced inside the
+handler through `auth.getUser(token)` and the active-profile check. The observed
+`401` responses above came from that handler. No signing key was rotated as part
+of this work.
 
 The frontend can use its descriptive numerical explanation mode independently.
 It must never label that local explanation as a generated language-model answer.
@@ -62,10 +77,17 @@ authentication. Modern `SUPABASE_SECRET_KEYS` and the legacy
 
 ## Durable cost protection
 
-Review and apply `supabase/setup/varex-analysis-usage.sql` through the authorized
-project's normal database administration process. It is an explicitly labelled
-manual setup draft, not a timestamped migration or an already-applied change.
-Before production rollout, record it in the project's normal migration history.
+`supabase/setup/varex-analysis-usage.sql` was applied to the existing project on
+2026-10-31 through the authorized SQL Editor. The exact operator transaction is
+retained at
+[`supabase/setup/records/2026-10-31-varex-analysis-deployment.sql`](../../supabase/setup/records/2026-10-31-varex-analysis-deployment.sql).
+It is 4,388 characters / 97 lines, with SHA-256
+`cad3775032dd664f887f554fa2e92977b632b1b0eb5be247f182f28a9638b8fb`.
+The quota definitions match the canonical setup file after removing comments
+and whitespace. The added transaction prefix retires only the verified demo
+job and resets its bot runtime; trading history and account records are retained.
+The record is an audit artifact, not a new migration to replay automatically.
+No synthetic migration timestamp or migration-history entry was created.
 
 It creates one RLS-protected counter table and two `SECURITY INVOKER` RPCs,
 callable only by `service_role`. No browser role can read or update quota rows.
@@ -102,18 +124,23 @@ provider's policies. Both providers have a 15-second timeout and bounded bodies.
 Errors returned to the browser are generic and never include keys, request URLs,
 authorization headers, upstream bodies or SQL errors.
 
-## Verification before activation
+## Verification limits and provider activation
 
-Run the handler's dependency-injected tests and the core/data/UI tests. Then,
-with authorized project access, inspect the schema and apply setup, check RLS and
-RPC permissions, deploy with JWT verification, and verify an authenticated test
-account. Check denied access for unconfirmed/inactive users, missing quotas, and
-quota exhaustion before enabling paid providers. No live trading test is needed.
+All three function deployments and both retirement responses are confirmed.
+The analysis handler's boot and rejected-session paths were checked; a real
+confirmed user's successful HTTP `200` response and a generated AI conversation
+were not verified during this rollout. Provider keys remain absent, and no paid
+model or gold-data request was made. Its `capabilities` response must remain
+truthful while providers are unavailable. Before activating a provider, retain the existing Auth/profile
+checks, verified RLS/RPC restrictions, explicit model/data configuration, and
+durable caps. Automated tests exercise denied access and quota exhaustion
+without provider credentials. No live trading test is needed.
 
 References checked for implementation:
 
 - https://supabase.com/docs/guides/functions
 - https://supabase.com/docs/guides/functions/auth
+- https://supabase.com/docs/guides/functions/auth-headers
 - https://developers.openai.com/api/docs/guides/text
 - https://developers.openai.com/api/reference/resources/responses/methods/create
 - https://twelvedata.com/docs
