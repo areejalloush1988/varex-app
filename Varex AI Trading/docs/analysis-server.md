@@ -45,10 +45,42 @@ This records configuration, not a successful provider health check. Application
 sign-in was not completed for this verification, so there is no authenticated
 `capabilities` HTTP `200` result or successful real-user AI conversation to
 report. Key validity, model access and billing remain unverified. No paid call
-was made, and no authentication or profile requirement was bypassed. The gold
-provider remains unconfigured and disabled; `TWELVE_DATA_API_KEY` is absent.
+was made, and no authentication or profile requirement was bypassed. The
+Twelve Data key was absent at that stage; its later private verification is
+recorded below. The public market feed remains disabled.
 
 The update date above uses Asia/Dubai. Quota accounting still uses UTC days.
+
+## Twelve Data verification — 2026-11-01 (Asia/Dubai)
+
+The user saved `TWELVE_DATA_API_KEY`. Its name was confirmed in the Dashboard
+without reading the value. A separate operator-only diagnostic made four fixed
+requests at `2026-10-31T21:43:25.799Z`: one `/api_usage` check and three sample
+`time_series` requests. All four received HTTP `200`.
+
+| Check | Observed result |
+|---|---|
+| Plan | `basic`, 8 API credits/minute and 800/day, as returned by the provider. |
+| `XAU/USD` | Three structurally valid closed `1min` candles. |
+| `EUR/USD` | Three structurally valid closed `1min` candles. |
+| `AAPL` | Three structurally valid closed `1min` candles. |
+
+This establishes key validity and access to these samples at the recorded time.
+It does not establish independent price accuracy, real-time coverage, all other
+symbols/intervals, public display rights, or an end-to-end app conversation.
+`VAREX_MARKET_DATA_LICENSED` remains absent. The public market endpoint still
+supports only `XAU-USD`; the EUR/USD and AAPL checks did not add app markets.
+No OpenAI request, subscription purchase, or main-app authentication change was
+part of this verification.
+
+The diagnostic required the exact default server secret on `apikey` and rejected
+an unauthorized invocation with HTTP `401 operator_auth_required`. It was then
+replaced by the inert `varex-data-check` handler, whose live POST returned HTTP
+`410` with `diagnostic_retired` and `enabled:false`. Legacy JWT verification was
+restored to ON for that retired diagnostic only. The archived source, ten
+passing fixture tests, and sanitized provider result are retained under
+`supabase/diagnostics/twelve-data-check-20261031/`. Do not redeploy the archived
+probe or treat the saved Basic key as a commercial display license.
 
 ## Endpoint contract
 

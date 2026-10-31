@@ -1,0 +1,55 @@
+{
+  "diagnostic": true,
+  "provider": "twelvedata",
+  "checkedAt": "2026-10-31T21:43:25.799Z",
+  "expiresAt": "2026-10-31T22:20:00Z",
+  "productionSettingsChanged": false,
+  "licenseVerified": false,
+  "usage": {
+    "ok": true,
+    "classification": "plan_identified",
+    "providerHttpStatus": 200,
+    "providerCode": null,
+    "plan_category": "basic",
+    "plan_limit": 8,
+    "plan_daily_limit": 800
+  },
+  "results": [
+    {
+      "symbol": "XAU/USD",
+      "interval": "1min",
+      "providerHttpStatus": 200,
+      "providerCode": null,
+      "metadataChecked": true,
+      "candleCount": 3,
+      "closedCandleCount": 3,
+      "latestClosedAt": "2026-10-31T21:42:00.000Z",
+      "ok": true,
+      "classification": "candles_available"
+    },
+    {
+      "symbol": "EUR/USD",
+      "interval": "1min",
+      "providerHttpStatus": 200,
+      "providerCode": null,
+      "metadataChecked": true,
+      "candleCount": 3,
+      "closedCandleCount": 3,
+      "latestClosedAt": "2026-10-31T21:42:00.000Z",
+      "ok": true,
+      "classification": "candles_available"
+    },
+    {
+      "symbol": "AAPL",
+      "interval": "1min",
+      "providerHttpStatus": 200,
+      "providerCode": null,
+      "metadataChecked": true,
+      "candleCount": 3,
+      "closedCandleCount": 3,
+      "latestClosedAt": "2026-10-30T20:00:00.000Z",
+      "ok": true,
+      "classification": "candles_available"
+    }
+  ]
+}
